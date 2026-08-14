@@ -1,10 +1,10 @@
 # The Agent Harness Path
 
 A self-contained course on **building, evaluating, and governing LLM agents** —
-fourteen sessions, each pairing a deep HTML lesson with a runnable toy notebook and a
-short video overview. Zero network, zero API keys, zero cost: every "model" in the
-notebooks is a plain Python function you can read, so the mechanics are never hidden
-behind an API call.
+fourteen sessions, each a deep HTML lesson with a short video overview: twelve
+notebook sessions plus two protocol sessions (S13 rebuild audit, S14 ship & pilot).
+Zero network, zero API keys, zero cost: every "model" in the notebooks is a plain
+Python function you can read, so the mechanics are never hidden behind an API call.
 
 **Start here:** [`lessons/index.html`](lessons/index.html) — or watch the 9-minute
 [course overview](lessons/videos/S00-course-overview.mp4) first.
@@ -72,6 +72,8 @@ no number here substitutes for a real, banked eval baseline.
 
 Copyright © 2026 the repository owner. All rights reserved. You may view and clone
 this repository for personal learning. Any other use — redistribution, teaching
-materials derived from it, commercial use — requires the owner's permission. (If you
-are the owner and intend to open it up, replace this section with the license of
-your choice; see `LICENSE`.)
+materials derived from it, commercial use — requires the owner's permission.
+Projects you build yourself while following the path — including anything you
+publish for S14's public-artifact step — are your own work; this license restricts
+redistribution of the course content itself. (If you are the owner and intend to
+open it up, replace this section with the license of your choice; see `LICENSE`.)

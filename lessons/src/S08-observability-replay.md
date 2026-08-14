@@ -30,7 +30,9 @@ Langfuse, and the OpenAI Agents SDK all share the shape:
 - **Span** — one named, timed unit of work with a parent. The parent edge is
   the causality; without it you have a pile of timestamps.
 - **Generation** — a span specialized for a model call: input, output, model
-  identity, token usage. This is where the money lives.
+  identity, token usage. This is where the money lives. The name is Langfuse's
+  vendor term ([data model](https://langfuse.com/docs/observability/data-model));
+  OTel models the same unit as model/agent spans, not a distinct type.
 
 ```mermaid
 flowchart TD
@@ -167,12 +169,12 @@ solution.
 | Development | Status | Take |
 |---|---|---|
 | Trace data model converged: trace → observations (span / generation / event) + sessions at [Langfuse](https://langfuse.com/docs/observability/data-model); traces and spans on by default in the [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/tracing/) | **already in this path** | The tree you build by hand in the notebook is the industry shape. You learned the model, not a vendor. |
-| OpenTelemetry [GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/): `gen_ai.*` attribute names, inference and agent spans, usage metrics | **adopt** when you wire real telemetry | Vendor-neutral names; emit OTLP and any backend can read your traces. The toy's attributes are a pocket sketch of this. |
+| OpenTelemetry GenAI semantic conventions, now in a dedicated repo: core semconv deprecated `gen_ai.*` in v1.42.0 (June 2026); development moved to [semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai) — inference and agent spans, usage metrics | **adopt** | When you wire real telemetry: vendor-neutral names; emit OTLP and any backend can read your traces. The toy's attributes are a pocket sketch of this — pin the semconv version you emit, because the names are still settling. |
 | HTTP cassettes: [vcrpy](https://github.com/kevin1024/vcrpy) (+ pytest-recording) as the CI standard | **recognize** | The lineage of record/replay, one layer down. Default matcher is method+URL — weaker than the toy's full-request match. |
 | [LangGraph time travel](https://docs.langchain.com/oss/python/langgraph/use-time-travel): replay from state checkpoints | **recognize** | Different mechanism: re-executes the graph from saved state, which can call the model *again*. A cassette recalls; a checkpoint re-runs. Know which guarantee you're holding. |
 | Record & replay as an agent paradigm: [AgentRR](https://arxiv.org/abs/2505.17716) records execution traces, abstracts them into reusable "experience," replays under a check function | **newer than this session** | The cassette idea promoted to a memory mechanism. Same contract, bigger claims — the check function is their strict matcher. |
 | Bitwise-deterministic inference: [Thinking Machines on batch invariance](https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/) (Sep 2025) | **newer than this session** | Even if providers ship true determinism, it freezes only the model — your clock and RNG still leak. The cassette remains the guarantee you own. |
-| Zero-config agent observability in cloud APM suites ([Datadog Agent Observability](https://docs.datadoghq.com/llm_observability/) et al.) | **ignore for now** | Auto-captured spans answer the platform's questions. The span tree is a design artifact; revisit when production telemetry decisions land (S11). |
+| Zero-config agent observability in cloud APM suites ([Datadog Agent Observability](https://docs.datadoghq.com/llm_observability/) et al.) | **ignore** | For now — auto-captured spans answer the platform's questions. The span tree is a design artifact; revisit when production telemetry decisions land (S11). |
 
 ## Annotated readings
 

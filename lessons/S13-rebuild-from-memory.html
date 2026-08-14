@@ -79,6 +79,15 @@
     summary { cursor: pointer; font-weight: 600; color: var(--accent); }
     hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
     .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -90,21 +99,25 @@
 </head>
 <body>
 <main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html">&larr; Prev: S12-judge-calibration — Measuring the measurers</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
 <h1>S13-rebuild-from-memory — The closed-book audit</h1>
 <p><strong>What this teaches:</strong> why "I built it" is not evidence that you own it — and the one
 measurement that is: a closed-book rebuild of the core component, judged by your own
 eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 <strong>Time:</strong> ~20 min reading, then ~90 min for the audit itself.
-<strong>Prerequisites:</strong> S01–S02 for the instrument vocabulary; in substance, everything
-since S01 is what gets audited.
+<strong>Prerequisites:</strong> S01–S02 for the instrument vocabulary — and a non-trivial project
+you own to audit. The path's twelve toys are independent, so there is no cumulative
+build to point at: the audit target is a project of yours, built here, at work, or
+in another course.
 <strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
-<strong>Video:</strong> <a href="videos/S13-rebuild-from-memory.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.
-defeat it. The protocol below is the hands-on.</p>
+defeat it. The protocol below is the hands-on.
+<strong>Video:</strong> <a href="videos/S13-rebuild-from-memory.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Authorship is not ownership</h3>
-<p>You spent twelve sessions building a system, much of it with an assistant in the
-loop. That feels like authorship. Mechanically, it was closer to code review: you
+<p>Take any non-trivial project you own — built in this path, at work, or in another
+course — much of it, these days, with an assistant in the loop. Owning it feels
+like authorship. Mechanically, it was closer to code review: you
 read diffs, judged them, accepted or rejected them. Reviewing builds <strong>recognition
 fluency</strong> — you see the append-verbatim line and nod along — which is a different
 and weaker thing than <strong>recall</strong>: producing the line, unaided, in a blank file.
@@ -138,7 +151,9 @@ nothing.</p>
 <li><strong>The original is out of reach.</strong> One peek converts a recall event into a
    recognition event. The measurement silently stops measuring memory and starts
    measuring eyesight — and the forgot-list it feeds is now wrong in a way you
-   cannot detect.</li>
+   cannot detect. Git history counts as out of reach: the original lives in HEAD,
+   not in your editor, and <code>git show</code> is a deliberate act you can catch yourself
+   making — unlike a stray tab.</li>
 <li><strong>The clock is visible.</strong> Fluency illusions survive leisure; they collapse
    under a time cap. Sixty minutes forces the honest version of every choice.</li>
 <li><strong>The pass bar is external.</strong> Not "it looks right" — the number your own eval
@@ -146,13 +161,13 @@ nothing.</p>
 <li><strong>The byproducts are captured.</strong> The diff is not waste; it is the raw material
    of the forgot-list.</li>
 </ol>
-<h3>The suite is the oracle; the diff is the diagnosis</h3>
+<h3>The suite is the decision instrument; the diff is the diagnosis</h3>
 <p>This is why the audit sits at S13 and not S03: it consumes the instrument the rest
-of the course built. Without a defended eval suite, the only bar a rebuild can
+of the path teaches. Without a defended eval suite, the only bar a rebuild can
 clear is "it runs and feels right" — the fluency illusion with extra steps. With
 the suite, the question becomes empirical: does the rebuilt core hold the number
 you already banked?</p>
-<p>Note what the oracle is <em>not</em>: the diff. Byte-similarity measures typing memory,
+<p>Note what the instrument is <em>not</em>: the diff. Byte-similarity measures typing memory,
 and punishes exactly what you want to see — a rebuild that produces a different but
 behavior-preserving construction demonstrates ownership of the <em>abstraction</em>, not
 the text. So diff hunks get classified, not counted:</p>
@@ -182,9 +197,12 @@ the text. So diff hunks get classified, not counted:</p>
 </tr>
 </tbody>
 </table>
-<p>The pass bar is the suite number within a small tolerance of the last banked one
-(the course uses one task) — enough to absorb suite noise, small enough that a real
-behavioral gap cannot hide inside it.</p>
+<p>The pass bar is the suite number within a small tolerance of the last banked one.
+The tolerance absorbs suite noise; it does not make gaps invisible, and a small or
+noisy suite can miss a real regression wherever you set it. That is why the suite
+is the audit's <em>decision instrument</em> rather than its whole judgment: the hunk
+review above stays a separate step, and behavioral-gap hunks feed the forgot-list
+even when the number comes back green.</p>
 <h3>The forgot-list is the deliverable</h3>
 <p>The number tells you <em>whether</em> you own the system; the forgot-list tells you <em>which
 parts</em> you don't. This is S10's error analysis turned inward: each behavioral gap
@@ -204,43 +222,54 @@ rule that would have saved it.</p>
 <p>Run twice, a week apart, the audit is the whole learning loop: measure, diagnose,
 repair, verify the repair.</p>
 <h2>The protocol</h2>
-<p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
+<p>One sitting, no interruptions, roughly 90 minutes end to end. It runs against any
+non-trivial project you own — from this path, from work, from another course —
+and "the suite" and "the banked number" below are that project's own.</p>
 <ol>
 <li><strong>Choose the core.</strong> One component: the load-bearing abstraction, the file
-   whose invariants <em>are</em> the system's invariants (in this course, the loop).
+   whose invariants <em>are</em> the system's invariants (in an agent harness, the loop).
    Criteria: everything else imports it; it holds the protocol rules; it fits in
    one sitting. Never the whole system — the rest is reference material, and
-   looking reference material up is the <em>correct</em> move, not a failure.</li>
-<li><strong>Set the terms.</strong> Move the original outside the project tree
-   (<code>mv core.py /tmp/core.py.original</code>). Close the assistant. Close the browser.
+   looking reference material up is the <em>correct</em> move, not a failure. The audit
+   targets restating and rebuilding the core abstractions and their invariants —
+   not memorizing implementation trivia; whatever documentation can hold, let
+   documentation hold.</li>
+<li><strong>Set the terms.</strong> Commit a clean tree — HEAD now holds the canonical
+   original. Rebuild off the main line: <code>git switch -c rebuild-audit</code> (or a
+   scratch worktree: <code>git worktree add /tmp/rebuild-audit HEAD</code>). Delete the
+   target file there; the original survives only in history, a deliberate
+   <code>git show</code> away. Close the assistant. Close the browser.
    Allowed: the language, its standard library, <code>--help</code>. Set a visible timer:
    60 minutes.</li>
 <li><strong>Rebuild.</strong> Blank file at the same path, from memory. When stuck, write what
    you think it should be and mark it <code># UNSURE</code> — unsure marks are data. They
    become honestly-labeled forgot-list items instead of hiding inside a lucky diff.</li>
-<li><strong>Diff and classify.</strong> <code>diff -u /tmp/core.py.original core.py</code>. Label every
+<li><strong>Diff and classify.</strong> <code>git diff HEAD -- core.py</code>. Label every
    hunk: cosmetic, behavior-preserving, or behavioral gap. Only the third bucket
    feeds the forgot-list.</li>
 <li><strong>Run the suite.</strong> The rebuilt component runs the full eval suite. Pass: the
    number within tolerance of the last banked one. Fail: it moved — and the
-   behavioral gaps from step 3 tell you why.</li>
+   behavioral gaps from step 3 tell you why. Either way the gap hunks stand: a
+   small suite can stay green through a dropped invariant, so the step-3 review
+   is not optional decoration.</li>
 <li><strong>Write the forgot-list.</strong> One line per behavioral gap: what you dropped, why
    the original had it, the one-line rule that would have saved it. Then <strong>restore
-   the original</strong> (<code>mv</code> it back): the rebuild was a probe, not a patch — the
+   the original</strong> — <code>git checkout HEAD -- core.py</code>, or drop the branch/worktree
+   entirely: the rebuild was a probe, not a patch — the
    banked artifact stays canonical.</li>
 <li><strong>Re-study, then re-audit cold.</strong> Study exactly the forgot-list items, nothing
    else. Wait a week. Run the audit again from step 1. The second pass is where
    retention happens; the first pass only told you the truth.</li>
 </ol>
 <pre class="mermaid">flowchart LR
-    A[original moved&lt;br/&gt;out of reach] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
+    A[original safe in HEAD&lt;br/&gt;rebuild on a branch] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
     B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
     C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
     D --&gt; E[run the suite]
     E --&gt; F{within tolerance of&lt;br/&gt;banked number?}
     F -- yes --&gt; G[forgot-list from gaps]
     F -- no --&gt; G
-    G --&gt; H[restore original]
+    G --&gt; H[restore original&lt;br/&gt;checkout from HEAD]
     H --&gt; I[re-study exactly those items]
     I --&gt; J[re-audit cold, ~1 week]
 </pre>
@@ -321,7 +350,9 @@ repair, verify the repair.</p>
   wrong things with full confidence.</li>
 <li><strong>Treating the diff as the score.</strong> Byte-similarity measures typing memory. A
   clean suite number over a heavily-rewritten file is a pass; a near-identical
-  file that dropped one invariant is a fail. The suite is the oracle.</li>
+  file that dropped one invariant is a forgot-list item — and if the suite is too
+  small to see it, the hunk review is the separate check that catches it. The
+  suite decides; it is an instrument, not an oracle.</li>
 <li><strong>Auditing the whole system.</strong> The audit covers the load-bearing core. For
   everything else, lookup is the designed behavior — expanding scope just
   guarantees a noisy, discouraging measurement.</li>
@@ -341,30 +372,30 @@ eyesight, not memory — and the forgot-list inherits the error, so the re-study
 phase fixes the wrong gaps while the real ones stay invisible.</details>
 
 <details><summary>The rebuild holds the suite number but the diff is enormous. Pass or fail?</summary>
-Pass. The suite is the oracle; the diff is only the diagnosis. Behavior-preserving
+Pass — if the hunks classify as cosmetic or behavior-preserving. The suite is the
+decision instrument; the diff is the diagnosis. Behavior-preserving
 differences demonstrate ownership of the abstraction rather than the text — that
 is the stronger result, not a problem.</details>
 
 <details><summary>Why does this audit sit at S13 and not earlier?</summary>
-Two reasons. It needs the eval instrument built across S02–S12 — without a banked,
+Two reasons. It needs the eval instrument S02–S12 teach you to build — without a banked,
 defended number, "it runs and feels right" is the only bar, and that bar is the
 fluency illusion. And it needs a system large enough that ownership is genuinely
-in doubt.</details>
+in doubt — a project you own, not a toy.</details>
 
 <h2>What's next</h2>
 <p><strong>S14-ship-and-pilot:</strong> the audit proves the system is yours; the last session
 proves it works for someone who is not you. Acceptance runs on unseen scenarios,
 assembled architecture and failure documentation, and a public evidence artifact —
 the rebuild says you can defend the machine, S14 makes you defend it in public.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html">&larr; Prev: S12-judge-calibration — Measuring the measurers</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> on 2026-08-14 from
-  <code>lessons/src/S13-rebuild-from-memory.md</code>. Study companion to
-  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
-  the baselines, and the audit live in the course repo.
+  <code>lessons/src/S13-rebuild-from-memory.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  import mermaid from "./vendor/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

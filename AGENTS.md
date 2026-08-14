@@ -62,7 +62,9 @@ course tasks.
 ├── lessons/
 │   ├── index.html             — standalone-path entry point (generated; src/index.md)
 │   ├── build.py               — renders src/*.md → *.html via template.html
-│   ├── template.html          — page shell (dark CSS, mermaid.js via browser CDN)
+│   │                              (injects the prev/index/next nav bars)
+│   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
+│   ├── vendor/                — mermaid@11 ESM build + lazy chunks (offline diagrams)
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
 │   └── videos/SNN-*.mp4       — NotebookLM video overviews, one per lesson, plus

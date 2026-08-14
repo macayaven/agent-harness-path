@@ -79,6 +79,15 @@
     summary { cursor: pointer; font-weight: 600; color: var(--accent); }
     hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
     .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -90,6 +99,7 @@
 </head>
 <body>
 <main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02 — Golden sets &amp; baselines &rarr;</a></span></nav>
 <h1>S01 — The agent loop</h1>
 <p><strong>What this teaches:</strong> what an LLM agent actually is mechanically — a client-side loop
 around a stateless API — and the two invariants that keep it alive: message-list
@@ -104,6 +114,9 @@ preservation and tool-call/tool-result pairing.
 your previous request, does not keep a session, does not "know what we were doing."
 What it sees is exactly one thing: the <code>messages</code> list you send. Memory, personality,
 progress — all of it is that list, re-sent in full, every call.</p>
+<p>This lesson teaches the <strong>client-owned loop</strong> — you hold the message list. That is
+deliberate: local and open-model stacks still work exactly this way, and the stateful
+alternatives (see the SOTA table) are this same loop with the list moved server-side.</p>
 <p>An <em>agent</em> is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:</p>
 <pre class="mermaid">flowchart LR
@@ -151,13 +164,18 @@ which is S03's topic. The loop is solved; the stream is not.</p>
 the markdown cell before running it</strong> — a prediction you didn't write down is a
 prediction you'll retroactively fix.</p>
 <ol>
-<li>Add a new tool to the weather bot. Notice what the model needs to <em>see</em> to use it
-   correctly (name, description, schema — all prompt content).</li>
-<li>Break append-verbatim on purpose (the notebook has a labeled broken variant).
-   Predict the exact failure, then watch it.</li>
-<li>The tool that raises: run the unsafe version, then the error-as-message version.
-   Compare what the model does after each.</li>
-<li>Cap the loop: what happens when <code>max_turns</code> fires mid-task? What does the user see?</li>
+<li>The happy path: run the loop on the weather question. Predict how many turns the
+   run takes and what each transcript row contains — which roles appear, in what
+   order, carrying what — then run and read the transcript.</li>
+<li>Drop the assistant message: the labeled broken variant removes the
+   append-verbatim line. Predict what fails and where, then run — the mock
+   validates message sequences the way a real API does, so the failure you watch
+   is the production one (an orphaned tool result).</li>
+<li>The model that never stops: <code>mock_model_forever</code> requests a tool on every turn.
+   Predict what ends the loop and after how many turns — and note whose property
+   the thing that ends it is (the harness's, not the model's).</li>
+<li>The tool that raises: run the fragile weather service. Predict whether the loop
+   crashes or the error becomes data — and where in the transcript it surfaces.</li>
 </ol>
 <h2>State of the art (as of August 2026)</h2>
 <p>Mapped to <em>recognize vs adopt</em>: what the field converged on that this session already
@@ -193,13 +211,18 @@ teaches, what's newer, what to ignore for now.</p>
 </tr>
 <tr>
 <td><code>strict: true</code> tool schemas for guaranteed-conformant arguments (<a href="https://developers.openai.com/api/docs/guides/function-calling">OpenAI function-calling guide</a>)</td>
-<td><strong>adopt</strong> when you hit real APIs</td>
-<td>Cheap reliability win; the toy's mock doesn't model it.</td>
+<td><strong>adopt</strong></td>
+<td>When you hit real APIs: cheap reliability win; the toy's mock doesn't model it.</td>
+</tr>
+<tr>
+<td>OpenAI's stateful Responses API (Conversations, <code>previous_response_id</code>) is now the recommended default for new projects; Chat Completions "remains supported" (<a href="https://developers.openai.com/api/docs/guides/migrate-to-responses">migration guide</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Server-side state moves the message-list management this lesson teaches into the platform. Learn the client-owned loop anyway: it's the mental model that survives every vendor abstraction, and every local/open-model stack still works this way.</td>
 </tr>
 <tr>
 <td>Multi-agent orchestration frameworks</td>
-<td><strong>ignore for now</strong></td>
-<td>OpenAI's own guide: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">"start with a single agent"</a>. S05 and S11 cover when structure actually pays.</td>
+<td><strong>ignore</strong></td>
+<td>For now — OpenAI's own guide: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">"start with a single agent"</a>. S05 and S11 cover when structure actually pays.</td>
 </tr>
 </tbody>
 </table>
@@ -258,15 +281,14 @@ smarter mechanism fails.</details>
 <p><strong>S02 — Golden sets and baselines:</strong> you have a loop that runs; next, how do you
 <em>measure</em> whether it's any good? The answer is an eval suite, and the surprising part
 is that the eval suite — not the agent — is where most of the engineering lives.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02 — Golden sets &amp; baselines &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> on 2026-08-14 from
-  <code>lessons/src/S01-agent-loop.md</code>. Study companion to
-  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
-  the baselines, and the audit live in the course repo.
+  <code>lessons/src/S01-agent-loop.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  import mermaid from "./vendor/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

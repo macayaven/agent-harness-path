@@ -6,11 +6,12 @@ protocol, documentation *assembled* from artifacts rather than composed from
 memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
-**Prerequisites:** S01–S13 — there is nothing to ship if the earlier sessions
-didn't happen.
+**Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
+a non-trivial project of your own to ship. The path's toys are independent; there
+is no cumulative build waiting to be shipped, so "your system" means one you own.
 **Hands-on:** no notebook — the hands-on is your own system, run through the
-**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
 protocol below.
+**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
 
 ---
 
@@ -34,8 +35,12 @@ whole system. An acceptance run counts only if:
 - the run starts **cold** — clean state, traces on, no warmup, no steering.
 
 A failed acceptance run is not a disaster and not a secret: it is a result.
-The trace tells you where it broke; you amend the *system* and rerun fresh.
-The one move that is actually fatal is editing the fixture to fit — that is
+The trace tells you where it broke; you amend the *system* and rerun. But count
+what the failure cost the fixture: an input you have diagnosed from and fixed
+against is no longer unseen — it is a tuning case now, and a green rerun on it
+is regression evidence, not acceptance evidence. So the final gate runs on a
+second fixture, a holdout frozen at the same time and never opened during
+fixing. The one move that is actually fatal is editing the fixture to fit — that is
 S02's suite-gaming move at ship scale, with no checker left above you to
 catch it.
 
@@ -68,15 +73,17 @@ And calibrate what one pilot proves. Discount usability testing's famous
 result — a handful of users finds most problems — is a statement about
 *finding showstoppers*, never about their absence
 ([Nielsen](https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/)).
-Your n=1 pilot is a smoke detector, not a sample. It can certify "the house is
-not currently on fire." It cannot certify the house.
+Your n=1 pilot is a smoke detector, not a sample. A quiet detector reports one
+fact: the house was not on fire during the test. It certifies nothing about the
+house — not the wiring, not the market, not the next occupant.
 
 ```mermaid
 flowchart TD
-    A[freeze a fixture<br/>criteria written first] --> B[cold acceptance run<br/>you, unseen input, traces on]
-    B -- pass --> C[pilot run<br/>protocol page first,<br/>then one second human]
-    B -- fail --> D[diagnose from the trace<br/>amend the system,<br/>never the fixture]
+    A[freeze two fixtures, criteria first<br/>acceptance + untouched holdout] --> B[cold acceptance run<br/>you, unseen input, traces on]
+    B -- pass --> K[cold final gate<br/>the untouched holdout]
+    B -- fail --> D[diagnose from the trace<br/>amend the system,<br/>never the fixture —<br/>it is a tuning case now]
     D --> B
+    K --> C[pilot run<br/>protocol page first,<br/>then one second human]
     C --> E[assemble the docs<br/>from artifacts, not memory]
     E --> F[public artifact<br/>one fixture run + numbers]
     F --> G[adversarial review<br/>fix what is real,<br/>rebut the rest in writing]
@@ -149,9 +156,12 @@ hostile friend — with one instruction: find the unsupported claims. Fix what
 is real; rebut what is not, in writing, next to the claim. This is the S12
 cross-examination muscle pointed at your own evidence.
 
-The tag — v1.0, in [semver](https://semver.org) terms the first public promise
-— asserts exactly one thing: the evidence in the repo covers the claims in the
-artifact. No more. Everything deliberately parked (wider pilots, new surfaces,
+The tag — v1.0 — carries two promises from two different authorities. In
+[semver](https://semver.org) terms, v1.0.0 asserts exactly one thing: a defined
+public API exists, and the version number now describes how it changes. The
+second promise — the evidence in the repo covers the claims in the
+artifact — is not SemVer's; it is this path's own release policy, signed at the
+tag. No more. Everything deliberately parked (wider pilots, new surfaces,
 dashboards) starts from the tag, not before it — a parked list is only
 meaningful against a frozen baseline.
 
@@ -161,14 +171,19 @@ Run this against your own system, in order. Each step has an artifact and a
 "done when" line. Reorder them and the later steps inherit the earlier steps'
 contamination.
 
-1. **Freeze the fixture and the criteria.** Choose one end-to-end scenario the
-   system has never processed — not a golden-set task you tuned against. Write
+1. **Freeze the fixtures and the criteria.** Choose end-to-end scenarios the
+   system has never processed — not golden-set tasks you tuned against: one
+   acceptance fixture, plus a holdout reserved for the final gate and never
+   opened while fixing. Write
    the pass criteria down, dated, before touching the system. Predict-first at
    system scale. *Done when:* the criteria exist in writing and a skeptic
    could apply them without you in the room.
 2. **Run the acceptance pass cold.** Clean state, traces on, no narration, no
-   steering. If it fails: diagnose from the trace, amend the system, rerun
-   fresh. Never edit the fixture to fit. *Done when:* a green run whose trace
+   steering. If it fails: diagnose from the trace, amend the system, rerun.
+   Never edit the fixture to fit — and remember what the failure cost: a fixture
+   you have diagnosed from and fixed against is a tuning case, not unseen
+   evidence. The final gate is one cold run on the untouched holdout. *Done
+   when:* a green holdout run whose trace
    and numbers you would show a hostile reviewer.
 3. **Write the one-page pilot protocol.** The four statements: is/is-not, data
    handling, where to go if things go wrong, authorship rule. Draft it, then
@@ -194,8 +209,9 @@ contamination.
    repo alone.
 8. **Cross-examine, then tag.** Adversarial review of write-up plus repo by
    the strongest critic available; fix what is real, rebut what is not, in
-   writing. Then tag v1.0 — the tag asserts the evidence covers the claims, no
-   more. *Done when:* every objection has a fix or a written rebuttal, and the
+   writing. Then tag v1.0 — SemVer's half of the promise is a defined public
+   API; the other half, that the evidence covers the claims, is this path's
+   own release policy, not SemVer's. *Done when:* every objection has a fix or a written rebuttal, and the
    parked list (everything after v1.0) is written down, not started.
 
 ## State of the art (as of August 2026)
@@ -208,7 +224,7 @@ contamination.
 | "Do things that don't scale" ([Graham](https://paulgraham.com/ds.html)) | **recognize** | The pilot is deliberately concierge-scale. Unscalable honesty now beats scalable theater later. |
 | System cards as the lab-scale public evidence artifact ([OpenAI o1 system card](https://arxiv.org/abs/2412.16720)) | **recognize** | Labs publish measured behavior, failures included, as the artifact of record. Your fixture-run write-up is the solo-scale version. |
 | Semantic versioning as the public contract behind a v1.0 tag ([semver.org](https://semver.org)) | **adopt** | The tag is cheap to type and expensive to mean: it asserts the evidence covers the claims, no more. |
-| EU AI Act staged application — prohibitions Feb 2025, general-purpose-AI obligations Aug 2025, general application Aug 2026, with late amendments still moving some dates ([Article 113](https://artificialintelligenceact.eu/article/113/)) | **newer than this session** | A one-trusted-adult pilot is etiquette; a scaled pilot is law. Your protocol page is the seed of that compliance — parked, deliberately. |
+| EU AI Act staged application, as amended by the Digital Omnibus ([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj), in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026; Annex III high-risk obligations postponed to **2 Dec 2027**, Annex I product-embedded to **2 Aug 2028** | **newer than this session** | A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately. |
 | Simulated "users" as a stand-in for the pilot ([arXiv:2601.17087](https://www.arxiv.org/pdf/2601.17087), cited at S02) | **ignore** | S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation. |
 
 ## Annotated readings
@@ -280,9 +296,10 @@ credibility.</details>
 
 ## What's next
 
-There is no S15. What you own after the tag: a loop you can rebuild from
-memory (S13), a measurement instrument you can defend (S02), a governed,
-observed, budgeted, calibrated harness (S05–S12), and now a public claim with
+There is no S15. What you own after the tag: a core you can rebuild from
+memory (S13), a measurement instrument you can defend (S02), the mechanisms of
+a governed, observed, budgeted, calibrated harness (S05–S12) — and, for the
+system you applied them to, a public claim with
 the evidence to survive cross-examination. The parked list — wider pilots, new
 surfaces, outcomes aggregation — is real work with real protocols of its own,
 and it starts from the tag, not before it.

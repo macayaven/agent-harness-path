@@ -79,6 +79,15 @@
     summary { cursor: pointer; font-weight: 600; color: var(--accent); }
     hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
     .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -90,6 +99,7 @@
 </head>
 <body>
 <main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S13-rebuild-from-memory.html">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"></span></nav>
 <h1>S14-ship-and-pilot — The cold run, the pilot, and the public artifact</h1>
 <p><strong>What this teaches:</strong> shipping is the last measurement, not a mood — a cold
 acceptance run on unseen input, one pilot with a second human under a written
@@ -97,11 +107,12 @@ protocol, documentation <em>assembled</em> from artifacts rather than composed f
 memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 <strong>Time:</strong> ~20 min of reading, ~4 h of doing (fine to split across days).
-<strong>Prerequisites:</strong> S01–S13 — there is nothing to ship if the earlier sessions
-didn't happen.
+<strong>Prerequisites:</strong> S01–S13 for the vocabulary and the mechanisms — and, as in S13,
+a non-trivial project of your own to ship. The path's toys are independent; there
+is no cumulative build waiting to be shipped, so "your system" means one you own.
 <strong>Hands-on:</strong> no notebook — the hands-on is your own system, run through the
-<strong>Video:</strong> <a href="videos/S14-ship-and-pilot.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.
-protocol below.</p>
+protocol below.
+<strong>Video:</strong> <a href="videos/S14-ship-and-pilot.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Done is a measurement, not a mood</h3>
@@ -120,8 +131,12 @@ whole system. An acceptance run counts only if:</p>
 <li>the run starts <strong>cold</strong> — clean state, traces on, no warmup, no steering.</li>
 </ul>
 <p>A failed acceptance run is not a disaster and not a secret: it is a result.
-The trace tells you where it broke; you amend the <em>system</em> and rerun fresh.
-The one move that is actually fatal is editing the fixture to fit — that is
+The trace tells you where it broke; you amend the <em>system</em> and rerun. But count
+what the failure cost the fixture: an input you have diagnosed from and fixed
+against is no longer unseen — it is a tuning case now, and a green rerun on it
+is regression evidence, not acceptance evidence. So the final gate runs on a
+second fixture, a holdout frozen at the same time and never opened during
+fixing. The one move that is actually fatal is editing the fixture to fit — that is
 S02's suite-gaming move at ship scale, with no checker left above you to
 catch it.</p>
 <h3>The second human changes the instrument</h3>
@@ -150,13 +165,15 @@ hesitated, and what they worked around is the evidence
 result — a handful of users finds most problems — is a statement about
 <em>finding showstoppers</em>, never about their absence
 (<a href="https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/">Nielsen</a>).
-Your n=1 pilot is a smoke detector, not a sample. It can certify "the house is
-not currently on fire." It cannot certify the house.</p>
+Your n=1 pilot is a smoke detector, not a sample. A quiet detector reports one
+fact: the house was not on fire during the test. It certifies nothing about the
+house — not the wiring, not the market, not the next occupant.</p>
 <pre class="mermaid">flowchart TD
-    A[freeze a fixture&lt;br/&gt;criteria written first] --&gt; B[cold acceptance run&lt;br/&gt;you, unseen input, traces on]
-    B -- pass --&gt; C[pilot run&lt;br/&gt;protocol page first,&lt;br/&gt;then one second human]
-    B -- fail --&gt; D[diagnose from the trace&lt;br/&gt;amend the system,&lt;br/&gt;never the fixture]
+    A[freeze two fixtures, criteria first&lt;br/&gt;acceptance + untouched holdout] --&gt; B[cold acceptance run&lt;br/&gt;you, unseen input, traces on]
+    B -- pass --&gt; K[cold final gate&lt;br/&gt;the untouched holdout]
+    B -- fail --&gt; D[diagnose from the trace&lt;br/&gt;amend the system,&lt;br/&gt;never the fixture —&lt;br/&gt;it is a tuning case now]
     D --&gt; B
+    K --&gt; C[pilot run&lt;br/&gt;protocol page first,&lt;br/&gt;then one second human]
     C --&gt; E[assemble the docs&lt;br/&gt;from artifacts, not memory]
     E --&gt; F[public artifact&lt;br/&gt;one fixture run + numbers]
     F --&gt; G[adversarial review&lt;br/&gt;fix what is real,&lt;br/&gt;rebut the rest in writing]
@@ -234,9 +251,12 @@ the strongest critic available — a frontier model in adversarial mode, or a
 hostile friend — with one instruction: find the unsupported claims. Fix what
 is real; rebut what is not, in writing, next to the claim. This is the S12
 cross-examination muscle pointed at your own evidence.</p>
-<p>The tag — v1.0, in <a href="https://semver.org">semver</a> terms the first public promise
-— asserts exactly one thing: the evidence in the repo covers the claims in the
-artifact. No more. Everything deliberately parked (wider pilots, new surfaces,
+<p>The tag — v1.0 — carries two promises from two different authorities. In
+<a href="https://semver.org">semver</a> terms, v1.0.0 asserts exactly one thing: a defined
+public API exists, and the version number now describes how it changes. The
+second promise — the evidence in the repo covers the claims in the
+artifact — is not SemVer's; it is this path's own release policy, signed at the
+tag. No more. Everything deliberately parked (wider pilots, new surfaces,
 dashboards) starts from the tag, not before it — a parked list is only
 meaningful against a frozen baseline.</p>
 <h2>The protocol</h2>
@@ -244,14 +264,19 @@ meaningful against a frozen baseline.</p>
 "done when" line. Reorder them and the later steps inherit the earlier steps'
 contamination.</p>
 <ol>
-<li><strong>Freeze the fixture and the criteria.</strong> Choose one end-to-end scenario the
-   system has never processed — not a golden-set task you tuned against. Write
+<li><strong>Freeze the fixtures and the criteria.</strong> Choose end-to-end scenarios the
+   system has never processed — not golden-set tasks you tuned against: one
+   acceptance fixture, plus a holdout reserved for the final gate and never
+   opened while fixing. Write
    the pass criteria down, dated, before touching the system. Predict-first at
    system scale. <em>Done when:</em> the criteria exist in writing and a skeptic
    could apply them without you in the room.</li>
 <li><strong>Run the acceptance pass cold.</strong> Clean state, traces on, no narration, no
-   steering. If it fails: diagnose from the trace, amend the system, rerun
-   fresh. Never edit the fixture to fit. <em>Done when:</em> a green run whose trace
+   steering. If it fails: diagnose from the trace, amend the system, rerun.
+   Never edit the fixture to fit — and remember what the failure cost: a fixture
+   you have diagnosed from and fixed against is a tuning case, not unseen
+   evidence. The final gate is one cold run on the untouched holdout. <em>Done
+   when:</em> a green holdout run whose trace
    and numbers you would show a hostile reviewer.</li>
 <li><strong>Write the one-page pilot protocol.</strong> The four statements: is/is-not, data
    handling, where to go if things go wrong, authorship rule. Draft it, then
@@ -277,8 +302,9 @@ contamination.</p>
    repo alone.</li>
 <li><strong>Cross-examine, then tag.</strong> Adversarial review of write-up plus repo by
    the strongest critic available; fix what is real, rebut what is not, in
-   writing. Then tag v1.0 — the tag asserts the evidence covers the claims, no
-   more. <em>Done when:</em> every objection has a fix or a written rebuttal, and the
+   writing. Then tag v1.0 — SemVer's half of the promise is a defined public
+   API; the other half, that the evidence covers the claims, is this path's
+   own release policy, not SemVer's. <em>Done when:</em> every objection has a fix or a written rebuttal, and the
    parked list (everything after v1.0) is written down, not started.</li>
 </ol>
 <h2>State of the art (as of August 2026)</h2>
@@ -322,9 +348,9 @@ contamination.</p>
 <td>The tag is cheap to type and expensive to mean: it asserts the evidence covers the claims, no more.</td>
 </tr>
 <tr>
-<td>EU AI Act staged application — prohibitions Feb 2025, general-purpose-AI obligations Aug 2025, general application Aug 2026, with late amendments still moving some dates (<a href="https://artificialintelligenceact.eu/article/113/">Article 113</a>)</td>
+<td>EU AI Act staged application, as amended by the Digital Omnibus (<a href="https://eur-lex.europa.eu/eli/reg/2026/1744/oj">Regulation (EU) 2026/1744</a>, in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026; Annex III high-risk obligations postponed to <strong>2 Dec 2027</strong>, Annex I product-embedded to <strong>2 Aug 2028</strong></td>
 <td><strong>newer than this session</strong></td>
-<td>A one-trusted-adult pilot is etiquette; a scaled pilot is law. Your protocol page is the seed of that compliance — parked, deliberately.</td>
+<td>A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately.</td>
 </tr>
 <tr>
 <td>Simulated "users" as a stand-in for the pilot (<a href="https://www.arxiv.org/pdf/2601.17087">arXiv:2601.17087</a>, cited at S02)</td>
@@ -400,21 +426,21 @@ reproducible: the numbers carry the evidence; intimacy adds risk, not
 credibility.</details>
 
 <h2>What's next</h2>
-<p>There is no S15. What you own after the tag: a loop you can rebuild from
-memory (S13), a measurement instrument you can defend (S02), a governed,
-observed, budgeted, calibrated harness (S05–S12), and now a public claim with
+<p>There is no S15. What you own after the tag: a core you can rebuild from
+memory (S13), a measurement instrument you can defend (S02), the mechanisms of
+a governed, observed, budgeted, calibrated harness (S05–S12) — and, for the
+system you applied them to, a public claim with
 the evidence to survive cross-examination. The parked list — wider pilots, new
 surfaces, outcomes aggregation — is real work with real protocols of its own,
 and it starts from the tag, not before it.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S13-rebuild-from-memory.html">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> on 2026-08-14 from
-  <code>lessons/src/S14-ship-and-pilot.md</code>. Study companion to
-  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
-  the baselines, and the audit live in the course repo.
+  <code>lessons/src/S14-ship-and-pilot.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  import mermaid from "./vendor/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

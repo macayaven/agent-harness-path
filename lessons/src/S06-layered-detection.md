@@ -57,6 +57,16 @@ which is what production containment actually looks like (Anthropic's account of
 its own stack:
 [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude)).
 
+And keep the layers in their place: every row in that table is a *signal*, never
+the boundary. Each layer has recall below one and false positives above zero, so
+a union of layers is still fallible — a pipeline that stops 99% of attacks is a
+sensor that misses 1% of attacks. Enforcement is architectural, and it is what
+holds when every signal misses: capability isolation, least-privilege
+credentials, tool authorization, egress control, and careful output handling
+(the model's output stays untrusted text for everything that consumes it).
+Detection routes traffic and buys time; the boundary is what the system
+structurally cannot do.
+
 ### The mechanism: ordered layers, union for the catastrophic class
 
 ```mermaid
@@ -141,9 +151,10 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 |---|---|---|
 | Lethal-trifecta framing ([Willison, Jun 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)) | **already in this path** | The threat model this session sits in. Remove a leg; don't ask the model to be careful. |
 | OWASP Top 10 for LLM Applications, 2025 list — LLM01 prompt injection, LLM06 excessive agency ([owasp.org](https://owasp.org/www-project-top-10-for-large-language-model-applications/)) | **already in this path** | The shared vocabulary. The injection screen and the scope governor map to LLM01 and LLM06. |
+| OWASP Top 10 for Agentic Applications (Dec 2025, [OWASP GenAI Security Project](https://genai.owasp.org/)) — goal hijack, tool misuse, identity & privilege abuse, agentic supply chain, unexpected code execution, memory & context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10) | **recognize** | The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them. |
 | Anthropic's production containment write-up, [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude) (May 2026) | **recognize** | The industrial version of this session: environment isolation first, model-level controls second — and the admission that the software you build yourself is often the weakest layer. |
 | Constitutional classifiers — input *and* output classifier shells, stress-tested with 3,000+ hours of human red-teaming ([arXiv:2501.18837](https://arxiv.org/abs/2501.18837)) | **recognize** | The research-grade union-of-layers design. Note the metric: red-team hours survived, not a benchmark score. |
-| Small open injection classifiers — [Llama Prompt Guard 2](https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M) (86M/22M, benign/malicious), [ProtectAI's DeBERTa injection model](https://huggingface.co/protectai/deberta-v3-base-prompt-injection) | **adopt** when you leave the toy | This is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on *your* bank. |
+| Small open injection classifiers — [Llama Prompt Guard 2](https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M) (86M/22M, benign/malicious), [ProtectAI's DeBERTa injection model](https://huggingface.co/protectai/deberta-v3-base-prompt-injection) | **adopt** | When you leave the toy, this is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on *your* bank. |
 | Guardrail toolkits and managed layers — [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails), OpenAI's [moderation endpoint](https://platform.openai.com/docs/guides/moderation) | **recognize** | The same layered pattern, packaged. A vendor default is not your operating point — validate the layer against your own fixture bank. |
 | "Safety system prompt" products — one mega-instruction that forbids everything | **ignore** | Prompt-level prohibition is advice to the model, not enforcement. If the whole story is a prompt, there is no detection. |
 
@@ -173,6 +184,11 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 - **Keyword-only detection.** A floor is a floor: paraphrase walks over it,
   slang trips it. It exists because it is free and auditable, not because it is
   sufficient.
+- **Detection as the perimeter.** Classifiers and keyword floors are fallible
+  signals with measurable error rates; if the pipeline *is* the security
+  boundary, one miss is one breach. The boundary is what holds when every
+  signal misses: capability isolation, least privilege, tool authorization,
+  egress control, careful output handling.
 - **Threshold by intuition.** The operating point is a data decision: sweep the
   bank, pick the point, record the false-trigger count next to it. An unrecorded
   threshold is an unmade decision.

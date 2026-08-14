@@ -3,7 +3,8 @@
 
 Stdlib + the `markdown` package only (uv-managed, see pyproject.toml).
 Mermaid code fences are converted to <pre class="mermaid"> so the template's
-mermaid.js (CDN, browser-side) can render them.
+mermaid.js (vendored at lessons/vendor/, browser-side) can render them.
+Each page also gets a prev/index/next nav bar, top and bottom of <main>.
 """
 
 import datetime
@@ -25,15 +26,63 @@ MERMAID_RE = re.compile(
     r'<pre><code class="language-mermaid">(.*?)</code></pre>', re.DOTALL
 )
 
+# Reading order for the prev/next nav bars: index first, then S01..S14.
+LESSON_ORDER = [
+    "index",
+    "S01-agent-loop",
+    "S02-golden-evals",
+    "S03-context-engineering",
+    "S04-structured-generation",
+    "S05-consent-gate",
+    "S06-layered-detection",
+    "S07-repair-loop",
+    "S08-observability-replay",
+    "S09-evidence-reports",
+    "S10-error-analysis",
+    "S11-budgets-routing",
+    "S12-judge-calibration",
+    "S13-rebuild-from-memory",
+    "S14-ship-and-pilot",
+]
 
-def render(source: Path) -> tuple[str, int]:
+
+def render_body(source: Path) -> tuple[str, str, int]:
+    """Convert one source file; return (body HTML, H1 title, mermaid count)."""
     MD.reset()
     body = MD.convert(source.read_text(encoding="utf-8"))
     body, n = MERMAID_RE.subn(r'<pre class="mermaid">\1</pre>', body)
     title_match = re.search(r"<h1[^>]*>(.*?)</h1>", body)
     title = title_match.group(1) if title_match else source.stem
+    return body, title, n
+
+
+def build_nav(slug: str, order: list[str], titles: dict[str, str]) -> str:
+    """Prev/index/next bar. Index gets only the forward link to S01; the
+    last lesson gets no next. Link labels are the targets' rendered H1s."""
+    i = order.index(slug)
+    prev_link = index_link = next_link = ""
+    if i > 0:
+        prev = order[i - 1]
+        prev_link = f'<a href="{prev}.html">&larr; Prev: {titles[prev]}</a>'
+    if slug != "index":
+        index_link = '<a href="index.html">Index</a>'
+    if i < len(order) - 1:
+        nxt = order[i + 1]
+        next_link = f'<a href="{nxt}.html">Next: {titles[nxt]} &rarr;</a>'
+    return (
+        '<nav class="lesson-nav">'
+        f'<span class="nav-prev">{prev_link}</span>'
+        f'<span class="nav-index">{index_link}</span>'
+        f'<span class="nav-next">{next_link}</span>'
+        "</nav>"
+    )
+
+
+def render(source: Path, nav: str) -> tuple[str, int]:
+    body, title, n = render_body(source)
     return (
         TEMPLATE.replace("{{ title }}", title)
+        .replace("{{ nav }}", nav)
         .replace("{{ body }}", body)
         .replace("{{ date }}", datetime.date.today().isoformat())
         .replace("{{ source }}", source.name)
@@ -41,15 +90,20 @@ def render(source: Path) -> tuple[str, int]:
 
 
 def main() -> int:
-    sources = sorted(SRC.glob("*.md"))
+    sources = {source.stem: source for source in SRC.glob("*.md")}
     if not sources:
         print("build.py: no sources in lessons/src/", file=sys.stderr)
         return 1
-    for source in sources:
-        html, n_mermaid = render(source)
-        if n_mermaid == 0 and source.stem != "index":
+    order = [slug for slug in LESSON_ORDER if slug in sources]
+    order += sorted(slug for slug in sources if slug not in LESSON_ORDER)
+    # Titles are needed up front: each page's nav labels its neighbours.
+    titles = {slug: render_body(source)[1] for slug, source in sources.items()}
+    for slug in order:
+        source = sources[slug]
+        html, n_mermaid = render(source, build_nav(slug, order, titles))
+        if n_mermaid == 0 and slug != "index":
             print(f"build.py: WARNING {source.name}: no mermaid diagram found")
-        out = HERE / (source.stem + ".html")
+        out = HERE / (slug + ".html")
         out.write_text(html, encoding="utf-8")
         print(f"{source.name} -> {out.name} ({n_mermaid} mermaid block(s))")
     return 0

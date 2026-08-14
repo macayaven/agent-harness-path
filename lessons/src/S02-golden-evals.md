@@ -71,7 +71,7 @@ measured answer to "why does this product deserve to exist?"
 - **Deterministic tier**: code asserts structure and safety invariants — the refusal
   happened, the ceiling held, the required signpost is present. Cheap, reproducible,
   gameable only in ways you can audit.
-- **Judged tier**: an LLM scores quality — persona realism, tone, usefulness.
+- **Judged tier**: an LLM scores open-ended quality — persona realism, tone.
   Expressive, expensive, and *itself a model*: it inherits every bias and failure
   mode of the models it grades.
 
@@ -112,12 +112,20 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
 
 ## Exercises (in the notebook, predict first)
 
-1. Read the script and both engines; write down each row's pass/fail before running.
-2. Weaken one check (drop the signpost requirement). Which rows flip? A check that
-   flips nothing is decoration — this is how you audit a checker.
-3. Run the fixture invariant: empty transcript vs reference transcript.
-4. Add a third engine that refuses *everything*. It passes the scope check — which
-   tier catches it, and why can't the deterministic one?
+1. Read the script, both engines, and `check_scope`. Then the fixture-invariant
+   cell: predict whether the bare fixture FAILs and the fixture+reference PASSes
+   before running — and what each wrong outcome would tell you about the checker.
+2. The delta table: predict which engine passes the scope check, then run. Read
+   past the pass/fail column — turns and p50 latency are product numbers too. The
+   naive row is the status quo; the delta is the measured reason the harness
+   deserves to exist.
+3. The engine that refuses everything: predict whether it passes `check_scope`,
+   and whether it is a good product. It passes — and it is useless. Answer in a
+   comment: which tier catches "useless" here? Keep the answer honest: the toy's
+   checker is weak, not the tier. Deterministic checks *can* encode task-specific
+   usefulness — expected facts in the reply, refusal *selectivity* (in-scope turns
+   still answered), task completion. What genuinely escapes the deterministic tier
+   is open-ended quality: tone, persona.
 
 ## State of the art (as of August 2026)
 
@@ -129,7 +137,7 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
 | Capability-vs-regression split: capability evals climb from a low baseline; regression evals sit near 100% and block merges; tasks *graduate* from the former to the latter ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | This is the mature form of "bank the naive baseline": today's hill-climb number is tomorrow's regression floor. |
 | Golden set in git, CI run on PR, threshold gate, metrics tracked outside CI ([pattern catalog](https://github.com/benchflow-ai/awesome-evals/blob/main/PATTERNS.md), [worked example](https://www.metacto.com/blogs/llm-evals-regression-suite-production)) | **adopt** | Cross-source consensus (vendor blogs, but they all agree with Hamel and Anthropic). |
 | τ²-bench dual-control simulation; LLM-simulated users for coverage ([arXiv:2506.07982](https://arxiv.org/pdf/2506.07982)) | **newer than this session** | The scripted user is your regression instrument; simulated users are a coverage tool with a known realism gap. |
-| Position-swap testing and Cohen's κ against human labels as standard judge hygiene ([writeup](https://mbrenndoerfer.com/writing/position-bias-in-llm-judges)) | **adopt at S12** | You'll calibrate your judge then; until then the judged column stays labeled uncalibrated. |
+| Position-swap testing and Cohen's κ against human labels as standard judge hygiene ([writeup](https://mbrenndoerfer.com/writing/position-bias-in-llm-judges)) | **adopt** | At S12: you'll calibrate your judge then; until then the judged column stays labeled uncalibrated. |
 | Fully synthetic eval pipelines with no human reading of traces | **ignore** | Every credible source puts *reading transcripts* at the center. Tools that promise otherwise are selling the absence of the one activity that works. |
 
 ## Annotated readings

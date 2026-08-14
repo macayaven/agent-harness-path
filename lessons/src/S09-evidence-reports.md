@@ -3,7 +3,8 @@
 **What this teaches:** an evidence report is an *interface to what happened*, not a
 summary of it — fixed sections that pre-answer a depleted reviewer's questions,
 claims phrased as checkable observations, and two deterministic validators
-(citation, coverage) that catch the only two ways a report can lie.
+(citation, coverage) that catch the two lies checkable against the record — and
+certify checkability, not honesty.
 **Time:** ~75 min with the notebook. **Prerequisites:** S02 (checker tiers, the
 fixture invariant); S08 (traces and replay) helps but is not required.
 **Hands-on:** [`notebooks/s09_evidence_report_toy.ipynb`](../notebooks/s09_evidence_report_toy.ipynb)
@@ -73,7 +74,7 @@ to a turn does not belong in the report.** Quality judgments that can't be groun
 that way (was the next step actually *good*?) are a judged-tier question, and the
 judged tier waits for judge calibration — that is S12's job.
 
-### Reports lie in exactly two ways
+### Fabrication and omission: the two checkable lies
 
 The report generator is itself a model, and summarization research named its
 failure modes years ago: intrinsic hallucination — the summary contradicts the
@@ -97,7 +98,7 @@ Each lie has exactly one defense, and both are deterministic:
 flowchart LR
     T[transcript + run record<br/>the only ground truth] --> G[report generator<br/>itself a model]
     G --> R[evidence report<br/>fixed slots]
-    T --> C{citation validator<br/>does every claim resolve?}
+    T --> C{citation validator<br/>does every quote resolve?}
     T --> V{coverage validator<br/>did every event surface?}
     R --> C
     R --> V
@@ -108,21 +109,46 @@ flowchart LR
     D -. one hop, when in doubt .-> T
 ```
 
-- **Citation validator.** Every quoted string appears verbatim in the turn its
-  reference cites; the goal quote appears in the opening user turn; the stated
-  stop reason matches the run record. Catches fabrication. This is S02's fixture
+- **Citation validator.** Checks exactly three mechanical properties: every quoted
+  string appears verbatim in the turn its reference cites (substring presence);
+  the goal quote appears in the opening user turn; the stated stop reason matches
+  the run record. Catches fabrication. This is S02's fixture
   invariant pointed at a generator: check the claims against ground truth before
-  the reader has to. APIs are absorbing this half — Anthropic's Citations feature
+  the reader has to. Note what the check does *not* establish: that the cited
+  passage supports the claim made next to it. Support is entailment — a
+  judged-tier property (S12's tier), not a substring property. APIs are absorbing
+  the resolution half — Anthropic's Citations feature
   returns claim-level pointers it *guarantees* resolve into the provided documents
-  ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)).
-- **Coverage validator.** Every event the harness logged during the run — safety
-  flags, setbacks, the cap firing — appears in the report, matched against the
-  run record, not against the report's own claims. Catches omission. No API can
+  ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)) —
+  and the guarantee stops there: the pointer always lands inside the supplied
+  text, but whether the passage it lands on is relevant, or backs the claim, is
+  not promised.
+- **Coverage validator.** Checks one property: every event the harness logged
+  during the run — safety flags, setbacks, the cap firing — has its turn number
+  among the report's cited turns, matched against the
+  run record, not against the report's own claims. It compares turn numbers, not
+  event identity: the report can cite turn 7 and describe it wrongly, or narrate
+  a different event that happened to occur there, and the check stays green.
+  Catches omission. No API can
   do this half for you: only your harness knows that turn 7 mattered.
 
-A report is honest iff both hold. One validator alone certifies nothing: the
+A report is *checkable* iff both hold — and checkable is not honest. One
+validator alone certifies nothing: the
 citation-clean report that dropped the safety event is the canonical failure, and
-the notebook makes you watch it happen.
+the notebook makes you watch it happen. But both together still leave the lies no
+substring check can see:
+
+- **Unsupported interpretation** — every quote verbatim, the gloss on them spun.
+- **Misleading emphasis** — everything cited, weighted so the wrong moment reads
+  as the story.
+- **Wrong notes, stale figures** — numbers and claims that are not quotes (no
+  citation resolves them) and not logged events (coverage never asks).
+- **Privacy leakage** — a verbatim quote that should never have left the
+  transcript is citation-clean by construction.
+
+The validators are the floor: they make the two mechanical lies expensive. What
+the citations *mean* stays where it always was — with the depleted reader and the
+one-hop path, and eventually with S12's calibrated judge.
 
 ### The thirty-second review test
 
@@ -160,7 +186,7 @@ depleted reader is you.
 
 | Development | Status | Take |
 |---|---|---|
-| Citation grounding as an API primitive: Anthropic's Citations parses responses into claims with pointers *guaranteed* to resolve into the provided documents ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)) | **adopt** when you move off mocks | The platform now engineers fabrication away for you — the pointer is always valid. Whether you cited the *right* things, and whether you dropped the safety event, remains yours. |
+| Citation grounding as an API primitive: Anthropic's Citations parses responses into claims with pointers *guaranteed* to resolve into the provided documents ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)) | **adopt** | When you move off mocks, the platform now engineers fabrication away for you — the pointer is always valid. Whether you cited the *right* things, and whether you dropped the safety event, remains yours. |
 | ALCE: automatic citation evaluation — recall (is every statement entailed by its citations?) and precision (is every citation pertinent?), NLI-judged ([Gao et al., arXiv:2305.14627](https://arxiv.org/abs/2305.14627)) | **recognize** | Your citation validator is the deterministic special case: substring match instead of entailment. Recall/precision is the same fabrication/coverage split, measured the expensive way. |
 | Deep-research products ship long, cited reports — and their own disclosures admit hallucinated facts, weak uncertainty calibration, and citation errors at launch ([OpenAI, Feb 2025](https://openai.com/index/introducing-deep-research/); [system card](https://cdn.openai.com/deep-research-system-card.pdf)) | **recognize** | The frontier's flagship report generator ships with known citation defects. Validation plus spot-checking against sources is the industry norm, not paranoia. |
 | Blameless postmortems: fixed anatomy, timeline with evidence, contributing causes not verdicts, written for readers who weren't there ([Google SRE book](https://sre.google/sre-book/postmortem-culture/)) | **already in this path** | This session's report anatomy is that convention pointed at agent sessions. "Blameless" and "observations, not grades" are the same move. |
@@ -180,9 +206,9 @@ depleted reader is you.
   defend themselves; observations make them verify.
 - **Gao et al., [ALCE: Enabling LLMs to Generate Text with Citations](https://arxiv.org/abs/2305.14627) (EMNLP 2023).**
   Extract the recall/precision definitions and the finding that fluency is easy
-  while attribution is the measurable hard part. Note the metric is NLI-judged;
-  your validator gets the same guarantee with substring matching because your
-  citations quote verbatim.
+  while attribution is the measurable hard part. Note the metric is NLI-judged:
+  your substring validator certifies that the quote exists where cited, never
+  that it supports the claim — the entailment question stays judged-tier.
 - **Maynez et al., [On Faithfulness and Factuality in Abstractive Summarization](https://arxiv.org/abs/2005.00661) (ACL 2020).**
   Extract the intrinsic/extrinsic split — then notice what it omits: a summary
   that only subtracts. That gap is your coverage validator.
@@ -229,8 +255,11 @@ report.</details>
 <details><summary>What do the citation and coverage validators each catch, and why do you need both?</summary>
 Citation catches fabrication: quotes that don't appear in their cited turn, wrong
 references, a stop reason the run record contradicts. Coverage catches omission:
-logged events (safety, setbacks, the cap firing) absent from the report. Each
-passes reports the other fails — honesty is the conjunction.</details>
+logged events (safety, setbacks, the cap firing) whose turn numbers never surface
+in the report. Each
+passes reports the other fails, so you need both — but the conjunction buys
+*checkability*, not honesty: support, emphasis, unquoted numbers, and leakage
+still belong to the reader.</details>
 
 ## What's next
 

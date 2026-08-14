@@ -79,6 +79,15 @@
     summary { cursor: pointer; font-weight: 600; color: var(--accent); }
     hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
     .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -90,6 +99,7 @@
 </head>
 <body>
 <main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S04-structured-generation.html">&larr; Prev: S04-structured-generation — The schema is the contract</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S06-layered-detection.html">Next: S06-layered-detection — Safety detection in layers, policy as data &rarr;</a></span></nav>
 <h1>S05-consent-gate — Approval that actually constrains execution</h1>
 <p><strong>What this teaches:</strong> plan-then-execute with a human gate in the seam — and the part
 everyone skips: the approved plan becomes <em>data</em>, and the harness checks every action
@@ -261,9 +271,9 @@ predictions there before running the solution cell below it.</p>
 <td>The gate's usability failure mode, quantified. Automating consent away is one response; designing runs that rarely need to ask is another. Hold both.</td>
 </tr>
 <tr>
-<td>MCP elicitation: a server may pause tool execution to request structured user input mid-run (<a href="https://modelcontextprotocol.io/specification/2025-06-18/client/elicitation">spec 2025-06-18</a>)</td>
+<td>MCP elicitation: a server may pause tool execution to request structured user input mid-run (<a href="https://modelcontextprotocol.io/specification/2026-07-28">spec 2026-07-28</a>)</td>
 <td><strong>recognize</strong></td>
-<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question.</td>
+<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 (<a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">release post</a>) makes requests stateless and self-contained (no initialize handshake, no <code>Mcp-Session-Id</code>), adds per-request capability negotiation and a versioned Extensions framework (Tasks, MCP Apps, Skills over MCP), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins.</td>
 </tr>
 <tr>
 <td>OWASP ranks excessive agency a top LLM risk; mitigations include scoping tools narrowly and human approval for high-impact actions (<a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025</a>)</td>
@@ -271,19 +281,24 @@ predictions there before running the solution cell below it.</p>
 <td>The security community's name for this session's problem (the 2026 revision keeps it near the top). The mitigation list reads like your toy's spec fields.</td>
 </tr>
 <tr>
+<td>OWASP Top 10 for Agentic Applications (Dec 2025): ASI01–ASI10 — Goal Hijack, Tool Misuse, Identity &amp; Privilege Abuse, Agentic Supply Chain, Unexpected Code Execution, Memory &amp; Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, Rogue Agents (<a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The 2026 threat vocabulary for the governance sessions — Tool Misuse and Human-Agent Trust Exploitation are this session's gate and its 93% click-through under their new names.</td>
+</tr>
+<tr>
 <td>Terraform plan/apply as the reference shape: the plan file is the approval object, apply runs exactly it (<a href="https://developer.hashicorp.com/terraform/cli/commands/apply">apply docs</a>)</td>
 <td><strong>adopt</strong></td>
 <td>A decade of production evidence for the two-phase split. Your agent gate is the same shape at conversation speed.</td>
 </tr>
 <tr>
-<td>Human oversight is now law for high-risk AI in the EU: systems must be built so assigned humans can effectively oversee and intervene (<a href="https://artificialintelligenceact.eu/article/14/">AI Act, Article 14</a>)</td>
+<td>Human oversight in EU law, on a delayed schedule: AI Act Article 14 requires high-risk systems to be built so assigned humans can effectively oversee and intervene (<a href="https://artificialintelligenceact.eu/article/14/">Article 14</a>), but the Digital Omnibus on AI (<a href="https://eur-lex.europa.eu/eli/reg/2026/1744/oj">Regulation (EU) 2026/1744</a>, in force 27 July 2026) dates the obligations — Annex III high-risk from 2 Dec 2027, Annex I product-embedded from 2 Aug 2028</td>
 <td><strong>recognize</strong></td>
-<td>For high-risk deployments the gate stops being taste and becomes a compliance artifact, with an evidence trail. Worth knowing before someone asks for yours.</td>
+<td>What binds today (Aug 2026) is the Art 5 prohibitions (since Feb 2025), GPAI obligations (since Aug 2025), and Art 50 transparency (from 2 Aug 2026) — the high-risk human-oversight duties are not yet enforceable. The gate becomes a compliance artifact on a published schedule; worth knowing before someone asks for yours.</td>
 </tr>
 <tr>
 <td>Fully autonomous YOLO modes that skip per-action approval</td>
-<td><strong>ignore</strong> for anything you can't undo</td>
-<td>Fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate.</td>
+<td><strong>ignore</strong></td>
+<td>For anything you can't undo: fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate.</td>
 </tr>
 </tbody>
 </table>
@@ -356,15 +371,14 @@ says nothing about what flows through the run — the user turn that discloses a
 crisis, the tool result carrying an injection, the content your policy must catch on
 the fly. Next: detection as data-driven policy, in layers, with a false-trigger
 budget you actually count.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S04-structured-generation.html">&larr; Prev: S04-structured-generation — The schema is the contract</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S06-layered-detection.html">Next: S06-layered-detection — Safety detection in layers, policy as data &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> on 2026-08-14 from
-  <code>lessons/src/S05-consent-gate.md</code>. Study companion to
-  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
-  the baselines, and the audit live in the course repo.
+  <code>lessons/src/S05-consent-gate.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  import mermaid from "./vendor/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

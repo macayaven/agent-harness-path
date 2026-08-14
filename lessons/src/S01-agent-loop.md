@@ -18,6 +18,10 @@ your previous request, does not keep a session, does not "know what we were doin
 What it sees is exactly one thing: the `messages` list you send. Memory, personality,
 progress — all of it is that list, re-sent in full, every call.
 
+This lesson teaches the **client-owned loop** — you hold the message list. That is
+deliberate: local and open-model stacks still work exactly this way, and the stateful
+alternatives (see the SOTA table) are this same loop with the list moved server-side.
+
 An *agent* is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:
 
@@ -74,13 +78,18 @@ Run the notebook top-to-bottom. For each experiment cell, **write your predictio
 the markdown cell before running it** — a prediction you didn't write down is a
 prediction you'll retroactively fix.
 
-1. Add a new tool to the weather bot. Notice what the model needs to *see* to use it
-   correctly (name, description, schema — all prompt content).
-2. Break append-verbatim on purpose (the notebook has a labeled broken variant).
-   Predict the exact failure, then watch it.
-3. The tool that raises: run the unsafe version, then the error-as-message version.
-   Compare what the model does after each.
-4. Cap the loop: what happens when `max_turns` fires mid-task? What does the user see?
+1. The happy path: run the loop on the weather question. Predict how many turns the
+   run takes and what each transcript row contains — which roles appear, in what
+   order, carrying what — then run and read the transcript.
+2. Drop the assistant message: the labeled broken variant removes the
+   append-verbatim line. Predict what fails and where, then run — the mock
+   validates message sequences the way a real API does, so the failure you watch
+   is the production one (an orphaned tool result).
+3. The model that never stops: `mock_model_forever` requests a tool on every turn.
+   Predict what ends the loop and after how many turns — and note whose property
+   the thing that ends it is (the harness's, not the model's).
+4. The tool that raises: run the fragile weather service. Predict whether the loop
+   crashes or the error becomes data — and where in the transcript it surfaces.
 
 ## State of the art (as of August 2026)
 
@@ -93,8 +102,9 @@ teaches, what's newer, what to ignore for now.
 | Frameworks consolidated: AutoGen + Semantic Kernel merged into [Microsoft Agent Framework](https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/) (Oct 2025); [OpenAI Swarm](https://github.com/openai/swarm) superseded by the [Agents SDK](https://github.com/openai/openai-agents-python); [LangGraph](https://langfuse.com/blog/2025-03-19-ai-agent-comparison), [Google ADK](https://google.github.io/adk-docs/), [Pydantic AI](https://ai.pydantic.dev) are the serious production set | **recognize** | Frameworks now sell the loop as a product. Learn the loop first — which is what you're doing — so a framework is a choice, not a crutch. |
 | Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure | **recognize** | The minimal loop survives as *pedagogy* while vendors productize it. Knowing the loop is how you evaluate what they're selling. |
 | Code-as-action loops ([smolagents](https://github.com/huggingface/smolagents): the model writes Python instead of JSON tool calls) | **recognize** | A different point in the same design space. Same loop, different action encoding. |
-| `strict: true` tool schemas for guaranteed-conformant arguments ([OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** when you hit real APIs | Cheap reliability win; the toy's mock doesn't model it. |
-| Multi-agent orchestration frameworks | **ignore for now** | OpenAI's own guide: ["start with a single agent"](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/). S05 and S11 cover when structure actually pays. |
+| `strict: true` tool schemas for guaranteed-conformant arguments ([OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | When you hit real APIs: cheap reliability win; the toy's mock doesn't model it. |
+| OpenAI's stateful Responses API (Conversations, `previous_response_id`) is now the recommended default for new projects; Chat Completions "remains supported" ([migration guide](https://developers.openai.com/api/docs/guides/migrate-to-responses)) | **recognize** | Server-side state moves the message-list management this lesson teaches into the platform. Learn the client-owned loop anyway: it's the mental model that survives every vendor abstraction, and every local/open-model stack still works this way. |
+| Multi-agent orchestration frameworks | **ignore** | For now — OpenAI's own guide: ["start with a single agent"](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/). S05 and S11 cover when structure actually pays. |
 
 ## Annotated readings
 

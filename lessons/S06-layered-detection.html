@@ -79,6 +79,15 @@
     summary { cursor: pointer; font-weight: 600; color: var(--accent); }
     hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
     .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
     footer {
       margin-top: 3rem;
       padding-top: 1rem;
@@ -90,6 +99,7 @@
 </head>
 <body>
 <main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
 <h1>S06-layered-detection — Safety detection in layers, policy as data</h1>
 <p><strong>What this teaches:</strong> why a safety rule in the prompt is advice rather than
 enforcement, how a layered detection pipeline (deterministic floor + classifier
@@ -172,6 +182,15 @@ you a threshold to tune and blind spots you haven't mapped. So you layer them �
 which is what production containment actually looks like (Anthropic's account of
 its own stack:
 <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a>).</p>
+<p>And keep the layers in their place: every row in that table is a <em>signal</em>, never
+the boundary. Each layer has recall below one and false positives above zero, so
+a union of layers is still fallible — a pipeline that stops 99% of attacks is a
+sensor that misses 1% of attacks. Enforcement is architectural, and it is what
+holds when every signal misses: capability isolation, least-privilege
+credentials, tool authorization, egress control, and careful output handling
+(the model's output stays untrusted text for everything that consumes it).
+Detection routes traffic and buys time; the boundary is what the system
+structurally cannot do.</p>
 <h3>The mechanism: ordered layers, union for the catastrophic class</h3>
 <pre class="mermaid">flowchart TD
     U[untrusted message&lt;br/&gt;user turn, file, tool result] --&gt; S{injection screen&lt;br/&gt;deterministic}
@@ -263,6 +282,11 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <td>The shared vocabulary. The injection screen and the scope governor map to LLM01 and LLM06.</td>
 </tr>
 <tr>
+<td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
+<td><strong>recognize</strong></td>
+<td>The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them.</td>
+</tr>
+<tr>
 <td>Anthropic's production containment write-up, <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a> (May 2026)</td>
 <td><strong>recognize</strong></td>
 <td>The industrial version of this session: environment isolation first, model-level controls second — and the admission that the software you build yourself is often the weakest layer.</td>
@@ -274,8 +298,8 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 </tr>
 <tr>
 <td>Small open injection classifiers — <a href="https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M">Llama Prompt Guard 2</a> (86M/22M, benign/malicious), <a href="https://huggingface.co/protectai/deberta-v3-base-prompt-injection">ProtectAI's DeBERTa injection model</a></td>
-<td><strong>adopt</strong> when you leave the toy</td>
-<td>This is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on <em>your</em> bank.</td>
+<td><strong>adopt</strong></td>
+<td>When you leave the toy, this is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on <em>your</em> bank.</td>
 </tr>
 <tr>
 <td>Guardrail toolkits and managed layers — <a href="https://github.com/NVIDIA/NeMo-Guardrails">NeMo Guardrails</a>, OpenAI's <a href="https://platform.openai.com/docs/guides/moderation">moderation endpoint</a></td>
@@ -315,6 +339,11 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <li><strong>Keyword-only detection.</strong> A floor is a floor: paraphrase walks over it,
   slang trips it. It exists because it is free and auditable, not because it is
   sufficient.</li>
+<li><strong>Detection as the perimeter.</strong> Classifiers and keyword floors are fallible
+  signals with measurable error rates; if the pipeline <em>is</em> the security
+  boundary, one miss is one breach. The boundary is what holds when every
+  signal misses: capability isolation, least privilege, tool authorization,
+  egress control, careful output handling.</li>
 <li><strong>Threshold by intuition.</strong> The operating point is a data decision: sweep the
   bank, pick the point, record the false-trigger count next to it. An unrecorded
   threshold is an unmade decision.</li>
@@ -355,15 +384,14 @@ turn-level defects aren't catastrophic — a character break, a generic reply, a
 register slip. Those don't deserve a terminal state; they deserve a bounded
 retry with a curated failure view. Next session builds that loop, plus the
 honest stop reasons for when it runs out.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> on 2026-08-14 from
-  <code>lessons/src/S06-layered-detection.md</code>. Study companion to
-  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
-  the baselines, and the audit live in the course repo.
+  <code>lessons/src/S06-layered-detection.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  import mermaid from "./vendor/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

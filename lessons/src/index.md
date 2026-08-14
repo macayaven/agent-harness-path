@@ -1,9 +1,10 @@
 # The Agent Harness Path
 
 A self-contained course on building, evaluating, and governing LLM agents — fourteen
-sessions, each an HTML lesson plus a runnable toy notebook. Zero network, zero API
-keys, zero cost: every "model" in the notebooks is a plain Python function you can
-read, so the mechanics are never hidden behind an API call.
+sessions, each an HTML lesson: twelve notebook sessions plus two protocol sessions
+(S13 rebuild audit, S14 ship & pilot). Zero network, zero API keys, zero cost: every
+"model" in the notebooks is a plain Python function you can read, so the mechanics
+are never hidden behind an API call.
 
 **New here?** Watch the 9-minute [course overview](videos/S00-course-overview.mp4)
 for the whole arc — core mechanics → context & boundaries → safety & governance →

@@ -100,6 +100,19 @@ agreement. The protocol, in order (the order is the protocol):
    reporting agreement on the set you tuned against is overfitting with extra
    steps.
 
+What the toy cannot teach is when the measurement earns an operational gate. A
+10-item, single-author, binary set is enough to learn the mechanics — the
+blinding, the pair of rates, the κ — but nobody should ship a gate on it. A real
+calibration adds what the toy strips away: multi-annotator labeling with
+adjudication for the subjective calls, because one author's blind spot becomes
+the judge's target; bootstrap uncertainty intervals around agreement and κ,
+because a point estimate on ten items borrows precision the sample doesn't have;
+repeated runs of a stochastic judge, so one lucky sample doesn't pass as
+agreement; position-swap testing, because order bias does not retire under a
+binary rubric; and a prevalence-aware reading of κ, which deflates exactly when
+a lopsided label stream makes raw agreement look best. Mechanics first — then
+the machinery that makes the number worth gating on.
+
 ### The measured rates decide policy
 
 The point of both measurements is a decision, not a report:
@@ -134,7 +147,8 @@ a property of the pair, not of either alone.
 2. Make the critic negation-aware. Predict which confusion-table cells move —
    and which provably don't. Re-measure both rates.
 3. Hand-label all 10 transcripts against the rubric *before* running the judge
-   (the notebook enforces the order). Predict judge v1's agreement and κ; then
+   (the notebook instructs the order — your discipline, not a gate, is what
+   enforces it). Predict judge v1's agreement and κ; then
    measure. Then score your own labels against the reference.
 4. Stratify: agreement on clean vs defective. Where does the judge's bias
    actually live, and what does the aggregate hide?
