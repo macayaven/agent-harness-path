@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S03-context-engineering — governance decays across compaction</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S03-context-engineering — governance decays across compaction</h1>
+<p><strong>What this teaches:</strong> the context window is two budgets, not one — a hard token
+budget and a soft attention budget — and what happens to in-context rules when the
+window fills: compaction deletes them silently. The fix is an invariant (safety
+constraints live in code, with prompt copy in a pinned, never-compacted region),
+and the proof is a measurement: rule survival probed across the compaction boundary.
+<strong>Time:</strong> ~75 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop), S02
+(scripted probes and deterministic checkers — both get reused here, one level down
+the stack).
+<strong>Hands-on:</strong> <a href="../notebooks/s03_context_engineering_toy.ipynb"><code>notebooks/s03_context_engineering_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S03-context-engineering.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>Two budgets, not one</h3>
+<p>The window has a hard limit: overflow it and the API answers with a 400, not an
+answer. But the operative limit is softer and lower. Anthropic's framing is that
+attention is a <em>finite budget</em> — the smallest set of high-signal tokens wins, and
+every low-signal token you keep taxes the ones that matter
+(<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com/engineering/effective-context-engineering-for-ai-agents</a>).
+The measurement agrees. Chroma ran 18 models through long inputs and found
+performance degrades with length even on simple tasks — they named it <em>context rot</em>
+(<a href="https://www.trychroma.com/research/context-rot">trychroma.com/research/context-rot</a>).
+Liu et al. had already shown the positional half: models use the beginning and end
+of a long context well and the middle badly — <em>lost in the middle</em>
+(<a href="https://arxiv.org/abs/2307.03172">arXiv:2307.03172</a>).</p>
+<p>So: "it fits" is not "it works." A rule sitting 40k tokens into a 128k window is
+present and impaired at the same time, and no error message tells you.</p>
+<h3>Compaction is a rewrite, not a trim</h3>
+<p>When the budget runs out, something has to go. The two standard moves:</p>
+<table>
+<thead>
+<tr>
+<th>Policy</th>
+<th>Mechanism</th>
+<th>What dies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Truncation</td>
+<td>drop the oldest messages</td>
+<td>whatever was only said early: the setup, the standing constraints, the corrections</td>
+</tr>
+<tr>
+<td>Summarization</td>
+<td>replace history with a digest</td>
+<td>whatever the summarizer found non-salient — and summaries are built to keep <em>what was discussed</em>, not <em>what was forbidden</em></td>
+</tr>
+</tbody>
+</table>
+<p>Both are silent. The transcript afterwards reads coherently — coherence is what
+summarizers optimize for. Nothing announces that a constraint stopped existing. If
+your only instrument is reading transcripts, you will not find the decay there; you
+will find it in production, reported by a user.</p>
+<h3>Governance decay is a measured result, not a metaphor</h3>
+<p>Chen et al. put numbers on it in <em>Governance Decay</em> (<a href="https://arxiv.org/abs/2606.22528">arXiv:2606.22528</a>):
+across seven models and 1,323 episodes, in-context governance constraints that held
+at <strong>0% violation before compaction</strong> failed at <strong>30–59% after</strong>. Two details make
+the result actionable. First, the control: when the constraint text survived into
+the summary, violation stayed at 0% — the failure is the omission, not the model.
+Second, the attack: an adversary who can bias what the summarizer keeps can arrange
+for a specific constraint to be deleted (their Compaction-Eviction Attack). The
+context-management layer is a safety-critical failure surface, and "the model
+misbehaved" is often "the harness deleted the rule."</p>
+<h3>The pinned-region invariant</h3>
+<p>Hence the design rule: <strong>safety and boundary constraints never live only in
+compactable prose.</strong> Two layers:</p>
+<ol>
+<li><strong>Code first.</strong> The constraint is enforced by deterministic machinery that does
+   not ride on the model having read anything (S06 builds that layer). Prompt text
+   is the explanation of the rule, not the enforcement of it.</li>
+<li><strong>Pinned prompt copy.</strong> Whatever constraint text does go into the context sits
+   in a region compaction may not touch — re-sent verbatim at every assembly.</li>
+</ol>
+<pre class="mermaid">flowchart TB
+    subgraph ASM[context assembly — every call]
+        P[pinned region&lt;br/&gt;safety rules, verbatim&lt;br/&gt;never compacted]
+        C[compactable region&lt;br/&gt;history, tool output, small talk]
+    end
+    C --&gt; Q{over budget?}
+    Q -- no --&gt; S[send]
+    Q -- yes --&gt; K[truncate or summarize&lt;br/&gt;the compactable region ONLY]
+    K --&gt; S
+    P --&gt; S
+    S --&gt; M[model]
+</pre>
+<p>Pinning is rent: those tokens ride every request forever, so the pinned region
+stays small and high-signal. And pinning is necessary but not sufficient — it keeps
+the rule <em>present</em>; the attention budget decides whether it gets <em>used</em>. The
+notebook watches both failure modes happen.</p>
+<h3>Just-in-time, and the cache angle</h3>
+<p>The complementary skill is deciding what enters the window at all. Pre-loading
+everything is the naive default; the alternative is <em>just-in-time</em> context — the
+agent fetches what it needs with tools, when it needs it (the S01 loop is the
+retrieval mechanism; Anthropic's post is the argument). And every context decision
+is also a billing decision: prompt caches serve a stable prefix at roughly 10% of
+the input price, so volatile content goes last, and — the part nobody budgets for —
+<strong>every compaction rewrites the prefix and invalidates the cache</strong>. Anthropic's own
+context-editing docs warn about exactly this interaction
+(<a href="https://docs.claude.com/en/docs/build-with-claude/context-editing">docs.claude.com</a>).
+Log every compaction as a first-class event: what was dropped, what the summary
+kept, what it cost. It is a behavior change and a cache flush at the same time.</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<p>Run top-to-bottom; write each prediction before running the cell that settles it.</p>
+<ol>
+<li>Establish why compaction exists at all: run with no policy until the API's hard
+   limit rejects the request. Predict the turn it dies.</li>
+<li>Naive truncation: predict which probe is the first to fail, then read the log.
+   Note what the transcript <em>doesn't</em> tell you.</li>
+<li>Summarization: predict whether the transcript stays coherent (it does) and
+   whether the rule survives (it doesn't). Read the actual summary the model saw.</li>
+<li>Fix it yourself: the attempt cell asks what has to change for the rule to
+   survive. Hint: not the policy function. Verify all probes pass, and note the rent.</li>
+<li>No compaction anywhere, rule present in every request — and the decaying model
+   still loses it. Predict the shape of compliance vs distance, then measure it.</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anthropic's context-engineering post: finite attention budget, smallest-high-signal-token-set, compaction / structured note-taking / sub-agents as the three moves at the limit (<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">anthropic.com</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>The assigned frame. This session operationalizes its compaction section.</td>
+</tr>
+<tr>
+<td><em>Governance Decay</em> (<a href="https://arxiv.org/abs/2606.22528">arXiv:2606.22528</a>): 0% → 30–59% constraint violation across a compaction boundary; 0% when the constraint text survives the summary</td>
+<td><strong>already in this path</strong></td>
+<td>The notebook is this paper's mechanism rebuilt as a toy. The control condition is the pinned-region argument in experimental form.</td>
+</tr>
+<tr>
+<td>Context rot (<a href="https://www.trychroma.com/research/context-rot">Chroma, 18 models</a>) and lost-in-the-middle (<a href="https://arxiv.org/abs/2307.03172">arXiv:2307.03172</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>Degradation is gradual and length- and position-driven — not a cliff at the window's edge.</td>
+</tr>
+<tr>
+<td>Server-side context editing (<a href="https://docs.claude.com/en/docs/build-with-claude/context-editing">Anthropic docs</a>): <code>clear_tool_uses_20250919</code> clears old tool results above a token threshold; pairs with the memory tool so the model saves state before clearing</td>
+<td><strong>adopt</strong> when you hit real APIs</td>
+<td>Truncation-as-a-service for tool output. Read the fine print: clearing invalidates the prompt cache, and it clears <em>tool results</em> — your pinned constraints are still your problem.</td>
+</tr>
+<tr>
+<td>Prompt caching with explicit breakpoints (<a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching">Anthropic docs</a>): ~90% discount on cached input tokens</td>
+<td><strong>adopt</strong></td>
+<td>Stable prefix, volatile suffix. Compaction is a cache-invalidation event — the cost side of this session's topic.</td>
+</tr>
+<tr>
+<td>MemGPT / Letta (<a href="https://arxiv.org/abs/2310.08560">arXiv:2310.08560</a>): the model pages its own memory via tool calls</td>
+<td><strong>recognize</strong></td>
+<td>OS-style virtual memory: the same invariant — what must never be paged out — with the policy delegated to the model.</td>
+</tr>
+<tr>
+<td>Million-token windows marketed as "just put everything in context"</td>
+<td><strong>ignore</strong></td>
+<td>The attention budget and the context-rot data do not care how big the window is. Fitting is not using.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a>
+  (Sep 2025).</strong> Extract three things: the finite-attention-budget framing; the
+  smallest-high-signal-token-set principle for system prompts; and the
+  compaction / structured note-taking / sub-agent triage for long-horizon tasks,
+  with the guidance on when each is the right move.</li>
+<li><strong>Chen et al., <a href="https://arxiv.org/abs/2606.22528">Governance Decay</a> (2026).</strong>
+  Extract the experimental design, not just the headline: the probe is behavioral
+  and runs <em>across</em> the compaction boundary, which is exactly how your golden set
+  should test a context policy. The 0%-when-the-constraint-survives control is the
+  strongest argument for pinning you will find.</li>
+<li><strong>Liu et al., <a href="https://arxiv.org/abs/2307.03172">Lost in the Middle</a> (2023).</strong>
+  Extract the U-shaped curve and its design consequence: critical instructions go
+  at the beginning or the end of the context, never the middle. This is why the
+  pinned region in a real harness is usually re-injected <em>near the latest turn</em>,
+  not left to drift into the middle of the transcript.</li>
+<li><strong>Drew Breunig, <a href="https://www.dbreunig.com/2025/06/22/how-contexts-fail-and-how-to-fix-them.html">How long contexts fail</a>
+  (Jun 2025).</strong> S01 assigned it as a preview; now read it as working vocabulary.
+  Poisoning, distraction, confusion, clash are all <em>content</em> failures. This session
+  adds the maintenance failure — a constraint deleted by your own compaction —
+  which the four do not cleanly cover.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"Bigger windows solved this."</strong> Two budgets, not one. Overflow is a 400;
+  attention decay is silent, gradual, and starts long before the nominal limit.</li>
+<li><strong>"The transcript reads fine, so the rules held."</strong> Summaries preserve coherence
+  and topics, not constraints. Rule survival is a behavioral measurement — a
+  scripted probe plus a deterministic checker — not something you can eyeball.</li>
+<li><strong>"It's in the system prompt, so it's permanent."</strong> Only if nothing is allowed
+  to rewrite it. Summarizers and context editors rewrite whatever isn't pinned,
+  and even a permanent rule decays with distance from the action.</li>
+<li><strong>"The summarizer will keep the important parts."</strong> Salience keeps decisions and
+  topics; a constraint is usually one prescriptive sentence, and prescriptive prose
+  is the first thing a digest drops.</li>
+<li><strong>"Compaction is free maintenance."</strong> It rewrites the prefix: cache invalidation
+  on the billing side, silent state change on the behavior side. An unlogged
+  compaction is an undebuggable agent.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Name the two budgets and the failure signature of each.</summary>
+The token budget: hard window, overflow returns a 400 — loud and exact. The
+attention budget: effective recall degrades with length and position — silent,
+gradual, and it produces plausible wrong answers while everything still "fits".</details>
+
+<details><summary>Why doesn't a coherent transcript prove the rules survived compaction?</summary>
+Because coherence is what summarization optimizes for. The digest keeps what was
+discussed and drops what was forbidden, so the conversation reads naturally while
+the constraint is gone. Survival is only established by probing behavior across
+the boundary with a deterministic checker.</details>
+
+<details><summary>State the pinned-region invariant and its two layers.</summary>
+Safety and boundary constraints never live only in compactable prose. Layer one:
+enforcement in deterministic code that doesn't depend on the model reading
+anything. Layer two: the prompt copy sits in a pinned, never-compacted region,
+re-sent verbatim at every assembly. Prose alone is not enforcement.</details>
+
+<details><summary>Where does volatile content go in a request, and why?</summary>
+At the end. Prompt caches key on stable prefixes: one changed early token
+invalidates everything after it. This is also why compaction is a cost event, not
+just a context event — it rewrites the prefix and flushes the cache.</details>
+
+<h2>What's next</h2>
+<p><strong>S04 — Structured generation:</strong> you now control what flows <em>into</em> the model; next,
+constrain what flows <em>out</em>. Schemas, validation, and the retry-on-invalid loop —
+because an agent whose outputs you can't parse is an agent you can't govern.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S03-context-engineering.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

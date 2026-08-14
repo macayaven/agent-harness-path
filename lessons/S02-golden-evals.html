@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S02 — Golden sets &amp; baselines</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S02 — Golden sets &amp; baselines</h1>
+<p><strong>What this teaches:</strong> an eval suite is a <em>measurement instrument</em>, not a test suite —
+scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
+is a product argument rather than a courtesy number.
+<strong>Time:</strong> ~90 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop).
+<strong>Hands-on:</strong> <a href="../notebooks/s02_scripted_user_eval_toy.ipynb"><code>notebooks/s02_scripted_user_eval_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S02-golden-evals.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>Tests ask "is it broken?"; instruments ask "would I believe the number?"</h3>
+<p>A test suite is binary and self-centered: does <em>my code</em> still work? A measurement
+instrument is comparative and skeptic-centered: <em>how much better is A than B, and what
+would make me wrong?</em> That second question — defensibility — is the whole game,
+because an eval number that can't survive scrutiny is worse than no number: it gives
+you confidence you haven't earned.</p>
+<p>Four moving parts make the number defensible. Each exists to kill a specific
+confound.</p>
+<h3>1. The scripted user — reproducibility comes from the script</h3>
+<p>A conversational product can't be exercised by a single prompt; you need a <em>user</em>.
+Two options:</p>
+<ul>
+<li><strong>LLM-simulated user</strong> — a second model plays the user from a persona and
+  instructions. This is what the frontier practice uses for coverage: τ-bench, the
+  reference benchmark for conversational agents, simulates the user with an LLM and
+  grades the <em>final environment state</em> rather than the transcript
+  (<a href="https://arxiv.org/abs/2406.12045">arXiv:2406.12045</a>). Anthropic's agent-eval
+  guidance describes the same pattern
+  (<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">anthropic.com/engineering/demystifying-evals-for-ai-agents</a>).
+  The catch: simulated users are measurably <em>not</em> real users — they ask more
+  questions and stay more polite on identical tasks (<a href="https://www.arxiv.org/pdf/2601.17087">arXiv:2601.17087</a>) —
+  and they inject their own variance into your measurement.</li>
+<li><strong>Scripted user</strong> — a fixed list of user turns, replayed verbatim. Zero diversity,
+  zero variance. This is what you use for <em>regression</em>: the same probe, every run,
+  so any delta belongs to the system under test.</li>
+</ul>
+<p>The toy uses a scripted user, and that is the right default for a golden set whose
+job is to compare naive vs governed <em>on the same probe</em>. Practice converges on:
+scripted for determinism, simulated for coverage — use both, know which number came
+from which.</p>
+<h3>2. Diverge / rejoin — the delta must have exactly one cause</h3>
+<pre class="mermaid">flowchart LR
+    S[scripted user&lt;br/&gt;same turns, verbatim] --&gt; N[naive engine&lt;br/&gt;answers anything]
+    S --&gt; H[governed engine&lt;br/&gt;scope rules applied]
+    N --&gt; T1[transcript]
+    H --&gt; T2[transcript]
+    T1 --&gt; C[same deterministic checks]
+    T2 --&gt; C
+    C --&gt; R[pass/fail + turns,&lt;br/&gt;tokens, cost, latency]
+</pre>
+<p>Naive and governed share the script, the fixture, and the checker; they differ <em>only</em>
+in the scaffolding under test. Then — and only then — is the delta attributable to
+the scaffolding. Every shared component you <em>don't</em> hold constant is a confound your
+conclusion can't survive. This is also why the naive row matters commercially: naive
+mode <em>is</em> the status quo (a chatbot told to role-play), so <code>governed − naive</code> is the
+measured answer to "why does this product deserve to exist?"</p>
+<h3>3. Two checker tiers — and why safety never rides on the judged one</h3>
+<ul>
+<li><strong>Deterministic tier</strong>: code asserts structure and safety invariants — the refusal
+  happened, the ceiling held, the required signpost is present. Cheap, reproducible,
+  gameable only in ways you can audit.</li>
+<li><strong>Judged tier</strong>: an LLM scores quality — persona realism, tone, usefulness.
+  Expressive, expensive, and <em>itself a model</em>: it inherits every bias and failure
+  mode of the models it grades.</li>
+</ul>
+<p>The judge literature is unambiguous that the judged tier needs its own validation.
+Zheng et al. documented position bias, verbosity bias, and self-preference in 2023
+(<a href="https://arxiv.org/abs/2306.05685">arXiv:2306.05685</a>); "Who Validates the Validators?"
+showed judge criteria drift as you grade — the rubric is never fully fixed a priori
+(<a href="https://arxiv.org/abs/2404.12272">arXiv:2404.12272</a>); and judges measurably favor
+their own model family (<a href="https://arxiv.org/abs/2404.13076">arXiv:2404.13076</a>).
+Current practitioner consensus: binary pass/fail beats 1–5 scales, calibrate against
+~30 human-labeled examples, and report judge agreement as its own number
+(<a href="https://hamel.dev/blog/posts/llm-judge/">hamel.dev/blog/posts/llm-judge</a>).</p>
+<p>Hence the rule: <strong>safety asserts live in the deterministic tier, always.</strong> The judged
+column is reported separately and labeled <em>uncalibrated</em> until you've measured the
+judge against human labels (that's S12's job).</p>
+<h3>4. The fixture invariant — validate the checker before trusting it</h3>
+<p>Before any number means anything, prove the checker can fail and can pass:</p>
+<ul>
+<li>Bare fixture (no system output) must <strong>FAIL</strong> — a checker that passes on nothing
+  asserts nothing.</li>
+<li>Fixture + known-good reference output must <strong>PASS</strong> — a checker that fails the
+  reference measures the wrong thing.</li>
+</ul>
+<p>This is the eval-suite version of watching a test fail before making it pass, and
+it's skipped constantly in practice. The notebook runs both halves against the toy.</p>
+<h3>Error analysis is the actual skill</h3>
+<p>Hamel's data, across many teams: unsuccessful AI products almost always fail at
+<em>evaluation</em>, not modeling — and the fix is a loop of reading traces, classifying
+failures, and converting each failure class into a check
+(<a href="https://hamel.dev/blog/posts/evals/">hamel.dev/blog/posts/evals</a>). The number is
+the prompt that gets you to read transcripts; the reading is where the number's
+meaning lives. Aggregate pass rate alone hides <em>which</em> failures you're buying.</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<ol>
+<li>Read the script and both engines; write down each row's pass/fail before running.</li>
+<li>Weaken one check (drop the signpost requirement). Which rows flip? A check that
+   flips nothing is decoration — this is how you audit a checker.</li>
+<li>Run the fixture invariant: empty transcript vs reference transcript.</li>
+<li>Add a third engine that refuses <em>everything</em>. It passes the scope check — which
+   tier catches it, and why can't the deterministic one?</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Inspect AI</strong> (UK AISI) is the reference open-source agent-eval framework: evals as dataset + solver + scorer, both code and model scorers (<a href="https://inspect.aisi.org.uk/">inspect.aisi.org.uk</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Its scorer/solver split is the same two-tier idea you're learning, industrialized.</td>
+</tr>
+<tr>
+<td>OpenAI Evals repo effectively dormant (banner steers to Dashboard); <code>simple-evals</code> no longer updated (<a href="https://github.com/openai/evals">github.com/openai/evals</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The energy moved to Inspect, promptfoo, DeepEval, and the tracing platforms.</td>
+</tr>
+<tr>
+<td><strong>promptfoo / DeepEval</strong> for CI-first assertion evals; <strong>Braintrust / LangSmith / Langfuse</strong> add tracing + datasets + human annotation (<a href="https://qaskills.sh/blog/llm-observability-vs-evaluation-2026">comparison</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The 2026 stack is usually two tools: an eval runner + a tracing platform.</td>
+</tr>
+<tr>
+<td>Capability-vs-regression split: capability evals climb from a low baseline; regression evals sit near 100% and block merges; tasks <em>graduate</em> from the former to the latter (<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic</a>)</td>
+<td><strong>adopt</strong></td>
+<td>This is the mature form of "bank the naive baseline": today's hill-climb number is tomorrow's regression floor.</td>
+</tr>
+<tr>
+<td>Golden set in git, CI run on PR, threshold gate, metrics tracked outside CI (<a href="https://github.com/benchflow-ai/awesome-evals/blob/main/PATTERNS.md">pattern catalog</a>, <a href="https://www.metacto.com/blogs/llm-evals-regression-suite-production">worked example</a>)</td>
+<td><strong>adopt</strong></td>
+<td>Cross-source consensus (vendor blogs, but they all agree with Hamel and Anthropic).</td>
+</tr>
+<tr>
+<td>τ²-bench dual-control simulation; LLM-simulated users for coverage (<a href="https://arxiv.org/pdf/2506.07982">arXiv:2506.07982</a>)</td>
+<td><strong>newer than this session</strong></td>
+<td>The scripted user is your regression instrument; simulated users are a coverage tool with a known realism gap.</td>
+</tr>
+<tr>
+<td>Position-swap testing and Cohen's κ against human labels as standard judge hygiene (<a href="https://mbrenndoerfer.com/writing/position-bias-in-llm-judges">writeup</a>)</td>
+<td><strong>adopt at S12</strong></td>
+<td>You'll calibrate your judge then; until then the judged column stays labeled uncalibrated.</td>
+</tr>
+<tr>
+<td>Fully synthetic eval pipelines with no human reading of traces</td>
+<td><strong>ignore</strong></td>
+<td>Every credible source puts <em>reading transcripts</em> at the center. Tools that promise otherwise are selling the absence of the one activity that works.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/evals/">Your AI Product Needs Evals</a>.</strong>
+  Extract four things on reread: (1) eval failure is the root cause of product
+  failure; (2) the three levels — cheap deterministic checks on every change,
+  human+model eval on a cadence, A/B only after big changes; (3) tests are scoped by
+  feature×scenario and <em>grown from observed failures</em>; (4) "your pass rate is a
+  product decision" — 100% green is not the goal.</li>
+<li><strong>Hamel, <a href="https://hamel.dev/blog/posts/llm-judge/">LLM judges</a>.</strong> The judge
+  playbook: binary verdicts, critique-shadowing against the domain expert, iterate
+  the judge prompt to convergence on ~30 examples.</li>
+<li><strong>Zheng et al., <a href="https://arxiv.org/abs/2306.05685">Judging LLM-as-a-Judge</a>.</strong> The
+  bias catalog your judged tier inherits. Skim for the four biases and the
+  mitigations table.</li>
+<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Demystifying evals for AI agents</a>.</strong>
+  The 2026 consolidation: two-tier grading, simulated users, capability/regression
+  split — plus the τ² cautionary tale of a model "failing" a task by finding a
+  <em>better</em> solution than the rigid spec allowed.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>Pass rate as progress.</strong> A suite can go green by the checker weakening, the
+  fixture leaking the answer, or the model gaming the check. The number is a
+  pointer to transcripts, not a result.</li>
+<li><strong>One tier doing both jobs.</strong> Deterministic checks can't see tone; judges can't be
+  trusted with safety invariants. Merge them and you get the weaknesses of both.</li>
+<li><strong>The unvalidated checker.</strong> Skipping the fixture invariant because "the check is
+  obviously right." The obviously-right check that passes on an empty fixture is a
+  classic.</li>
+<li><strong>Synthetic-everything.</strong> Generating model <em>outputs</em> to eval against (rather than
+  user <em>inputs</em>) bakes the generator's blind spots into your golden set. Hamel's
+  rule: synthetic inputs, real system outputs, human-read traces.</li>
+<li><strong>A baseline with stale infrastructure.</strong> A number recorded against a cold or
+  degraded backend measures the backend. Warm the route; sanity-check for empty
+  generations before you bank anything.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>What makes a naive-vs-governed comparison defensible?</summary>
+Shared everything except the scaffolding under test: same script, same fixture, same
+checker, same model route. Any other difference is a confound the delta can't
+survive.</details>
+
+<details><summary>Why must the judged tier never carry a safety assertion?</summary>
+Because the judge is itself a model, with documented biases (position, verbosity,
+self-preference) and criteria drift. Safety invariants must be asserted by
+deterministic code whose failure modes you can audit.</details>
+
+<details><summary>State the fixture invariant and what each half detects.</summary>
+Bare fixture must FAIL (detects a checker that asserts nothing); fixture + reference
+must PASS (detects a checker that measures the wrong thing).</details>
+
+<details><summary>Why is the naive baseline a product argument?</summary>
+Naive mode is the status quo — the thing you'd ship without the platform. The delta
+governed − naive, measured on shared inputs, is the quantified reason the product
+deserves to exist.</details>
+
+<h2>What's next</h2>
+<p><strong>S03 — Context engineering:</strong> your governed engine's rules live in the context
+window. What happens to those rules as the conversation grows past the window's
+useful length? The loop is solved; the stream is not.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S02-golden-evals.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

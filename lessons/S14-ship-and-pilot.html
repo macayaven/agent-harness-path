@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S14-ship-and-pilot — The cold run, the pilot, and the public artifact</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S14-ship-and-pilot — The cold run, the pilot, and the public artifact</h1>
+<p><strong>What this teaches:</strong> shipping is the last measurement, not a mood — a cold
+acceptance run on unseen input, one pilot with a second human under a written
+protocol, documentation <em>assembled</em> from artifacts rather than composed from
+memory, and a public evidence artifact that shows measured behavior instead of
+vision.
+<strong>Time:</strong> ~20 min of reading, ~4 h of doing (fine to split across days).
+<strong>Prerequisites:</strong> S01–S13 — there is nothing to ship if the earlier sessions
+didn't happen.
+<strong>Hands-on:</strong> no notebook — the hands-on is your own system, run through the
+<strong>Video:</strong> <a href="videos/S14-ship-and-pilot.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.
+protocol below.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>Done is a measurement, not a mood</h3>
+<p>Every system feels finished from the inside. You know which inputs it handles,
+which routes are warm, which pauses to narrate over. That knowledge is exactly
+the problem: a run you conduct on inputs you chose, in an environment you
+prepared, with you steering, measures <em>your memory of the system</em>. The demo
+effect is not dishonesty; it is contamination.</p>
+<p>The fix is the fixture invariant from S02, promoted from the eval suite to the
+whole system. An acceptance run counts only if:</p>
+<ul>
+<li>the input is one the system has <strong>never seen</strong> — not a golden-set task you
+  tuned against,</li>
+<li>the pass criteria were <strong>written down before</strong> the run — predict-first at
+  system scale, so "done" can't be retro-fitted to whatever happened,</li>
+<li>the run starts <strong>cold</strong> — clean state, traces on, no warmup, no steering.</li>
+</ul>
+<p>A failed acceptance run is not a disaster and not a secret: it is a result.
+The trace tells you where it broke; you amend the <em>system</em> and rerun fresh.
+The one move that is actually fatal is editing the fixture to fit — that is
+S02's suite-gaming move at ship scale, with no checker left above you to
+catch it.</p>
+<h3>The second human changes the instrument</h3>
+<p>You are the least representative user your system will ever have. You know
+what it is for, what it can't do, and — worst of all — what you meant by every
+label on the screen. The second acceptance run is therefore done by someone
+else: one consenting, trusted adult, under a written protocol.</p>
+<p>The protocol page comes first, and it is short on purpose. Four statements:</p>
+<ol>
+<li><strong>What this is and is not</strong> — a tool with hard limits, not a professional
+   service. The run stops being harmless the moment the pilot believes
+   otherwise.</li>
+<li><strong>What happens to their data</strong> — where it lives, and that it is deleted on
+   request. This is what makes their reaction usable evidence.</li>
+<li><strong>Where to go if things go wrong</strong> — stated up front, not discovered after.</li>
+<li><strong>The authorship rule</strong> — an assistant may attack your draft of the page;
+   the words are yours and final.</li>
+</ol>
+<p>Then the pilot: they read, they use the system end-to-end, you stay quiet. You
+record their honest reaction, with permission, in their words. The Mom Test's
+taxonomy of bad data applies verbatim — compliments, fluff ("I'd totally use
+it"), and feature ideas are worth nothing; what they <em>did</em>, where they
+hesitated, and what they worked around is the evidence
+(<a href="https://www.momtestbook.com/">momtestbook.com</a>).</p>
+<p>And calibrate what one pilot proves. Discount usability testing's famous
+result — a handful of users finds most problems — is a statement about
+<em>finding showstoppers</em>, never about their absence
+(<a href="https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/">Nielsen</a>).
+Your n=1 pilot is a smoke detector, not a sample. It can certify "the house is
+not currently on fire." It cannot certify the house.</p>
+<pre class="mermaid">flowchart TD
+    A[freeze a fixture&lt;br/&gt;criteria written first] --&gt; B[cold acceptance run&lt;br/&gt;you, unseen input, traces on]
+    B -- pass --&gt; C[pilot run&lt;br/&gt;protocol page first,&lt;br/&gt;then one second human]
+    B -- fail --&gt; D[diagnose from the trace&lt;br/&gt;amend the system,&lt;br/&gt;never the fixture]
+    D --&gt; B
+    C --&gt; E[assemble the docs&lt;br/&gt;from artifacts, not memory]
+    E --&gt; F[public artifact&lt;br/&gt;one fixture run + numbers]
+    F --&gt; G[adversarial review&lt;br/&gt;fix what is real,&lt;br/&gt;rebut the rest in writing]
+    G --&gt; H[tag v1.0&lt;br/&gt;evidence covers the claims]
+</pre>
+<h3>Assembly, not composition</h3>
+<p>Documentation written at ship time, from memory, describes the system you
+<em>meant</em> to build. The decisions have faded; what remains is intent, and intent
+reads well and matches nothing. Hence the session's core move: <strong>the docs are
+assembled, not composed.</strong> The mechanical test is a citation test — every
+claim points at an artifact that already existed: a decision record, a banked
+eval number, a trace. A sentence with no citation is invention.</p>
+<p>Assembly is only possible because the records were written at decision time.
+That is the payoff of the decision log you have kept since the early sessions
+— the architecture-decision-record pattern in its original minimal form
+(<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>).</p>
+<pre class="mermaid">flowchart LR
+    D[decision log&lt;br/&gt;written at decision time] --&gt; A[architecture doc]
+    N[banked eval numbers&lt;br/&gt;naive vs governed] --&gt; A
+    T[traces and replays] --&gt; A
+    F[failure taxonomy&lt;br/&gt;with counts] --&gt; X[failures doc]
+    N --&gt; X
+    A --&gt; P[public artifact&lt;br/&gt;fixture run + numbers]
+    X --&gt; P
+</pre>
+<p>The architecture doc gets one section most docs lack: the honest two columns.</p>
+<table>
+<thead>
+<tr>
+<th>Survives a model swap</th>
+<th>Workaround — delete when the model improves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eval suite and banked baselines</td>
+<td>prompt patches for model quirks</td>
+</tr>
+<tr>
+<td>deterministic governors and consent gates</td>
+<td>retry hacks</td>
+</tr>
+<tr>
+<td>traces, replay, schemas, validators</td>
+<td>output post-processing crutches</td>
+</tr>
+</tbody>
+</table>
+<p>The first column is the asset; the second is technical debt with a demolition
+date. Writing both down is what makes the next model generation an upgrade
+instead of a regression hunt.</p>
+<p>The failures doc is a postmortem anthology in the SRE sense: blameless,
+mechanism-first, and honest about what remains
+(<a href="https://sre.google/sre-book/postmortem-culture/">Google SRE book, ch. 15</a>).
+Top failure categories with counts, what fixed them, what remains — including
+the uncomfortable numbers (your false-trigger rate, your judge-agreement
+score), stated plainly. A failures doc without the worst number in it is
+marketing wearing a hair shirt.</p>
+<h3>Public evidence, not vision</h3>
+<p>The last artifact is public: a write-up or ~10-minute recording of one full
+run, end to end, with the naive-vs-governed numbers. Two invariants:</p>
+<ul>
+<li><strong>Fixture-only, always.</strong> Never real-session content. Transcript
+  anonymization is far weaker than it looks — style and circumstance
+  re-identify — and "anonymized" is a judgment call you can't audit. The
+  fixture rule is absolute precisely because it is mechanical.</li>
+<li><strong>Reproducible by a stranger.</strong> The claim is the numbers, and the numbers
+  ship with everything needed to rerun them. This is the system-card pattern
+  at solo scale — labs publish measured behavior, failures included, as the
+  artifact of record
+  (<a href="https://arxiv.org/abs/2412.16720">OpenAI o1 system card</a>).</li>
+</ul>
+<p>Then, before the tag, one adversarial pass: hand the write-up and the repo to
+the strongest critic available — a frontier model in adversarial mode, or a
+hostile friend — with one instruction: find the unsupported claims. Fix what
+is real; rebut what is not, in writing, next to the claim. This is the S12
+cross-examination muscle pointed at your own evidence.</p>
+<p>The tag — v1.0, in <a href="https://semver.org">semver</a> terms the first public promise
+— asserts exactly one thing: the evidence in the repo covers the claims in the
+artifact. No more. Everything deliberately parked (wider pilots, new surfaces,
+dashboards) starts from the tag, not before it — a parked list is only
+meaningful against a frozen baseline.</p>
+<h2>The protocol</h2>
+<p>Run this against your own system, in order. Each step has an artifact and a
+"done when" line. Reorder them and the later steps inherit the earlier steps'
+contamination.</p>
+<ol>
+<li><strong>Freeze the fixture and the criteria.</strong> Choose one end-to-end scenario the
+   system has never processed — not a golden-set task you tuned against. Write
+   the pass criteria down, dated, before touching the system. Predict-first at
+   system scale. <em>Done when:</em> the criteria exist in writing and a skeptic
+   could apply them without you in the room.</li>
+<li><strong>Run the acceptance pass cold.</strong> Clean state, traces on, no narration, no
+   steering. If it fails: diagnose from the trace, amend the system, rerun
+   fresh. Never edit the fixture to fit. <em>Done when:</em> a green run whose trace
+   and numbers you would show a hostile reviewer.</li>
+<li><strong>Write the one-page pilot protocol.</strong> The four statements: is/is-not, data
+   handling, where to go if things go wrong, authorship rule. Draft it, then
+   have your strongest model attack the draft. <em>Done when:</em> it fits on one
+   page and a non-engineer can read it in two minutes.</li>
+<li><strong>Run the pilot.</strong> One consenting, trusted adult reads the protocol page
+   first, then uses the system end-to-end while you stay quiet. Record their
+   honest reaction, with permission, in their words. <em>Done when:</em> their
+   reaction is written down — including the part where the system lost them.</li>
+<li><strong>Assemble the architecture doc.</strong> Components, data flow, the decision
+   table from your decision log, known limits, and the honest two columns
+   (survives a model swap / workaround to delete). Timebox 45 minutes: if
+   assembly takes longer, the artifacts weren't there, and that is a finding.
+   <em>Done when:</em> no sentence lacks a citation to an existing artifact.</li>
+<li><strong>Assemble the failures doc.</strong> Top failure categories with counts, what
+   fixed them, what remains — the false-trigger rate and the judge-agreement
+   score included, plainly. Blameless in the SRE sense: mechanisms and
+   contributing factors, never people. <em>Done when:</em> the worst number is in
+   the doc.</li>
+<li><strong>Publish one fixture run.</strong> Write-up or ~10-minute recording: one full
+   run, end to end, naive-vs-governed numbers, your voice. Never real-session
+   content. <em>Done when:</em> a stranger could reproduce your claim from the public
+   repo alone.</li>
+<li><strong>Cross-examine, then tag.</strong> Adversarial review of write-up plus repo by
+   the strongest critic available; fix what is real, rebut what is not, in
+   writing. Then tag v1.0 — the tag asserts the evidence covers the claims, no
+   more. <em>Done when:</em> every objection has a fix or a written rebuttal, and the
+   parked list (everything after v1.0) is written down, not started.</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Architecture decision records are the standard lightweight form for keeping rationale (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>; <a href="https://martinfowler.com/bliki/ArchitectureDecisionRecord.html">Fowler</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>Your decision log is an ADR log. Assembly works because the records exist — this session is the payoff.</td>
+</tr>
+<tr>
+<td>Blameless postmortem culture (<a href="https://sre.google/sre-book/postmortem-culture/">Google SRE book, ch. 15</a>; <a href="https://sre.google/workbook/postmortem-culture/">SRE workbook</a>)</td>
+<td><strong>adopt</strong></td>
+<td>The failures doc is a postmortem anthology. Steal the structure: what happened, contributing factors, what fixed it, what remains.</td>
+</tr>
+<tr>
+<td>Discount usability testing: a handful of users surfaces most showstoppers (<a href="https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/">Nielsen</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Legitimizes n=1 as a smoke detector — and states its limit. Do not let it talk you into calling a pilot a study.</td>
+</tr>
+<tr>
+<td>"Do things that don't scale" (<a href="https://paulgraham.com/ds.html">Graham</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The pilot is deliberately concierge-scale. Unscalable honesty now beats scalable theater later.</td>
+</tr>
+<tr>
+<td>System cards as the lab-scale public evidence artifact (<a href="https://arxiv.org/abs/2412.16720">OpenAI o1 system card</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Labs publish measured behavior, failures included, as the artifact of record. Your fixture-run write-up is the solo-scale version.</td>
+</tr>
+<tr>
+<td>Semantic versioning as the public contract behind a v1.0 tag (<a href="https://semver.org">semver.org</a>)</td>
+<td><strong>adopt</strong></td>
+<td>The tag is cheap to type and expensive to mean: it asserts the evidence covers the claims, no more.</td>
+</tr>
+<tr>
+<td>EU AI Act staged application — prohibitions Feb 2025, general-purpose-AI obligations Aug 2025, general application Aug 2026, with late amendments still moving some dates (<a href="https://artificialintelligenceact.eu/article/113/">Article 113</a>)</td>
+<td><strong>newer than this session</strong></td>
+<td>A one-trusted-adult pilot is etiquette; a scaled pilot is law. Your protocol page is the seed of that compliance — parked, deliberately.</td>
+</tr>
+<tr>
+<td>Simulated "users" as a stand-in for the pilot (<a href="https://www.arxiv.org/pdf/2601.17087">arXiv:2601.17087</a>, cited at S02)</td>
+<td><strong>ignore</strong></td>
+<td>S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Google SRE book, <a href="https://sre.google/sre-book/postmortem-culture/">Postmortem Culture: Learning from Failure</a>
+  (ch. 15).</strong> Extract the blameless constraint — describe mechanisms and
+  contributing conditions, never people — and the criterion that a postmortem's
+  value is measured by the changes it triggers. The failures doc is an
+  anthology of these; steal the structure.</li>
+<li><strong>Michael Nygard, <a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Documenting Architecture Decisions</a>
+  (2011).</strong> Extract the minimal record — context, decision, status,
+  consequences — and above all <em>when</em> it is written: at decision time.
+  Ship-time assembly is only possible because of that timing.</li>
+<li><strong>Jakob Nielsen, <a href="https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/">Why You Only Need to Test with 5 Users</a>
+  (2000).</strong> Extract the direction of the claim: small-n testing finds
+  problems; it never proves their absence. Recalibrate what your one pilot
+  certifies.</li>
+<li><strong>Rob Fitzpatrick, <a href="https://www.momtestbook.com/">The Mom Test</a> (2013).</strong>
+  Extract the three kinds of bad data — compliments, fluff, feature ideas —
+  and the rule to ask about past behavior, not future intentions. Governs how
+  you record the pilot's honest reaction.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"The demo went fine, so it's done."</strong> The warm-path illusion: chosen
+  input, warm route, narration over the stalls. Cold, unseen, criteria-first —
+  or it didn't happen.</li>
+<li><strong>"Documentation is writing."</strong> Composing at ship time produces the system
+  you meant to build. The citation test is the whole discipline: no artifact,
+  no claim.</li>
+<li><strong>"They said they loved it."</strong> Compliments are the worst data in the
+  building. Hesitations, workarounds, and the thing they did instead — that is
+  the data. Record what they did, not what they politely said.</li>
+<li><strong>"It's anonymized, so I can publish it."</strong> Transcript anonymization is
+  weak; style and circumstance re-identify. The fixture-only rule exists
+  precisely because it is the only version you can audit.</li>
+<li><strong>"Tag it and move on."</strong> v1.0 as morale ritual. The tag is a claim —
+  evidence covers exactly what the artifact asserts — and an unsupported claim
+  at tag time is the bug every later session inherits.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why must the acceptance run be cold, on unseen input, with criteria written first?</summary>
+Because anything warmer measures your memory of the system: you subconsciously
+steer toward inputs it handles and away from known weak spots. Unseen input
+makes it a measurement of the system rather than of your rehearsal, and
+criteria written first prevent "done" from being retro-fitted to whatever the
+run happened to produce.</details>
+
+<details><summary>What four statements does the pilot protocol page carry, and why does each exist?</summary>
+Is/is-not (the run stops being harmless if the pilot mistakes a tool for a
+professional service); data handling (it is what makes their reaction usable
+evidence); where to go if things go wrong (caps the blast radius of a bad run,
+up front); the authorship rule (assistants may attack the draft; your words
+are final). Without the page you have neither permission nor trustworthy
+data.</details>
+
+<details><summary>What is the mechanical test that distinguishes assembled from composed documentation?</summary>
+The citation test: every claim points at an artifact that already existed —
+decision record, banked number, trace. A sentence with no citation is
+invention: you are composing the system you meant to build.</details>
+
+<details><summary>Why is the public artifact always fixture-based, never a real session?</summary>
+Two reasons. Transcript anonymization is far weaker than it looks — style and
+circumstance re-identify — and "anonymized" is a judgment call you can't
+audit, while the fixture rule is mechanical. And the fixture run is
+reproducible: the numbers carry the evidence; intimacy adds risk, not
+credibility.</details>
+
+<h2>What's next</h2>
+<p>There is no S15. What you own after the tag: a loop you can rebuild from
+memory (S13), a measurement instrument you can defend (S02), a governed,
+observed, budgeted, calibrated harness (S05–S12), and now a public claim with
+the evidence to survive cross-examination. The parked list — wider pilots, new
+surfaces, outcomes aggregation — is real work with real protocols of its own,
+and it starts from the tag, not before it.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S14-ship-and-pilot.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

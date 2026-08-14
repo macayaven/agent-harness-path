@@ -1,0 +1,13 @@
+[project]
+name = "agentic-harnessing-companion"
+version = "0.1.0"
+description = "Study companion to agentic-harnessing-intensive: session guides and stdlib-only toy notebooks"
+requires-python = ">=3.11"
+# Dependencies are tooling only: `jupyterlab` runs the notebooks, `markdown` renders
+# the lessons/ HTML. Notebook code itself stays Python standard library only
+# (COURSE-MAP.md session contract, rule 2) — nothing in `notebooks/` imports
+# anything from here.
+dependencies = ["jupyterlab>=4.0", "markdown>=3.5"]
+
+[tool.uv]
+package = false

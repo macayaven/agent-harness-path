@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S05-consent-gate — Approval that actually constrains execution</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S05-consent-gate — Approval that actually constrains execution</h1>
+<p><strong>What this teaches:</strong> plan-then-execute with a human gate in the seam — and the part
+everyone skips: the approved plan becomes <em>data</em>, and the harness checks every action
+against it before it runs. The prompt states the limits; code holds them. Plus
+violation semantics: what the system does when execution would cross the approved
+boundary.
+<strong>Time:</strong> ~75 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop), S02 (naive vs
+governed).
+<strong>Hands-on:</strong> <a href="../notebooks/s05_consent_gate_toy.ipynb"><code>notebooks/s05_consent_gate_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S05-consent-gate.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>The prompt is not a fence</h3>
+<p>The default way to constrain an agent is to write the constraint down: "never exceed
+power level 2," "the nursery is off-limits." That works exactly as well as the model's
+cooperation allows. A system-prompt instruction is <em>advice the model usually takes</em> —
+under an insistent user, an adversarial tool result, or a long distracting context,
+compliance degrades, and it degrades <strong>silently</strong>: the transcript says success while
+the world says otherwise.</p>
+<p>Any constraint that must hold has to live outside the model, in deterministic code,
+and it has to fire <strong>before</strong> the side effect, not after. A post-hoc audit of the
+transcript finds the violation after the nursery floor is already wet. Enforcement is
+pre-dispatch, per-action, and indifferent to how persuasive the conversation got.</p>
+<p>The notebook's mock executor makes this concrete: it never even parses the system
+prompt containing its limits. Real models do parse them — and then, measurably often,
+talk themselves out of them. The gate exists for both cases.</p>
+<h3>Plan-then-execute: separate proposing from doing</h3>
+<p>The consent gate splits the run in two and puts a human in the seam:</p>
+<ol>
+<li><strong>Propose.</strong> The agent produces a plan <em>as data</em> — a JSON spec naming the scope
+   (what may be touched), the ceilings (how far it may go), the off-limits list, and
+   a budget (turns or time). Data is the whole point: a prose plan can't be checked
+   mechanically; a JSON spec can be compared against every later action.</li>
+<li><strong>Consent.</strong> The spec is rendered for a human — short enough to actually read,
+   because a gate whose text nobody reads is decoration. The human has exactly three
+   moves: <strong>approve</strong> (execution may start, bound by this spec), <strong>edit</strong> (amend the
+   spec; the amendment is revalidated and re-presented in full — an amended plan
+   restarts the flow, no partial state carries over), <strong>reject</strong> (nothing happens,
+   and "nothing happens" must be verifiable: zero side effects).</li>
+<li><strong>Execute.</strong> The S01 loop, with one addition: every tool call is checked against
+   the <em>approved</em> spec before dispatch.</li>
+</ol>
+<pre class="mermaid">flowchart LR
+    U[user request] --&gt; P[model proposes&lt;br/&gt;spec as JSON]
+    P --&gt; V{spec valid?}
+    V -- no --&gt; P
+    V -- yes --&gt; R[render for a human&lt;br/&gt;a 60-second read]
+    R --&gt; G{approve / edit / reject}
+    G -- reject --&gt; X[nothing runs:&lt;br/&gt;zero side effects]
+    G -- edit --&gt; E{edit valid?}
+    E -- no --&gt; R
+    E -- yes --&gt; R
+    G -- approve --&gt; L[S01 agent loop]
+    L --&gt; C{action within&lt;br/&gt;approved spec?}
+    C -- yes --&gt; D[dispatch:&lt;br/&gt;side effect happens]
+    D --&gt; L
+    C -- no --&gt; S[violation semantics&lt;br/&gt;+ readable report]
+</pre>
+<p>The approved spec is the contract, and it binds the model — not the other way around.
+If the human lowered the ceiling and the model still attempts the level it originally
+wanted, the check fires. That is the gate working, not a malfunction.</p>
+<h3>Why the gate asks once, up front</h3>
+<p>The tempting fourth move — execution pausing mid-run to ask "level 3, just this
+once?" — renegotiates consent under pressure. It destroys the property the gate
+exists to create: the user knew exactly what would happen before anything happened.
+It also trains the worst habit in this corner of the industry: reflexive approval.
+Anthropic measured a 93% approval rate on Claude Code's permission prompts and
+responded by automating part of the consent away
+(<a href="https://www.anthropic.com/engineering/claude-code-auto-mode">anthropic.com/engineering/claude-code-auto-mode</a>).
+A dialog everyone clicks through is a gate that has already failed. Design the
+contract so execution never needs to ask; when the run genuinely can't proceed inside
+it, that's what abort is for.</p>
+<h3>Violation semantics: abort, degrade, ask</h3>
+<p>When a checked action crosses the approved boundary, something has to happen. There
+are three honest options and one dishonest one:</p>
+<table>
+<thead>
+<tr>
+<th>Semantics</th>
+<th>What happens</th>
+<th>What it costs</th>
+<th>When it's right</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>abort</strong></td>
+<td>Stop the run; emit a readable violation report (turn, action, clause, approved vs attempted)</td>
+<td>Partial work; the human re-plans</td>
+<td>When a half-done state is worse than a clean stop, or when the divergence itself is the harm</td>
+</tr>
+<tr>
+<td><strong>degrade-to-cap</strong></td>
+<td>Clamp the action to the approved bound, log the clamp, continue</td>
+<td>The run reports success while delivering X′ against an approval of X</td>
+<td>Only where divergence is itself safe — and the clamps are reported as loudly as violations</td>
+</tr>
+<tr>
+<td><strong>pause-and-ask</strong></td>
+<td>Interrupt for fresh consent mid-run</td>
+<td>Predictability; trains reflexive approval</td>
+<td>Rarely: low stakes, and the user explicitly asked to be asked</td>
+</tr>
+<tr>
+<td><strong>silent divergence</strong></td>
+<td>Execution crosses the boundary; the success message doesn't say so</td>
+<td>Everything — this is the only unforgivable option</td>
+<td>Never</td>
+</tr>
+</tbody>
+</table>
+<p>Violation semantics is a design decision, not an implementation detail: chosen at
+design time, documented, loud. The notebook runs the same adversarial scenario under
+abort and under degrade so you can watch what each one costs — and notice that
+"which one" is a product question, not an engineering one.</p>
+<h3>The pattern predates agents</h3>
+<p>Terraform has shipped exactly this shape for a decade: <code>plan</code> produces the approval
+object, <code>apply</code> executes precisely it
+(<a href="https://developer.hashicorp.com/terraform/cli/commands/apply">docs</a>). CI pipelines
+gate deploys on manual approval; migration tools print the DDL and wait; <code>sudo</code>
+re-asks before the irreversible. Agents didn't invent the consent gate — they made it
+necessary at conversation speed, with a probabilistic executor that can <em>want</em> to
+cross the boundary mid-run. Which is why the load-bearing piece was never the dialog.
+It's the per-action check behind it.</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<p>Run the notebook top-to-bottom. Each experiment has an attempt cell; write your
+predictions there before running the solution cell below it.</p>
+<ol>
+<li><strong>Clean path.</strong> The scripted owner approves the spec as proposed; the robot
+   cleans. Predict the executed actions, the highest power level used, and the
+   baby's state — then verify the world matches.</li>
+<li><strong>Reject path.</strong> The owner rejects. Predict the side-effect count, then assert
+   it. "Nothing happens" is a claim you can test.</li>
+<li><strong>Edit path.</strong> The owner's first edit is invalid (the validator refuses it; the
+   gate re-presents); the second lowers the power cap. Predict where the run stops,
+   and which spec the violation report names — the proposed one or the approved one.</li>
+<li><strong>Pressure, two harnesses.</strong> Same model, same prompt, same begging owner — one
+   harness enforces, one trusts the prompt. Predict which one notices the ceiling
+   breach, and at which turn. Then run the post-hoc auditor over the naive
+   transcript: what did it catch, and what had already happened by then?</li>
+<li><strong>Degrade semantics.</strong> Rerun the pressure scenario with clamp-and-continue. The
+   run completes. Before reading the clamp log, write down what you think diverged
+   from the approved spec. Then decide, in a comment: abort or degrade for (a) a
+   coding assistant, (b) this robot?</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Approve/edit/reject interrupts are a first-class, documented pattern in agent frameworks (<a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop">LangChain human-in-the-loop</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>The triad you just built is the industry vocabulary. The framework supplies the pause; the per-action check against the approved object is still yours to write.</td>
+</tr>
+<tr>
+<td>Plan mode and permission modes in coding agents: a read-only propose phase, then approval-gated execution (Claude Code; see the auto-mode link below)</td>
+<td><strong>already in this path</strong></td>
+<td>Plan-then-execute, productized. Notice what is enforced in code (tool allowlists, read-only tools) versus what is merely asked of the model.</td>
+</tr>
+<tr>
+<td>Approval fatigue measured at scale: 93% of permission prompts get approved; vendors now ship classifiers to auto-approve the boring ones (<a href="https://www.anthropic.com/engineering/claude-code-auto-mode">Anthropic</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The gate's usability failure mode, quantified. Automating consent away is one response; designing runs that rarely need to ask is another. Hold both.</td>
+</tr>
+<tr>
+<td>MCP elicitation: a server may pause tool execution to request structured user input mid-run (<a href="https://modelcontextprotocol.io/specification/2025-06-18/client/elicitation">spec 2025-06-18</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question.</td>
+</tr>
+<tr>
+<td>OWASP ranks excessive agency a top LLM risk; mitigations include scoping tools narrowly and human approval for high-impact actions (<a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025</a>)</td>
+<td><strong>adopt</strong></td>
+<td>The security community's name for this session's problem (the 2026 revision keeps it near the top). The mitigation list reads like your toy's spec fields.</td>
+</tr>
+<tr>
+<td>Terraform plan/apply as the reference shape: the plan file is the approval object, apply runs exactly it (<a href="https://developer.hashicorp.com/terraform/cli/commands/apply">apply docs</a>)</td>
+<td><strong>adopt</strong></td>
+<td>A decade of production evidence for the two-phase split. Your agent gate is the same shape at conversation speed.</td>
+</tr>
+<tr>
+<td>Human oversight is now law for high-risk AI in the EU: systems must be built so assigned humans can effectively oversee and intervene (<a href="https://artificialintelligenceact.eu/article/14/">AI Act, Article 14</a>)</td>
+<td><strong>recognize</strong></td>
+<td>For high-risk deployments the gate stops being taste and becomes a compliance artifact, with an evidence trail. Worth knowing before someone asks for yours.</td>
+</tr>
+<tr>
+<td>Fully autonomous YOLO modes that skip per-action approval</td>
+<td><strong>ignore</strong> for anything you can't undo</td>
+<td>Fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>LangChain, <a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop">Human-in-the-loop</a>.</strong>
+  Extract this: the approve/edit/reject decision shapes and how the interrupt
+  carries the pending action to the human. Note what the framework does <em>not</em> give
+  you: the policy deciding which actions need asking, and any check of what happens
+  after approval.</li>
+<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/claude-code-auto-mode">How we built Claude Code auto mode</a>.</strong>
+  Extract this: the 93% approval-rate measurement — your standing citation for
+  approval fatigue — and the design tension of automating consent without hollowing
+  it out.</li>
+<li><strong>HashiCorp, <a href="https://developer.hashicorp.com/terraform/cli/commands/apply">terraform apply</a>.</strong>
+  Yes, the man page. Extract this: the plan file as the exact artifact of consent,
+  and what the docs say <code>-auto-approve</code> is for. Ten years of the two-phase pattern,
+  hiding in a man page.</li>
+<li><strong>OWASP, <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025 Excessive Agency</a>.</strong>
+  Extract this: the mitigation list — constrain tool scope, require approval for
+  high-impact actions, log everything — and map each item to a line of the toy's
+  spec or harness.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"It's in the system prompt, so it holds."</strong> The prompt is advice. Under
+  pressure — an insistent user, a long context, an adversarial tool result — the
+  model talks itself out of it, and the transcript won't tell you. If a limit must
+  hold, code holds it.</li>
+<li><strong>"A confirmation dialog is a consent gate."</strong> If nothing checks later actions
+  against what was confirmed, the dialog is theater: consent preceded execution but
+  never bound it. The gate is the per-action check; the dialog is its front door.</li>
+<li><strong>"Degrade is the safe default."</strong> Clamping quietly rewrites the contract — the
+  human approved X, the machine delivered X′, the report says success. Degrade only
+  where divergence is itself harmless, and log clamps as loudly as aborts.</li>
+<li><strong>"When unsure, ask again mid-run."</strong> Re-consent under interruption trains
+  reflexive approval — the measured 93%. Ask once, in the calm, before anything
+  moves; if the run can't continue inside the contract, abort to a report.</li>
+<li><strong>"Post-hoc audit is enforcement."</strong> Audit finds the violation after the side
+  effect. Useful for learning, useless for prevention — the baby is already awake.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why can't the approved limits live only in the system prompt?</summary>
+Because the model is a probabilistic executor and the prompt is advice it usually
+takes. Under pressure it degrades silently — the run reports success while the
+constraint is already broken. A limit that must hold must be checked by deterministic
+code, per action, before dispatch.</details>
+
+<details><summary>What turns an approval dialog into a contract?</summary>
+The approved plan exists as data, and every subsequent action is mechanically checked
+against it before it executes — including actions the model believed were fine.
+Binding execution to the approved spec (not the proposed one, not the prompt) is what
+makes consent real; without the per-action check, the dialog is theater.</details>
+
+<details><summary>Abort vs degrade — what does each cost, and what is never acceptable?</summary>
+Abort costs partial work and forces a re-plan; degrade costs delivering something the
+human never approved under a success message. Both are defensible when chosen at
+design time and reported loudly. Silent divergence — crossing the approved boundary
+with no report — is the one unforgivable option.</details>
+
+<details><summary>Why does this design refuse mid-run re-approval questions?</summary>
+Because predictability is the feature: the human consented to a specific shape of
+run, in the calm, up front. Mid-run questions renegotiate under pressure and train
+reflexive approval (the measured 93% click-through). A gate that asks constantly is
+a gate nobody reads.</details>
+
+<h2>What's next</h2>
+<p><strong>S06 — Layered detection:</strong> the gate constrains what the agent <em>planned</em> to do. It
+says nothing about what flows through the run — the user turn that discloses a
+crisis, the tool result carrying an injection, the content your policy must catch on
+the fly. Next: detection as data-driven policy, in layers, with a false-trigger
+budget you actually count.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S05-consent-gate.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

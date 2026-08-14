@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S13-rebuild-from-memory — The closed-book audit</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S13-rebuild-from-memory — The closed-book audit</h1>
+<p><strong>What this teaches:</strong> why "I built it" is not evidence that you own it — and the one
+measurement that is: a closed-book rebuild of the core component, judged by your own
+eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
+<strong>Time:</strong> ~20 min reading, then ~90 min for the audit itself.
+<strong>Prerequisites:</strong> S01–S02 for the instrument vocabulary; in substance, everything
+since S01 is what gets audited.
+<strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
+<strong>Video:</strong> <a href="videos/S13-rebuild-from-memory.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.
+defeat it. The protocol below is the hands-on.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>Authorship is not ownership</h3>
+<p>You spent twelve sessions building a system, much of it with an assistant in the
+loop. That feels like authorship. Mechanically, it was closer to code review: you
+read diffs, judged them, accepted or rejected them. Reviewing builds <strong>recognition
+fluency</strong> — you see the append-verbatim line and nod along — which is a different
+and weaker thing than <strong>recall</strong>: producing the line, unaided, in a blank file.
+The gap between the two is where "I know this system" goes to die.</p>
+<p>The learning-science version of this is decades old. Bjork's frame: <strong>storage
+strength</strong> (how durably something is embedded) vs <strong>retrieval strength</strong> (how easily
+you can produce it right now). Re-reading raises retrieval strength briefly and
+<em>feels</em> like learning; it does almost nothing for storage. Karpicke &amp; Roediger's
+2008 result is the sharpest version: students who studied by retrieving beat
+students who re-studied — at a delay, by a wide margin — while the re-studiers
+predicted the opposite for themselves
+(<a href="https://doi.org/10.1126/science.1152408">doi:10.1126/science.1152408</a>). Your
+self-assessment of what you know is not just unreliable; it is reliably wrong in
+the optimistic direction.</p>
+<p>The AI-era data says the same thing with higher stakes. METR's RCT: experienced
+developers believed AI made them ~20% faster; the clock said 19% slower — a
+39-point gap between felt and measured
+(<a href="https://arxiv.org/abs/2507.09089">arXiv:2507.09089</a>). Shen &amp; Tamkin: developers
+who delegated to AI produced comparable output but scored dramatically lower on
+mastery of what they had just <em>built</em>
+(<a href="https://arxiv.org/abs/2601.20245">arXiv:2601.20245</a>). The felt sense of
+competence is not evidence. The audit replaces it with evidence.</p>
+<h3>The audit is a measurement instrument</h3>
+<p>Same stance as S02: the rebuild is a probe, the suite is the checker, and the only
+question is "would I believe the number?" The naive self-audit — scroll through the
+code, nod, conclude ownership — fails for the same reason an unvalidated checker
+fails: it cannot fail. An instrument that cannot return a negative result asserts
+nothing.</p>
+<p>So the audit is built to be losable. Four invariants:</p>
+<ol>
+<li><strong>The original is out of reach.</strong> One peek converts a recall event into a
+   recognition event. The measurement silently stops measuring memory and starts
+   measuring eyesight — and the forgot-list it feeds is now wrong in a way you
+   cannot detect.</li>
+<li><strong>The clock is visible.</strong> Fluency illusions survive leisure; they collapse
+   under a time cap. Sixty minutes forces the honest version of every choice.</li>
+<li><strong>The pass bar is external.</strong> Not "it looks right" — the number your own eval
+   suite produces with the rebuilt component, against the number you banked.</li>
+<li><strong>The byproducts are captured.</strong> The diff is not waste; it is the raw material
+   of the forgot-list.</li>
+</ol>
+<h3>The suite is the oracle; the diff is the diagnosis</h3>
+<p>This is why the audit sits at S13 and not S03: it consumes the instrument the rest
+of the course built. Without a defended eval suite, the only bar a rebuild can
+clear is "it runs and feels right" — the fluency illusion with extra steps. With
+the suite, the question becomes empirical: does the rebuilt core hold the number
+you already banked?</p>
+<p>Note what the oracle is <em>not</em>: the diff. Byte-similarity measures typing memory,
+and punishes exactly what you want to see — a rebuild that produces a different but
+behavior-preserving construction demonstrates ownership of the <em>abstraction</em>, not
+the text. So diff hunks get classified, not counted:</p>
+<table>
+<thead>
+<tr>
+<th>Hunk class</th>
+<th>What it looks like</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cosmetic</td>
+<td>different names, order, formatting</td>
+<td>ignore</td>
+</tr>
+<tr>
+<td>Behavior-preserving</td>
+<td>different construction, same contract, invariants intact</td>
+<td>pass — you own the idea</td>
+</tr>
+<tr>
+<td>Behavioral gap</td>
+<td>weakened or missing behavior, dropped invariant</td>
+<td>forgot-list item</td>
+</tr>
+</tbody>
+</table>
+<p>The pass bar is the suite number within a small tolerance of the last banked one
+(the course uses one task) — enough to absorb suite noise, small enough that a real
+behavioral gap cannot hide inside it.</p>
+<h3>The forgot-list is the deliverable</h3>
+<p>The number tells you <em>whether</em> you own the system; the forgot-list tells you <em>which
+parts</em> you don't. This is S10's error analysis turned inward: each behavioral gap
+becomes a taxonomy entry — what you dropped, why the original had it, the one-line
+rule that would have saved it.</p>
+<p>Two rules make the list do work:</p>
+<ol>
+<li><strong>Re-study exactly the list.</strong> Blanket re-study of the whole system is the
+   rereading fallacy scaled up to a curriculum: high effort, low yield, and it
+   re-trains recognition on parts that were never broken.</li>
+<li><strong>Re-audit after a delay, not immediately.</strong> An instant second pass measures
+   short-term priming, not storage. A week later, cold, measures whether the
+   re-study took — and the spaced retrieval is itself the mechanism that makes it
+   stick (Bjork &amp; Bjork 2011; Nielsen's
+   <a href="http://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>).</li>
+</ol>
+<p>Run twice, a week apart, the audit is the whole learning loop: measure, diagnose,
+repair, verify the repair.</p>
+<h2>The protocol</h2>
+<p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
+<ol>
+<li><strong>Choose the core.</strong> One component: the load-bearing abstraction, the file
+   whose invariants <em>are</em> the system's invariants (in this course, the loop).
+   Criteria: everything else imports it; it holds the protocol rules; it fits in
+   one sitting. Never the whole system — the rest is reference material, and
+   looking reference material up is the <em>correct</em> move, not a failure.</li>
+<li><strong>Set the terms.</strong> Move the original outside the project tree
+   (<code>mv core.py /tmp/core.py.original</code>). Close the assistant. Close the browser.
+   Allowed: the language, its standard library, <code>--help</code>. Set a visible timer:
+   60 minutes.</li>
+<li><strong>Rebuild.</strong> Blank file at the same path, from memory. When stuck, write what
+   you think it should be and mark it <code># UNSURE</code> — unsure marks are data. They
+   become honestly-labeled forgot-list items instead of hiding inside a lucky diff.</li>
+<li><strong>Diff and classify.</strong> <code>diff -u /tmp/core.py.original core.py</code>. Label every
+   hunk: cosmetic, behavior-preserving, or behavioral gap. Only the third bucket
+   feeds the forgot-list.</li>
+<li><strong>Run the suite.</strong> The rebuilt component runs the full eval suite. Pass: the
+   number within tolerance of the last banked one. Fail: it moved — and the
+   behavioral gaps from step 3 tell you why.</li>
+<li><strong>Write the forgot-list.</strong> One line per behavioral gap: what you dropped, why
+   the original had it, the one-line rule that would have saved it. Then <strong>restore
+   the original</strong> (<code>mv</code> it back): the rebuild was a probe, not a patch — the
+   banked artifact stays canonical.</li>
+<li><strong>Re-study, then re-audit cold.</strong> Study exactly the forgot-list items, nothing
+   else. Wait a week. Run the audit again from step 1. The second pass is where
+   retention happens; the first pass only told you the truth.</li>
+</ol>
+<pre class="mermaid">flowchart LR
+    A[original moved&lt;br/&gt;out of reach] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
+    B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
+    C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
+    D --&gt; E[run the suite]
+    E --&gt; F{within tolerance of&lt;br/&gt;banked number?}
+    F -- yes --&gt; G[forgot-list from gaps]
+    F -- no --&gt; G
+    G --&gt; H[restore original]
+    H --&gt; I[re-study exactly those items]
+    I --&gt; J[re-audit cold, ~1 week]
+</pre>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Retrieval practice beats re-study: Karpicke &amp; Roediger, <em>Science</em> 2008 (<a href="https://doi.org/10.1126/science.1152408">doi</a>); practice testing and distributed practice rated highest-utility, rereading and highlighting lowest (Dunlosky et al. 2013, <a href="https://doi.org/10.1177/1529100612453266">doi</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>This session is the testing effect aimed at your own repo. The rebuild is a test — and the research says the test is also the learning event.</td>
+</tr>
+<tr>
+<td>Fluency self-reports are miscalibrated at scale: METR's RCT, 16 experienced developers — believed ~20% faster with AI, measured 19% slower (<a href="https://arxiv.org/abs/2507.09089">arXiv:2507.09089</a>)</td>
+<td><strong>adopt</strong></td>
+<td>Adopt the stance, not the number: "I know this system" is evidence of nothing until it survives a closed-book measurement.</td>
+</tr>
+<tr>
+<td>AI assistance impairs skill formation unless cognitively engaged: Shen &amp; Tamkin RCT, 52 engineers; the delegating patterns produced output without learning, three engaged patterns preserved it (<a href="https://arxiv.org/abs/2601.20245">arXiv:2601.20245</a>; <a href="https://www.anthropic.com/research/AI-assistance-coding-skills">Anthropic write-up</a>)</td>
+<td><strong>adopt</strong></td>
+<td>The prevention side of this session: how you build determines what the audit finds. Engage during construction; audit after.</td>
+</tr>
+<tr>
+<td>"Cognitive debt" framing: Kosmyna et al., EEG essay study — the LLM group showed weakest engagement and poorest recall of their own text (<a href="https://arxiv.org/abs/2506.08872">arXiv:2506.08872</a>); see the methodological critique (<a href="https://arxiv.org/abs/2601.00856">arXiv:2601.00856</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Direction matches authorship≠ownership, but it is a small preprint with a published critique. Motivation, never proof.</td>
+</tr>
+<tr>
+<td>Desirable difficulties: storage vs retrieval strength; conditions that slow practice improve retention (Bjork &amp; Bjork 2011, <a href="https://bjorklab.psych.ucla.edu/wp-content/uploads/sites/13/2016/04/EBjork_RBjork_2011.pdf">chapter PDF</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The theoretical frame: the audit is deliberately difficult because difficulty is what makes the measurement honest and the repair durable.</td>
+</tr>
+<tr>
+<td>Spaced repetition for the forgot-list (Nielsen, <a href="http://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>)</td>
+<td><strong>adopt</strong></td>
+<td>Each forgot-list item becomes cards; the cold re-audit a week later is the spaced retrieval event.</td>
+</tr>
+<tr>
+<td>"Just re-read the codebase and your notes" as audit prep</td>
+<td><strong>ignore</strong></td>
+<td>The lowest-yield study activity known (Dunlosky). A recognition warm-up that inflates fluency and quietly spoils the measurement.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Karpicke &amp; Roediger, <a href="https://doi.org/10.1126/science.1152408">The Critical Importance of Retrieval for Learning</a>
+  (<em>Science</em>, 2008).</strong> Extract this: the prediction reversal — students forecast
+  that re-study would win, retrieval won at the delay. Your intuitions about what
+  you know are the thing being measured <em>and</em> the thing being disproved.</li>
+<li><strong>Becker et al. (METR), <a href="https://arxiv.org/abs/2507.09089">Measuring the Impact of Early-2025 AI on Experienced
+  Open-Source Developer Productivity</a> (2025).</strong>
+  Extract this: the three-way gap — forecast +24%, felt +20%, measured −19%. That
+  is the calibration curve of every "I'm on top of this system" report you have
+  ever given yourself.</li>
+<li><strong>Shen &amp; Tamkin, <a href="https://arxiv.org/abs/2601.20245">How AI Impacts Skill Formation</a>
+  (2026).</strong> Extract this: the six interaction patterns and which three preserved
+  learning. Delegation ships code without forming skill; engagement is the
+  difference, and it is a choice you make per interaction.</li>
+<li><strong>Bjork &amp; Bjork, <a href="https://bjorklab.psych.ucla.edu/wp-content/uploads/sites/13/2016/04/EBjork_RBjork_2011.pdf">Making things hard on yourself, but in a good way</a>
+  (2011).</strong> Extract this: storage strength vs retrieval strength, and why
+  performance-during-practice is a misleading index of learning — the reason the
+  audit is closed-book, timed, and re-run cold.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"I wrote it, so I own it."</strong> Assisted authorship is code review, and review
+  trains recognition. The audit exists precisely because authorship and ownership
+  come apart under assistance.</li>
+<li><strong>The single peek.</strong> One look at the original converts recall into recognition,
+  invalidates the measurement, and poisons the forgot-list — you will re-study the
+  wrong things with full confidence.</li>
+<li><strong>Treating the diff as the score.</strong> Byte-similarity measures typing memory. A
+  clean suite number over a heavily-rewritten file is a pass; a near-identical
+  file that dropped one invariant is a fail. The suite is the oracle.</li>
+<li><strong>Auditing the whole system.</strong> The audit covers the load-bearing core. For
+  everything else, lookup is the designed behavior — expanding scope just
+  guarantees a noisy, discouraging measurement.</li>
+<li><strong>Re-studying everything after a bad audit.</strong> The forgot-list is the
+  deliverable; blanket re-study is the rereading fallacy at curriculum scale.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why does re-reading your own code overestimate what you can rebuild?</summary>
+Re-reading trains recognition fluency — the code feels familiar, and familiarity
+masquerades as knowledge. Recall (producing the code unaided) draws on storage
+strength, which re-reading barely improves. The gap only shows up at a blank file,
+under a clock.</details>
+
+<details><summary>What does one peek at the original do to the measurement?</summary>
+It converts a recall event into a recognition event. The rebuild now measures
+eyesight, not memory — and the forgot-list inherits the error, so the re-study
+phase fixes the wrong gaps while the real ones stay invisible.</details>
+
+<details><summary>The rebuild holds the suite number but the diff is enormous. Pass or fail?</summary>
+Pass. The suite is the oracle; the diff is only the diagnosis. Behavior-preserving
+differences demonstrate ownership of the abstraction rather than the text — that
+is the stronger result, not a problem.</details>
+
+<details><summary>Why does this audit sit at S13 and not earlier?</summary>
+Two reasons. It needs the eval instrument built across S02–S12 — without a banked,
+defended number, "it runs and feels right" is the only bar, and that bar is the
+fluency illusion. And it needs a system large enough that ownership is genuinely
+in doubt.</details>
+
+<h2>What's next</h2>
+<p><strong>S14-ship-and-pilot:</strong> the audit proves the system is yours; the last session
+proves it works for someone who is not you. Acceptance runs on unseen scenarios,
+assembled architecture and failure documentation, and a public evidence artifact —
+the rebuild says you can defend the machine, S14 makes you defend it in public.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S13-rebuild-from-memory.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

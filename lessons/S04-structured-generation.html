@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S04-structured-generation — The schema is the contract</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S04-structured-generation — The schema is the contract</h1>
+<p><strong>What this teaches:</strong> getting data instead of prose out of a model is a contract
+problem, not a prompting problem — the three ways to get structure (prompt-and-pray,
+validate-and-retry, constrained decoding), why the validator is the real interface,
+and why schema-valid is never the same as correct.
+<strong>Time:</strong> ~75 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop — the retry
+you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
+score is the same instrument thinking).
+<strong>Hands-on:</strong> <a href="../notebooks/s04_structured_generation_toy.ipynb"><code>notebooks/s04_structured_generation_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S04-structured-generation.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>Free text is a liability at a system boundary</h3>
+<p>An agent that only talks to humans can afford prose. The moment its output feeds
+<em>code</em> — a scheduler, a database, a gate, another agent — prose becomes a parsing
+problem, and parsing prose with regex and hope is where reliability goes to die.
+The standard move is the <strong>intake pattern</strong>: free-text brief in, machine-readable
+plan out, with a machine check between the model and everything downstream.</p>
+<p>That check has a consequence people skip: model output crossing a boundary is
+<em>untrusted input</em>. You wouldn't <code>INSERT</code> a user-submitted form without validating
+it; a model's JSON deserves exactly the same suspicion. The validator is not a
+nicety bolted on after generation — it <em>is</em> the interface. The prompt is a request;
+the schema is the contract; the validator is the enforcement.</p>
+<h3>Three ways to get structure — one of them is a guarantee</h3>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Mechanism</th>
+<th>Guarantee</th>
+<th>Works on</th>
+<th>What still fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt-and-pray</td>
+<td>instructions and examples in the prompt</td>
+<td>none — a request, not a constraint</td>
+<td>every API and model</td>
+<td>everything, occasionally: fences, preamble prose, dropped fields, wrong types</td>
+</tr>
+<tr>
+<td>Validate-and-retry</td>
+<td>parse + validate locally, append the error as a message, re-ask — capped</td>
+<td>eventual conformance, <em>if</em> the failure is convergent</td>
+<td>every API and model</td>
+<td>non-convergence, retry cost and latency</td>
+</tr>
+<tr>
+<td>Constrained decoding ("Structured Outputs", guided decoding)</td>
+<td>schema compiled to a grammar; invalid tokens masked at sampling time</td>
+<td>syntactic conformance <em>by construction</em></td>
+<td>supporting APIs and runtimes</td>
+<td>semantics — and schema-subset limits, refusals, truncation</td>
+</tr>
+</tbody>
+</table>
+<p>Only the third row is a guarantee, and only of <em>shape</em>. OpenAI's 2024 launch of
+Structured Outputs reported schema adherence on its complex-schema eval going from
+under 40% unconstrained to 100% with constrained decoding
+(<a href="https://openai.com/index/introducing-structured-outputs-in-the-api/">announcement</a>,
+<a href="https://platform.openai.com/docs/guides/structured-outputs">docs</a>). Read that
+number precisely: 100% <em>schema adherence</em>, not 100% correct.</p>
+<p>The second row is the portable fallback — it works on every backend, including
+local models whose <code>response_format</code> support is partial or absent. The first row
+is not a strategy; it's the naive baseline you measure the other two against.</p>
+<h3>The retry loop is S01's loop with the validator as the tool</h3>
+<pre class="mermaid">flowchart LR
+    B[brief + schema in prompt] --&gt; C[call model]
+    C --&gt; P{json.loads&lt;br/&gt;parses?}
+    P -- no --&gt; F1[append PARSE ERROR&lt;br/&gt;as a user message]
+    P -- yes --&gt; V{validator&lt;br/&gt;errors?}
+    V -- yes --&gt; F2[append error list&lt;br/&gt;as a user message]
+    V -- no --&gt; D[validated spec&lt;br/&gt;loop exits]
+    F1 --&gt; R{attempts left?}
+    F2 --&gt; R
+    R -- yes --&gt; C
+    R -- no --&gt; X[escalate: suspect the schema,&lt;br/&gt;not only the model]
+</pre>
+<p>Two things to notice. First, there are <strong>two failure classes</strong> — output that
+doesn't parse (fences, prose, truncated) and output that parses but violates the
+schema (missing field, wrong type, out-of-enum value). They share a loop but not a
+fix, and the feedback text should say which class fired. Second, this is S01's
+machinery verbatim: the error goes <em>into the messages</em> (errors are messages, not
+exceptions), and the attempt cap is a harness property, exactly like <code>max_turns</code>.
+An uncapped retry loop is a non-terminating agent wearing a trench coat.</p>
+<h3>The schema is a product document, not a DTO</h3>
+<p>A schema for LLM output is not a data-transfer object you derive from a struct.
+Every keyword is a decision with a failure mode attached:</p>
+<ul>
+<li><strong>Every required field is a claim the input must support.</strong> If the brief doesn't
+  contain it, the model will still fill it in — hallucination with perfect types.
+  OpenAI's own guide warns that the model "will always try to adhere to the
+  provided schema, which can result in hallucinations" on unrelated input
+  (<a href="https://platform.openai.com/docs/guides/structured-outputs">docs</a>). A field
+  the input can't support belongs in <code>optional</code>, or nowhere.</li>
+<li><strong>Enums are policy.</strong> An enum says what the world is allowed to be. Too narrow,
+  and reality itself fails validation — the notebook has a brief whose device is
+  not in the enum, and the model is <em>right</em> every time it refuses to lie. Repeated
+  identical validation errors are telemetry about the schema, not the model.</li>
+<li><strong>Minimalism is a safety property.</strong> Every field you keep must earn its render
+  downstream. Fields nobody reads are fields the model hallucinates that nobody
+  checks. This becomes concrete at the next session's gate, where a human reads
+  the spec.</li>
+</ul>
+<p>The toy hand-rolls a validator over a JSON-Schema subset (<code>type</code>, <code>required</code>,
+<code>properties</code>, <code>enum</code>) so the checks are visible. The full spec adds <code>items</code>,
+<code>anyOf</code>, <code>additionalProperties</code>, and more
+(<a href="https://json-schema.org/learn/getting-started-step-by-step">json-schema.org</a>) —
+worth knowing exists, and worth reaching for via the real library once your subset
+starts growing its tenth keyword.</p>
+<h3>Valid ≠ correct</h3>
+<p>Conformance is checkable by code. Correctness is checkable only against the world.
+Two failure classes sail through any validator:</p>
+<ul>
+<li><strong>The in-enum wrong value</strong> — <code>priority: "normal"</code> on a brief that says
+  <em>tomorrow 8am or we lose the account</em>. Valid; wrong.</li>
+<li><strong>The unconstrained-field hallucination</strong> — a <code>parts_mentioned</code> entry the
+  customer never said. An array of strings can't object.</li>
+</ul>
+<p>The measurement that catches these is S02's instrument moved one step downstream:
+blinded human labels on <em>n</em> briefs, recorded <em>before</em> generation, then an agreement
+score, n/5. Until you've run it, "it validates" is a claim about syntax. After
+you've run it, you know which semantic errors your schema is structurally blind
+to — which is the thing you actually needed to know.</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<ol>
+<li>Run the naive extractor over the five briefs. <strong>Predict first:</strong> for each
+   brief, does the raw output fail to parse, parse but fail validation, or pass?
+   Note which failure class dominates — the remedy differs by class.</li>
+<li>Write the validate-and-retry loop yourself (attempt cell provided): parse,
+   validate, append the error as a user message, re-ask, cap at 4 attempts.
+   <strong>Predict first:</strong> which briefs converge, and which one <em>can't</em> — and why not?</li>
+<li>Attack the schema. The failing brief keeps failing the same field. Decide
+   whether the model or the schema is wrong; fix the enum; re-run to green.
+   Then say what <em>else</em> you'd challenge in this draft schema.</li>
+<li>Valid ≠ correct. The mock "upgrades" to constrained decoding: every output is
+   schema-valid. <strong>Predict first:</strong> blinded — write down your expected <code>device</code>
+   and <code>priority</code> for all five briefs <em>before</em> running. Then score agreement
+   n/5 and identify which failures the validator structurally cannot see.</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Constrained decoding is default on hosted APIs: OpenAI Structured Outputs (<code>strict: true</code> + <code>json_schema</code> response format; vendor-reported schema adherence ~100% vs &lt;40% unconstrained) (<a href="https://openai.com/index/introducing-structured-outputs-in-the-api/">announcement</a>, <a href="https://platform.openai.com/docs/guides/structured-outputs">docs</a>)</td>
+<td><strong>adopt</strong> on routes that support it</td>
+<td>Buys syntax, never semantics. Note the supported-schema subset (no <code>allOf</code>/<code>if</code>/<code>then</code>, root must be an object) and the refusal/truncation edge cases.</td>
+</tr>
+<tr>
+<td>Prompt → validate → retry, industrialized: Instructor wraps pydantic schemas and re-prompts with the validation error, capped by <code>max_retries</code> (<a href="https://github.com/567-labs/instructor">github.com/567-labs/instructor</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>The notebook's loop with plumbing. Build it by hand once — which you just did — and the library becomes legible instead of magical.</td>
+</tr>
+<tr>
+<td>Same mechanism in open runtimes: vLLM structured outputs (xgrammar/guidance backends; the <code>guided_*</code> params were retired for <code>structured_outputs</code> in v0.12) (<a href="https://docs.vllm.ai/en/latest/features/structured_outputs.html">docs</a>)</td>
+<td><strong>adopt</strong> when self-hosting</td>
+<td>Local backends honor JSON-Schema features unevenly. Test your exact schema, and keep the retry loop as the net underneath.</td>
+</tr>
+<tr>
+<td>Anthropic shipped native Structured Outputs — public beta Nov 2025 (Sonnet 4.5, Opus 4.1), GA in 2026: grammar-constrained <code>output_config.format</code> plus strict tool use (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">docs</a>)</td>
+<td><strong>newer than this session</strong></td>
+<td>Constrained decoding is now table stakes on every major API. The portable validate-retry fallback still earns its place on routes that lag — and for the semantic layer no sampler can fix.</td>
+</tr>
+<tr>
+<td>Format restrictions can degrade reasoning: "Let Me Speak Freely?" (<a href="https://arxiv.org/abs/2408.02442">arXiv:2408.02442</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Think in free text, structure the extraction. If a task's quality drops under a schema, split the call: reason first, emit JSON second.</td>
+</tr>
+<tr>
+<td>JSON mode without a schema (<code>{"type": "json_object"}</code>) (<a href="https://platform.openai.com/docs/guides/structured-outputs">docs</a>)</td>
+<td><strong>ignore</strong> as a reliability strategy</td>
+<td>Guarantees parseable, not valid — the vendor's own comparison table says schema adherence: "No". Prompt-and-pray with a parser attached.</td>
+</tr>
+<tr>
+<td>Schemas became the agent-to-agent contract: MCP tools declare <code>inputSchema</code>/<code>outputSchema</code> in JSON Schema (<a href="https://modelcontextprotocol.io/specification/2025-06-18/server/tools">spec</a>)</td>
+<td><strong>recognize</strong></td>
+<td>Your validator skills transfer verbatim. A tool schema is the same contract, one hop further downstream.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>OpenAI, <a href="https://platform.openai.com/docs/guides/structured-outputs">Structured Outputs guide</a>.</strong>
+  Extract three things: the supported-schema subset (so you know which JSON-Schema
+  features won't survive the trip), the refusal/incomplete edge cases (the schema
+  guarantee has holes — handle them), and the "handling user-generated input"
+  warning, which is the vendor's own version of valid ≠ correct.</li>
+<li><strong>OpenAI, <a href="https://openai.com/index/introducing-structured-outputs-in-the-api/">Introducing Structured Outputs in the API</a>
+  (Aug 2024).</strong> Extract the mechanism section: schema → grammar → token masking at
+  each sampling step. Then reread the headline number and name exactly what it
+  measures (schema adherence) and what it doesn't (task quality).</li>
+<li><strong>Tam et al., <a href="https://arxiv.org/abs/2408.02442">Let Me Speak Freely?</a> (2024).</strong>
+  Extract the shape of the result, not just the headline: reasoning tasks degrade
+  under format restriction, stricter formats degrade more, and
+  classification/extraction mostly hold. That shape is your rule for when to split
+  thinking from structuring.</li>
+<li><strong>Instructor, <a href="https://github.com/567-labs/instructor">repo</a> and docs.</strong> Extract
+  the retry contract: the validation error is re-inserted into the prompt, retries
+  are capped, and pydantic is the validator. It's the loop you built, with
+  production plumbing — read it to recognize your own machinery, not to copy it.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"JSON mode means structured output."</strong> Parseable is not schema-valid. JSON
+  mode guarantees the braces balance; it says nothing about your fields. The
+  validator still has to run.</li>
+<li><strong>"Constrained decoding makes the output right."</strong> It constrains the sampler,
+  not the truth. An in-enum hallucination validates. Worse, adherence pressure
+  makes the model fill fields the input doesn't support — garbage, perfectly typed.</li>
+<li><strong>"Retry until valid."</strong> Some failures can't converge: an enum that doesn't
+  cover reality, a required field the brief can't support. Cap the retries, and
+  read repeated identical errors as a schema bug report, not a model bug.</li>
+<li><strong>"More fields, more value."</strong> Every field is a claim the model must support
+  from the input and a line a human must read downstream. Unsupported required
+  fields are hallucination magnets. Delete fields that don't earn their render.</li>
+<li><strong>"Validation errors are noise to suppress."</strong> They're the highest-signal
+  channel in the system: re-prompt content for the model, schema-quality telemetry
+  for you. Log them; don't swallow them.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why does "please reply in JSON" fail even with a perfect prompt?</summary>
+Because a prompt constrains nothing at sampling time — it's a request, and the model
+can always drift into fences, preamble prose, or a dropped field. Only constrained
+decoding is a guarantee (of shape). Everything between the two is why you validate:
+prompts can't be trusted, validators can be audited.</details>
+
+<details><summary>Name the two failure classes of raw model output, and the remedy for each.</summary>
+Unparseable (fences, prose, truncation) — retry with the parse error as feedback,
+or remove the class with constrained decoding. Parseable but schema-invalid —
+validator error list appended as feedback, targeted retry. Same loop, different
+feedback text; saying which class fired is part of the feedback.</details>
+
+<details><summary>A retry loop fails on the same field three times. Model problem or schema problem?</summary>
+Suspect the schema: an enum that doesn't cover the domain, or a required field the
+input can't support. Repeated identical validation errors are telemetry about the
+contract, not the generator. Fix the schema or escalate to a human — retrying a
+fourth time is how you pay for the same error again.</details>
+
+<details><summary>Your pipeline emits 100% schema-valid specs. Why isn't that enough to ship?</summary>
+Valid ≠ correct: wrong in-enum values and hallucinated unconstrained fields
+validate fine. Semantic agreement needs blinded human labels and an n/5 score —
+and before any spec *executes*, a human gate, which is S05.</details>
+
+<h2>What's next</h2>
+<p><strong>S05-consent-gate:</strong> you can now produce a validated, machine-readable plan — and
+a schema minimal enough that a human can actually read it. S05 puts that human in
+the loop: a gate that renders the spec for explicit approval before anything
+executes, where "every field earns its place" becomes "every field earns its render
+in under 60 seconds." Validation told you the plan is well-formed; it cannot tell
+you the plan should run.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S04-structured-generation.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

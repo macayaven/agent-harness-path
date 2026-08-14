@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S06-layered-detection — Safety detection in layers, policy as data</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S06-layered-detection — Safety detection in layers, policy as data</h1>
+<p><strong>What this teaches:</strong> why a safety rule in the prompt is advice rather than
+enforcement, how a layered detection pipeline (deterministic floor + classifier
+pass) routes untrusted input, why the policy belongs in data rather than code,
+and why the false-trigger count is a product metric you record, not noise you
+tolerate.
+<strong>Time:</strong> ~75 min with the notebook.
+<strong>Prerequisites:</strong> S01 (the loop), S02 (golden sets, the fixture invariant).
+<strong>Hands-on:</strong> <a href="../notebooks/s06_layered_detection_toy.ipynb"><code>notebooks/s06_layered_detection_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S06-layered-detection.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>The threat model: untrusted text meets a system that can act</h3>
+<p>Your agent reads text you don't control — user turns, files, retrieved
+documents, tool results — and it can act: reply, call tools, store data. Simon
+Willison's <em>lethal trifecta</em> names the dangerous combination: access to private
+data, exposure to untrusted content, and a channel to exfiltrate
+(<a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">simonwillison.net</a>).
+Hold all three and you are one crafted message away from a breach; the reliable
+fix is to remove a leg, not to ask the model to be careful. OWASP's LLM Top 10
+puts prompt injection at LLM01 for the same underlying reason: the model reads
+your instructions and the attacker's instructions as one token stream and cannot
+reliably privilege yours
+(<a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">owasp.org</a>).</p>
+<p>Injection is the adversarial case. The other high-stakes case needs no adversary
+at all: a user in genuine crisis telling your system about it. A support bot
+that continues business-as-usual through an emergency message is a defect even
+though nobody attacked it.</p>
+<p>Both cases share a shape: some inputs must never reach the model unscreened,
+and some inputs must change what the system does next — deterministically, in
+code, not at the model's discretion.</p>
+<h3>Why one detector is never enough</h3>
+<p>Each detection mechanism sits at a different point in cost, recall, and
+auditability:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Cost per call</th>
+<th>Catches</th>
+<th>Misses</th>
+<th>Failure signature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deterministic patterns (regex, keywords)</td>
+<td>~free</td>
+<td>known phrasings, known attacks</td>
+<td>paraphrase, novel attacks</td>
+<td>brittle; slang false-triggers</td>
+</tr>
+<tr>
+<td>Small classifier model</td>
+<td>cheap, local</td>
+<td>semantic variants, paraphrase</td>
+<td>off-distribution phrasing</td>
+<td>threshold tradeoffs; its own blind spots</td>
+</tr>
+<tr>
+<td>Frontier-model review</td>
+<td>expensive, slow</td>
+<td>subtle, context-dependent cases</td>
+<td>—</td>
+<td>cost, latency, judged-tier problems (S02)</td>
+</tr>
+<tr>
+<td>Human escalation</td>
+<td>most expensive</td>
+<td>everything, eventually</td>
+<td>—</td>
+<td>doesn't scale; fatigue</td>
+</tr>
+</tbody>
+</table>
+<p>No row is sufficient alone. The deterministic floor is auditable and free but
+brittle: <code>fire</code> matches "fireplace", while "rotten-egg smell and a hissing
+noise" contains no keyword at all. A classifier catches the paraphrase but hands
+you a threshold to tune and blind spots you haven't mapped. So you layer them —
+which is what production containment actually looks like (Anthropic's account of
+its own stack:
+<a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a>).</p>
+<h3>The mechanism: ordered layers, union for the catastrophic class</h3>
+<pre class="mermaid">flowchart TD
+    U[untrusted message&lt;br/&gt;user turn, file, tool result] --&gt; S{injection screen&lt;br/&gt;deterministic}
+    S -- hit --&gt; B[blocked:&lt;br/&gt;the model never sees it]
+    S -- clean --&gt; F{keyword floor&lt;br/&gt;cheap regex}
+    F -- hit --&gt; H[handoff]
+    F -- miss --&gt; C{classifier&lt;br/&gt;confidence &gt;= threshold?}
+    C -- yes --&gt; H
+    C -- no --&gt; G{scope governor}
+    G -- out of scope --&gt; R[refuse + signpost]
+    G -- in scope --&gt; M[model generates a reply]
+    H --&gt; T[break character&lt;br/&gt;contacts as data&lt;br/&gt;terminal state]
+</pre>
+<p>The invariants live in the ordering and the exit:</p>
+<ul>
+<li><strong>Deterministic screens run first.</strong> Nothing model-shaped touches the text
+  before the cheap, auditable checks have passed. An injected instruction that
+  reaches the model has already won too often.</li>
+<li><strong>The catastrophic class is a union.</strong> For the one class where a miss is
+  unacceptable (the crisis case), <em>either</em> layer may trigger. Union buys recall
+  at the price of more false triggers — which is exactly why the false-trigger
+  counter exists.</li>
+<li><strong>A trigger is a terminal state, not a log line.</strong> On a crisis trigger the
+  system breaks character, delivers the policy-configured handoff, and ends the
+  interaction in a distinct, honest stop state. A detector that fires and lets
+  the conversation continue is telemetry, not safety.</li>
+</ul>
+<h3>Policy as data</h3>
+<p>Everything the pipeline uses — the keyword list, the threshold, the handoff
+text, the emergency contacts, the scope markers — lives in configuration, not
+code. Three reasons. First, the policy changes faster than the code: new
+attacks, updated contacts, retuned thresholds. A data diff is reviewable in a
+way a code refactor is not. Second, some of the data carries its own provenance
+requirement: emergency contacts must be verified against official sources, with
+the verification date recorded next to them — a contact you never checked is a
+liability wearing a safety costume. Third, an explicit config forces the honesty
+question: what is <em>enforced in code</em>, and what is merely <em>documented as a
+limitation</em>? Both belong in the record. Pretending the second category is the
+first is how safety claims rot.</p>
+<h3>The false-trigger counter is a product metric</h3>
+<p>Over-triggering is a real defect: a tool that routes "the previous guests smoked
+indoors, we want a refund" to an emergency handoff is unusable, and it trains
+users to dismiss the real handoffs. So the benign half of the fixture bank
+matters as much as the attack half. The threshold is not a default you inherit —
+it is chosen from a sweep over the bank, and the false-trigger count at the
+chosen point is recorded as a product number. And the bank itself is grown
+adversarially: you write the red-team list <em>before</em> you trust the policy, and
+every attack you think of becomes a permanent regression row (S02's fixture
+invariant applies here unchanged — a pipeline that flags nothing asserts
+nothing).</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<p>Run the notebook top-to-bottom. Write each prediction down before running the
+cell — a prediction you didn't write is a prediction you'll retroactively fix.</p>
+<ol>
+<li>The keyword floor alone, with naive substring matching: for each bank row,
+   predict caught / missed / false-trigger. Watch "fireplace" and "smoked" trip
+   a detector that lets a paraphrased gas leak walk straight past.</li>
+<li>Word-boundary floor in union with the classifier at threshold 0.7: which rows
+   flip versus experiment 1, and why is the crisis class a union rather than an
+   intersection?</li>
+<li>The threshold sweep: predict where false triggers appear and where recall
+   drops, then pick the operating point from the table and record it together
+   with its false-trigger count.</li>
+<li>The injection, screen off vs screen on: predict what the downstream mock
+   assistant does with the unscreened injected message. (It complies. That is
+   the point.)</li>
+<li>Red-team rep: write three attack fixtures of your own <em>before</em> opening the
+   solution cell. Whatever escapes becomes a permanent bank row and a documented
+   limitation.</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lethal-trifecta framing (<a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">Willison, Jun 2025</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>The threat model this session sits in. Remove a leg; don't ask the model to be careful.</td>
+</tr>
+<tr>
+<td>OWASP Top 10 for LLM Applications, 2025 list — LLM01 prompt injection, LLM06 excessive agency (<a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">owasp.org</a>)</td>
+<td><strong>already in this path</strong></td>
+<td>The shared vocabulary. The injection screen and the scope governor map to LLM01 and LLM06.</td>
+</tr>
+<tr>
+<td>Anthropic's production containment write-up, <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a> (May 2026)</td>
+<td><strong>recognize</strong></td>
+<td>The industrial version of this session: environment isolation first, model-level controls second — and the admission that the software you build yourself is often the weakest layer.</td>
+</tr>
+<tr>
+<td>Constitutional classifiers — input <em>and</em> output classifier shells, stress-tested with 3,000+ hours of human red-teaming (<a href="https://arxiv.org/abs/2501.18837">arXiv:2501.18837</a>)</td>
+<td><strong>recognize</strong></td>
+<td>The research-grade union-of-layers design. Note the metric: red-team hours survived, not a benchmark score.</td>
+</tr>
+<tr>
+<td>Small open injection classifiers — <a href="https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M">Llama Prompt Guard 2</a> (86M/22M, benign/malicious), <a href="https://huggingface.co/protectai/deberta-v3-base-prompt-injection">ProtectAI's DeBERTa injection model</a></td>
+<td><strong>adopt</strong> when you leave the toy</td>
+<td>This is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on <em>your</em> bank.</td>
+</tr>
+<tr>
+<td>Guardrail toolkits and managed layers — <a href="https://github.com/NVIDIA/NeMo-Guardrails">NeMo Guardrails</a>, OpenAI's <a href="https://platform.openai.com/docs/guides/moderation">moderation endpoint</a></td>
+<td><strong>recognize</strong></td>
+<td>The same layered pattern, packaged. A vendor default is not your operating point — validate the layer against your own fixture bank.</td>
+</tr>
+<tr>
+<td>"Safety system prompt" products — one mega-instruction that forbids everything</td>
+<td><strong>ignore</strong></td>
+<td>Prompt-level prohibition is advice to the model, not enforcement. If the whole story is a prompt, there is no detection.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Willison, <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">The lethal trifecta</a>.</strong>
+  Extract: the three legs stated precisely (private data, untrusted content,
+  exfiltration channel) and the design rule "remove one leg" — then check which
+  leg your own system removes, in code.</li>
+<li><strong>OWASP, <a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">Top 10 for LLM Applications</a>.</strong>
+  Extract: LLM01 (direct vs indirect injection) and LLM06 (excessive agency).
+  Skim the remaining eight as vocabulary for later sessions.</li>
+<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a>
+  (May 2026).</strong> Extract: which layers are environmental versus model-level, why
+  battle-tested primitives beat custom controls, and the approval-fatigue data —
+  a ~93% approval rate is a detection layer failing quietly.</li>
+<li><strong>Sharma et al., <a href="https://arxiv.org/abs/2501.18837">Constitutional Classifiers</a>.</strong>
+  Extract: the input/output classifier split, and the evaluation protocol — they
+  define "universal jailbreak" up front and measure in red-team hours survived.
+  That is what a defensible detection claim looks like.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"The system prompt says never to..."</strong> Instructions are text the model
+  weighs against other text, including the attacker's. Enforcement lives in code
+  around the model: screens before it, terminal states after a trigger.</li>
+<li><strong>Keyword-only detection.</strong> A floor is a floor: paraphrase walks over it,
+  slang trips it. It exists because it is free and auditable, not because it is
+  sufficient.</li>
+<li><strong>Threshold by intuition.</strong> The operating point is a data decision: sweep the
+  bank, pick the point, record the false-trigger count next to it. An unrecorded
+  threshold is an unmade decision.</li>
+<li><strong>Log-and-continue on trigger.</strong> If firing the detector doesn't change what
+  the system does next, you built telemetry and named it safety.</li>
+<li><strong>Testing what you built instead of what you fear.</strong> Red-teaming after the
+  policy is written measures your implementation; the attack list written first
+  measures your imagination. You need both, in that order.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why can't the system prompt carry the safety rule?</summary>
+The model reads instructions and untrusted content as one token stream and
+cannot reliably privilege yours — that is why prompt injection is OWASP LLM01.
+Detection and routing must live in deterministic code around the model: screens
+before it, terminal states after a trigger.</details>
+
+<details><summary>Why is the crisis class detected by a union of layers, not one good classifier?</summary>
+Each layer has a different failure signature: the floor misses paraphrase, the
+classifier misses off-distribution phrasing and carries threshold error. For the
+class where a miss is catastrophic, either layer firing must be enough — union
+maximizes recall, and the price (false triggers) is paid knowingly and counted.</details>
+
+<details><summary>What does the false-trigger counter measure, and why is it recorded?</summary>
+How many benign bank rows the pipeline misroutes — emergency handoffs on normal
+messages. Over-triggering makes the product unusable and teaches users to ignore
+real handoffs. The count is recorded next to the chosen threshold so the
+operating point is a defensible decision, not an inherited default.</details>
+
+<details><summary>What must happen on a crisis trigger — and what must not?</summary>
+Must: break character, deliver the policy-configured handoff (contacts as data,
+verified against official sources and dated), end in a distinct terminal state.
+Must not: continue the interaction, soften the trigger into a log line, or let
+the model improvise the handoff text.</details>
+
+<h2>What's next</h2>
+<p><strong>S07-repair-loop:</strong> detection handles the catastrophic tail, but most
+turn-level defects aren't catastrophic — a character break, a generic reply, a
+register slip. Those don't deserve a terminal state; they deserve a bounded
+retry with a curated failure view. Next session builds that loop, plus the
+honest stop reasons for when it runs out.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S06-layered-detection.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

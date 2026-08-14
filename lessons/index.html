@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Agent Harness Path</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>The Agent Harness Path</h1>
+<p>A self-contained course on building, evaluating, and governing LLM agents — fourteen
+sessions, each an HTML lesson plus a runnable toy notebook. Zero network, zero API
+keys, zero cost: every "model" in the notebooks is a plain Python function you can
+read, so the mechanics are never hidden behind an API call.</p>
+<p><strong>New here?</strong> Watch the 9-minute <a href="videos/S00-course-overview.mp4">course overview</a>
+for the whole arc — core mechanics → context &amp; boundaries → safety &amp; governance →
+observability → production — then start at S01.</p>
+<h2>How to work a session</h2>
+<ol>
+<li><strong>Read the lesson</strong> (20–40 min). The theory-in-depth section is the core; the
+   state-of-the-art table tells you what the industry currently does about it.</li>
+<li><strong>Run the notebook</strong> (30–60 min). Every experiment has a <strong>Predict first</strong> prompt —
+   write the prediction down <em>before</em> running the cell. Prediction misses are where
+   the learning is; a prediction you didn't write down is one you'll retroactively fix.</li>
+<li><strong>Do the exercises.</strong> Attempt cells come before solution cells. The attempt is the
+   rep; the solution is the spotter, not the lift.</li>
+<li><strong>Self-check.</strong> Foldable questions at the end of the lesson. Be honest; nobody is
+   grading you except S13, and S13 is strict.</li>
+</ol>
+<p>Setup: <code>uv sync</code> once, then <code>uv run jupyter lab</code> (or open the notebooks in any
+Jupyter frontend). Notebook code is Python standard library only.</p>
+<h2>The sessions</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Session</th>
+<th>Teaches</th>
+<th>Notebook</th>
+<th>Video</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="S01-agent-loop.html">The agent loop</a></td>
+<td>A client-side loop around a stateless API; append-verbatim and tool-pairing invariants</td>
+<td><a href="../notebooks/s01_agent_loop_toy.ipynb">s01_agent_loop_toy.ipynb</a></td>
+<td><a href="videos/S01-agent-loop.mp4">▶</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="S02-golden-evals.html">Golden sets &amp; baselines</a></td>
+<td>Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline</td>
+<td><a href="../notebooks/s02_scripted_user_eval_toy.ipynb">s02_scripted_user_eval_toy.ipynb</a></td>
+<td><a href="videos/S02-golden-evals.mp4">▶</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="S03-context-engineering.html">Context engineering</a></td>
+<td>Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary</td>
+<td><a href="../notebooks/s03_context_engineering_toy.ipynb">s03_context_engineering_toy.ipynb</a></td>
+<td><a href="videos/S03-context-engineering.mp4">▶</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="S04-structured-generation.html">Structured generation</a></td>
+<td>Schema as contract; validate-and-retry; valid ≠ correct</td>
+<td><a href="../notebooks/s04_structured_generation_toy.ipynb">s04_structured_generation_toy.ipynb</a></td>
+<td><a href="videos/S04-structured-generation.mp4">▶</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="S05-consent-gate.html">The consent gate</a></td>
+<td>Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade</td>
+<td><a href="../notebooks/s05_consent_gate_toy.ipynb">s05_consent_gate_toy.ipynb</a></td>
+<td><a href="videos/S05-consent-gate.mp4">▶</a></td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="S06-layered-detection.html">Layered detection</a></td>
+<td>Keyword floor + classifier pipeline; policy as data; the false-trigger counter</td>
+<td><a href="../notebooks/s06_layered_detection_toy.ipynb">s06_layered_detection_toy.ipynb</a></td>
+<td><a href="videos/S06-layered-detection.mp4">▶</a></td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="S07-repair-loop.html">The repair loop</a></td>
+<td>Bounded regeneration; the curated failure view; what context a retry gets</td>
+<td><a href="../notebooks/s07_repair_loop_toy.ipynb">s07_repair_loop_toy.ipynb</a></td>
+<td><a href="videos/S07-repair-loop.mp4">▶</a></td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="S08-observability-replay.html">Observability &amp; replay</a></td>
+<td>Spans and traces; fail-soft telemetry; record/replay byte-identical; hunt planted nondeterminism</td>
+<td><a href="../notebooks/s08_observability_replay_toy.ipynb">s08_observability_replay_toy.ipynb</a></td>
+<td><a href="videos/S08-observability-replay.mp4">▶</a></td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="S09-evidence-reports.html">Evidence reports</a></td>
+<td>Reports a depleted reader can trust; citation and coverage validators; the 30-second test</td>
+<td><a href="../notebooks/s09_evidence_report_toy.ipynb">s09_evidence_report_toy.ipynb</a></td>
+<td><a href="videos/S09-evidence-reports.mp4">▶</a></td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="S10-error-analysis.html">Error analysis</a></td>
+<td>Failure logs → taxonomy → new evals; open and axial coding on real traces</td>
+<td><a href="../notebooks/s10_error_analysis_toy.ipynb">s10_error_analysis_toy.ipynb</a></td>
+<td><a href="videos/S10-error-analysis.mp4">▶</a></td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="S11-budgets-routing.html">Budgets &amp; routing</a></td>
+<td>Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math</td>
+<td><a href="../notebooks/s11_budgets_routing_toy.ipynb">s11_budgets_routing_toy.ipynb</a></td>
+<td><a href="videos/S11-budgets-routing.mp4">▶</a></td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="S12-judge-calibration.html">Judge calibration</a></td>
+<td>Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy</td>
+<td><a href="../notebooks/s12_judge_calibration_toy.ipynb">s12_judge_calibration_toy.ipynb</a></td>
+<td><a href="videos/S12-judge-calibration.mp4">▶</a></td>
+</tr>
+<tr>
+<td>13</td>
+<td><a href="S13-rebuild-from-memory.html">Rebuild from memory</a></td>
+<td>The closed-book audit: recognition ≠ recall, and only rebuilding proves ownership</td>
+<td>— (the audit is the exercise)</td>
+<td><a href="videos/S13-rebuild-from-memory.mp4">▶</a></td>
+</tr>
+<tr>
+<td>14</td>
+<td><a href="S14-ship-and-pilot.html">Ship &amp; pilot</a></td>
+<td>The cold acceptance run; the first real user; the public artifact</td>
+<td>— (protocol, not notebook)</td>
+<td><a href="videos/S14-ship-and-pilot.mp4">▶</a></td>
+</tr>
+</tbody>
+</table>
+<p>The videos are NotebookLM-generated summaries of the lessons (in <code>lessons/videos/</code>).
+Use them as preview or review — the learning happens in the notebook, not the video.</p>
+<h2>The pedagogical commitments</h2>
+<ul>
+<li><strong>Toys from real domains, never the artifact.</strong> Every notebook is a small complete
+  system — a hotel concierge, a repair shop, a mopbot, a trivia host — chosen so the
+  mechanics are identical to production and the stakes are not.</li>
+<li><strong>Predict first, always.</strong> Written predictions before every run; the suite of
+  habits this builds is the actual curriculum.</li>
+<li><strong>Failure is on the syllabus.</strong> Each toy contains deliberately broken variants
+  (labeled) so you meet the failure modes cheaply, where the fix is one cell away.</li>
+<li><strong>State of the art, dated.</strong> Each lesson's SOTA table is stamped "as of August 2026"
+  and every claim carries a source. Treat anything older than a year as history.</li>
+</ul>
+<h2>Provenance</h2>
+<p>This path is a standalone reworking of the topics in a separate intensive course
+(<code>agentic-harnessing-intensive</code>). The session guides in <code>sessions/</code> and the design
+rationale in <code>WHY-THIS-DESIGN.md</code> document the original companion relationship.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/index.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>

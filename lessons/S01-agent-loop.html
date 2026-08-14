@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S01 — The agent loop</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    pre.mermaid { background: var(--surface); text-align: center; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+<h1>S01 — The agent loop</h1>
+<p><strong>What this teaches:</strong> what an LLM agent actually is mechanically — a client-side loop
+around a stateless API — and the two invariants that keep it alive: message-list
+preservation and tool-call/tool-result pairing.
+<strong>Time:</strong> ~60 min with the notebook. <strong>Prerequisites:</strong> none beyond Python.
+<strong>Hands-on:</strong> <a href="../notebooks/s01_agent_loop_toy.ipynb"><code>notebooks/s01_agent_loop_toy.ipynb</code></a>
+<strong>Video:</strong> <a href="videos/S01-agent-loop.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2>The theory in depth</h2>
+<h3>The API is stateless; the loop is the agent</h3>
+<p>Every call to a chat-completions-style API is independent. The model does not remember
+your previous request, does not keep a session, does not "know what we were doing."
+What it sees is exactly one thing: the <code>messages</code> list you send. Memory, personality,
+progress — all of it is that list, re-sent in full, every call.</p>
+<p>An <em>agent</em> is what happens when you wrap that stateless call in a loop and let the
+model decide when to stop:</p>
+<pre class="mermaid">flowchart LR
+    M[messages list&lt;br/&gt;the only state] --&gt; C[call model]
+    C --&gt; D{model asked for&lt;br/&gt;a tool?}
+    D -- no --&gt; E[final answer&lt;br/&gt;loop exits]
+    D -- yes --&gt; X[execute tool locally]
+    X --&gt; A[append assistant message&lt;br/&gt;AND tool result verbatim]
+    A --&gt; C
+</pre>
+<p>That is the entire architecture. Simon Willison's definition — <em>"an LLM agent runs
+tools in a loop to achieve a goal"</em> — is deliberately unglamorous
+(<a href="https://simonwillison.net/2025/Jun/17/ai-agent-definition/">simonwillison.net</a>).
+Everything else — planning, memory, reflection, multi-agent — is a modification of
+this diagram, usually by editing what goes into the messages list.</p>
+<h3>The two mechanical invariants</h3>
+<p>The protocol has rules that are invisible until you break them:</p>
+<ol>
+<li><strong>Append-verbatim.</strong> The assistant message that contains the tool call must go into
+   the history <em>exactly as received</em> — including its tool-call metadata — followed by
+   the tool result. If you reformat, summarize, or drop it, the next request contains
+   a tool result whose call was never made: an <strong>orphaned tool result</strong>, and real APIs
+   reject it with a 400. This is one of the most common production breakages in agent
+   code, and it usually appears when someone adds retry or compaction logic later
+   (real-world instances:
+   <a href="https://github.com/shareAI-lab/learn-claude-code/issues/325">learn-claude-code#325</a>,
+   <a href="https://github.com/anthropics/claude-code/issues/62577">anthropics/claude-code#62577</a>).</li>
+<li><strong>Tool errors are messages, not exceptions.</strong> When a tool raises, the correct move
+   is to catch it and append the error <em>as the tool result</em> (Anthropic's protocol has
+   <code>is_error: true</code> for exactly this), so the model can see what happened and adapt.
+   Letting the exception kill the loop throws away everything the run had
+   accomplished. Anthropic's tool-design guidance makes the same point from the other
+   side: error text is <em>prompt content</em> — write tool errors the model can recover
+   from (<a href="https://www.anthropic.com/engineering/writing-tools-for-agents">anthropic.com/engineering/writing-tools-for-agents</a>).</li>
+</ol>
+<p>The notebook's mock model enforces the pairing invariant the way a real API does, so
+the experiments fail the way production would — cheaply.</p>
+<h3>Where the model stops being the hard part</h3>
+<p>Once the loop works, the failures move elsewhere: the context fills up, the model
+loops without terminating, tool results poison the history. That is why the field's
+attention moved from "the loop" to <em>what flows through it</em> — context engineering,
+which is S03's topic. The loop is solved; the stream is not.</p>
+<h2>Exercises (in the notebook, predict first)</h2>
+<p>Run the notebook top-to-bottom. For each experiment cell, <strong>write your prediction in
+the markdown cell before running it</strong> — a prediction you didn't write down is a
+prediction you'll retroactively fix.</p>
+<ol>
+<li>Add a new tool to the weather bot. Notice what the model needs to <em>see</em> to use it
+   correctly (name, description, schema — all prompt content).</li>
+<li>Break append-verbatim on purpose (the notebook has a labeled broken variant).
+   Predict the exact failure, then watch it.</li>
+<li>The tool that raises: run the unsafe version, then the error-as-message version.
+   Compare what the model does after each.</li>
+<li>Cap the loop: what happens when <code>max_turns</code> fires mid-task? What does the user see?</li>
+</ol>
+<h2>State of the art (as of August 2026)</h2>
+<p>Mapped to <em>recognize vs adopt</em>: what the field converged on that this session already
+teaches, what's newer, what to ignore for now.</p>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Agents are just loops" is now the industry baseline definition (Willison; Anthropic's <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>: "start by using LLM APIs directly")</td>
+<td><strong>already in this path</strong></td>
+<td>You are learning the thing the industry considers the durable core.</td>
+</tr>
+<tr>
+<td>Frameworks consolidated: AutoGen + Semantic Kernel merged into <a href="https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/">Microsoft Agent Framework</a> (Oct 2025); <a href="https://github.com/openai/swarm">OpenAI Swarm</a> superseded by the <a href="https://github.com/openai/openai-agents-python">Agents SDK</a>; <a href="https://langfuse.com/blog/2025-03-19-ai-agent-comparison">LangGraph</a>, <a href="https://google.github.io/adk-docs/">Google ADK</a>, <a href="https://ai.pydantic.dev">Pydantic AI</a> are the serious production set</td>
+<td><strong>recognize</strong></td>
+<td>Frameworks now sell the loop as a product. Learn the loop first — which is what you're doing — so a framework is a choice, not a crutch.</td>
+</tr>
+<tr>
+<td>Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure</td>
+<td><strong>recognize</strong></td>
+<td>The minimal loop survives as <em>pedagogy</em> while vendors productize it. Knowing the loop is how you evaluate what they're selling.</td>
+</tr>
+<tr>
+<td>Code-as-action loops (<a href="https://github.com/huggingface/smolagents">smolagents</a>: the model writes Python instead of JSON tool calls)</td>
+<td><strong>recognize</strong></td>
+<td>A different point in the same design space. Same loop, different action encoding.</td>
+</tr>
+<tr>
+<td><code>strict: true</code> tool schemas for guaranteed-conformant arguments (<a href="https://developers.openai.com/api/docs/guides/function-calling">OpenAI function-calling guide</a>)</td>
+<td><strong>adopt</strong> when you hit real APIs</td>
+<td>Cheap reliability win; the toy's mock doesn't model it.</td>
+</tr>
+<tr>
+<td>Multi-agent orchestration frameworks</td>
+<td><strong>ignore for now</strong></td>
+<td>OpenAI's own guide: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">"start with a single agent"</a>. S05 and S11 cover when structure actually pays.</td>
+</tr>
+</tbody>
+</table>
+<h2>Annotated readings</h2>
+<ul>
+<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>
+  (Dec 2024).</strong> The canonical primary source. Extract this: the workflows-vs-agents
+  distinction, and the observation that the most successful deployments were
+  "simple, composable patterns," not frameworks. The framework survey inside it is
+  dated (the post's own banner says so); the philosophy is not.</li>
+<li><strong>OpenAI, <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">A Practical Guide to Building Agents</a>
+  (2025).</strong> Extract this: agent = model + tools + instructions, and <code>max_turns</code> as
+  the explicit non-termination guardrail — the same cap you just exercised in the toy.</li>
+<li><strong>Drew Breunig, <a href="https://www.dbreunig.com/2025/06/22/how-contexts-fail-and-how-to-fix-them.html">How contexts fail and how to fix them</a>
+  (Jun 2025).</strong> The four failure modes (poisoning, distraction, confusion, clash).
+  Read it now as a preview; it becomes the working vocabulary of S03.</li>
+</ul>
+<h2>Misconceptions and failure modes</h2>
+<ul>
+<li><strong>"The model remembers our conversation."</strong> It doesn't. You re-send the whole
+  transcript every call. Anyone who believes otherwise writes retry logic that drops
+  messages — and ships orphaned-tool-result 400s.</li>
+<li><strong>Retrying a failed call without the failed attempt in history.</strong> The model can't
+  adapt to an error it never saw. Append the failure, then continue.</li>
+<li><strong>Catching tool errors at the loop level.</strong> That converts a recoverable,
+  model-visible event into a run-killing exception. Errors belong <em>in</em> the messages.</li>
+<li><strong>Loop non-termination.</strong> No authoritative postmortem exists, but every production
+  guide converges on the same three defenses: descriptive tool errors, a deterministic
+  repeat-detector, and a hard iteration cap. The toy demonstrates the cap; the other
+  two are S06/S07 material.</li>
+</ul>
+<h2>Self-check</h2>
+<details><summary>Why can't the model "just remember" the last turn?</summary>
+The API is stateless: each request is independent and contains the full messages
+list. There is no server-side conversation state to remember — continuity is entirely
+client-side list management.</details>
+
+<details><summary>What exactly makes a tool result "orphaned"?</summary>
+A tool result appears in the messages list without the assistant message containing
+its matching tool call immediately before it. Real APIs validate the pairing and
+reject the request (400). It happens when retry/compaction code drops or rewrites the
+assistant message but keeps the result.</details>
+
+<details><summary>A tool raises mid-run. Two handling strategies — which is correct and why?</summary>
+Kill the loop with the exception, or catch it and append the error as the tool
+result. The second: the error becomes model-visible context, the model can adapt or
+degrade gracefully, and the run's prior progress survives. The first throws away
+work and teaches the model nothing.</details>
+
+<details><summary>Why is `max_turns` a correctness mechanism and not just a cost cap?</summary>
+Because a model stuck in a tool loop will otherwise run forever — Breunig's
+"distraction" failure mode. A hard cap is the only defense that works even when every
+smarter mechanism fails.</details>
+
+<h2>What's next</h2>
+<p><strong>S02 — Golden sets and baselines:</strong> you have a loop that runs; next, how do you
+<em>measure</em> whether it's any good? The answer is an eval suite, and the surprising part
+is that the eval suite — not the agent — is where most of the engineering lives.</p>
+<footer>
+  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  <code>lessons/src/S01-agent-loop.md</code>. Study companion to
+  <code>agentic-harnessing-intensive</code> — theory depth only; the build,
+  the baselines, and the audit live in the course repo.
+</footer>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "dark" });
+</script>
+</body>
+</html>
