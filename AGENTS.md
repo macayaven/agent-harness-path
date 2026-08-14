@@ -1,4 +1,4 @@
-# AGENTS.md — agentic-harnessing-companion
+# AGENTS.md — agent-harness-path
 
 Read this before doing anything in this repo. It assumes you know nothing about the project.
 

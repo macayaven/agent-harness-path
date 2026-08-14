@@ -1,97 +1,77 @@
-# Agentic Harnessing — Study Companion
+# The Agent Harness Path
 
-A scaffolded companion to [`agentic-harnessing-intensive`](../agentic-harnessing-intensive) (the course, v5).
-It changes **the path, not the bar**: same fourteen sessions, same deliverables, same
-evidence rules, same S13 rebuild-from-memory audit — with the accidental friction removed
-and the deliberate friction kept and *labeled*.
+A self-contained course on **building, evaluating, and governing LLM agents** —
+fourteen sessions, each pairing a deep HTML lesson with a runnable toy notebook and a
+short video overview. Zero network, zero API keys, zero cost: every "model" in the
+notebooks is a plain Python function you can read, so the mechanics are never hidden
+behind an API call.
 
-**It also hosts a standalone course path**: **The Agent Harness Path** —
-[`lessons/index.html`](lessons/index.html) is the entry point. Fourteen sessions, each
-a deep HTML lesson plus a runnable stdlib-only toy notebook, followable entirely in
-this workspace, with dated state-of-the-art sections. It teaches the same topics
-self-contained; the original course's builds, baselines, and audit stay in the course
-repo and are not replaced by anything here.
+**Start here:** [`lessons/index.html`](lessons/index.html) — or watch the 9-minute
+[course overview](lessons/videos/S00-course-overview.mp4) first.
 
-## Why this exists
+## Who it's for
 
-The course is deliberately austere: you type every deliverable line, docs start as
-`DRAFT FOR ATTACK`, and nothing counts until `evals/run.py` prints a number. That
-austerity is load-bearing (see `WHY-THIS-DESIGN.md` for the evidence). But the course
-has three accidental gaps:
+Engineers who already call an LLM API and want the discipline around it: eval suites
+that produce defensible numbers, context that survives compaction, consent gates,
+safety layers, traces you can replay, judges you've calibrated, budgets that hold.
+Not an intro to prompting — the course's premise is that the model call is the easy
+part and the harness is the product.
 
-1. **No worked examples.** Readings go straight to "build the real thing." This
-   companion adds small, runnable *toy* examples for every core concept.
-2. **No bridge layer.** Theory → practice is a cliff in several sessions. Each
-   companion session inserts *bridge exercises*: small, guided reps on the exact moves
-   the real build requires.
-3. **No field guides.** Mechanical knowledge (what exit 97 means, how to tell a sub-step
-   is done, common failure modes) lives nowhere. Each companion session has one.
+## What a session looks like
 
-## The one rule that keeps this honest
+1. **Read the lesson** (20–40 min) — theory in depth, a diagram, and a dated
+   state-of-the-art table (what the industry currently does about it, with sources).
+2. **Run the notebook** (30–60 min) — a small complete system from a real domain
+   (a hotel concierge, a repair shop, a trivia host), with **predict-first**
+   experiments and attempt-before-solution exercises.
+3. **Self-check** — foldable quiz questions at the end of the lesson.
+4. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a ship/pilot
+   protocol. No notebooks — scaffolding those would defeat them.
 
-Everything in here is a **toy from a different domain** — a weather-bot loop, a
-customer-support scripted user — never the course artifact itself. Nothing in this
-folder is a solution to a course task, and it must never become one:
+The curriculum: agent loop → golden sets & baselines → context engineering →
+structured generation → consent gate → layered detection → repair loop →
+observability & replay → evidence reports → error analysis → budgets & routing →
+judge calibration → rebuild from memory → ship & pilot.
 
-- Toy code is for **reading, running, and breaking** — not for copying into
-  `harness/`, `evals/`, `capstone/`, `notes/`, or `scenarios/`.
-- If a companion example ever looks like it could be pasted into an owned path, that's
-  a defect in this companion — report it and it gets rewritten further away from the
-  deliverable.
-- The deliverables stay yours, typed by you, audited at S13. That rule is not hostility;
-  it is the mechanism by which the course's certificate (a working platform you can
-  rebuild unaided) means anything.
-
-## How to use it
-
-Per course session, before touching the deliverable:
-
-1. **Concept** (10–20 min): the companion's short explainer + diagram. Replaces
-   hunting through three blog posts for the one idea the session needs.
-2. **Toy** (20–30 min): run the notebook, do the experiments. *Predict before you run* —
-   the course's own discipline, applied to the toy.
-3. **Bridge** (20–40 min): 2–4 small exercises on the toy. These are the physical
-   motions of the real build, rehearsed on something you can afford to break.
-4. **Build** (course repo): now do the real session from `syllabus.md`. The companion
-   session ends with a "what transfers / what's new" map for exactly this moment.
-5. **Self-check**: quiz with foldable answers, drawn from the session's understanding
-   checklist.
-
-## What's here
-
-- `lessons/index.html` — **The Agent Harness Path**: the standalone course, fourteen
-  sessions of HTML lessons + toy notebooks (`lessons/src/` is the editable source;
-  `uv run python lessons/build.py` regenerates the HTML).
-- `notebooks/` — twelve runnable toys (S1–S12): zero network, zero cost, stdlib-only,
-  mock-backed. S13/S14 have no notebook by design.
-- `WHY-THIS-DESIGN.md` — which parts of the course's difficulty are deliberate (with the
-  evidence), which were defects, and the fix pattern applied everywhere.
-- `sessions/S01-agent-loop.md`, `sessions/S02-golden-evals.md` — companion-layer session
-  guides (concept → toy → bridge → build map → self-check → field guide) that feed the
-  course repo's real build.
-- `COURSE-MAP.md` — both layers' coverage of S1–S14: the concept gap, the toy, the
-  bridge. Companion guides for S3+ are written when you approach the session —
-  material written six sessions early would rot, and writing it *when needed* is part
-  of how it stays honest.
-
-## Setup
-
-The course repo has no virtualenv — `uv` + PEP-723 inline dependencies is its toolchain,
-with `requires-python = ">=3.11"`. This repo mirrors that: same `uv`, same Python floor,
-exactly one declared dependency (`jupyterlab`) as the notebook runner.
+## Quickstart
 
 ```bash
-uv sync            # creates .venv/ from pyproject.toml + uv.lock
-uv run jupyter lab # or: uv run jupyter notebook, or open notebooks/ in VS Code
+uv sync            # creates .venv/ (Python 3.11+, pinned by uv.lock)
+uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter frontend
 ```
 
-The notebooks themselves stay standard-library only (that's a hard rule, see
-`COURSE-MAP.md`): the venv supplies Jupyter, nothing else. If you'd rather not create
-the venv, any existing Jupyter frontend can open the notebooks directly.
+The notebooks are Python standard library only — the venv supplies just the tooling
+(`jupyterlab` to run them, `markdown` to render the lessons). Clone with Git LFS
+installed if you want the videos (`lessons/videos/`, mp4).
 
-## What this deliberately is not
+## Repository layout
 
-- Not a replacement for `syllabus.md` — the course repo remains canonical.
-- Not a video course. The interactivity here is the real kind: change a parameter,
-  watch behavior change.
-- Not a solution bank. See the rule above.
+- `lessons/index.html` — the course entry point (generated from `lessons/src/`;
+  rebuild with `uv run python lessons/build.py`)
+- `lessons/S01…S14-*.html` — the lessons; `lessons/videos/` — one video overview per
+  session (NotebookLM-generated; previews/reviews, not substitutes for the notebooks)
+- `notebooks/` — twelve runnable toys (S1–S12), committed output-free
+- `AGENTS.md` — contributor/agent conventions: the lesson format, the notebook
+  contract, the one rule
+- `COURSE-MAP.md` — coverage map for both layers of the repo
+
+## The companion layer
+
+This repo began as the study companion to a separate, deliberately austere course
+(`agentic-harnessing-intensive`, private). That layer survives in `sessions/`
+(six-part guides feeding the course's real builds) and `WHY-THIS-DESIGN.md` (the
+evidence for which difficulty is deliberate). The Agent Harness Path above is the
+standalone version of the same topics and is what you are meant to share or teach
+from; the companion layer assumes the course repo and references it freely.
+
+The one rule that keeps both layers honest: everything here is a **toy from a
+different domain** — nothing is paste-able into the course's deliverable paths, and
+no number here substitutes for a real, banked eval baseline.
+
+## License
+
+Copyright © 2026 the repository owner. All rights reserved. You may view and clone
+this repository for personal learning. Any other use — redistribution, teaching
+materials derived from it, commercial use — requires the owner's permission. (If you
+are the owner and intend to open it up, replace this section with the license of
+your choice; see `LICENSE`.)
