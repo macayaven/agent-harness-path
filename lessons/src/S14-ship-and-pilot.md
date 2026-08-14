@@ -87,7 +87,7 @@ flowchart TD
     C --> E[assemble the docs<br/>from artifacts, not memory]
     E --> F[public artifact<br/>one fixture run + numbers]
     F --> G[adversarial review<br/>fix what is real,<br/>rebut the rest in writing]
-    G --> H[tag v1.0<br/>evidence covers the claims]
+    G --> H[tag v1.0.0<br/>evidence covers the claims]
 ```
 
 ### Assembly, not composition
@@ -96,8 +96,10 @@ Documentation written at ship time, from memory, describes the system you
 *meant* to build. The decisions have faded; what remains is intent, and intent
 reads well and matches nothing. Hence the session's core move: **the docs are
 assembled, not composed.** The mechanical test is a citation test — every
-claim points at an artifact that already existed: a decision record, a banked
-eval number, a trace. A sentence with no citation is invention.
+*evidence-bearing* claim about behavior or architecture points at an artifact
+that already existed: a decision record, a banked
+eval number, a trace. Procedural and explanatory prose needs no pointer; a
+behavioral or architectural claim with no citation is invention.
 
 Assembly is only possible because the records were written at decision time.
 That is the payoff of the decision log you have kept since the early sessions
@@ -156,7 +158,7 @@ hostile friend — with one instruction: find the unsupported claims. Fix what
 is real; rebut what is not, in writing, next to the claim. This is the S12
 cross-examination muscle pointed at your own evidence.
 
-The tag — v1.0 — carries two promises from two different authorities. In
+The tag — v1.0.0 — carries two promises from two different authorities. In
 [semver](https://semver.org) terms, v1.0.0 asserts exactly one thing: a defined
 public API exists, and the version number now describes how it changes. The
 second promise — the evidence in the repo covers the claims in the
@@ -197,7 +199,8 @@ contamination.
    table from your decision log, known limits, and the honest two columns
    (survives a model swap / workaround to delete). Timebox 45 minutes: if
    assembly takes longer, the artifacts weren't there, and that is a finding.
-   *Done when:* no sentence lacks a citation to an existing artifact.
+   *Done when:* no behavioral or architectural claim lacks a citation to an
+   existing artifact.
 6. **Assemble the failures doc.** Top failure categories with counts, what
    fixed them, what remains — the false-trigger rate and the judge-agreement
    score included, plainly. Blameless in the SRE sense: mechanisms and
@@ -209,10 +212,10 @@ contamination.
    repo alone.
 8. **Cross-examine, then tag.** Adversarial review of write-up plus repo by
    the strongest critic available; fix what is real, rebut what is not, in
-   writing. Then tag v1.0 — SemVer's half of the promise is a defined public
+   writing. Then tag v1.0.0 — SemVer's half of the promise is a defined public
    API; the other half, that the evidence covers the claims, is this path's
    own release policy, not SemVer's. *Done when:* every objection has a fix or a written rebuttal, and the
-   parked list (everything after v1.0) is written down, not started.
+   parked list (everything after v1.0.0) is written down, not started.
 
 ## State of the art (as of August 2026)
 
@@ -223,8 +226,8 @@ contamination.
 | Discount usability testing: a handful of users surfaces most showstoppers ([Nielsen](https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/)) | **recognize** | Legitimizes n=1 as a smoke detector — and states its limit. Do not let it talk you into calling a pilot a study. |
 | "Do things that don't scale" ([Graham](https://paulgraham.com/ds.html)) | **recognize** | The pilot is deliberately concierge-scale. Unscalable honesty now beats scalable theater later. |
 | System cards as the lab-scale public evidence artifact ([OpenAI o1 system card](https://arxiv.org/abs/2412.16720)) | **recognize** | Labs publish measured behavior, failures included, as the artifact of record. Your fixture-run write-up is the solo-scale version. |
-| Semantic versioning as the public contract behind a v1.0 tag ([semver.org](https://semver.org)) | **adopt** | The tag is cheap to type and expensive to mean: it asserts the evidence covers the claims, no more. |
-| EU AI Act staged application, as amended by the Digital Omnibus ([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj), in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026; Annex III high-risk obligations postponed to **2 Dec 2027**, Annex I product-embedded to **2 Aug 2028** | **newer than this session** | A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately. |
+| Semantic versioning as the public contract behind a v1.0.0 tag ([semver.org, spec 2.0.0](https://semver.org/spec/v2.0.0.html)) | **adopt** | SemVer 1.0.0 asserts exactly one thing: a defined public API exists. The tag's second promise — the evidence covers the claims — is this path's own release policy, not SemVer's. Cheap to type, expensive to mean. |
+| EU AI Act staged application, as amended by the Digital Omnibus ([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj), in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026 — with a transition carve-out: for certain pre-existing systems under Art 50(2) as amended, the transparency obligations apply from **2 Dec 2026**; Annex III high-risk obligations postponed to **2 Dec 2027**, Annex I product-embedded to **2 Aug 2028** | **newer than this session** | A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately. |
 | Simulated "users" as a stand-in for the pilot ([arXiv:2601.17087](https://www.arxiv.org/pdf/2601.17087), cited at S02) | **ignore** | S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation. |
 
 ## Annotated readings
@@ -261,7 +264,7 @@ contamination.
 - **"It's anonymized, so I can publish it."** Transcript anonymization is
   weak; style and circumstance re-identify. The fixture-only rule exists
   precisely because it is the only version you can audit.
-- **"Tag it and move on."** v1.0 as morale ritual. The tag is a claim —
+- **"Tag it and move on."** v1.0.0 as morale ritual. The tag is a claim —
   evidence covers exactly what the artifact asserts — and an unsupported claim
   at tag time is the bug every later session inherits.
 
@@ -283,9 +286,11 @@ are final). Without the page you have neither permission nor trustworthy
 data.</details>
 
 <details><summary>What is the mechanical test that distinguishes assembled from composed documentation?</summary>
-The citation test: every claim points at an artifact that already existed —
-decision record, banked number, trace. A sentence with no citation is
-invention: you are composing the system you meant to build.</details>
+The citation test: every evidence-bearing claim — about behavior or
+architecture — points at an artifact that already existed: decision record,
+banked number, trace. Such a claim with no citation is
+invention: you are composing the system you meant to build. Procedural and
+explanatory prose needs no pointer.</details>
 
 <details><summary>Why is the public artifact always fixture-based, never a real session?</summary>
 Two reasons. Transcript anonymization is far weaker than it looks — style and

@@ -3,7 +3,7 @@
 **What this teaches:** how to see what an agent run actually did — the span /
 generation / trace data model, telemetry that fails soft instead of taking the
 product down, and record/replay cassettes that reproduce a run offline,
-byte-identical, with zero model calls — plus what replay can never prove.
+content-identical, with zero model calls — plus what replay can never prove.
 **Time:** ~90 min with the notebook.
 **Prerequisites:** S01 (the loop); S02 (scripted users, fixtures) recommended.
 **Hands-on:** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
@@ -89,9 +89,9 @@ Three properties buy almost everything:
 
 - **Offline.** Zero model calls, zero network, zero cost. You can debug on a
   plane.
-- **Byte-identical.** Same cassette ⇒ same responses ⇒ same transcript:
-  diffable, hashable, bankable as a fixture (S02's fixture invariant applies to
-  the cassette itself).
+- **Content-identical.** Same cassette ⇒ same response content ⇒ same
+  transcript content: diffable, hashable, bankable as a fixture (S02's fixture
+  invariant applies to the cassette itself).
 - **Strict matching.** If the code under test changes what it asks for, replay
   fails loudly instead of serving the nearest response. A sequential replayer
   would serve the old "CORRECT" verdict to the new wrong answer — wrong, and
@@ -108,7 +108,7 @@ flowchart LR
     subgraph rep["replaying"]
         C --> REP["replayer"]
         H2["host, unchanged"] -->|"request"| REP
-        REP -->|"recorded response, verbatim"| H2
+        REP -->|"recorded response, content-equal"| H2
     end
 ```
 
@@ -138,7 +138,8 @@ freeze the world:
   telling you the truth: this path was never recorded.
 
 The diagnostic that separates model nondeterminism from yours: **replay the
-same cassette twice.** The recorded responses are frozen bytes — replay cannot
+same cassette twice.** The recorded responses are frozen content (parsed
+JSON) — replay cannot
 introduce model variance — so if two replays differ, the nondeterminism is
 provably in your code. Then the fix is the fixture fix: inject the clock,
 inject the RNG, fresh seeded instances per run (one shared seeded RNG
@@ -155,14 +156,14 @@ solution.
 2. **The dead exporter.** Point the tracer at a backend that raises. Predict
    whether the quiz still completes; compare against the unguarded variant.
 3. **Record, then replay.** Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls and a byte-identical transcript.
+   Prove zero live model calls and a content-identical transcript.
 4. **Replay as tripwire.** Change one scripted answer, replay the old cassette.
    Predict where it breaks — and what a non-strict replayer would have done
    instead.
 5. **The hunt.** A teammate's "harmless" PR adds a dated header and livelier
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove
-   byte-identity end to end.
+   content-identity end to end.
 
 ## State of the art (as of August 2026)
 
@@ -232,8 +233,9 @@ matching converts drift into a loud mismatch — the cassette doubles as a
 determinism audit of your own code.</details>
 
 <details><summary>Two replays of the same cassette differ. Where is the bug, and why can you be certain?</summary>
-In your code, necessarily. The model's responses are frozen bytes in the
-cassette, so replay cannot introduce model variance. The leak is on your side —
+In your code, necessarily. The model's responses are frozen content (parsed
+JSON) in the cassette, so replay cannot introduce model variance. The leak is
+on your side —
 wall clock, unseeded RNG, iteration order. Find it in the diff, then inject and
 seed it.</details>
 

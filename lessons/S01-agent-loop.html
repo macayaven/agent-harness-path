@@ -119,7 +119,7 @@ deliberate: local and open-model stacks still work exactly this way, and the sta
 alternatives (see the SOTA table) are this same loop with the list moved server-side.</p>
 <p>An <em>agent</em> is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:</p>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     M[messages list&lt;br/&gt;the only state] --&gt; C[call model]
     C --&gt; D{model asked for&lt;br/&gt;a tool?}
     D -- no --&gt; E[final answer&lt;br/&gt;loop exits]
@@ -152,8 +152,9 @@ this diagram, usually by editing what goes into the messages list.</p>
    side: error text is <em>prompt content</em> — write tool errors the model can recover
    from (<a href="https://www.anthropic.com/engineering/writing-tools-for-agents">anthropic.com/engineering/writing-tools-for-agents</a>).</li>
 </ol>
-<p>The notebook's mock model enforces the pairing invariant the way a real API does, so
-the experiments fail the way production would — cheaply.</p>
+<p>The notebook's mock model rejects orphaned tool results the way a real API does
+— that one failure class, not full protocol validation — so the experiments
+fail the way production would, cheaply.</p>
 <h3>Where the model stops being the hard part</h3>
 <p>Once the loop works, the failures move elsewhere: the context fills up, the model
 loops without terminating, tool results poison the history. That is why the field's
@@ -169,8 +170,9 @@ prediction you'll retroactively fix.</p>
    order, carrying what — then run and read the transcript.</li>
 <li>Drop the assistant message: the labeled broken variant removes the
    append-verbatim line. Predict what fails and where, then run — the mock
-   validates message sequences the way a real API does, so the failure you watch
-   is the production one (an orphaned tool result).</li>
+   reproduces the orphaned-tool-result failure class the way a real API does
+   (one check, not full protocol validation), so the failure you watch
+   is the production one.</li>
 <li>The model that never stops: <code>mock_model_forever</code> requests a tool on every turn.
    Predict what ends the loop and after how many turns — and note whose property
    the thing that ends it is (the harness's, not the model's).</li>
@@ -287,8 +289,8 @@ is that the eval suite — not the agent — is where most of the engineering li
   <code>lessons/src/S01-agent-loop.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

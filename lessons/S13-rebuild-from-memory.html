@@ -261,7 +261,7 @@ and "the suite" and "the banked number" below are that project's own.</p>
    else. Wait a week. Run the audit again from step 1. The second pass is where
    retention happens; the first pass only told you the truth.</li>
 </ol>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     A[original safe in HEAD&lt;br/&gt;rebuild on a branch] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
     B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
     C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
@@ -394,8 +394,8 @@ the rebuild says you can defend the machine, S14 makes you defend it in public.<
   <code>lessons/src/S13-rebuild-from-memory.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

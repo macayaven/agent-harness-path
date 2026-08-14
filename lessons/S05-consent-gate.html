@@ -142,7 +142,7 @@ talk themselves out of them. The gate exists for both cases.</p>
 <li><strong>Execute.</strong> The S01 loop, with one addition: every tool call is checked against
    the <em>approved</em> spec before dispatch.</li>
 </ol>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     U[user request] --&gt; P[model proposes&lt;br/&gt;spec as JSON]
     P --&gt; V{spec valid?}
     V -- no --&gt; P
@@ -273,12 +273,12 @@ predictions there before running the solution cell below it.</p>
 <tr>
 <td>MCP elicitation: a server may pause tool execution to request structured user input mid-run (<a href="https://modelcontextprotocol.io/specification/2026-07-28">spec 2026-07-28</a>)</td>
 <td><strong>recognize</strong></td>
-<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 (<a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">release post</a>) makes requests stateless and self-contained (no initialize handshake, no <code>Mcp-Session-Id</code>), adds per-request capability negotiation and a versioned Extensions framework (Tasks, MCP Apps, Skills over MCP), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins.</td>
+<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 (<a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">release post</a>) makes requests stateless and self-contained (no initialize handshake, no <code>Mcp-Session-Id</code>), adds per-request capability negotiation and a versioned Extensions framework (Tasks and MCP Apps shipped; Skills over MCP was still a working group), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins.</td>
 </tr>
 <tr>
-<td>OWASP ranks excessive agency a top LLM risk; mitigations include scoping tools narrowly and human approval for high-impact actions (<a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025</a>)</td>
+<td>OWASP's LLM Top 10 ranks excessive agency a top risk; mitigations include scoping tools narrowly and human approval for high-impact actions (<a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">LLM Top 10 2026, the current list</a>; <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06:2025 entry</a>)</td>
 <td><strong>adopt</strong></td>
-<td>The security community's name for this session's problem (the 2026 revision keeps it near the top). The mitigation list reads like your toy's spec fields.</td>
+<td>The security community's name for this session's problem — and the 2026 list, the current release, moved it <em>up</em>: sixth to third. The mitigation list reads like your toy's spec fields.</td>
 </tr>
 <tr>
 <td>OWASP Top 10 for Agentic Applications (Dec 2025): ASI01–ASI10 — Goal Hijack, Tool Misuse, Identity &amp; Privilege Abuse, Agentic Supply Chain, Unexpected Code Execution, Memory &amp; Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, Rogue Agents (<a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>)</td>
@@ -377,8 +377,8 @@ budget you actually count.</p>
   <code>lessons/src/S05-consent-gate.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

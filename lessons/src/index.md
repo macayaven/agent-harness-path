@@ -36,13 +36,17 @@ Jupyter frontend). Notebook code is Python standard library only.
 | 5 | [The consent gate](S05-consent-gate.html) | Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade | [s05_consent_gate_toy.ipynb](../notebooks/s05_consent_gate_toy.ipynb) | [▶](videos/S05-consent-gate.mp4) |
 | 6 | [Layered detection](S06-layered-detection.html) | Keyword floor + classifier pipeline; policy as data; the false-trigger counter | [s06_layered_detection_toy.ipynb](../notebooks/s06_layered_detection_toy.ipynb) | [▶](videos/S06-layered-detection.mp4) |
 | 7 | [The repair loop](S07-repair-loop.html) | Bounded regeneration; the curated failure view; what context a retry gets | [s07_repair_loop_toy.ipynb](../notebooks/s07_repair_loop_toy.ipynb) | [▶](videos/S07-repair-loop.mp4) |
-| 8 | [Observability & replay](S08-observability-replay.html) | Spans and traces; fail-soft telemetry; record/replay byte-identical; hunt planted nondeterminism | [s08_observability_replay_toy.ipynb](../notebooks/s08_observability_replay_toy.ipynb) | [▶](videos/S08-observability-replay.mp4) |
+| 8 | [Observability & replay](S08-observability-replay.html) | Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism | [s08_observability_replay_toy.ipynb](../notebooks/s08_observability_replay_toy.ipynb) | [▶](videos/S08-observability-replay.mp4) |
 | 9 | [Evidence reports](S09-evidence-reports.html) | Reports a depleted reader can trust; citation and coverage validators; the 30-second test | [s09_evidence_report_toy.ipynb](../notebooks/s09_evidence_report_toy.ipynb) | [▶](videos/S09-evidence-reports.mp4) |
 | 10 | [Error analysis](S10-error-analysis.html) | Failure logs → taxonomy → new evals; open and axial coding on real traces | [s10_error_analysis_toy.ipynb](../notebooks/s10_error_analysis_toy.ipynb) | [▶](videos/S10-error-analysis.mp4) |
 | 11 | [Budgets & routing](S11-budgets-routing.html) | Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math | [s11_budgets_routing_toy.ipynb](../notebooks/s11_budgets_routing_toy.ipynb) | [▶](videos/S11-budgets-routing.mp4) |
 | 12 | [Judge calibration](S12-judge-calibration.html) | Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy | [s12_judge_calibration_toy.ipynb](../notebooks/s12_judge_calibration_toy.ipynb) | [▶](videos/S12-judge-calibration.mp4) |
 | 13 | [Rebuild from memory](S13-rebuild-from-memory.html) | The closed-book audit: recognition ≠ recall, and only rebuilding proves ownership | — (the audit is the exercise) | [▶](videos/S13-rebuild-from-memory.mp4) |
 | 14 | [Ship & pilot](S14-ship-and-pilot.html) | The cold acceptance run; the first real user; the public artifact | — (protocol, not notebook) | [▶](videos/S14-ship-and-pilot.mp4) |
+
+S13 and S14 have no notebook by design: they are the *bring your own system*
+sessions — you apply them to a project you already own, from this path, from
+work, or from elsewhere.
 
 The videos are NotebookLM-generated summaries of the lessons (in `lessons/videos/`).
 Use them as preview or review — the learning happens in the notebook, not the video.

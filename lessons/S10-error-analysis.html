@@ -119,7 +119,7 @@ aggregate is a smoke detector: it tells you there is a fire and roughly where,
 but it never tells you what is burning. Treating the pass rate as the result —
 tuning whatever moves it — is how teams ship a green suite over a red product.</p>
 <p>Error analysis is the discipline that converts the number into work. The loop:</p>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     T[failure traces&lt;br/&gt;the raw material] --&gt; O[open coding&lt;br/&gt;one free-form note per trace]
     O --&gt; A[axial coding&lt;br/&gt;group notes, name categories]
     A --&gt; Q[count × severity&lt;br/&gt;priority ranking]
@@ -369,8 +369,8 @@ the number, and a privacy boundary enforced as code rather than intention.</p>
   <code>lessons/src/S10-error-analysis.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

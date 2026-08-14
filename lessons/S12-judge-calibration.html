@@ -134,7 +134,7 @@ they are measured differently:</p>
 <tr>
 <th>Instrument</th>
 <th>Question it answers</th>
-<th>Ground truth</th>
+<th>Reference</th>
 <th>Metric</th>
 </tr>
 </thead>
@@ -183,8 +183,8 @@ round — the same reason you never report a judge's agreement on the examples
 you tuned it against.</p>
 <h3>Hand labels before judge output: the calibration protocol</h3>
 <p>For the rubric judge there is no planted fault — "good enough" is defined by
-<em>your</em> judgment, so the ground truth is hand labels and the measurement is
-agreement. The protocol, in order (the order is the protocol):</p>
+<em>your</em> judgment, so the reference judgments are your hand labels and the
+measurement is agreement. The protocol, in order (the order is the protocol):</p>
 <ol>
 <li><strong>Label first, blind.</strong> Write pass/fail for every transcript in the sample
    <em>before</em> any judge output exists on your screen. A verdict seen before you
@@ -224,7 +224,7 @@ a lopsided label stream makes raw agreement look best. Mechanics first — then
 the machinery that makes the number worth gating on.</p>
 <h3>The measured rates decide policy</h3>
 <p>The point of both measurements is a decision, not a report:</p>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     T[10 transcripts&lt;br/&gt;5 seeded defects + 5 clean] --&gt; C[critic route&lt;br/&gt;finds defects]
     T --&gt; J[rubric judge&lt;br/&gt;pass/fail]
     H[hand labels&lt;br/&gt;written BEFORE judge output] --&gt; K[agreement + κ&lt;br/&gt;stratified clean vs defective]
@@ -380,8 +380,8 @@ honest inventory of what you actually own.</p>
   <code>lessons/src/S12-judge-calibration.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

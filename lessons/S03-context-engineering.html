@@ -174,7 +174,7 @@ compactable prose.</strong> Two layers:</p>
 <li><strong>Pinned prompt copy.</strong> Whatever constraint text does go into the context sits
    in a region compaction may not touch — re-sent verbatim at every assembly.</li>
 </ol>
-<pre class="mermaid">flowchart TB
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TB
     subgraph ASM[context assembly — every call]
         P[pinned region&lt;br/&gt;safety rules, verbatim&lt;br/&gt;never compacted]
         C[compactable region&lt;br/&gt;history, tool output, small talk]
@@ -336,8 +336,8 @@ because an agent whose outputs you can't parse is an agent you can't govern.</p>
   <code>lessons/src/S03-context-engineering.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

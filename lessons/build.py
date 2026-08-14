@@ -21,9 +21,15 @@ TEMPLATE = (HERE / "template.html").read_text(encoding="utf-8")
 MD = markdown.Markdown(extensions=["tables", "fenced_code"])
 
 # python-markdown emits mermaid fences as <pre><code class="language-mermaid">;
-# mermaid.js wants <pre class="mermaid"> with raw text.
+# mermaid.js wants <pre class="mermaid"> with raw text. role="img" + aria-label
+# give screen readers a generic stand-in; the prose around each diagram carries
+# the actual description (no per-diagram alt text).
 MERMAID_RE = re.compile(
     r'<pre><code class="language-mermaid">(.*?)</code></pre>', re.DOTALL
+)
+MERMAID_PRE = (
+    r'<pre class="mermaid" role="img" '
+    r'aria-label="Architecture diagram — described in surrounding prose">\1</pre>'
 )
 
 # Reading order for the prev/next nav bars: index first, then S01..S14.
@@ -50,7 +56,7 @@ def render_body(source: Path) -> tuple[str, str, int]:
     """Convert one source file; return (body HTML, H1 title, mermaid count)."""
     MD.reset()
     body = MD.convert(source.read_text(encoding="utf-8"))
-    body, n = MERMAID_RE.subn(r'<pre class="mermaid">\1</pre>', body)
+    body, n = MERMAID_RE.subn(MERMAID_PRE, body)
     title_match = re.search(r"<h1[^>]*>(.*?)</h1>", body)
     title = title_match.group(1) if title_match else source.stem
     return body, title, n

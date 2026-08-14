@@ -187,7 +187,7 @@ Jupyter frontend). Notebook code is Python standard library only.</p>
 <tr>
 <td>8</td>
 <td><a href="S08-observability-replay.html">Observability &amp; replay</a></td>
-<td>Spans and traces; fail-soft telemetry; record/replay byte-identical; hunt planted nondeterminism</td>
+<td>Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism</td>
 <td><a href="../notebooks/s08_observability_replay_toy.ipynb">s08_observability_replay_toy.ipynb</a></td>
 <td><a href="videos/S08-observability-replay.mp4">▶</a></td>
 </tr>
@@ -235,6 +235,9 @@ Jupyter frontend). Notebook code is Python standard library only.</p>
 </tr>
 </tbody>
 </table>
+<p>S13 and S14 have no notebook by design: they are the <em>bring your own system</em>
+sessions — you apply them to a project you already own, from this path, from
+work, or from elsewhere.</p>
 <p>The videos are NotebookLM-generated summaries of the lessons (in <code>lessons/videos/</code>).
 Use them as preview or review — the learning happens in the notebook, not the video.</p>
 <h2>The pedagogical commitments</h2>
@@ -259,8 +262,8 @@ rationale in <code>WHY-THIS-DESIGN.md</code> document the original companion rel
   <code>lessons/src/index.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

@@ -62,8 +62,9 @@ The protocol has rules that are invisible until you break them:
    side: error text is *prompt content* — write tool errors the model can recover
    from ([anthropic.com/engineering/writing-tools-for-agents](https://www.anthropic.com/engineering/writing-tools-for-agents)).
 
-The notebook's mock model enforces the pairing invariant the way a real API does, so
-the experiments fail the way production would — cheaply.
+The notebook's mock model rejects orphaned tool results the way a real API does
+— that one failure class, not full protocol validation — so the experiments
+fail the way production would, cheaply.
 
 ### Where the model stops being the hard part
 
@@ -83,8 +84,9 @@ prediction you'll retroactively fix.
    order, carrying what — then run and read the transcript.
 2. Drop the assistant message: the labeled broken variant removes the
    append-verbatim line. Predict what fails and where, then run — the mock
-   validates message sequences the way a real API does, so the failure you watch
-   is the production one (an orphaned tool result).
+   reproduces the orphaned-tool-result failure class the way a real API does
+   (one check, not full protocol validation), so the failure you watch
+   is the production one.
 3. The model that never stops: `mock_model_forever` requests a tool on every turn.
    Predict what ends the loop and after how many turns — and note whose property
    the thing that ends it is (the harness's, not the model's).

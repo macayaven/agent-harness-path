@@ -192,7 +192,7 @@ credentials, tool authorization, egress control, and careful output handling
 Detection routes traffic and buys time; the boundary is what the system
 structurally cannot do.</p>
 <h3>The mechanism: ordered layers, union for the catastrophic class</h3>
-<pre class="mermaid">flowchart TD
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
     U[untrusted message&lt;br/&gt;user turn, file, tool result] --&gt; S{injection screen&lt;br/&gt;deterministic}
     S -- hit --&gt; B[blocked:&lt;br/&gt;the model never sees it]
     S -- clean --&gt; F{keyword floor&lt;br/&gt;cheap regex}
@@ -277,9 +277,9 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <td>The threat model this session sits in. Remove a leg; don't ask the model to be careful.</td>
 </tr>
 <tr>
-<td>OWASP Top 10 for LLM Applications, 2025 list — LLM01 prompt injection, LLM06 excessive agency (<a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">owasp.org</a>)</td>
+<td>OWASP Top 10 for LLM Applications, 2026 list (the current release) — prompt injection still first, excessive agency up from sixth to third (<a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">owasp.org</a>)</td>
 <td><strong>already in this path</strong></td>
-<td>The shared vocabulary. The injection screen and the scope governor map to LLM01 and LLM06.</td>
+<td>The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering).</td>
 </tr>
 <tr>
 <td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
@@ -390,8 +390,8 @@ honest stop reasons for when it runs out.</p>
   <code>lessons/src/S06-layered-detection.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

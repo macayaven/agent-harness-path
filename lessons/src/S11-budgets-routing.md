@@ -24,7 +24,18 @@ the most expensive bug you ship this quarter.
 So the harness treats the budget as a runtime invariant. The run carries a meter
 (tokens × route price, wall time), and crossing the budget ends the run with a
 first-class `stop_reason=budget_exceeded` — the same dignity as a normal
-completion, not a crash. Two properties matter:
+completion, not a crash.
+
+One refinement to "crossing the budget ends the run": a meter that reads only
+*after* each call is a **soft stop** — the crossing call was already dispatched
+and paid for. A hard budget reads **ahead**: a pre-dispatch estimate or
+reservation (if `spent + estimate` would cross, the call never runs), or
+provider/gateway caps that reject the over-budget call at the account level
+(the LiteLLM row below). The toy implements the pre-dispatch gate: each route
+prices its own call, and a call that would cross the budget is never dispatched
+— the post-call meter stays as the ledger, the estimate is the gate.
+
+Two properties matter:
 
 - **It stops the run, not the conversation about the run.** A budgeted stop is
   an outcome the product can handle — degrade, ask the user, reschedule. An
@@ -118,6 +129,12 @@ the easy escape of buying latency from the frontier cloud for content phases.
 That is why the math happens on paper before the build, not after the first
 demo.
 
+In the toy there are no real turns to sample: latencies are deterministic
+functions of the fixtures, so three months yield a **three-fixture median** — a
+stand-in for p50, not a measured one. A real latency claim needs repeated
+sampled trials (timed runs, many of them); the tails users remember live in
+variance the toy deliberately does not have.
+
 ## Exercises (in the notebook, predict first)
 
 1. **The meandering run.** A summarize phase with no convergence criterion on
@@ -135,8 +152,9 @@ demo.
    Predict *when* it fails and how many model calls happen first. Then the
    subtle case: `format` (metadata) on cloud runs fine — and costs more than
    local. Allowed ≠ wise.
-5. **The voice budget.** From the latency models in the suite logs, compute p50
-   per-turn latency for all-large vs routed against a 1000 ms budget. Predict
+5. **The voice budget.** From the latency models in the suite logs, compute the
+   median per-turn latency across the three fixtures for all-large vs routed
+   against a 1000 ms budget. Predict
    which fits before running; then name the phase that dominates the losing
    config and the fix the boundary still permits.
 
@@ -209,9 +227,9 @@ Validation-time refusal makes the misconfiguration un-runnable and forces the
 fix into the route table itself, which, being data, is diffable and reviewable.
 Zero model calls happen before the refusal; that's the point.</details>
 
-<details><summary>all-large p50 per-turn latency is 1180 ms against a 1000 ms voice budget. Cheapest correct fix?</summary>
+<details><summary>all-large median per-turn latency across the three fixtures is 1180 ms against a 1000 ms voice budget. Cheapest correct fix?</summary>
 Route categorize to the small route (its number holds on the suite) and keep
-summarize on the large route — routed p50 is ~861 ms. The tempting alternative,
+summarize on the large route — routed median is ~861 ms. The tempting alternative,
 frontier cloud at ~790 ms, is off the table: content phases stay local, so
 latency gets engineered (streaming, precompute) rather than bought.</details>
 

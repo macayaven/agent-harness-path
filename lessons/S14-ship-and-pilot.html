@@ -168,7 +168,7 @@ result — a handful of users finds most problems — is a statement about
 Your n=1 pilot is a smoke detector, not a sample. A quiet detector reports one
 fact: the house was not on fire during the test. It certifies nothing about the
 house — not the wiring, not the market, not the next occupant.</p>
-<pre class="mermaid">flowchart TD
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
     A[freeze two fixtures, criteria first&lt;br/&gt;acceptance + untouched holdout] --&gt; B[cold acceptance run&lt;br/&gt;you, unseen input, traces on]
     B -- pass --&gt; K[cold final gate&lt;br/&gt;the untouched holdout]
     B -- fail --&gt; D[diagnose from the trace&lt;br/&gt;amend the system,&lt;br/&gt;never the fixture —&lt;br/&gt;it is a tuning case now]
@@ -177,20 +177,22 @@ house — not the wiring, not the market, not the next occupant.</p>
     C --&gt; E[assemble the docs&lt;br/&gt;from artifacts, not memory]
     E --&gt; F[public artifact&lt;br/&gt;one fixture run + numbers]
     F --&gt; G[adversarial review&lt;br/&gt;fix what is real,&lt;br/&gt;rebut the rest in writing]
-    G --&gt; H[tag v1.0&lt;br/&gt;evidence covers the claims]
+    G --&gt; H[tag v1.0.0&lt;br/&gt;evidence covers the claims]
 </pre>
 <h3>Assembly, not composition</h3>
 <p>Documentation written at ship time, from memory, describes the system you
 <em>meant</em> to build. The decisions have faded; what remains is intent, and intent
 reads well and matches nothing. Hence the session's core move: <strong>the docs are
 assembled, not composed.</strong> The mechanical test is a citation test — every
-claim points at an artifact that already existed: a decision record, a banked
-eval number, a trace. A sentence with no citation is invention.</p>
+<em>evidence-bearing</em> claim about behavior or architecture points at an artifact
+that already existed: a decision record, a banked
+eval number, a trace. Procedural and explanatory prose needs no pointer; a
+behavioral or architectural claim with no citation is invention.</p>
 <p>Assembly is only possible because the records were written at decision time.
 That is the payoff of the decision log you have kept since the early sessions
 — the architecture-decision-record pattern in its original minimal form
 (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>).</p>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     D[decision log&lt;br/&gt;written at decision time] --&gt; A[architecture doc]
     N[banked eval numbers&lt;br/&gt;naive vs governed] --&gt; A
     T[traces and replays] --&gt; A
@@ -251,7 +253,7 @@ the strongest critic available — a frontier model in adversarial mode, or a
 hostile friend — with one instruction: find the unsupported claims. Fix what
 is real; rebut what is not, in writing, next to the claim. This is the S12
 cross-examination muscle pointed at your own evidence.</p>
-<p>The tag — v1.0 — carries two promises from two different authorities. In
+<p>The tag — v1.0.0 — carries two promises from two different authorities. In
 <a href="https://semver.org">semver</a> terms, v1.0.0 asserts exactly one thing: a defined
 public API exists, and the version number now describes how it changes. The
 second promise — the evidence in the repo covers the claims in the
@@ -290,7 +292,8 @@ contamination.</p>
    table from your decision log, known limits, and the honest two columns
    (survives a model swap / workaround to delete). Timebox 45 minutes: if
    assembly takes longer, the artifacts weren't there, and that is a finding.
-   <em>Done when:</em> no sentence lacks a citation to an existing artifact.</li>
+   <em>Done when:</em> no behavioral or architectural claim lacks a citation to an
+   existing artifact.</li>
 <li><strong>Assemble the failures doc.</strong> Top failure categories with counts, what
    fixed them, what remains — the false-trigger rate and the judge-agreement
    score included, plainly. Blameless in the SRE sense: mechanisms and
@@ -302,10 +305,10 @@ contamination.</p>
    repo alone.</li>
 <li><strong>Cross-examine, then tag.</strong> Adversarial review of write-up plus repo by
    the strongest critic available; fix what is real, rebut what is not, in
-   writing. Then tag v1.0 — SemVer's half of the promise is a defined public
+   writing. Then tag v1.0.0 — SemVer's half of the promise is a defined public
    API; the other half, that the evidence covers the claims, is this path's
    own release policy, not SemVer's. <em>Done when:</em> every objection has a fix or a written rebuttal, and the
-   parked list (everything after v1.0) is written down, not started.</li>
+   parked list (everything after v1.0.0) is written down, not started.</li>
 </ol>
 <h2>State of the art (as of August 2026)</h2>
 <table>
@@ -343,12 +346,12 @@ contamination.</p>
 <td>Labs publish measured behavior, failures included, as the artifact of record. Your fixture-run write-up is the solo-scale version.</td>
 </tr>
 <tr>
-<td>Semantic versioning as the public contract behind a v1.0 tag (<a href="https://semver.org">semver.org</a>)</td>
+<td>Semantic versioning as the public contract behind a v1.0.0 tag (<a href="https://semver.org/spec/v2.0.0.html">semver.org, spec 2.0.0</a>)</td>
 <td><strong>adopt</strong></td>
-<td>The tag is cheap to type and expensive to mean: it asserts the evidence covers the claims, no more.</td>
+<td>SemVer 1.0.0 asserts exactly one thing: a defined public API exists. The tag's second promise — the evidence covers the claims — is this path's own release policy, not SemVer's. Cheap to type, expensive to mean.</td>
 </tr>
 <tr>
-<td>EU AI Act staged application, as amended by the Digital Omnibus (<a href="https://eur-lex.europa.eu/eli/reg/2026/1744/oj">Regulation (EU) 2026/1744</a>, in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026; Annex III high-risk obligations postponed to <strong>2 Dec 2027</strong>, Annex I product-embedded to <strong>2 Aug 2028</strong></td>
+<td>EU AI Act staged application, as amended by the Digital Omnibus (<a href="https://eur-lex.europa.eu/eli/reg/2026/1744/oj">Regulation (EU) 2026/1744</a>, in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026 — with a transition carve-out: for certain pre-existing systems under Art 50(2) as amended, the transparency obligations apply from <strong>2 Dec 2026</strong>; Annex III high-risk obligations postponed to <strong>2 Dec 2027</strong>, Annex I product-embedded to <strong>2 Aug 2028</strong></td>
 <td><strong>newer than this session</strong></td>
 <td>A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately.</td>
 </tr>
@@ -393,7 +396,7 @@ contamination.</p>
 <li><strong>"It's anonymized, so I can publish it."</strong> Transcript anonymization is
   weak; style and circumstance re-identify. The fixture-only rule exists
   precisely because it is the only version you can audit.</li>
-<li><strong>"Tag it and move on."</strong> v1.0 as morale ritual. The tag is a claim —
+<li><strong>"Tag it and move on."</strong> v1.0.0 as morale ritual. The tag is a claim —
   evidence covers exactly what the artifact asserts — and an unsupported claim
   at tag time is the bug every later session inherits.</li>
 </ul>
@@ -414,9 +417,11 @@ are final). Without the page you have neither permission nor trustworthy
 data.</details>
 
 <details><summary>What is the mechanical test that distinguishes assembled from composed documentation?</summary>
-The citation test: every claim points at an artifact that already existed —
-decision record, banked number, trace. A sentence with no citation is
-invention: you are composing the system you meant to build.</details>
+The citation test: every evidence-bearing claim — about behavior or
+architecture — points at an artifact that already existed: decision record,
+banked number, trace. Such a claim with no citation is
+invention: you are composing the system you meant to build. Procedural and
+explanatory prose needs no pointer.</details>
 
 <details><summary>Why is the public artifact always fixture-based, never a real session?</summary>
 Two reasons. Transcript anonymization is far weaker than it looks — style and
@@ -439,8 +444,8 @@ and it starts from the tag, not before it.</p>
   <code>lessons/src/S14-ship-and-pilot.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

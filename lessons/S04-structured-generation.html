@@ -168,7 +168,7 @@ number precisely: 100% <em>schema adherence</em>, not 100% correct.</p>
 local models whose <code>response_format</code> support is partial or absent. The first row
 is not a strategy; it's the naive baseline you measure the other two against.</p>
 <h3>The retry loop is S01's loop with the validator as the tool</h3>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     B[brief + schema in prompt] --&gt; C[call model]
     C --&gt; P{json.loads&lt;br/&gt;parses?}
     P -- no --&gt; F1[append PARSE ERROR&lt;br/&gt;as a user message]
@@ -365,8 +365,8 @@ you the plan should run.</p>
   <code>lessons/src/S04-structured-generation.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

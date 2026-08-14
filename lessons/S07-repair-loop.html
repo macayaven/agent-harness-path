@@ -229,7 +229,7 @@ grows the approved scope.</strong> The retry rewrites the draft, not the task. I
 the failure requires changing what was asked, that is not a retry — it is a new
 request, and it goes through the front door.</p>
 <h3>The cap is the epistemics; the stop reason is the contract</h3>
-<pre class="mermaid">flowchart TD
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
     B[brief: task + constraints] --&gt; G[generate draft]
     G --&gt; S[deterministic scorer]
     S -- pass --&gt; OK[accept&lt;br/&gt;stop_reason = passed]
@@ -411,8 +411,8 @@ response, and replay a session byte-identical offline.</p>
   <code>lessons/src/S07-repair-loop.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

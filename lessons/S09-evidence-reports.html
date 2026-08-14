@@ -214,7 +214,7 @@ transcripts the practical forms are sharper:</p>
   a subtraction.</li>
 </ul>
 <p>Each lie has exactly one defense, and both are deterministic:</p>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     T[transcript + run record&lt;br/&gt;the only ground truth] --&gt; G[report generator&lt;br/&gt;itself a model]
     G --&gt; R[evidence report&lt;br/&gt;fixed slots]
     T --&gt; C{citation validator&lt;br/&gt;does every quote resolve?}
@@ -311,12 +311,12 @@ depleted reader is you.</p>
 <tr>
 <td>Citation grounding as an API primitive: Anthropic's Citations parses responses into claims with pointers <em>guaranteed</em> to resolve into the provided documents (<a href="https://docs.claude.com/en/docs/build-with-claude/citations">docs.claude.com</a>)</td>
 <td><strong>adopt</strong></td>
-<td>When you move off mocks, the platform now engineers fabrication away for you — the pointer is always valid. Whether you cited the <em>right</em> things, and whether you dropped the safety event, remains yours.</td>
+<td>When you move off mocks, the guarantee is the pointer: every citation resolves into a supplied document. That the cited passage actually <em>supports</em> the claim stays model judgment — and whether you cited the right things, or dropped the safety event, remains yours.</td>
 </tr>
 <tr>
 <td>ALCE: automatic citation evaluation — recall (is every statement entailed by its citations?) and precision (is every citation pertinent?), NLI-judged (<a href="https://arxiv.org/abs/2305.14627">Gao et al., arXiv:2305.14627</a>)</td>
 <td><strong>recognize</strong></td>
-<td>Your citation validator is the deterministic special case: substring match instead of entailment. Recall/precision is the same fabrication/coverage split, measured the expensive way.</td>
+<td>Your citation validator is the deterministic special case: substring match instead of entailment. But ALCE's recall is statement support and its precision is citation relevance — claims judged against their own citations. Neither asks whether the report covered the run's events; that remains your coverage validator's job.</td>
 </tr>
 <tr>
 <td>Deep-research products ship long, cited reports — and their own disclosures admit hallucinated facts, weak uncertainty calibration, and citation errors at launch (<a href="https://openai.com/index/introducing-deep-research/">OpenAI, Feb 2025</a>; <a href="https://cdn.openai.com/deep-research-system-card.pdf">system card</a>)</td>
@@ -423,8 +423,8 @@ new golden tasks.</p>
   <code>lessons/src/S09-evidence-reports.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

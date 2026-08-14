@@ -34,7 +34,7 @@ been measured is not an instrument — it is a second opinion from a stranger.
 Two different instruments hide under the word "judge". They fail differently, so
 they are measured differently:
 
-| Instrument | Question it answers | Ground truth | Metric |
+| Instrument | Question it answers | Reference | Metric |
 |---|---|---|---|
 | **Critic** (detector) | Does this transcript contain a defect? | Transcripts with seeded, known defects | Detection rate **and** false-positive rate |
 | **Rubric judge** (grader) | Is this transcript good enough to ship? | Your hand labels | Raw agreement + Cohen's κ, stratified |
@@ -73,8 +73,8 @@ you tuned it against.
 ### Hand labels before judge output: the calibration protocol
 
 For the rubric judge there is no planted fault — "good enough" is defined by
-*your* judgment, so the ground truth is hand labels and the measurement is
-agreement. The protocol, in order (the order is the protocol):
+*your* judgment, so the reference judgments are your hand labels and the
+measurement is agreement. The protocol, in order (the order is the protocol):
 
 1. **Label first, blind.** Write pass/fail for every transcript in the sample
    *before* any judge output exists on your screen. A verdict seen before you

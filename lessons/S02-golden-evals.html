@@ -140,7 +140,7 @@ job is to compare naive vs governed <em>on the same probe</em>. Practice converg
 scripted for determinism, simulated for coverage — use both, know which number came
 from which.</p>
 <h3>2. Diverge / rejoin — the delta must have exactly one cause</h3>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     S[scripted user&lt;br/&gt;same turns, verbatim] --&gt; N[naive engine&lt;br/&gt;answers anything]
     S --&gt; H[governed engine&lt;br/&gt;scope rules applied]
     N --&gt; T1[transcript]
@@ -328,8 +328,8 @@ useful length? The loop is solved; the stream is not.</p>
   <code>lessons/src/S02-golden-evals.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

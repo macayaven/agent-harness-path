@@ -120,7 +120,16 @@ the most expensive bug you ship this quarter.</p>
 <p>So the harness treats the budget as a runtime invariant. The run carries a meter
 (tokens × route price, wall time), and crossing the budget ends the run with a
 first-class <code>stop_reason=budget_exceeded</code> — the same dignity as a normal
-completion, not a crash. Two properties matter:</p>
+completion, not a crash.</p>
+<p>One refinement to "crossing the budget ends the run": a meter that reads only
+<em>after</em> each call is a <strong>soft stop</strong> — the crossing call was already dispatched
+and paid for. A hard budget reads <strong>ahead</strong>: a pre-dispatch estimate or
+reservation (if <code>spent + estimate</code> would cross, the call never runs), or
+provider/gateway caps that reject the over-budget call at the account level
+(the LiteLLM row below). The toy implements the pre-dispatch gate: each route
+prices its own call, and a call that would cross the budget is never dispatched
+— the post-call meter stays as the ledger, the estimate is the gate.</p>
+<p>Two properties matter:</p>
 <ul>
 <li><strong>It stops the run, not the conversation about the run.</strong> A budgeted stop is
   an outcome the product can handle — degrade, ask the user, reschedule. An
@@ -149,7 +158,7 @@ half is what justifies it:</p>
   the <strong>cheapest one that holds the number</strong> on your suite. The deliverable of a
   routing exercise is not the table — it's the measurement the table cites.</li>
 </ul>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     P[pipeline run&lt;br/&gt;phase sequence] --&gt; V{validate route table&lt;br/&gt;against policy}
     V -- misconfigured --&gt; X[REFUSE&lt;br/&gt;zero model calls made]
     V -- valid --&gt; RT[route table&lt;br/&gt;policy-as-data]
@@ -202,6 +211,11 @@ the route table is also your latency table — and the privacy boundary removes
 the easy escape of buying latency from the frontier cloud for content phases.
 That is why the math happens on paper before the build, not after the first
 demo.</p>
+<p>In the toy there are no real turns to sample: latencies are deterministic
+functions of the fixtures, so three months yield a <strong>three-fixture median</strong> — a
+stand-in for p50, not a measured one. A real latency claim needs repeated
+sampled trials (timed runs, many of them); the tails users remember live in
+variance the toy deliberately does not have.</p>
 <h2>Exercises (in the notebook, predict first)</h2>
 <ol>
 <li><strong>The meandering run.</strong> A summarize phase with no convergence criterion on
@@ -219,8 +233,9 @@ demo.</p>
    Predict <em>when</em> it fails and how many model calls happen first. Then the
    subtle case: <code>format</code> (metadata) on cloud runs fine — and costs more than
    local. Allowed ≠ wise.</li>
-<li><strong>The voice budget.</strong> From the latency models in the suite logs, compute p50
-   per-turn latency for all-large vs routed against a 1000 ms budget. Predict
+<li><strong>The voice budget.</strong> From the latency models in the suite logs, compute the
+   median per-turn latency across the three fixtures for all-large vs routed
+   against a 1000 ms budget. Predict
    which fits before running; then name the phase that dominates the losing
    config and the fix the boundary still permits.</li>
 </ol>
@@ -327,9 +342,9 @@ Validation-time refusal makes the misconfiguration un-runnable and forces the
 fix into the route table itself, which, being data, is diffable and reviewable.
 Zero model calls happen before the refusal; that's the point.</details>
 
-<details><summary>all-large p50 per-turn latency is 1180 ms against a 1000 ms voice budget. Cheapest correct fix?</summary>
+<details><summary>all-large median per-turn latency across the three fixtures is 1180 ms against a 1000 ms voice budget. Cheapest correct fix?</summary>
 Route categorize to the small route (its number holds on the suite) and keep
-summarize on the large route — routed p50 is ~861 ms. The tempting alternative,
+summarize on the large route — routed median is ~861 ms. The tempting alternative,
 frontier cloud at ~790 ms, is off the table: content phases stay local, so
 latency gets engineered (streaming, precompute) rather than bought.</details>
 
@@ -345,8 +360,8 @@ unmeasured judge is decoration.</p>
   <code>lessons/src/S11-budgets-routing.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>

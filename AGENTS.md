@@ -14,8 +14,10 @@ This repo contains **no product code, no tests** — it is educational material,
    knowledge. `WHY-THIS-DESIGN.md` is the rationale; `COURSE-MAP.md` tracks coverage.
 2. **The standalone path** (added later, at the owner's direction): **The Agent
    Harness Path** — `lessons/index.html` is the entry point. Fourteen sessions
-   (S01–S14), each a deep HTML lesson in `lessons/` plus a runnable stdlib-only toy
-   notebook in `notebooks/`, followable entirely in this workspace without the course
+   (S01–S14), each a deep HTML lesson in `lessons/`; the twelve notebook sessions
+   (S01–S12) pair it with a runnable stdlib-only toy notebook in `notebooks/`,
+   while S13/S14 are notebook-less protocols run on the learner's own system.
+   Followable entirely in this workspace without the course
    repo. Each lesson carries a dated state-of-the-art section with cited sources.
 
 The two layers share the notebooks. The companion layer's session guides
@@ -64,7 +66,7 @@ course tasks.
 │   ├── build.py               — renders src/*.md → *.html via template.html
 │   │                              (injects the prev/index/next nav bars)
 │   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
-│   ├── vendor/                — mermaid@11 ESM build + lazy chunks (offline diagrams)
+│   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
 │   └── videos/SNN-*.mp4       — NotebookLM video overviews, one per lesson, plus
@@ -72,9 +74,11 @@ course tasks.
 └── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
 ```
 
-There are no other files. No `package.json`, `requirements.txt`, CI config, or test
-suite. `uv.lock` and the generated `lessons/*.html` are the only generated artifacts
-and are checked in so everything reads offline.
+Beyond the tree above there is `LICENSE`, and `review/` (the adversarial-review
+workspace: `prompts/`, `reports/`, `synthesis.md`). No `package.json`,
+`requirements.txt`, CI config, or test
+suite. `uv.lock`, the generated `lessons/*.html`, and the vendored mermaid build
+in `lessons/vendor/` are checked in so everything reads offline.
 
 ## Build and run
 
@@ -145,13 +149,15 @@ repo's owned paths, decision-record IDs, or build instructions (see the one rule
 
 - Alternate short markdown cells (context, **"Predict first:"** prompts) with small,
   self-contained code cells. Run top-to-bottom, in order.
-- Exercises come in pairs: an attempt cell (runnable skeleton or prediction
-  placeholders) followed by a clearly marked `# SOLUTION` cell.
+- Exercises are predict-first, with attempt-then-solution cells (an attempt
+  skeleton followed by a clearly marked `# SOLUTION` cell) where implementation
+  is required; S01/S02 are largely predict-then-run demonstrations.
 - Committed **without outputs** (`"execution_count": null`, `"outputs": []`), nbformat
   4.5 with an `id` on every cell — build notebooks programmatically with `nbformat`
   to guarantee this. Keep it that way.
-- Mocks mimic real API behavior (e.g., the S01 mock validates message sequences like
-  a real API rejecting orphaned tool results), so experiments fail the way production
+- Mocks mimic real API behavior where it matters (e.g., the S01 mock reproduces
+  the orphaned-tool-result failure class the way a real API does — one check,
+  not full protocol validation), so experiments fail the way production
   would — cheaply.
 - Spanish is used for toy dialogue content where noted (S02, S12; the author works in
   Spanish); all explanatory prose, comments, and docs are in English.

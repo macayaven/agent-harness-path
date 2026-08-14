@@ -104,7 +104,7 @@
 <p><strong>What this teaches:</strong> how to see what an agent run actually did — the span /
 generation / trace data model, telemetry that fails soft instead of taking the
 product down, and record/replay cassettes that reproduce a run offline,
-byte-identical, with zero model calls — plus what replay can never prove.
+content-identical, with zero model calls — plus what replay can never prove.
 <strong>Time:</strong> ~90 min with the notebook.
 <strong>Prerequisites:</strong> S01 (the loop); S02 (scripted users, fixtures) recommended.
 <strong>Hands-on:</strong> <a href="../notebooks/s08_observability_replay_toy.ipynb"><code>notebooks/s08_observability_replay_toy.ipynb</code></a>
@@ -130,7 +130,7 @@ Langfuse, and the OpenAI Agents SDK all share the shape:</p>
   vendor term (<a href="https://langfuse.com/docs/observability/data-model">data model</a>);
   OTel models the same unit as model/agent spans, not a distinct type.</li>
 </ul>
-<pre class="mermaid">flowchart TD
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
     T[&quot;trace: one run, end to end&quot;] --&gt; S[&quot;session span&quot;]
     S --&gt; SET[&quot;setup span&quot;]
     S --&gt; R[&quot;rounds span&quot;]
@@ -177,15 +177,15 @@ Three properties buy almost everything:</p>
 <ul>
 <li><strong>Offline.</strong> Zero model calls, zero network, zero cost. You can debug on a
   plane.</li>
-<li><strong>Byte-identical.</strong> Same cassette ⇒ same responses ⇒ same transcript:
-  diffable, hashable, bankable as a fixture (S02's fixture invariant applies to
-  the cassette itself).</li>
+<li><strong>Content-identical.</strong> Same cassette ⇒ same response content ⇒ same
+  transcript content: diffable, hashable, bankable as a fixture (S02's fixture
+  invariant applies to the cassette itself).</li>
 <li><strong>Strict matching.</strong> If the code under test changes what it asks for, replay
   fails loudly instead of serving the nearest response. A sequential replayer
   would serve the old "CORRECT" verdict to the new wrong answer — wrong, and
   invisible. Strictness turns the cassette into a behavior-drift alarm.</li>
 </ul>
-<pre class="mermaid">flowchart LR
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     subgraph rec[&quot;recording&quot;]
         H1[&quot;host&quot;] --&gt;|&quot;request&quot;| REC[&quot;recorder&quot;]
         REC --&gt;|&quot;live call&quot;| M[&quot;model API&quot;]
@@ -195,7 +195,7 @@ Three properties buy almost everything:</p>
     subgraph rep[&quot;replaying&quot;]
         C --&gt; REP[&quot;replayer&quot;]
         H2[&quot;host, unchanged&quot;] --&gt;|&quot;request&quot;| REP
-        REP --&gt;|&quot;recorded response, verbatim&quot;| H2
+        REP --&gt;|&quot;recorded response, content-equal&quot;| H2
     end
 </pre>
 <p>The lineage is VCR's HTTP cassettes
@@ -222,7 +222,8 @@ freeze the world:</p>
   telling you the truth: this path was never recorded.</li>
 </ul>
 <p>The diagnostic that separates model nondeterminism from yours: <strong>replay the
-same cassette twice.</strong> The recorded responses are frozen bytes — replay cannot
+same cassette twice.</strong> The recorded responses are frozen content (parsed
+JSON) — replay cannot
 introduce model variance — so if two replays differ, the nondeterminism is
 provably in your code. Then the fix is the fixture fix: inject the clock,
 inject the RNG, fresh seeded instances per run (one shared seeded RNG
@@ -237,14 +238,14 @@ solution.</p>
 <li><strong>The dead exporter.</strong> Point the tracer at a backend that raises. Predict
    whether the quiz still completes; compare against the unguarded variant.</li>
 <li><strong>Record, then replay.</strong> Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls and a byte-identical transcript.</li>
+   Prove zero live model calls and a content-identical transcript.</li>
 <li><strong>Replay as tripwire.</strong> Change one scripted answer, replay the old cassette.
    Predict where it breaks — and what a non-strict replayer would have done
    instead.</li>
 <li><strong>The hunt.</strong> A teammate's "harmless" PR adds a dated header and livelier
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove
-   byte-identity end to end.</li>
+   content-identity end to end.</li>
 </ol>
 <h2>State of the art (as of August 2026)</h2>
 <table>
@@ -348,8 +349,9 @@ matching converts drift into a loud mismatch — the cassette doubles as a
 determinism audit of your own code.</details>
 
 <details><summary>Two replays of the same cassette differ. Where is the bug, and why can you be certain?</summary>
-In your code, necessarily. The model's responses are frozen bytes in the
-cassette, so replay cannot introduce model variance. The leak is on your side —
+In your code, necessarily. The model's responses are frozen content (parsed
+JSON) in the cassette, so replay cannot introduce model variance. The leak is
+on your side —
 wall clock, unseeded RNG, iteration order. Find it in the diff, then inject and
 seed it.</details>
 
@@ -371,8 +373,8 @@ first.</p>
   <code>lessons/src/S08-observability-replay.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script type="module">
-  import mermaid from "./vendor/mermaid.esm.min.mjs";
+<script src="./vendor/mermaid.min.js"></script>
+<script>
   mermaid.initialize({ startOnLoad: true, theme: "dark" });
 </script>
 </body>
