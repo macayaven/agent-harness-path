@@ -7,7 +7,7 @@ rebuild audit, S14 ship & pilot). Zero network, zero API keys, zero cost: every
 are never hidden behind an API call.
 
 **Start here:** [`lessons/index.html`](lessons/index.html) — or the hosted
-[lesson reader](https://macayaven.github.io/agent-harness-path/). A 9-minute
+[lesson reader](https://carloscrespomacaya.com/agent-harness-path/). A 9-minute
 [course overview](lessons/videos/S00-course-overview.mp4) covers the arc first
 (the videos lag the lessons; the lesson + notebook are canonical).
 
