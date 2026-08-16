@@ -150,7 +150,7 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 | Development | Status | Take |
 |---|---|---|
 | Lethal-trifecta framing ([Willison, Jun 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)) | **already in this path** | The threat model this session sits in. Remove a leg; don't ask the model to be careful. |
-| OWASP Top 10 for LLM Applications, 2026 list (the current release) — prompt injection still first, excessive agency up from sixth to third ([owasp.org](https://owasp.org/www-project-top-10-for-large-language-model-applications/)) | **already in this path** | The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering). |
+| OWASP Top 10 for LLM Applications, 2026 list (the current release) — prompt injection still first, excessive agency up from sixth to third ([OWASP GenAI LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)) | **already in this path** | The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering). |
 | OWASP Top 10 for Agentic Applications (Dec 2025, [OWASP GenAI Security Project](https://genai.owasp.org/)) — goal hijack, tool misuse, identity & privilege abuse, agentic supply chain, unexpected code execution, memory & context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10) | **recognize** | The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them. |
 | Anthropic's production containment write-up, [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude) (May 2026) | **recognize** | The industrial version of this session: environment isolation first, model-level controls second — and the admission that the software you build yourself is often the weakest layer. |
 | Constitutional classifiers — input *and* output classifier shells, stress-tested with 3,000+ hours of human red-teaming ([arXiv:2501.18837](https://arxiv.org/abs/2501.18837)) | **recognize** | The research-grade union-of-layers design. Note the metric: red-team hours survived, not a benchmark score. |
@@ -164,9 +164,9 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
   Extract: the three legs stated precisely (private data, untrusted content,
   exfiltration channel) and the design rule "remove one leg" — then check which
   leg your own system removes, in code.
-- **OWASP, [Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).**
-  Extract: LLM01 (direct vs indirect injection) and LLM06 (excessive agency).
-  Skim the remaining eight as vocabulary for later sessions.
+- **OWASP, [LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/).**
+  Extract: prompt injection (still first) and excessive agency (now third; LLM06
+  in the 2025 numbering). Skim the remaining eight as vocabulary for later sessions.
 - **Anthropic, [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude)
   (May 2026).** Extract: which layers are environmental versus model-level, why
   battle-tested primitives beat custom controls, and the approval-fatigue data —

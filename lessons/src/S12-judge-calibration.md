@@ -232,8 +232,8 @@ The aggregate hides the failure; the strata name it.</details>
 
 ## What's next
 
-**S13-rebuild-from-memory:** you now own the full chain — a loop, an eval suite,
-and a judged tier with its own measurement stapled to it. Next session turns the
-instrument on you: rebuild the core of your system from memory, no assistant,
-then diff against the original. The forgot-list you write afterward is the
-honest inventory of what you actually own.
+**S13-rebuild-from-memory (optional lab):** S01–S12 is the self-contained path.
+If you own a non-trivial system and want the closed-book audit, S13 turns the
+instrument on you: rebuild the core from memory, no assistant, then diff against
+the original. The forgot-list you write afterward is the honest inventory of
+what you actually own. Skip it if you do not yet have a system to audit.

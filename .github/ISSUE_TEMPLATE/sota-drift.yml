@@ -1,0 +1,25 @@
+name: SOTA drift
+description: A state-of-the-art row is stale, mislinked, or stronger than its source
+title: "[sota] "
+labels: ["sota"]
+body:
+  - type: input
+    id: lesson
+    attributes:
+      label: Lesson slug
+      placeholder: S05-consent-gate
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source URL in the table
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What drifted
+      description: The Take column overclaims, the link 404s, or a newer primary source exists.
+    validations:
+      required: true

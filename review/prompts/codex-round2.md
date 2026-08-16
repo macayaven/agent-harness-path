@@ -2,7 +2,7 @@
 
 You are an external reviewer for a self-contained course on building, evaluating,
 and governing LLM agents, soon to be published. Repo root (your working directory):
-`/Volumes/mac-studio-ssd/education/agentic-harnessing-companion`. You are READ-ONLY:
+`.`. You are READ-ONLY:
 do not edit, create, or delete any file. Return Markdown only, to stdout.
 
 This is round 2. Round 1 (another reviewer, verdict "major rework needed") produced

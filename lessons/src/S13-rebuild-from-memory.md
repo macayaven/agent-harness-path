@@ -5,12 +5,13 @@ measurement that is: a closed-book rebuild of the core component, judged by your
 eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 **Time:** ~20 min reading, then ~90 min for the audit itself.
 **Prerequisites:** S01–S02 for the instrument vocabulary — and a non-trivial project
-you own to audit. The path's twelve toys are independent, so there is no cumulative
-build to point at: the audit target is a project of yours, built here, at work, or
-in another course.
+you own to audit. **This session is optional.** The path's twelve toys are
+independent, so there is no cumulative build to point at: the audit target is a
+project of yours, built here, at work, or in another course. Completing S01–S12
+does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
 defeat it. The protocol below is the hands-on.
-**Video:** [NotebookLM overview](videos/S13-rebuild-from-memory.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [NotebookLM overview](videos/S13-rebuild-from-memory.mp4) — auto-generated summary; preview or review, never a substitute for the protocol.
 
 ---
 

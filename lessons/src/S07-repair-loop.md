@@ -238,4 +238,4 @@ not the draft, and regenerating must never grow the approved scope.</details>
 **S08 — Observability and replay:** the repair loop makes runs *branch* — failed
 drafts, feedback messages, a stop reason — and the final transcript alone can no
 longer tell you what happened. Next: trace every phase, record every request and
-response, and replay a session byte-identical offline.
+response, and replay a session content-identical offline.

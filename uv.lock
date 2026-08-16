@@ -7,7 +7,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "agentic-harnessing-companion"
+name = "agent-harness-path"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

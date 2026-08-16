@@ -1,13 +1,21 @@
 [project]
-name = "agentic-harnessing-companion"
+name = "agent-harness-path"
 version = "0.1.0"
-description = "Study companion to agentic-harnessing-intensive: session guides and stdlib-only toy notebooks"
+description = "The Agent Harness Path: a self-contained course on building, evaluating, and governing LLM agents"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "Apache-2.0 AND CC-BY-4.0" }
+authors = [{ name = "Carlos Crespo Macaya" }]
 # Dependencies are tooling only: `jupyterlab` runs the notebooks, `markdown` renders
 # the lessons/ HTML. Notebook code itself stays Python standard library only
 # (COURSE-MAP.md session contract, rule 2) — nothing in `notebooks/` imports
 # anything from here.
 dependencies = ["jupyterlab>=4.0", "markdown>=3.5"]
+
+[project.urls]
+Homepage = "https://github.com/macayaven/agent-harness-path"
+Documentation = "https://macayaven.github.io/agent-harness-path/"
+Issues = "https://github.com/macayaven/agent-harness-path/issues"
 
 [tool.uv]
 package = false

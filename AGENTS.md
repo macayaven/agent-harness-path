@@ -1,70 +1,53 @@
-# AGENTS.md — agent-harness-path
+# AGENTS.md — The Agent Harness Path
 
 Read this before doing anything in this repo. It assumes you know nothing about the project.
 
 ## What this project is
 
-A **study companion** to a separate course repository, `agentic-harnessing-intensive`
-(v5, referenced as `../agentic-harnessing-intensive` relative to this repo's parent).
-This repo contains **no product code, no tests** — it is educational material, in two layers:
+A **self-contained course** on building, evaluating, and governing LLM agents.
+Entry point: `lessons/index.html`. Fourteen sessions (S01–S14), each a deep HTML
+lesson in `lessons/`; the twelve notebook sessions (S01–S12) pair it with a
+runnable stdlib-only toy notebook in `notebooks/`, while S13/S14 are optional,
+notebook-less protocols the learner runs on a system they already own.
 
-1. **The companion layer** (the original design): `sessions/` guides + `notebooks/`
-   toys that fill three gaps in the course — worked *toy* examples, *bridge* exercises
-   between theory and the real build, and *field guides* of mechanical reference
-   knowledge. `WHY-THIS-DESIGN.md` is the rationale; `COURSE-MAP.md` tracks coverage.
-2. **The standalone path** (added later, at the owner's direction): **The Agent
-   Harness Path** — `lessons/index.html` is the entry point. Fourteen sessions
-   (S01–S14), each a deep HTML lesson in `lessons/`; the twelve notebook sessions
-   (S01–S12) pair it with a runnable stdlib-only toy notebook in `notebooks/`,
-   while S13/S14 are notebook-less protocols run on the learner's own system.
-   Followable entirely in this workspace without the course
-   repo. Each lesson carries a dated state-of-the-art section with cited sources.
+This repo contains **no product code and no test suite of a product** — it is
+educational material. Each lesson carries a dated state-of-the-art section with
+cited sources.
 
-The two layers share the notebooks. The companion layer's session guides
-(`sessions/S01`, `S02`) reference the course build; the standalone lessons
-(`lessons/src/SNN-*.md`) are self-contained and deliberately generic about it.
+The toolchain is `uv` with `requires-python = ">=3.11"`. A root `pyproject.toml`
+pins that floor; `uv sync` builds `.venv/` from it.
 
-The course repo itself has **no virtualenv** — its toolchain is `uv` with PEP-723
-single-file scripts declaring their own inline dependencies, `requires-python = ">=3.11"`.
-The companion mirrors that toolchain rather than inventing a second one: a root
-`pyproject.toml` pins the same Python floor (`>=3.11`), and `uv sync` builds `.venv/`
-from it.
+## The toy-domain rule
 
-## The one rule that keeps this repo honest
+Everything here is a **toy from a different domain** (a weather bot, a
+customer-support chatbot, a mopbot, a trivia host) — never a paste-ready
+production harness. This is the repo's core invariant:
 
-Everything here is a **toy from a different domain** (a weather bot, a customer-support
-chatbot, a mopbot, a trivia host) — never the course artifact itself. This is the
-repo's core invariant:
+- Toy code is for **reading, running, and breaking** — not for copying into a
+  production agent.
+- If an example drifts close enough to be a drop-in harness, that is a defect —
+  rewrite it further away.
+- Notebook numbers never substitute for a banked eval baseline on a system the
+  learner owns. The path has its own notebook-local evidence habits
+  (predict-first, in-notebook assertions).
 
-- **Nothing here may be paste-able into the course's owned paths** (`harness/`, `evals/`,
-  `capstone/`, `notes/`, `scenarios/`). If an example drifts close enough to be pasted
-  into a course deliverable, that is a defect — rewrite it further away.
-- Toy code is for **reading, running, and breaking** — not for copying into deliverables.
-- The standalone path teaches the same *concepts* self-contained, but it must not
-  reproduce the course's build instructions, owned file paths, decision-record IDs
-  (D-01, D-04, …), exit-code semantics, or deliverable specs. Teach the move, not the
-  artifact.
-- The companion never lowers the course's evidence bar (it never replaces a `run.py`
-  number, a banked baseline, or a PROGRESS row). The standalone path has its own,
-  notebook-local evidence habits (predict-first, in-notebook assertions) and does not
-  pretend to reproduce the course's banked-baseline mechanism.
-
-When writing or editing content here, preserve this rule. Do not produce solutions to
-course tasks.
+When writing or editing content here, preserve this rule. Do not produce
+solutions to someone else's production deliverable.
 
 ## Repository layout
 
 ```
-├── README.md                  — what the companion is and how to use it
+├── README.md                  — what the path is and how to use it
 ├── WHY-THIS-DESIGN.md         — deliberate vs accidental difficulty; the fix pattern
-├── COURSE-MAP.md              — S1–S14 coverage table (status, concept gap, toy, bridge)
-├── pyproject.toml             — uv manifest: Python >=3.11 (mirrors the course)
+├── COURSE-MAP.md              — S1–S14 coverage table
+├── CONTRIBUTING.md            — how to propose a change
+├── pyproject.toml             — uv manifest: Python >=3.11
 ├── uv.lock                    — pinned resolution of the above (generated by `uv sync`)
-├── sessions/                  — companion layer: S01/S02 session guides (six-part flow)
 ├── lessons/
-│   ├── index.html             — standalone-path entry point (generated; src/index.md)
+│   ├── index.html             — course entry point (generated; src/index.md)
 │   ├── build.py               — renders src/*.md → *.html via template.html
 │   │                              (injects the prev/index/next nav bars)
+│   ├── check_links.py         — relative-link checker for generated HTML
 │   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
 │   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
@@ -74,25 +57,23 @@ course tasks.
 └── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
 ```
 
-Beyond the tree above there is `LICENSE`, and `review/` (the adversarial-review
-workspace: `prompts/`, `reports/`, `synthesis.md`). No `package.json`,
-`requirements.txt`, CI config, or test
-suite. `uv.lock`, the generated `lessons/*.html`, and the vendored mermaid build
-in `lessons/vendor/` are checked in so everything reads offline.
+Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
+`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `review/` (the
+adversarial-review workspace). `uv.lock`, the generated `lessons/*.html`, and
+the vendored mermaid build in `lessons/vendor/` are checked in so everything
+reads offline.
 
 ## Build and run
 
 - **Build step:** `uv run python lessons/build.py` regenerates all `lessons/*.html`
   from `lessons/src/*.md`. Re-run after editing any lesson source. The build warns if
   a non-index lesson has no mermaid diagram.
-- **No tests, no lint config.** Verification is: every notebook runs top-to-bottom
+- **Link check:** `uv run python lessons/check_links.py` (after a build).
+- **No product test suite.** Verification is: every notebook runs top-to-bottom
   (`uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb > /dev/null`),
-  the HTML regenerates cleanly, and links resolve (lesson → notebook, index → lesson).
-- **Environment:** the course repo has no virtualenv to reuse — `uv` + PEP-723 inline
-  dependencies *is* its toolchain. This repo mirrors it: a root `pyproject.toml` declares
-  `requires-python = ">=3.11"` (the course's constraint) and two tooling dependencies,
-  `jupyterlab` (notebook runner) and `markdown` (lesson renderer). `uv sync` creates
-  `.venv/`; run anything with `uv run`.
+  the HTML regenerates cleanly, and relative links resolve. CI runs that contract
+  on Python 3.11 and 3.12.
+- **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
 - **Notebooks run on Python 3.11+, standard library only** — `itertools`, `json`,
   `random`, `statistics`. Zero network, zero API keys, zero cost. This is a hard
   constraint (see COURSE-MAP.md's session contract, rule 2), not an accident:
@@ -103,21 +84,7 @@ in `lessons/vendor/` are checked in so everything reads offline.
 
 Follow these when editing existing material or writing a new session.
 
-### Session file format (`sessions/SNN-*.md`)
-
-Every session follows the fixed six-part flow, in this order:
-
-1. **Concept** (10–20 min) — the one idea, with a Mermaid diagram.
-2. **Toy** (20–30 min) — links the notebook, lists predict-first experiments.
-3. **Bridge** (20–40 min) — 2–4 small guided reps on the exact mechanical moves of
-   the real build.
-4. **Build map** — a table mapping toy elements → real course counterparts → what's
-   new in the real one.
-5. **Self-check** — quiz questions with foldable answers (`<details><summary>`).
-6. **Field guide** — bullet list of real failure modes with their fixes
-   (exit codes, "done means…" lines).
-
-### Lesson format (`lessons/src/SNN-*.md`, standalone path)
+### Lesson format (`lessons/src/SNN-*.md`)
 
 Every lesson follows this fixed structure (S01/S02 are the exemplars):
 
@@ -134,16 +101,17 @@ Every lesson follows this fixed structure (S01/S02 are the exemplars):
 5. **Annotated readings** — each with one line on what to extract.
 6. **Misconceptions and failure modes.**
 7. **Self-check** — foldable `<details><summary>` answers, raw HTML on its own lines.
-8. **What's next** — bridge to the next session slug.
+8. **What's next** — bridge to the next session slug. S12 may point at S13 as an
+   *optional* lab.
 
 Each lesson also carries an optional **Video:** line in its header block linking its
 NotebookLM overview in `lessons/videos/` (filename = lesson slug). Videos are
-previews/reviews, framed as never replacing the notebook; when adding a new video,
-name it `SNN-slug.mp4`, drop it in `lessons/videos/`, add the header line, and
-rebuild.
+previews/reviews and may lag the lesson text; they never replace the notebook
+(S01–S12) or the protocol (S13/S14). When adding a new video, name it
+`SNN-slug.mp4`, drop it in `lessons/videos/`, add the header line, and rebuild.
 
-Lessons are self-contained: they teach concepts without referencing the course
-repo's owned paths, decision-record IDs, or build instructions (see the one rule).
+Lessons are self-contained: they teach concepts without assuming any other
+repository.
 
 ### Notebook conventions
 
@@ -162,21 +130,14 @@ repo's owned paths, decision-record IDs, or build instructions (see the one rule
 - Spanish is used for toy dialogue content where noted (S02, S12; the author works in
   Spanish); all explanatory prose, comments, and docs are in English.
 
-### Cross-references to the course repo
-
-Sessions reference course artifacts that live outside this repo (`syllabus.md`,
-`harness/loop.py`, `evals/run.py`, `runner.sh`, decision records like D-01/D-02/D-04,
-exit codes 97/98, PROGRESS.md). **Do not treat those references as broken** when you
-can't resolve them here — the course repo is canonical and this companion assumes it.
-
 ## Style and tone
 
 - English. Direct, evidence-first, dry humor tolerated; no cheerleading, no filler.
-- Heavy use of tables for comparisons and build maps; Mermaid for structure diagrams.
+- Heavy use of tables for comparisons; Mermaid for structure diagrams.
 - Terms like "naive baseline", "deterministic vs judged tier", "fixture invariant",
-  "predict first", and "owned paths" have specific meanings — reuse them, don't paraphrase.
+  and "predict first" have specific meanings — reuse them, don't paraphrase.
 - Match the existing density: tight sentences, no boilerplate headers beyond the
-  six-part flow.
+  lesson structure above.
 
 ## Security considerations
 
@@ -185,4 +146,4 @@ can't resolve them here — the course repo is canonical and this companion assu
 - The S01 notebook deliberately demonstrates *unsafe* patterns (a tool that raises,
   a loop missing the append-verbatim line) inside labeled experiments. That is
   teaching material, not a defect — do not "fix" the intentionally broken variants.
-- Do not add content that solves course deliverables (see the one rule above).
+- See `SECURITY.md` for how to report a real vulnerability in the repo itself.

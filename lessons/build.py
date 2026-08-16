@@ -7,7 +7,6 @@ mermaid.js (vendored at lessons/vendor/, browser-side) can render them.
 Each page also gets a prev/index/next nav bar, top and bottom of <main>.
 """
 
-import datetime
 import re
 import sys
 from pathlib import Path
@@ -90,7 +89,6 @@ def render(source: Path, nav: str) -> tuple[str, int]:
         TEMPLATE.replace("{{ title }}", title)
         .replace("{{ nav }}", nav)
         .replace("{{ body }}", body)
-        .replace("{{ date }}", datetime.date.today().isoformat())
         .replace("{{ source }}", source.name)
     ), n
 

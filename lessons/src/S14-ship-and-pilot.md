@@ -7,11 +7,12 @@ memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
 **Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
-a non-trivial project of your own to ship. The path's toys are independent; there
-is no cumulative build waiting to be shipped, so "your system" means one you own.
+a non-trivial project of your own to ship. **This session is optional.** The
+path's toys are independent; there is no cumulative build waiting to be shipped,
+so "your system" means one you own. Completing S01–S12 does not require S14.
 **Hands-on:** no notebook — the hands-on is your own system, run through the
 protocol below.
-**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the protocol.
 
 ---
 

@@ -1,0 +1,24 @@
+name: Content bug
+description: A lesson, notebook, or cross-artifact claim is wrong or contradictory
+title: "[content] "
+labels: ["content"]
+body:
+  - type: textarea
+    id: where
+    attributes:
+      label: Where
+      description: Lesson slug, notebook filename, cell, or heading.
+    validations:
+      required: true
+  - type: textarea
+    id: claimed
+    attributes:
+      label: What it says
+    validations:
+      required: true
+  - type: textarea
+    id: truth
+    attributes:
+      label: What is true instead
+    validations:
+      required: true

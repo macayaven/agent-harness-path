@@ -1,0 +1,11 @@
+The Agent Harness Path
+Copyright 2026 Carlos Crespo Macaya
+
+This product includes software developed by third parties:
+
+Mermaid.js
+  Copyright (c) 2014 - 2022 Knut Sveidqvist and Mermaid contributors
+  License: MIT
+  Source: https://github.com/mermaid-js/mermaid
+  Vendored at: lessons/vendor/mermaid.min.js (UMD build, mermaid 10.x)
+  Full license text: lessons/vendor/LICENSE-mermaid.md

@@ -1,0 +1,30 @@
+name: Notebook fail
+description: A toy notebook does not run top-to-bottom, or committed outputs leaked
+title: "[notebook] "
+labels: ["notebook"]
+body:
+  - type: input
+    id: file
+    attributes:
+      label: Notebook
+      placeholder: notebooks/s08_observability_replay_toy.ipynb
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Command and error
+      description: Prefer `uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb`.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Does not execute
+        - Outputs committed
+        - Non-stdlib import
+        - Claim contradicts the lesson
+    validations:
+      required: true

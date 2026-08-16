@@ -116,9 +116,12 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
    cell: predict whether the bare fixture FAILs and the fixture+reference PASSes
    before running — and what each wrong outcome would tell you about the checker.
 2. The delta table: predict which engine passes the scope check, then run. Read
-   past the pass/fail column — turns and p50 latency are product numbers too. The
-   naive row is the status quo; the delta is the measured reason the harness
-   deserves to exist.
+   past the pass/fail column. Turns are a real count; the latency column in this
+   toy is a **seeded stub** (plumbing demo, identical by construction across
+   engines) — the *measured* delta is the scope-check. In a real suite, p50
+   latency is a product number you actually time. The naive row is the status
+   quo; the scope-check delta is the measured reason the harness deserves to
+   exist.
 3. The engine that refuses everything: predict whether it passes `check_scope`,
    and whether it is a good product. It passes — and it is useless. Answer in a
    comment: which tier catches "useless" here? Keep the answer honest: the toy's

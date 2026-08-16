@@ -1,0 +1,35 @@
+name: verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tooling
+        run: uv sync --frozen
+      - name: Execute notebooks
+        run: |
+          set -euo pipefail
+          for nb in notebooks/s*.ipynb; do
+            echo "=== $nb ==="
+            uv run jupyter nbconvert --to notebook --execute --stdout "$nb" > /dev/null
+          done
+      - name: Rebuild lessons and fail on drift
+        run: |
+          uv run python lessons/build.py
+          git diff --exit-code -- lessons/*.html lessons/index.html
+      - name: Check relative links
+        run: uv run python lessons/check_links.py

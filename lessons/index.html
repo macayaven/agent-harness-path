@@ -101,14 +101,17 @@
 <main>
 <nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01 — The agent loop &rarr;</a></span></nav>
 <h1>The Agent Harness Path</h1>
-<p>A self-contained course on building, evaluating, and governing LLM agents — fourteen
-sessions, each an HTML lesson: twelve notebook sessions plus two protocol sessions
-(S13 rebuild audit, S14 ship &amp; pilot). Zero network, zero API keys, zero cost: every
-"model" in the notebooks is a plain Python function you can read, so the mechanics
-are never hidden behind an API call.</p>
+<p>A self-contained course on building, evaluating, and governing LLM agents — twelve
+notebook sessions plus two optional protocol sessions (S13 rebuild audit, S14 ship
+&amp; pilot). Zero network, zero API keys, zero cost: every "model" in the notebooks
+is a plain Python function you can read, so the mechanics are never hidden behind
+an API call.</p>
 <p><strong>New here?</strong> Watch the 9-minute <a href="videos/S00-course-overview.mp4">course overview</a>
 for the whole arc — core mechanics → context &amp; boundaries → safety &amp; governance →
-observability → production — then start at S01.</p>
+observability → production — then start at S01. The videos are NotebookLM
+summaries and may lag the lesson text; the lesson and notebook are canonical.</p>
+<p>S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
+a system you already own.</p>
 <h2>How to work a session</h2>
 <ol>
 <li><strong>Read the lesson</strong> (20–40 min). The theory-in-depth section is the core; the
@@ -118,8 +121,8 @@ observability → production — then start at S01.</p>
    the learning is; a prediction you didn't write down is one you'll retroactively fix.</li>
 <li><strong>Do the exercises.</strong> Attempt cells come before solution cells. The attempt is the
    rep; the solution is the spotter, not the lift.</li>
-<li><strong>Self-check.</strong> Foldable questions at the end of the lesson. Be honest; nobody is
-   grading you except S13, and S13 is strict.</li>
+<li><strong>Self-check.</strong> Foldable questions at the end of the lesson. Nobody is grading
+   you. S13 is an optional closed-book audit of a system you own, and it is strict.</li>
 </ol>
 <p>Setup: <code>uv sync</code> once, then <code>uv run jupyter lab</code> (or open the notebooks in any
 Jupyter frontend). Notebook code is Python standard library only.</p>
@@ -173,7 +176,7 @@ Jupyter frontend). Notebook code is Python standard library only.</p>
 <tr>
 <td>6</td>
 <td><a href="S06-layered-detection.html">Layered detection</a></td>
-<td>Keyword floor + classifier pipeline; policy as data; the false-trigger counter</td>
+<td>Keyword-floor + classifier pipeline; policy as data; the false-trigger counter</td>
 <td><a href="../notebooks/s06_layered_detection_toy.ipynb">s06_layered_detection_toy.ipynb</a></td>
 <td><a href="videos/S06-layered-detection.mp4">▶</a></td>
 </tr>
@@ -222,24 +225,26 @@ Jupyter frontend). Notebook code is Python standard library only.</p>
 <tr>
 <td>13</td>
 <td><a href="S13-rebuild-from-memory.html">Rebuild from memory</a></td>
-<td>The closed-book audit: recognition ≠ recall, and only rebuilding proves ownership</td>
+<td>Optional lab: closed-book audit of a system you own</td>
 <td>— (the audit is the exercise)</td>
 <td><a href="videos/S13-rebuild-from-memory.mp4">▶</a></td>
 </tr>
 <tr>
 <td>14</td>
 <td><a href="S14-ship-and-pilot.html">Ship &amp; pilot</a></td>
-<td>The cold acceptance run; the first real user; the public artifact</td>
+<td>Optional lab: cold acceptance run, first real user, public artifact</td>
 <td>— (protocol, not notebook)</td>
 <td><a href="videos/S14-ship-and-pilot.mp4">▶</a></td>
 </tr>
 </tbody>
 </table>
-<p>S13 and S14 have no notebook by design: they are the <em>bring your own system</em>
-sessions — you apply them to a project you already own, from this path, from
-work, or from elsewhere.</p>
+<p>S13 and S14 have no notebook by design: they are optional <em>bring your own system</em>
+labs — you apply them to a project you already own, from this path, from
+work, or from elsewhere. Completing S01–S12 does not require them.</p>
 <p>The videos are NotebookLM-generated summaries of the lessons (in <code>lessons/videos/</code>).
-Use them as preview or review — the learning happens in the notebook, not the video.</p>
+Use them as preview or review — the learning happens in the notebook (S01–S12) or
+the protocol (S13/S14), not the video. Hosted pages serve the lessons; running
+notebooks still needs a clone.</p>
 <h2>The pedagogical commitments</h2>
 <ul>
 <li><strong>Toys from real domains, never the artifact.</strong> Every notebook is a small complete
@@ -252,13 +257,12 @@ Use them as preview or review — the learning happens in the notebook, not the 
 <li><strong>State of the art, dated.</strong> Each lesson's SOTA table is stamped "as of August 2026"
   and every claim carries a source. Treat anything older than a year as history.</li>
 </ul>
-<h2>Provenance</h2>
-<p>This path is a standalone reworking of the topics in a separate intensive course
-(<code>agentic-harnessing-intensive</code>). The session guides in <code>sessions/</code> and the design
-rationale in <code>WHY-THIS-DESIGN.md</code> document the original companion relationship.</p>
+<h2>License</h2>
+<p>Apache-2.0 for notebooks and tooling; CC BY 4.0 for lessons, videos, and docs.
+See <code>LICENSE</code> in the repository root.</p>
 <nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01 — The agent loop &rarr;</a></span></nav>
 <footer>
-  Generated by <code>lessons/build.py</code> on 2026-08-14 from
+  Generated by <code>lessons/build.py</code> from
   <code>lessons/src/index.md</code> — part of The Agent Harness Path.
 </footer>
 </main>

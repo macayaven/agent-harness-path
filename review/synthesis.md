@@ -116,3 +116,13 @@ edit re-verified by executing top-to-bottom; every lesson edit re-rendered.
   sync (acceptable for preview/review use; regenerate before any paid distribution).
 - A second adversarial review may find issues this pass missed — schedule it after
   these fixes land.
+
+## Publication pass (17 August 2026)
+
+Standalone public release. Companion-layer `sessions/` removed; dual license
+(Apache-2.0 / CC BY 4.0) plus mermaid MIT notice; S01–S12 framed as the
+self-contained path and S13/S14 as optional labs; leftover overclaims (S02
+latency stub, content-identical replay, undefined κ → `None`, OWASP 2026
+primary links) corrected; CONTRIBUTING / CoC / SECURITY / CI / Pages added.
+Video corpus is still the 14 August NotebookLM set — README and index state
+that videos may lag and that lesson + notebook are canonical.
