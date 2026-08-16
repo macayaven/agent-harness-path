@@ -12,7 +12,7 @@ path's toys are independent; there is no cumulative build waiting to be shipped,
 so "your system" means one you own. Completing S01–S12 does not require S14.
 **Hands-on:** no notebook — the hands-on is your own system, run through the
 protocol below.
-**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the protocol.
+**Video:** [Gemini Notebook overview](videos/S14-ship-and-pilot.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
 

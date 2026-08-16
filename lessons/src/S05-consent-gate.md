@@ -8,7 +8,7 @@ boundary.
 **Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop), S02 (naive vs
 governed).
 **Hands-on:** [`notebooks/s05_consent_gate_toy.ipynb`](../notebooks/s05_consent_gate_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S05-consent-gate.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S05-consent-gate.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

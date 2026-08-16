@@ -9,7 +9,7 @@ and the proof is a measurement: rule survival probed across the compaction bound
 (scripted probes and deterministic checkers — both get reused here, one level down
 the stack).
 **Hands-on:** [`notebooks/s03_context_engineering_toy.ipynb`](../notebooks/s03_context_engineering_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S03-context-engineering.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S03-context-engineering.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

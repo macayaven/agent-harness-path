@@ -5,7 +5,7 @@ scripted users, two-tier checkers, the fixture invariant, and why the naive base
 is a product argument rather than a courtesy number.
 **Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop).
 **Hands-on:** [`notebooks/s02_scripted_user_eval_toy.ipynb`](../notebooks/s02_scripted_user_eval_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S02-golden-evals.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S02-golden-evals.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

@@ -11,7 +11,7 @@ project of yours, built here, at work, or in another course. Completing S01–S1
 does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
 defeat it. The protocol below is the hands-on.
-**Video:** [NotebookLM overview](videos/S13-rebuild-from-memory.mp4) — auto-generated summary; preview or review, never a substitute for the protocol.
+**Video:** [Gemini Notebook overview](videos/S13-rebuild-from-memory.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
 

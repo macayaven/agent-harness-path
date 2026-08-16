@@ -9,7 +9,8 @@ are never hidden behind an API call.
 **Start here:** [`lessons/index.html`](lessons/index.html) — or the hosted
 [lesson reader](https://carloscrespomacaya.com/agent-harness-path/). A 9-minute
 [course overview](lessons/videos/S00-course-overview.mp4) covers the arc first
-(the videos lag the lessons; the lesson + notebook are canonical).
+(the videos lag the lessons; they are Google Gemini Notebook overviews, formerly
+NotebookLM; the lesson + notebook are canonical).
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own — this course does not accumulate a capstone artifact
@@ -64,8 +65,10 @@ the same HTML.
 
 - `lessons/index.html` — the course entry point (generated from `lessons/src/`;
   rebuild with `uv run python lessons/build.py`)
-- `lessons/S01…S14-*.html` — the lessons; `lessons/videos/` — one video overview per
-  session (NotebookLM-generated; previews/reviews, not substitutes for the work)
+- `lessons/S01…S14-*.html` — the lessons; `lessons/videos/` — one Video Overview per
+  session, generated with Google Gemini Notebook (formerly NotebookLM) on 14 Aug 2026.
+  Previews/reviews, not substitutes for the work. Google branding in the files is
+  Google's; see `NOTICE`.
 - `notebooks/` — twelve runnable toys (S1–S12), committed output-free
 - `AGENTS.md` — contributor/agent conventions: the lesson format, the notebook
   contract, the toy-domain rule
@@ -86,5 +89,7 @@ Split license, 2026 Carlos Crespo Macaya:
 - **Apache-2.0** — notebooks, build tooling, CI (`LICENSES/Apache-2.0.txt`)
 - **CC BY 4.0** — lessons, videos, and documentation (`LICENSES/CC-BY-4.0.txt`)
 
-Vendored Mermaid.js remains MIT; see `NOTICE`. Projects you build while following
-the path are yours. See `LICENSE` for the file-by-file split.
+Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated with
+Google Gemini Notebook; Google's marks in those files are not part of the CC BY
+grant. Cited papers and vendor docs remain their authors'. Projects you build
+while following the path are yours. See `LICENSE` for the file-by-file split.

@@ -8,7 +8,7 @@ certify checkability, not honesty.
 **Time:** ~75 min with the notebook. **Prerequisites:** S02 (checker tiers, the
 fixture invariant); S08 (traces and replay) helps but is not required.
 **Hands-on:** [`notebooks/s09_evidence_report_toy.ipynb`](../notebooks/s09_evidence_report_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S09-evidence-reports.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S09-evidence-reports.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

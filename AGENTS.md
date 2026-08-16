@@ -52,7 +52,7 @@ solutions to someone else's production deliverable.
 │   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
-│   └── videos/SNN-*.mp4       — NotebookLM video overviews, one per lesson, plus
+│   └── videos/SNN-*.mp4       — Gemini Notebook Video Overviews, one per lesson, plus
 │                                S00-course-overview.mp4; canonical name = lesson slug
 └── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
 ```
@@ -105,10 +105,12 @@ Every lesson follows this fixed structure (S01/S02 are the exemplars):
    *optional* lab.
 
 Each lesson also carries an optional **Video:** line in its header block linking its
-NotebookLM overview in `lessons/videos/` (filename = lesson slug). Videos are
-previews/reviews and may lag the lesson text; they never replace the notebook
-(S01–S12) or the protocol (S13/S14). When adding a new video, name it
-`SNN-slug.mp4`, drop it in `lessons/videos/`, add the header line, and rebuild.
+Gemini Notebook overview in `lessons/videos/` (filename = lesson slug). Videos are
+Google Gemini Notebook (formerly NotebookLM) generations — previews/reviews that
+may lag the lesson text; they never replace the notebook (S01–S12) or the protocol
+(S13/S14). Credit Google for branding in the files; do not strip watermarks.
+When adding a new video, name it `SNN-slug.mp4`, drop it in `lessons/videos/`,
+add the header line, and rebuild.
 
 Lessons are self-contained: they teach concepts without assuming any other
 repository.

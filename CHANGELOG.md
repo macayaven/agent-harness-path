@@ -18,6 +18,9 @@ Public release.
   OWASP LLM Top 10.
 - Generated HTML no longer stamps today's date (reproducible rebuilds).
 - Clone paths documented with and without Git LFS (~1.2 GB videos).
+- Attribution: Video Overviews credited as Google Gemini Notebook (formerly
+  NotebookLM); CC BY does not cover Google marks in the mp4s; cited papers and
+  vendor docs remain their authors'.
 
 ## Unreleased internal history (pre-0.1.0)
 

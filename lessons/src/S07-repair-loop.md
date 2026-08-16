@@ -7,7 +7,7 @@ retry is not repair; it is resampling.
 **Time:** ~60 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (deterministic checks).
 **Hands-on:** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S07-repair-loop.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S07-repair-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

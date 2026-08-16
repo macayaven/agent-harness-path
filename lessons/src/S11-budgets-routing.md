@@ -7,7 +7,7 @@ privacy boundary that *refuses to run* when misconfigured.
 **Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (defensible comparisons — the routing argument *is* a delta table).
 **Hands-on:** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S11-budgets-routing.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S11-budgets-routing.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

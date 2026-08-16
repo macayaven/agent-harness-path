@@ -1,7 +1,7 @@
 The Agent Harness Path
 Copyright 2026 Carlos Crespo Macaya
 
-This product includes software developed by third parties:
+This product includes software and generated media from third parties:
 
 Mermaid.js
   Copyright (c) 2014 - 2022 Knut Sveidqvist and Mermaid contributors
@@ -9,3 +9,18 @@ Mermaid.js
   Source: https://github.com/mermaid-js/mermaid
   Vendored at: lessons/vendor/mermaid.min.js (UMD build, mermaid 10.x)
   Full license text: lessons/vendor/LICENSE-mermaid.md
+
+Google Gemini Notebook (formerly NotebookLM) Video Overviews
+  Generated 14 August 2026 with Google Gemini Notebook
+  (https://notebooklm.google/). Files: lessons/videos/*.mp4
+  Encoder metadata: "Google" / "ISO Media file produced by Google Inc."
+  Google does not claim ownership of generated content
+  (https://support.google.com/notebooklm/answer/17004255).
+  Google retains rights in the Gemini / Google branding that appears in
+  the files (closing mark, any watermark). Those marks are not licensed
+  under this project's CC BY 4.0 grant.
+
+Cited papers, vendor docs, and blog posts in lessons/src/ remain copyright
+their respective authors. Links in each lesson's SOTA table and annotated
+readings are the attribution.
+

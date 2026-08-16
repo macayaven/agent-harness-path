@@ -8,7 +8,7 @@ and why schema-valid is never the same as correct.
 you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
 score is the same instrument thinking).
 **Hands-on:** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S04-structured-generation.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S04-structured-generation.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

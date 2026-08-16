@@ -22,7 +22,8 @@ The following are licensed under Creative Commons Attribution 4.0 International
 
 - `lessons/src/` (lesson sources)
 - `lessons/*.html` (generated lessons)
-- `lessons/videos/` (NotebookLM-generated overviews of the lessons)
+- `lessons/videos/` (Video Overviews generated with Google Gemini Notebook,
+  formerly NotebookLM — see Third-party below)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
   `CHANGELOG.md`, `review/`
 
@@ -36,3 +37,19 @@ S14's public-artifact step — are your own work.
 
 Vendored Mermaid.js is MIT-licensed by its authors. See `NOTICE` and
 `lessons/vendor/LICENSE-mermaid.md`.
+
+**Cited sources.** Papers, posts, specs, and docs linked from the lessons remain
+the property of their authors. A citation is attribution, not a license grant.
+Trademarks (OpenAI, Anthropic, OWASP, Google, and others) remain their owners'.
+Short quotations in the lessons are used for commentary and teaching.
+
+**Video Overviews.** The files in `lessons/videos/` were generated on 14 August
+2026 with Google Gemini Notebook (then still commonly called NotebookLM; Google
+rebranded the product in July 2026). The mp4 `encoder` tag is `Google`; the
+closing mark is Google's Gemini spark. Per Google's terms, Google does not claim
+ownership of content you generate, but Google retains rights in its branding,
+logos, and UI. This project's CC BY 4.0 grant covers the lesson-derived
+narration and structure in those files. It does **not** license Google's marks,
+watermarks, or any Google-owned assets in the picture. Do not remove or obscure
+Google branding in redistributions.
+

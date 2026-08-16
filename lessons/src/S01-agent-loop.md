@@ -5,7 +5,7 @@ around a stateless API — and the two invariants that keep it alive: message-li
 preservation and tool-call/tool-result pairing.
 **Time:** ~60 min with the notebook. **Prerequisites:** none beyond Python.
 **Hands-on:** [`notebooks/s01_agent_loop_toy.ipynb`](../notebooks/s01_agent_loop_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S01-agent-loop.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S01-agent-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

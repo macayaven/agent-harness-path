@@ -7,7 +7,7 @@ content-identical, with zero model calls — plus what replay can never prove.
 **Time:** ~90 min with the notebook.
 **Prerequisites:** S01 (the loop); S02 (scripted users, fixtures) recommended.
 **Hands-on:** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S08-observability-replay.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S08-observability-replay.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

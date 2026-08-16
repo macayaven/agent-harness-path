@@ -8,7 +8,7 @@ tolerate.
 **Time:** ~75 min with the notebook.
 **Prerequisites:** S01 (the loop), S02 (golden sets, the fixture invariant).
 **Hands-on:** [`notebooks/s06_layered_detection_toy.ipynb`](../notebooks/s06_layered_detection_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S06-layered-detection.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S06-layered-detection.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

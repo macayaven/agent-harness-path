@@ -8,8 +8,10 @@ an API call.
 
 **New here?** Watch the 9-minute [course overview](videos/S00-course-overview.mp4)
 for the whole arc — core mechanics → context & boundaries → safety & governance →
-observability → production — then start at S01. The videos are NotebookLM
-summaries and may lag the lesson text; the lesson and notebook are canonical.
+observability → production — then start at S01. The videos are Google Gemini
+Notebook overviews (formerly NotebookLM; generated 14 Aug 2026) and may lag the
+lesson text; the lesson and notebook are canonical. Google branding in the
+files is Google's.
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own.
@@ -52,10 +54,11 @@ S13 and S14 have no notebook by design: they are optional *bring your own system
 labs — you apply them to a project you already own, from this path, from
 work, or from elsewhere. Completing S01–S12 does not require them.
 
-The videos are NotebookLM-generated summaries of the lessons (in `lessons/videos/`).
-Use them as preview or review — the learning happens in the notebook (S01–S12) or
-the protocol (S13/S14), not the video. Hosted pages serve the lessons; running
-notebooks still needs a clone.
+The videos are Google Gemini Notebook overviews of the lessons (formerly
+NotebookLM; in `lessons/videos/`; generated 14 Aug 2026). Use them as preview or
+review — the learning happens in the notebook (S01–S12) or the protocol
+(S13/S14), not the video. Google branding in the files is Google's. Hosted pages
+serve the lessons without the mp4s; running notebooks still needs a clone.
 
 ## The pedagogical commitments
 
@@ -72,4 +75,5 @@ notebooks still needs a clone.
 ## License
 
 Apache-2.0 for notebooks and tooling; CC BY 4.0 for lessons, videos, and docs.
-See `LICENSE` in the repository root.
+Cited sources remain their authors'. Google branding in the Video Overviews is
+Google's. See `LICENSE` in the repository root.

@@ -10,7 +10,7 @@ dashboard.
 the judged column was labeled *uncalibrated* there; this session removes the
 label, with a rate attached).
 **Hands-on:** [`notebooks/s12_judge_calibration_toy.ipynb`](../notebooks/s12_judge_calibration_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S12-judge-calibration.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S12-judge-calibration.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 

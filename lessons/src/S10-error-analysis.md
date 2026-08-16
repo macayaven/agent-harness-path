@@ -8,7 +8,7 @@ task. The eval suite grows from observed failures, not from imagination.
 **Prerequisites:** S02 (eval suites as measurement instruments); S08 (you need
 traces you can actually pull).
 **Hands-on:** [`notebooks/s10_error_analysis_toy.ipynb`](../notebooks/s10_error_analysis_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S10-error-analysis.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Video:** [Gemini Notebook overview](videos/S10-error-analysis.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
