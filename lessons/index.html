@@ -99,19 +99,20 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01 — The agent loop &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01-agent-loop — The agent loop &rarr;</a></span></nav>
 <h1>The Agent Harness Path</h1>
 <p>A self-contained course on building, evaluating, and governing LLM agents — twelve
 notebook sessions plus two optional protocol sessions (S13 rebuild audit, S14 ship
 &amp; pilot). Zero network, zero API keys, zero cost: every "model" in the notebooks
 is a plain Python function you can read, so the mechanics are never hidden behind
 an API call.</p>
-<p><strong>New here?</strong> Watch the 9-minute <a href="videos/S00-course-overview.mp4">course overview</a>
+<p><strong>New here?</strong> Watch the 9-minute <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4">course overview</a>
 for the whole arc — core mechanics → context &amp; boundaries → safety &amp; governance →
 observability → production — then start at S01. The videos are Google Gemini
 Notebook overviews (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
-files is Google's.</p>
+files is Google's. Click ▶: the mp4 streams in the browser. Clone the repo to
+run the notebooks.</p>
 <p>S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own.</p>
 <h2>How to work a session</h2>
@@ -145,98 +146,98 @@ Jupyter frontend). Notebook code is Python standard library only.</p>
 <td><a href="S01-agent-loop.html">The agent loop</a></td>
 <td>A client-side loop around a stateless API; append-verbatim and tool-pairing invariants</td>
 <td><a href="../notebooks/s01_agent_loop_toy.ipynb">s01_agent_loop_toy.ipynb</a></td>
-<td><a href="videos/S01-agent-loop.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S01-agent-loop.mp4">▶</a></td>
 </tr>
 <tr>
 <td>2</td>
 <td><a href="S02-golden-evals.html">Golden sets &amp; baselines</a></td>
 <td>Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline</td>
 <td><a href="../notebooks/s02_scripted_user_eval_toy.ipynb">s02_scripted_user_eval_toy.ipynb</a></td>
-<td><a href="videos/S02-golden-evals.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S02-golden-evals.mp4">▶</a></td>
 </tr>
 <tr>
 <td>3</td>
 <td><a href="S03-context-engineering.html">Context engineering</a></td>
 <td>Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary</td>
 <td><a href="../notebooks/s03_context_engineering_toy.ipynb">s03_context_engineering_toy.ipynb</a></td>
-<td><a href="videos/S03-context-engineering.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S03-context-engineering.mp4">▶</a></td>
 </tr>
 <tr>
 <td>4</td>
 <td><a href="S04-structured-generation.html">Structured generation</a></td>
 <td>Schema as contract; validate-and-retry; valid ≠ correct</td>
 <td><a href="../notebooks/s04_structured_generation_toy.ipynb">s04_structured_generation_toy.ipynb</a></td>
-<td><a href="videos/S04-structured-generation.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4">▶</a></td>
 </tr>
 <tr>
 <td>5</td>
 <td><a href="S05-consent-gate.html">The consent gate</a></td>
 <td>Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade</td>
 <td><a href="../notebooks/s05_consent_gate_toy.ipynb">s05_consent_gate_toy.ipynb</a></td>
-<td><a href="videos/S05-consent-gate.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4">▶</a></td>
 </tr>
 <tr>
 <td>6</td>
 <td><a href="S06-layered-detection.html">Layered detection</a></td>
 <td>Keyword-floor + classifier pipeline; policy as data; the false-trigger counter</td>
 <td><a href="../notebooks/s06_layered_detection_toy.ipynb">s06_layered_detection_toy.ipynb</a></td>
-<td><a href="videos/S06-layered-detection.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4">▶</a></td>
 </tr>
 <tr>
 <td>7</td>
 <td><a href="S07-repair-loop.html">The repair loop</a></td>
 <td>Bounded regeneration; the curated failure view; what context a retry gets</td>
 <td><a href="../notebooks/s07_repair_loop_toy.ipynb">s07_repair_loop_toy.ipynb</a></td>
-<td><a href="videos/S07-repair-loop.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S07-repair-loop.mp4">▶</a></td>
 </tr>
 <tr>
 <td>8</td>
 <td><a href="S08-observability-replay.html">Observability &amp; replay</a></td>
 <td>Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism</td>
 <td><a href="../notebooks/s08_observability_replay_toy.ipynb">s08_observability_replay_toy.ipynb</a></td>
-<td><a href="videos/S08-observability-replay.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4">▶</a></td>
 </tr>
 <tr>
 <td>9</td>
 <td><a href="S09-evidence-reports.html">Evidence reports</a></td>
 <td>Reports a depleted reader can trust; citation and coverage validators; the 30-second test</td>
 <td><a href="../notebooks/s09_evidence_report_toy.ipynb">s09_evidence_report_toy.ipynb</a></td>
-<td><a href="videos/S09-evidence-reports.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S09-evidence-reports.mp4">▶</a></td>
 </tr>
 <tr>
 <td>10</td>
 <td><a href="S10-error-analysis.html">Error analysis</a></td>
 <td>Failure logs → taxonomy → new evals; open and axial coding on real traces</td>
 <td><a href="../notebooks/s10_error_analysis_toy.ipynb">s10_error_analysis_toy.ipynb</a></td>
-<td><a href="videos/S10-error-analysis.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4">▶</a></td>
 </tr>
 <tr>
 <td>11</td>
 <td><a href="S11-budgets-routing.html">Budgets &amp; routing</a></td>
 <td>Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math</td>
 <td><a href="../notebooks/s11_budgets_routing_toy.ipynb">s11_budgets_routing_toy.ipynb</a></td>
-<td><a href="videos/S11-budgets-routing.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4">▶</a></td>
 </tr>
 <tr>
 <td>12</td>
 <td><a href="S12-judge-calibration.html">Judge calibration</a></td>
 <td>Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy</td>
 <td><a href="../notebooks/s12_judge_calibration_toy.ipynb">s12_judge_calibration_toy.ipynb</a></td>
-<td><a href="videos/S12-judge-calibration.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4">▶</a></td>
 </tr>
 <tr>
 <td>13</td>
 <td><a href="S13-rebuild-from-memory.html">Rebuild from memory</a></td>
 <td>Optional lab: closed-book audit of a system you own</td>
 <td>— (the audit is the exercise)</td>
-<td><a href="videos/S13-rebuild-from-memory.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">▶</a></td>
 </tr>
 <tr>
 <td>14</td>
 <td><a href="S14-ship-and-pilot.html">Ship &amp; pilot</a></td>
 <td>Optional lab: cold acceptance run, first real user, public artifact</td>
 <td>— (protocol, not notebook)</td>
-<td><a href="videos/S14-ship-and-pilot.mp4">▶</a></td>
+<td><a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4">▶</a></td>
 </tr>
 </tbody>
 </table>
@@ -246,8 +247,7 @@ work, or from elsewhere. Completing S01–S12 does not require them.</p>
 <p>The videos are Google Gemini Notebook overviews of the lessons (formerly
 NotebookLM; in <code>lessons/videos/</code>; generated 14 Aug 2026). Use them as preview or
 review — the learning happens in the notebook (S01–S12) or the protocol
-(S13/S14), not the video. Google branding in the files is Google's. Hosted pages
-serve the lessons without the mp4s; running notebooks still needs a clone.</p>
+(S13/S14), not the video. Google branding in the files is Google's.</p>
 <h2>The pedagogical commitments</h2>
 <ul>
 <li><strong>Toys from real domains, never the artifact.</strong> Every notebook is a small complete
@@ -264,7 +264,7 @@ serve the lessons without the mp4s; running notebooks still needs a clone.</p>
 <p>Apache-2.0 for notebooks and tooling; CC BY 4.0 for lessons, videos, and docs.
 Cited sources remain their authors'. Google branding in the Video Overviews is
 Google's. See <code>LICENSE</code> in the repository root.</p>
-<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01 — The agent loop &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="S01-agent-loop.html">Next: S01-agent-loop — The agent loop &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/index.md</code> — part of The Agent Harness Path.

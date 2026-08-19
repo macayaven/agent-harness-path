@@ -109,7 +109,7 @@ and why schema-valid is never the same as correct.
 you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
 score is the same instrument thinking).
 <strong>Hands-on:</strong> <a href="../notebooks/s04_structured_generation_toy.ipynb"><code>notebooks/s04_structured_generation_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S04-structured-generation.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Free text is a liability at a system boundary</h3>
@@ -268,7 +268,7 @@ to — which is the thing you actually needed to know.</p>
 <td>When self-hosting: local backends honor JSON-Schema features unevenly. Test your exact schema, and keep the retry loop as the net underneath.</td>
 </tr>
 <tr>
-<td>Anthropic Structured Outputs, GA across the Claude API: grammar-constrained <code>output_config.format</code> with <code>type: "json_schema"</code> plus strict tool use; SDK helpers <code>client.messages.parse()</code>/<code>output_format</code>; documented on Opus 4.5–5, Sonnet 4.5–5, Haiku 4.5 (also a Bedrock subset and Foundry) (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">docs</a>)</td>
+<td>Anthropic Structured Outputs, GA across the Claude API: grammar-constrained <code>output_config.format</code> with <code>type: "json_schema"</code> plus strict tool use; SDK helpers <code>client.messages.parse()</code>/<code>output_format</code>; documented on the model list in the compatibility table (it grows — check the docs, don't snapshot names here) (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">docs</a>)</td>
 <td><strong>newer than this session</strong></td>
 <td>Constrained decoding is now table stakes on every major API. Documented holes: refusals and max_tokens can break schema compliance, and enum casing is not guaranteed. The portable validate-retry fallback still earns its place — for those edges, and for the semantic layer no sampler can fix.</td>
 </tr>

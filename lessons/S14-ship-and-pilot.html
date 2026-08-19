@@ -113,7 +113,7 @@ path's toys are independent; there is no cumulative build waiting to be shipped,
 so "your system" means one you own. Completing S01–S12 does not require S14.
 <strong>Hands-on:</strong> no notebook — the hands-on is your own system, run through the
 protocol below.
-<strong>Video:</strong> <a href="videos/S14-ship-and-pilot.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Done is a measurement, not a mood</h3>
@@ -138,12 +138,12 @@ against is no longer unseen — it is a tuning case now, and a green rerun on it
 is regression evidence, not acceptance evidence. So the final gate runs on a
 second fixture, a holdout frozen at the same time and never opened during
 fixing. The one move that is actually fatal is editing the fixture to fit — that is
-S02's suite-gaming move at ship scale, with no checker left above you to
+S02's "gaming the check" move at ship scale, with no checker left above you to
 catch it.</p>
 <h3>The second human changes the instrument</h3>
 <p>You are the least representative user your system will ever have. You know
 what it is for, what it can't do, and — worst of all — what you meant by every
-label on the screen. The second acceptance run is therefore done by someone
+label on the screen. The <strong>pilot</strong> is therefore done by someone
 else: one consenting, trusted adult, under a written protocol.</p>
 <p>The protocol page comes first, and it is short on purpose. Four statements:</p>
 <ol>
@@ -190,8 +190,9 @@ that already existed: a decision record, a banked
 eval number, a trace. Procedural and explanatory prose needs no pointer; a
 behavioral or architectural claim with no citation is invention.</p>
 <p>Assembly is only possible because the records were written at decision time.
-That is the payoff of the decision log you have kept since the early sessions
-— the architecture-decision-record pattern in its original minimal form
+That is the payoff of the decision log S02 told you to keep — five lines per
+call, written at decision time — the architecture-decision-record pattern in its
+original minimal form
 (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>).</p>
 <pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     D[decision log&lt;br/&gt;written at decision time] --&gt; A[architecture doc]
@@ -252,8 +253,8 @@ run, end to end, with the naive-vs-governed numbers. Two invariants:</p>
 <p>Then, before the tag, one adversarial pass: hand the write-up and the repo to
 the strongest critic available — a frontier model in adversarial mode, or a
 hostile friend — with one instruction: find the unsupported claims. Fix what
-is real; rebut what is not, in writing, next to the claim. This is the S12
-cross-examination muscle pointed at your own evidence.</p>
+is real; rebut what is not, in writing, next to the claim. This is S12's
+label-before-you-see-the-judge discipline pointed at your own evidence.</p>
 <p>The tag — v1.0.0 — carries two promises from two different authorities. In
 <a href="https://semver.org">semver</a> terms, v1.0.0 asserts exactly one thing: a defined
 public API exists, and the version number now describes how it changes. The
@@ -324,7 +325,7 @@ contamination.</p>
 <tr>
 <td>Architecture decision records are the standard lightweight form for keeping rationale (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>; <a href="https://martinfowler.com/bliki/ArchitectureDecisionRecord.html">Fowler</a>)</td>
 <td><strong>already in this path</strong></td>
-<td>Your decision log is an ADR log. Assembly works because the records exist — this session is the payoff.</td>
+<td>S02 assigned the log; this session assembles it. Your decision log is an ADR log.</td>
 </tr>
 <tr>
 <td>Blameless postmortem culture (<a href="https://sre.google/sre-book/postmortem-culture/">Google SRE book, ch. 15</a>; <a href="https://sre.google/workbook/postmortem-culture/">SRE workbook</a>)</td>
@@ -357,7 +358,7 @@ contamination.</p>
 <td>A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately.</td>
 </tr>
 <tr>
-<td>Simulated "users" as a stand-in for the pilot (<a href="https://www.arxiv.org/pdf/2601.17087">arXiv:2601.17087</a>, cited at S02)</td>
+<td>Simulated "users" as a stand-in for the pilot (<a href="https://arxiv.org/abs/2601.17087">arXiv:2601.17087</a>, cited at S02)</td>
 <td><strong>ignore</strong></td>
 <td>S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation.</td>
 </tr>

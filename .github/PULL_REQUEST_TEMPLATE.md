@@ -6,6 +6,7 @@
 
 - [ ] `uv run python lessons/build.py` and committed HTML if `lessons/src` changed
 - [ ] `uv run python lessons/check_links.py` is clean
+- [ ] `uv run python lessons/check_links.py --http` if HTML or SOTA URLs changed
 - [ ] Touched notebooks execute top-to-bottom; no outputs committed
-- [ ] SOTA links verified if a SOTA table changed
+- [ ] `uv run python lessons/check_sota_urls.py` is clean
 - [ ] Toys remain a different domain (not a paste-ready production harness)

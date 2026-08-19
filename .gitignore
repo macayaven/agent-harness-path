@@ -1,5 +1,7 @@
 .venv/
 __pycache__/
+_site/
 .DS_Store
 .ipynb_checkpoints/
 .jupyter/
+.cursor/

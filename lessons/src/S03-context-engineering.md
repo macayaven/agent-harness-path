@@ -110,12 +110,15 @@ Run top-to-bottom; write each prediction before running the cell that settles it
    limit rejects the request. Predict the turn it dies.
 2. Naive truncation: predict which probe is the first to fail, then read the log.
    Note what the transcript *doesn't* tell you.
-3. Summarization: predict whether the transcript stays coherent (it does) and
-   whether the rule survives (it doesn't). Read the actual summary the model saw.
+3. Summarization: predict whether the transcript stays coherent, and whether the
+   rule survives. Read the actual summary the model saw.
 4. Fix it yourself: the attempt cell asks what has to change for the rule to
    survive. Hint: not the policy function. Verify all probes pass, and note the rent.
 5. No compaction anywhere, rule present in every request — and the decaying model
    still loses it. Predict the shape of compliance vs distance, then measure it.
+   The notebook prints a survival table at labeled distances 0, 25, 50, 100, 150,
+   200 — those labels are the actual filler word counts between the rule and the
+   probe (the probe itself is not counted).
 
 ## State of the art (as of August 2026)
 
@@ -127,7 +130,7 @@ Run top-to-bottom; write each prediction before running the cell that settles it
 | Server-side context editing ([Anthropic docs](https://docs.claude.com/en/docs/build-with-claude/context-editing)): `clear_tool_uses_20250919` clears old tool results above a token threshold; pairs with the memory tool so the model saves state before clearing | **adopt** | When you hit real APIs: truncation-as-a-service for tool output. Read the fine print: clearing invalidates the prompt cache, and it clears *tool results* — your pinned constraints are still your problem. |
 | Prompt caching with explicit breakpoints ([Anthropic docs](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)): ~90% discount on cached input tokens | **adopt** | Stable prefix, volatile suffix. Compaction is a cache-invalidation event — the cost side of this session's topic. |
 | MemGPT / Letta ([arXiv:2310.08560](https://arxiv.org/abs/2310.08560)): the model pages its own memory via tool calls | **recognize** | OS-style virtual memory: the same invariant — what must never be paged out — with the policy delegated to the model. |
-| Million-token windows marketed as "just put everything in context" | **ignore** | The attention budget and the context-rot data do not care how big the window is. Fitting is not using. |
+| Million-token windows marketed as "just put everything in context" | **ignore** | The attention budget and the context-rot data do not care how big the window is ([Chroma](https://www.trychroma.com/research/context-rot)). Fitting is not using. |
 
 ## Annotated readings
 

@@ -11,7 +11,8 @@ for the whole arc — core mechanics → context & boundaries → safety & gover
 observability → production — then start at S01. The videos are Google Gemini
 Notebook overviews (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
-files is Google's.
+files is Google's. Click ▶: the mp4 streams in the browser. Clone the repo to
+run the notebooks.
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own.
@@ -57,8 +58,7 @@ work, or from elsewhere. Completing S01–S12 does not require them.
 The videos are Google Gemini Notebook overviews of the lessons (formerly
 NotebookLM; in `lessons/videos/`; generated 14 Aug 2026). Use them as preview or
 review — the learning happens in the notebook (S01–S12) or the protocol
-(S13/S14), not the video. Google branding in the files is Google's. Hosted pages
-serve the lessons without the mp4s; running notebooks still needs a clone.
+(S13/S14), not the video. Google branding in the files is Google's.
 
 ## The pedagogical commitments
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S01 — The agent loop</title>
+  <title>S01-agent-loop — The agent loop</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -99,14 +99,14 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02 — Golden sets &amp; baselines &rarr;</a></span></nav>
-<h1>S01 — The agent loop</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02-golden-evals — Golden sets &amp; baselines &rarr;</a></span></nav>
+<h1>S01-agent-loop — The agent loop</h1>
 <p><strong>What this teaches:</strong> what an LLM agent actually is mechanically — a client-side loop
 around a stateless API — and the two invariants that keep it alive: message-list
 preservation and tool-call/tool-result pairing.
 <strong>Time:</strong> ~60 min with the notebook. <strong>Prerequisites:</strong> none beyond Python.
 <strong>Hands-on:</strong> <a href="../notebooks/s01_agent_loop_toy.ipynb"><code>notebooks/s01_agent_loop_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S01-agent-loop.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S01-agent-loop.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>The API is stateless; the loop is the agent</h3>
@@ -129,7 +129,7 @@ model decide when to stop:</p>
 </pre>
 <p>That is the entire architecture. Simon Willison's definition — <em>"an LLM agent runs
 tools in a loop to achieve a goal"</em> — is deliberately unglamorous
-(<a href="https://simonwillison.net/2025/Jun/17/ai-agent-definition/">simonwillison.net</a>).
+(<a href="https://simonwillison.net/2025/Sep/18/agents/">simonwillison.net</a>).
 Everything else — planning, memory, reflection, multi-agent — is a modification of
 this diagram, usually by editing what goes into the messages list.</p>
 <h3>The two mechanical invariants</h3>
@@ -161,8 +161,8 @@ loops without terminating, tool results poison the history. That is why the fiel
 attention moved from "the loop" to <em>what flows through it</em> — context engineering,
 which is S03's topic. The loop is solved; the stream is not.</p>
 <h2>Exercises (in the notebook, predict first)</h2>
-<p>Run the notebook top-to-bottom. For each experiment cell, <strong>write your prediction in
-the markdown cell before running it</strong> — a prediction you didn't write down is a
+<p>Run the notebook top-to-bottom. For each experiment cell, <strong>write your prediction as
+a comment before running it</strong> — a prediction you didn't write down is a
 prediction you'll retroactively fix.</p>
 <ol>
 <li>The happy path: run the loop on the weather question. Predict how many turns the
@@ -202,7 +202,7 @@ teaches, what's newer, what to ignore for now.</p>
 <td>Frameworks now sell the loop as a product. Learn the loop first — which is what you're doing — so a framework is a choice, not a crutch.</td>
 </tr>
 <tr>
-<td>Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure</td>
+<td>Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure (<a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>)</td>
 <td><strong>recognize</strong></td>
 <td>The minimal loop survives as <em>pedagogy</em> while vendors productize it. Knowing the loop is how you evaluate what they're selling.</td>
 </tr>
@@ -224,7 +224,7 @@ teaches, what's newer, what to ignore for now.</p>
 <tr>
 <td>Multi-agent orchestration frameworks</td>
 <td><strong>ignore</strong></td>
-<td>For now — OpenAI's own guide: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">"start with a single agent"</a>. S05 and S11 cover when structure actually pays.</td>
+<td>For now — OpenAI's own guide: <a href="https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/">start with a single agent</a>. S05 and S11 cover when structure actually pays.</td>
 </tr>
 </tbody>
 </table>
@@ -283,7 +283,7 @@ smarter mechanism fails.</details>
 <p><strong>S02 — Golden sets and baselines:</strong> you have a loop that runs; next, how do you
 <em>measure</em> whether it's any good? The answer is an eval suite, and the surprising part
 is that the eval suite — not the agent — is where most of the engineering lives.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02 — Golden sets &amp; baselines &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S02-golden-evals.html">Next: S02-golden-evals — Golden sets &amp; baselines &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S01-agent-loop.md</code> — part of The Agent Harness Path.

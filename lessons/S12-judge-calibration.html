@@ -111,7 +111,7 @@ dashboard.
 the judged column was labeled <em>uncalibrated</em> there; this session removes the
 label, with a rate attached).
 <strong>Hands-on:</strong> <a href="../notebooks/s12_judge_calibration_toy.ipynb"><code>notebooks/s12_judge_calibration_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S12-judge-calibration.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>The recursion problem: the judge is also a model</h3>
@@ -281,9 +281,9 @@ a property of the pair, not of either alone.</p>
 <td>The toy's judge v1 ships with the verbosity bias built in; criteria drift is why the rubric gets frozen between calibration rounds, not during.</td>
 </tr>
 <tr>
-<td>Reviewer routes with their own context: critics read, they never write to the user (<a href="https://www.anthropic.com/engineering/multi-agent-research-system">Anthropic, How we built our multi-agent research system</a>)</td>
+<td>Separate-context reviewers: subagents that don't share the writer's window (<a href="https://www.anthropic.com/engineering/multi-agent-research-system">Anthropic, How we built our multi-agent research system</a>)</td>
 <td><strong>adopt</strong></td>
-<td>A reviewer that shares the writer's context shares the writer's blind spots. Separation is what makes the critic's findings evidence.</td>
+<td>The paper supports isolated reviewer context, not a separate "reviewer route" as a product primitive — that framing is this path's. A critic that shares the writer's window shares the writer's blind spots.</td>
 </tr>
 <tr>
 <td>G-Eval: chain-of-thought, form-filling rubric scoring (<a href="https://arxiv.org/abs/2303.16634">Liu et al., arXiv:2303.16634</a>)</td>
@@ -303,7 +303,7 @@ a property of the pair, not of either alone.</p>
 <tr>
 <td>"A frontier model is judge enough, no calibration needed"</td>
 <td><strong>ignore</strong></td>
-<td>Model strength is not agreement with your rubric. The measurement exists precisely to replace that assumption.</td>
+<td>Model strength is not agreement with your rubric (<a href="https://hamel.dev/blog/posts/llm-judge/">Hamel, Creating an LLM Judge</a>). The measurement exists precisely to replace that assumption.</td>
 </tr>
 </tbody>
 </table>

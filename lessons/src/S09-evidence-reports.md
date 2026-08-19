@@ -49,7 +49,7 @@ and clinical notes is the same handful of slots:
 |---|---|---|
 | Goal | The user's objective, **in the user's own words** — quoted, not paraphrased | The quote must appear verbatim in the opening turn |
 | Outcome | What the run record says: stop reason verbatim, turns used | Never inferred from how the last message *felt* |
-| Moments | 2–4 annotated events, each with a turn reference and a verbatim quote | Every quote must resolve to its cited turn |
+| Moments | Annotated events, each with an event id, a turn reference, and a verbatim quote. The toy cites every logged event (five in the fixture). A production report may highlight 2–4 plus a dedicated safety slot — coverage still keys on ids, not highlight count | Every quote must resolve to its cited turn; every logged id must surface |
 | Safety | The safety events, or an explicit "none logged" | Silence is forbidden; absence must be stated |
 | Next step | One concrete increment | Observable, not motivational |
 | Proof | Cost/latency, and a pointer to the raw trace | One hop from any doubt to the evidence |
@@ -124,13 +124,15 @@ flowchart LR
   text, but whether the passage it lands on is relevant, or backs the claim, is
   not promised.
 - **Coverage validator.** Checks one property: every event the harness logged
-  during the run — safety flags, setbacks, the cap firing — has its turn number
-  among the report's cited turns, matched against the
-  run record, not against the report's own claims. It compares turn numbers, not
-  event identity: the report can cite turn 7 and describe it wrongly, or narrate
-  a different event that happened to occur there, and the check stays green.
-  Catches omission. No API can
-  do this half for you: only your harness knows that turn 7 mattered.
+  during the run — identified by a stable event **id**, not by turn number —
+  surfaces in the report (the toy requires each id in the moments list; safety
+  ids also in the safety slot). Turn numbers stay for display and citation.
+  The wrong event narrated at the right turn fails: the ids don't match. Two
+  events sharing one turn cannot mask an omission. Catches omission of a
+  logged event. What it still cannot catch: the report names the right event
+  and *describes it wrongly* — wording, emphasis, unsupported interpretation —
+  because identity is not accurate narration. No API can do this half for you:
+  only your harness knows which event ids were logged.
 
 A report is *checkable* iff both hold — and checkable is not honest. One
 validator alone certifies nothing: the
@@ -167,8 +169,8 @@ depleted reader is you.
    timed. Then verify your answers against the transcript. Any question you
    couldn't answer is a report defect, not a reader defect.
 2. The chronological recap: run the naive turn-by-turn summary through the same
-   six-question check. Which questions does it structurally *cannot* answer —
-   and which does it technically contain but bury?
+   six-question check. Which questions can it structurally not answer — and
+   which does it technically contain but bury?
 3. The fabricated citation: build the citation validator. Watch the honest report
    pass and the "tidied" variant — paraphrased quotes presented as verbatim —
    fail. Then weaken the validator to check only that turn numbers exist, and
@@ -178,9 +180,10 @@ depleted reader is you.
    build the coverage validator and catch it. State the invariant each validator
    enforces.
 5. The failed run: a second transcript hits the turn cap mid-task. Generate its
-   report. What must the outcome slot say? Then run the validators on the
-   "reassuring" variant that rounds the run up to complete — which one catches
-   it, and which lie does *neither* validator catch?
+   report. What must the outcome slot say? Then run the validators on
+   `write_report_rounded_up` (declares the run complete) — which one catches
+   that, and which lie does *neither* validator catch? (`write_report_reassuring`
+   is the omission variant from exercise 4, not this one.)
 
 ## State of the art (as of August 2026)
 
@@ -191,7 +194,7 @@ depleted reader is you.
 | Deep-research products ship long, cited reports — and their own disclosures admit hallucinated facts, weak uncertainty calibration, and citation errors at launch ([OpenAI, Feb 2025](https://openai.com/index/introducing-deep-research/); [system card](https://cdn.openai.com/deep-research-system-card.pdf)) | **recognize** | The frontier's flagship report generator ships with known citation defects. Validation plus spot-checking against sources is the industry norm, not paranoia. |
 | Blameless postmortems: fixed anatomy, timeline with evidence, contributing causes not verdicts, written for readers who weren't there ([Google SRE book](https://sre.google/sre-book/postmortem-culture/)) | **already in this path** | This session's report anatomy is that convention pointed at agent sessions. "Blameless" and "observations, not grades" are the same move. |
 | Faithfulness as a measured property of summaries: intrinsic vs extrinsic hallucination ([Maynez et al., arXiv:2005.00661](https://arxiv.org/abs/2005.00661)) | **recognize** | The taxonomy names the addition lies (contradiction, unsupported claims). Omission — the report's signature lie — is in neither bucket, which is why you build a separate coverage validator. |
-| LLM-judged faithfulness metrics: decompose the answer into claims, judge each against the context (e.g. [RAGAS faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/faithfulness.html); [paper](https://arxiv.org/abs/2309.15217)) | **newer than this session** | A judged tier for reports — useful at scale, but it is a model grading a model, uncalibrated until S12. The deterministic validators stay the floor. |
+| LLM-judged faithfulness metrics: decompose the answer into claims, judge each against the context (e.g. [RAGAS faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/); [paper](https://arxiv.org/abs/2309.15217)) | **newer than this session** | A judged tier for reports — useful at scale, but it is a model grading a model, uncalibrated until S12. The deterministic validators stay the floor. |
 | Fully automated report chains: AI summarizes the run, the summary feeds the dashboard, no human ever opens the trace | **ignore** | Independent analysis keeps finding these systems well short of human care ([futuresearch.ai, Feb 2025](https://futuresearch.ai/blog/oaidr-feb-2025/)). A report without a one-hop path to raw evidence is a hallucination delivery mechanism. |
 
 ## Annotated readings
@@ -225,9 +228,9 @@ depleted reader is you.
   the reader to argue with the report. Observations cite turns and survive
   checking; verdicts belong to the calibrated judge you don't have yet (S12).
 - **The chronological recap as report.** Narrating everything is summarizing
-  nothing: the safety event lands at line 15 of 28, weighted the same as the
-  small talk. Fixed slots with surprises first exist precisely for the reader
-  who will not read line 15.
+  nothing: in the notebook the safety event sits at line 9 of 16, weighted the
+  same as the small talk. Fixed slots with surprises first exist precisely for
+  the reader who will not scroll that far.
 - **The unvalidated generator.** The report writer is a model with documented
   fabrication modes; shipping its output unchecked is shipping confidence you
   haven't earned. The validators are cheap, deterministic, and always on.
@@ -254,12 +257,13 @@ report.</details>
 
 <details><summary>What do the citation and coverage validators each catch, and why do you need both?</summary>
 Citation catches fabrication: quotes that don't appear in their cited turn, wrong
-references, a stop reason the run record contradicts. Coverage catches omission:
-logged events (safety, setbacks, the cap firing) whose turn numbers never surface
-in the report. Each
-passes reports the other fails, so you need both — but the conjunction buys
-*checkability*, not honesty: support, emphasis, unquoted numbers, and leakage
-still belong to the reader.</details>
+references, a stop reason the run record contradicts (including a cap that fired
+but the outcome slot rounded up). Coverage catches omission: logged events
+(safety, setbacks, milestones) whose **ids** never surface in the report. A
+wrong event at the right turn fails on id mismatch. Each passes reports the
+other fails, so you need both — but the conjunction buys *checkability*, not
+honesty: support, emphasis, unquoted numbers, and leakage still belong to the
+reader. Identity is not accurate narration.</details>
 
 ## What's next
 

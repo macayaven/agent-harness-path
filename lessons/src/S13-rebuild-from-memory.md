@@ -4,8 +4,9 @@
 measurement that is: a closed-book rebuild of the core component, judged by your own
 eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 **Time:** ~20 min reading, then ~90 min for the audit itself.
-**Prerequisites:** S01–S02 for the instrument vocabulary — and a non-trivial project
-you own to audit. **This session is optional.** The path's twelve toys are
+**Prerequisites:** S01–S02 to read the protocol (instrument vocabulary). Running
+it honestly needs a system whose suite you built — the S02–S12 instrument, on a
+project you own. **This session is optional.** The path's twelve toys are
 independent, so there is no cumulative build to point at: the audit target is a
 project of yours, built here, at work, or in another course. Completing S01–S12
 does not require S13.
@@ -112,51 +113,10 @@ Two rules make the list do work:
    short-term priming, not storage. A week later, cold, measures whether the
    re-study took — and the spaced retrieval is itself the mechanism that makes it
    stick (Bjork & Bjork 2011; Nielsen's
-   [Augmenting Long-term Memory](http://augmentingcognition.com/ltm.html)).
+   [Augmenting Long-term Memory](https://augmentingcognition.com/ltm.html)).
 
 Run twice, a week apart, the audit is the whole learning loop: measure, diagnose,
 repair, verify the repair.
-
-## The protocol
-
-One sitting, no interruptions, roughly 90 minutes end to end. It runs against any
-non-trivial project you own — from this path, from work, from another course —
-and "the suite" and "the banked number" below are that project's own.
-
-0. **Choose the core.** One component: the load-bearing abstraction, the file
-   whose invariants *are* the system's invariants (in an agent harness, the loop).
-   Criteria: everything else imports it; it holds the protocol rules; it fits in
-   one sitting. Never the whole system — the rest is reference material, and
-   looking reference material up is the *correct* move, not a failure. The audit
-   targets restating and rebuilding the core abstractions and their invariants —
-   not memorizing implementation trivia; whatever documentation can hold, let
-   documentation hold.
-1. **Set the terms.** Commit a clean tree — HEAD now holds the canonical
-   original. Rebuild off the main line: `git switch -c rebuild-audit` (or a
-   scratch worktree: `git worktree add /tmp/rebuild-audit HEAD`). Delete the
-   target file there; the original survives only in history, a deliberate
-   `git show` away. Close the assistant. Close the browser.
-   Allowed: the language, its standard library, `--help`. Set a visible timer:
-   60 minutes.
-2. **Rebuild.** Blank file at the same path, from memory. When stuck, write what
-   you think it should be and mark it `# UNSURE` — unsure marks are data. They
-   become honestly-labeled forgot-list items instead of hiding inside a lucky diff.
-3. **Diff and classify.** `git diff HEAD -- core.py`. Label every
-   hunk: cosmetic, behavior-preserving, or behavioral gap. Only the third bucket
-   feeds the forgot-list.
-4. **Run the suite.** The rebuilt component runs the full eval suite. Pass: the
-   number within tolerance of the last banked one. Fail: it moved — and the
-   behavioral gaps from step 3 tell you why. Either way the gap hunks stand: a
-   small suite can stay green through a dropped invariant, so the step-3 review
-   is not optional decoration.
-5. **Write the forgot-list.** One line per behavioral gap: what you dropped, why
-   the original had it, the one-line rule that would have saved it. Then **restore
-   the original** — `git checkout HEAD -- core.py`, or drop the branch/worktree
-   entirely: the rebuild was a probe, not a patch — the
-   banked artifact stays canonical.
-6. **Re-study, then re-audit cold.** Study exactly the forgot-list items, nothing
-   else. Wait a week. Run the audit again from step 1. The second pass is where
-   retention happens; the first pass only told you the truth.
 
 ```mermaid
 flowchart LR
@@ -172,6 +132,47 @@ flowchart LR
     I --> J[re-audit cold, ~1 week]
 ```
 
+## The protocol
+
+One sitting, no interruptions, roughly 90 minutes end to end. It runs against any
+non-trivial project you own — from this path, from work, from another course —
+and "the suite" and "the banked number" below are that project's own.
+
+1. **Choose the core.** One component: the load-bearing abstraction, the file
+   whose invariants *are* the system's invariants (in an agent harness, the loop).
+   Criteria: everything else imports it; it holds the protocol rules; it fits in
+   one sitting. Never the whole system — the rest is reference material, and
+   looking reference material up is the *correct* move, not a failure. The audit
+   targets restating and rebuilding the core abstractions and their invariants —
+   not memorizing implementation trivia; whatever documentation can hold, let
+   documentation hold.
+2. **Set the terms.** Commit a clean tree — HEAD now holds the canonical
+   original. Rebuild off the main line: `git switch -c rebuild-audit` (or a
+   scratch worktree: `git worktree add /tmp/rebuild-audit HEAD`). Delete the
+   target file there; the original survives only in history, a deliberate
+   `git show` away. Close the assistant. Close the browser.
+   Allowed: the language, its standard library, `--help`. Set a visible timer:
+   60 minutes.
+3. **Rebuild.** Blank file at the same path, from memory. When stuck, write what
+   you think it should be and mark it `# UNSURE` — unsure marks are data. They
+   become honestly-labeled forgot-list items instead of hiding inside a lucky diff.
+4. **Diff and classify.** `git diff HEAD -- core.py`. Label every
+   hunk: cosmetic, behavior-preserving, or behavioral gap. Only the third bucket
+   feeds the forgot-list.
+5. **Run the suite.** The rebuilt component runs the full eval suite. Pass: the
+   number within tolerance of the last banked one. Fail: it moved — and the
+   behavioral gaps from **Diff and classify** tell you why. Either way the gap
+   hunks stand: a small suite can stay green through a dropped invariant, so that
+   review is not optional decoration.
+6. **Write the forgot-list.** One line per behavioral gap: what you dropped, why
+   the original had it, the one-line rule that would have saved it. Then **restore
+   the original** — `git checkout HEAD -- core.py`, or drop the branch/worktree
+   entirely: the rebuild was a probe, not a patch — the
+   banked artifact stays canonical.
+7. **Re-study, then re-audit cold.** Study exactly the forgot-list items, nothing
+   else. Wait a week. Run the audit again from **Set the terms**. The second pass
+   is where retention happens; the first pass only told you the truth.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
@@ -179,10 +180,10 @@ flowchart LR
 | Retrieval practice beats re-study: Karpicke & Roediger, *Science* 2008 ([doi](https://doi.org/10.1126/science.1152408)); practice testing and distributed practice rated highest-utility, rereading and highlighting lowest (Dunlosky et al. 2013, [doi](https://doi.org/10.1177/1529100612453266)) | **already in this path** | This session is the testing effect aimed at your own repo. The rebuild is a test — and the research says the test is also the learning event. |
 | Fluency self-reports are miscalibrated at scale: METR's RCT, 16 experienced developers — believed ~20% faster with AI, measured 19% slower ([arXiv:2507.09089](https://arxiv.org/abs/2507.09089)) | **adopt** | Adopt the stance, not the number: "I know this system" is evidence of nothing until it survives a closed-book measurement. |
 | AI assistance impairs skill formation unless cognitively engaged: Shen & Tamkin RCT, 52 engineers; the delegating patterns produced output without learning, three engaged patterns preserved it ([arXiv:2601.20245](https://arxiv.org/abs/2601.20245); [Anthropic write-up](https://www.anthropic.com/research/AI-assistance-coding-skills)) | **adopt** | The prevention side of this session: how you build determines what the audit finds. Engage during construction; audit after. |
-| "Cognitive debt" framing: Kosmyna et al., EEG essay study — the LLM group showed weakest engagement and poorest recall of their own text ([arXiv:2506.08872](https://arxiv.org/abs/2506.08872)); see the methodological critique ([arXiv:2601.00856](https://arxiv.org/abs/2601.00856)) | **recognize** | Direction matches authorship≠ownership, but it is a small preprint with a published critique. Motivation, never proof. |
+| "Cognitive debt" framing: Kosmyna et al., EEG essay study — the LLM group showed weakest engagement and poorest recall of their own text ([arXiv:2506.08872](https://arxiv.org/abs/2506.08872)); see the methodological critique ([arXiv:2601.00856](https://arxiv.org/abs/2601.00856)) | **recognize** | Direction matches authorship≠ownership, but it is a small preprint with a posted critique. Motivation, never proof. |
 | Desirable difficulties: storage vs retrieval strength; conditions that slow practice improve retention (Bjork & Bjork 2011, [chapter PDF](https://bjorklab.psych.ucla.edu/wp-content/uploads/sites/13/2016/04/EBjork_RBjork_2011.pdf)) | **recognize** | The theoretical frame: the audit is deliberately difficult because difficulty is what makes the measurement honest and the repair durable. |
-| Spaced repetition for the forgot-list (Nielsen, [Augmenting Long-term Memory](http://augmentingcognition.com/ltm.html)) | **adopt** | Each forgot-list item becomes cards; the cold re-audit a week later is the spaced retrieval event. |
-| "Just re-read the codebase and your notes" as audit prep | **ignore** | The lowest-yield study activity known (Dunlosky). A recognition warm-up that inflates fluency and quietly spoils the measurement. |
+| Spaced repetition for the forgot-list (Nielsen, [Augmenting Long-term Memory](https://augmentingcognition.com/ltm.html)) | **adopt** | Each forgot-list item becomes cards; the cold re-audit a week later is the spaced retrieval event. |
+| "Just re-read the codebase and your notes" as audit prep | **ignore** | The lowest-yield study activity known ([Dunlosky et al. 2013](https://doi.org/10.1177/1529100612453266)). A recognition warm-up that inflates fluency and quietly spoils the measurement. |
 
 ## Annotated readings
 

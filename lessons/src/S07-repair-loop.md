@@ -157,7 +157,7 @@ running the solution cell.
 | Productized reask loops: validators with `on_fail=REASK`, failure message re-prompted verbatim, `num_reasks` cap ([Guardrails AI docs](https://guardrailsai.com/guardrails/docs/concepts/validator_on_fail_actions)) | **adopt** | If already using the framework: exactly this loop, off the shelf — including the cap. Read the failure-pattern reports before chaining validators; reask costs multiply. |
 | Make format defects unrepresentable instead of repairing them (`strict: true` schemas, constrained decoding — [OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | S04's point, restated as triage: construction beats repair for structure. Reserve the repair loop for semantic defects construction can't reach. |
 | Calibrated LLM judge as the scorer for semantic defects ([judge playbook](https://hamel.dev/blog/posts/llm-judge/)) | **newer than this session** | S12 calibrates judges against human labels. Until then: deterministic checks carry pass/fail; a judge's verdict is uncalibrated input, not a stop condition. |
-| "Reflect on your answer" prompt-only retries | **ignore** | Intrinsic self-correction with zero new signal — measured to degrade. The failure view exists precisely because this doesn't work. |
+| "Reflect on your answer" prompt-only retries | **ignore** | Intrinsic self-correction with zero new signal — measured to degrade ([Huang et al.](https://arxiv.org/abs/2310.01798)). The failure view exists precisely because this doesn't work. |
 
 ## Annotated readings
 

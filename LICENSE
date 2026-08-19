@@ -8,7 +8,8 @@ The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
 - `notebooks/` (toy notebooks)
-- `lessons/build.py`, `lessons/check_links.py`, `lessons/template.html`
+- `lessons/build.py`, `lessons/check_links.py`, `lessons/site_urls.py`,
+  `lessons/check_sota_urls.py`, `lessons/template.html`
 - `pyproject.toml`, `uv.lock`
 - `.github/` (CI, issue and PR templates)
 - `scripts/`

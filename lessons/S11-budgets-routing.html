@@ -108,7 +108,7 @@ privacy boundary that <em>refuses to run</em> when misconfigured.
 <strong>Time:</strong> ~90 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop), S02
 (defensible comparisons — the routing argument <em>is</em> a delta table).
 <strong>Hands-on:</strong> <a href="../notebooks/s11_budgets_routing_toy.ipynb"><code>notebooks/s11_budgets_routing_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S11-budgets-routing.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>A runaway agent is a billing bug</h3>
@@ -168,7 +168,7 @@ half is what justifies it:</p>
     S --&gt; M[meter: tokens x price,&lt;br/&gt;latency, wall time]
     L --&gt; M
     C --&gt; M
-    M -- breach --&gt; B[stop_reason=budget_exceeded]
+    M --&gt;|&quot;would breach&quot;| B[stop_reason=budget_exceeded]
 </pre>
 <h3>The privacy boundary is a routing invariant, enforced as refusal</h3>
 <p>Routing has a second axis besides cost and quality: <strong>where the data goes</strong>.
@@ -219,9 +219,9 @@ variance the toy deliberately does not have.</p>
 <h2>Exercises (in the notebook, predict first)</h2>
 <ol>
 <li><strong>The meandering run.</strong> A summarize phase with no convergence criterion on
-   all-large routes. First run it with no budget and watch it price itself into
-   the pass cap. Then set <code>budget_usd = 0.25</code>: predict the exact pass it dies
-   on, and the <code>stop_reason</code>.</li>
+   all-large routes, <code>max_passes=12</code>. Predict: with no budget, what <code>stop_reason</code>
+   ends the run and what does it cost? With <code>budget_usd = 0.25</code>, after <em>exactly
+   which</em> summarize pass does the run die, and with what <code>stop_reason</code>?</li>
 <li><strong>Measure the tiers.</strong> Run the 3-month suite under <code>all-small</code> and
    <code>all-large</code>. Predict, per phase, where small holds its number — then read the
    pass/cost table.</li>
@@ -234,10 +234,10 @@ variance the toy deliberately does not have.</p>
    subtle case: <code>format</code> (metadata) on cloud runs fine — and costs more than
    local. Allowed ≠ wise.</li>
 <li><strong>The voice budget.</strong> From the latency models in the suite logs, compute the
-   median per-turn latency across the three fixtures for all-large vs routed
-   against a 1000 ms budget. Predict
-   which fits before running; then name the phase that dominates the losing
-   config and the fix the boundary still permits.</li>
+   three-fixture median per-turn latency for all-large vs routed against a
+   1000 ms budget. Predict which configs fit before running; name the phase
+   that dominates the loser; and what the <em>forbidden</em> fix (frontier cloud for
+   content) would have cost in latency.</li>
 </ol>
 <h2>State of the art (as of August 2026)</h2>
 <table>
@@ -349,7 +349,7 @@ frontier cloud at ~790 ms, is off the table: content phases stay local, so
 latency gets engineered (streaming, precompute) rather than bought.</details>
 
 <h2>What's next</h2>
-<p><strong>S12 — Adversarial review and judge calibration:</strong> the routed pipeline still
+<p><strong>S12 — Judge calibration:</strong> the routed pipeline still
 leans on model judgment — a critic reading transcripts, a judge scoring quality.
 Next session measures the judges themselves: seeded-defect detection rates,
 false positives, and agreement against your own hand labels, because an

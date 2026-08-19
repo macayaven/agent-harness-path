@@ -1,4 +1,4 @@
-# S02 — Golden sets & baselines
+# S02-golden-evals — Golden sets & baselines
 
 **What this teaches:** an eval suite is a *measurement instrument*, not a test suite —
 scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
@@ -35,7 +35,7 @@ Two options:
   guidance describes the same pattern
   ([anthropic.com/engineering/demystifying-evals-for-ai-agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
   The catch: simulated users are measurably *not* real users — they ask more
-  questions and stay more polite on identical tasks ([arXiv:2601.17087](https://www.arxiv.org/pdf/2601.17087)) —
+  questions and stay more polite on identical tasks ([arXiv:2601.17087](https://arxiv.org/abs/2601.17087)) —
   and they inject their own variance into your measurement.
 - **Scripted user** — a fixed list of user turns, replayed verbatim. Zero diversity,
   zero variance. This is what you use for *regression*: the same probe, every run,
@@ -64,7 +64,9 @@ in the scaffolding under test. Then — and only then — is the delta attributa
 the scaffolding. Every shared component you *don't* hold constant is a confound your
 conclusion can't survive. This is also why the naive row matters commercially: naive
 mode *is* the status quo (a chatbot told to role-play), so `governed − naive` is the
-measured answer to "why does this product deserve to exist?"
+measured answer to "why does this product deserve to exist?" Bank that number, then
+write the call down in a **decision log** (five lines, dated: what you chose, why,
+what would change your mind). S14 assembles that log; it cannot invent it.
 
 ### 3. Two checker tiers — and why safety never rides on the judged one
 
@@ -141,7 +143,7 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
 | Golden set in git, CI run on PR, threshold gate, metrics tracked outside CI ([pattern catalog](https://github.com/benchflow-ai/awesome-evals/blob/main/PATTERNS.md), [worked example](https://www.metacto.com/blogs/llm-evals-regression-suite-production)) | **adopt** | Cross-source consensus (vendor blogs, but they all agree with Hamel and Anthropic). |
 | τ²-bench dual-control simulation; LLM-simulated users for coverage ([arXiv:2506.07982](https://arxiv.org/pdf/2506.07982)) | **newer than this session** | The scripted user is your regression instrument; simulated users are a coverage tool with a known realism gap. |
 | Position-swap testing and Cohen's κ against human labels as standard judge hygiene ([writeup](https://mbrenndoerfer.com/writing/position-bias-in-llm-judges)) | **adopt** | At S12: you'll calibrate your judge then; until then the judged column stays labeled uncalibrated. |
-| Fully synthetic eval pipelines with no human reading of traces | **ignore** | Every credible source puts *reading transcripts* at the center. Tools that promise otherwise are selling the absence of the one activity that works. |
+| Fully synthetic eval pipelines with no human reading of traces | **ignore** | Every credible source puts *reading transcripts* at the center ([Hamel, Evals](https://hamel.dev/blog/posts/evals/)). Tools that promise otherwise are selling the absence of the one activity that works. |
 
 ## Annotated readings
 
