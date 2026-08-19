@@ -1,4 +1,4 @@
-# S01 — The agent loop
+# S01-agent-loop — The agent loop
 
 **What this teaches:** what an LLM agent actually is mechanically — a client-side loop
 around a stateless API — and the two invariants that keep it alive: message-list
@@ -37,7 +37,7 @@ flowchart LR
 
 That is the entire architecture. Simon Willison's definition — *"an LLM agent runs
 tools in a loop to achieve a goal"* — is deliberately unglamorous
-([simonwillison.net](https://simonwillison.net/2025/Jun/17/ai-agent-definition/)).
+([simonwillison.net](https://simonwillison.net/2025/Sep/18/agents/)).
 Everything else — planning, memory, reflection, multi-agent — is a modification of
 this diagram, usually by editing what goes into the messages list.
 
@@ -75,8 +75,8 @@ which is S03's topic. The loop is solved; the stream is not.
 
 ## Exercises (in the notebook, predict first)
 
-Run the notebook top-to-bottom. For each experiment cell, **write your prediction in
-the markdown cell before running it** — a prediction you didn't write down is a
+Run the notebook top-to-bottom. For each experiment cell, **write your prediction as
+a comment before running it** — a prediction you didn't write down is a
 prediction you'll retroactively fix.
 
 1. The happy path: run the loop on the weather question. Predict how many turns the
@@ -102,11 +102,11 @@ teaches, what's newer, what to ignore for now.
 |---|---|---|
 | "Agents are just loops" is now the industry baseline definition (Willison; Anthropic's [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents): "start by using LLM APIs directly") | **already in this path** | You are learning the thing the industry considers the durable core. |
 | Frameworks consolidated: AutoGen + Semantic Kernel merged into [Microsoft Agent Framework](https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/) (Oct 2025); [OpenAI Swarm](https://github.com/openai/swarm) superseded by the [Agents SDK](https://github.com/openai/openai-agents-python); [LangGraph](https://langfuse.com/blog/2025-03-19-ai-agent-comparison), [Google ADK](https://google.github.io/adk-docs/), [Pydantic AI](https://ai.pydantic.dev) are the serious production set | **recognize** | Frameworks now sell the loop as a product. Learn the loop first — which is what you're doing — so a framework is a choice, not a crutch. |
-| Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure | **recognize** | The minimal loop survives as *pedagogy* while vendors productize it. Knowing the loop is how you evaluate what they're selling. |
+| Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure ([Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)) | **recognize** | The minimal loop survives as *pedagogy* while vendors productize it. Knowing the loop is how you evaluate what they're selling. |
 | Code-as-action loops ([smolagents](https://github.com/huggingface/smolagents): the model writes Python instead of JSON tool calls) | **recognize** | A different point in the same design space. Same loop, different action encoding. |
 | `strict: true` tool schemas for guaranteed-conformant arguments ([OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | When you hit real APIs: cheap reliability win; the toy's mock doesn't model it. |
 | OpenAI's stateful Responses API (Conversations, `previous_response_id`) is now the recommended default for new projects; Chat Completions "remains supported" ([migration guide](https://developers.openai.com/api/docs/guides/migrate-to-responses)) | **recognize** | Server-side state moves the message-list management this lesson teaches into the platform. Learn the client-owned loop anyway: it's the mental model that survives every vendor abstraction, and every local/open-model stack still works this way. |
-| Multi-agent orchestration frameworks | **ignore** | For now — OpenAI's own guide: ["start with a single agent"](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/). S05 and S11 cover when structure actually pays. |
+| Multi-agent orchestration frameworks | **ignore** | For now — OpenAI's own guide: [start with a single agent](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/). S05 and S11 cover when structure actually pays. |
 
 ## Annotated readings
 

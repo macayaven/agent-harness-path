@@ -109,7 +109,7 @@ boundary.
 <strong>Time:</strong> ~75 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop), S02 (naive vs
 governed).
 <strong>Hands-on:</strong> <a href="../notebooks/s05_consent_gate_toy.ipynb"><code>notebooks/s05_consent_gate_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S05-consent-gate.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>The prompt is not a fence</h3>
@@ -261,7 +261,7 @@ predictions there before running the solution cell below it.</p>
 <td>The triad you just built is the industry vocabulary. The framework supplies the pause; the per-action check against the approved object is still yours to write.</td>
 </tr>
 <tr>
-<td>Plan mode and permission modes in coding agents: a read-only propose phase, then approval-gated execution (Claude Code; see the auto-mode link below)</td>
+<td>Plan mode and permission modes in coding agents: a read-only propose phase, then approval-gated execution (<a href="https://www.anthropic.com/engineering/claude-code-auto-mode">Claude Code auto-mode</a>)</td>
 <td><strong>already in this path</strong></td>
 <td>Plan-then-execute, productized. Notice what is enforced in code (tool allowlists, read-only tools) versus what is merely asked of the model.</td>
 </tr>
@@ -273,7 +273,7 @@ predictions there before running the solution cell below it.</p>
 <tr>
 <td>MCP elicitation: a server may pause tool execution to request structured user input mid-run (<a href="https://modelcontextprotocol.io/specification/2026-07-28">spec 2026-07-28</a>)</td>
 <td><strong>recognize</strong></td>
-<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 (<a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">release post</a>) makes requests stateless and self-contained (no initialize handshake, no <code>Mcp-Session-Id</code>), adds per-request capability negotiation and a versioned Extensions framework (Tasks and MCP Apps shipped; Skills over MCP was still a working group), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins.</td>
+<td>Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 (<a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">release post</a>) makes requests stateless and self-contained (no initialize handshake, no <code>Mcp-Session-Id</code>), adds per-request capability negotiation and a versioned Extensions framework (Tasks and MCP Apps shipped), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins.</td>
 </tr>
 <tr>
 <td>OWASP's LLM Top 10 ranks excessive agency a top risk; mitigations include scoping tools narrowly and human approval for high-impact actions (<a href="https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/">LLM Top 10 2026</a>; 2025 numbering alias: <a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">LLM06</a>)</td>
@@ -281,7 +281,7 @@ predictions there before running the solution cell below it.</p>
 <td>The security community's name for this session's problem — and the 2026 list, the current release, moved it <em>up</em>: sixth to third. The mitigation list reads like your toy's spec fields.</td>
 </tr>
 <tr>
-<td>OWASP Top 10 for Agentic Applications (Dec 2025): ASI01–ASI10 — Goal Hijack, Tool Misuse, Identity &amp; Privilege Abuse, Agentic Supply Chain, Unexpected Code Execution, Memory &amp; Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, Rogue Agents (<a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>)</td>
+<td>OWASP Top 10 for Agentic Applications (Dec 2025): ASI01–ASI10 — Goal Hijack, Tool Misuse, Identity &amp; Privilege Abuse, Agentic Supply Chain, Unexpected Code Execution, Memory &amp; Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, Rogue Agents (<a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/">OWASP Top 10 for Agentic Applications for 2026</a>)</td>
 <td><strong>recognize</strong></td>
 <td>The 2026 threat vocabulary for the governance sessions — Tool Misuse and Human-Agent Trust Exploitation are this session's gate and its 93% click-through under their new names.</td>
 </tr>
@@ -298,7 +298,7 @@ predictions there before running the solution cell below it.</p>
 <tr>
 <td>Fully autonomous YOLO modes that skip per-action approval</td>
 <td><strong>ignore</strong></td>
-<td>For anything you can't undo: fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate.</td>
+<td>For anything you can't undo: fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate. Vendors productize the opposite pressure — auto-approving the boring prompts (<a href="https://www.anthropic.com/engineering/claude-code-auto-mode">Anthropic</a>), not deleting the gate.</td>
 </tr>
 </tbody>
 </table>

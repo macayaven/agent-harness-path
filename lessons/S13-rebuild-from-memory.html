@@ -105,14 +105,15 @@
 measurement that is: a closed-book rebuild of the core component, judged by your own
 eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 <strong>Time:</strong> ~20 min reading, then ~90 min for the audit itself.
-<strong>Prerequisites:</strong> S01–S02 for the instrument vocabulary — and a non-trivial project
-you own to audit. <strong>This session is optional.</strong> The path's twelve toys are
+<strong>Prerequisites:</strong> S01–S02 to read the protocol (instrument vocabulary). Running
+it honestly needs a system whose suite you built — the S02–S12 instrument, on a
+project you own. <strong>This session is optional.</strong> The path's twelve toys are
 independent, so there is no cumulative build to point at: the audit target is a
 project of yours, built here, at work, or in another course. Completing S01–S12
 does not require S13.
 <strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
 defeat it. The protocol below is the hands-on.
-<strong>Video:</strong> <a href="videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Authorship is not ownership</h3>
@@ -218,10 +219,22 @@ rule that would have saved it.</p>
    short-term priming, not storage. A week later, cold, measures whether the
    re-study took — and the spaced retrieval is itself the mechanism that makes it
    stick (Bjork &amp; Bjork 2011; Nielsen's
-   <a href="http://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>).</li>
+   <a href="https://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>).</li>
 </ol>
 <p>Run twice, a week apart, the audit is the whole learning loop: measure, diagnose,
 repair, verify the repair.</p>
+<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
+    A[original safe in HEAD&lt;br/&gt;rebuild on a branch] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
+    B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
+    C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
+    D --&gt; E[run the suite]
+    E --&gt; F{within tolerance of&lt;br/&gt;banked number?}
+    F -- yes --&gt; G[forgot-list from gaps]
+    F -- no --&gt; G
+    G --&gt; H[restore original&lt;br/&gt;checkout from HEAD]
+    H --&gt; I[re-study exactly those items]
+    I --&gt; J[re-audit cold, ~1 week]
+</pre>
 <h2>The protocol</h2>
 <p>One sitting, no interruptions, roughly 90 minutes end to end. It runs against any
 non-trivial project you own — from this path, from work, from another course —
@@ -250,30 +263,18 @@ and "the suite" and "the banked number" below are that project's own.</p>
    feeds the forgot-list.</li>
 <li><strong>Run the suite.</strong> The rebuilt component runs the full eval suite. Pass: the
    number within tolerance of the last banked one. Fail: it moved — and the
-   behavioral gaps from step 3 tell you why. Either way the gap hunks stand: a
-   small suite can stay green through a dropped invariant, so the step-3 review
-   is not optional decoration.</li>
+   behavioral gaps from <strong>Diff and classify</strong> tell you why. Either way the gap
+   hunks stand: a small suite can stay green through a dropped invariant, so that
+   review is not optional decoration.</li>
 <li><strong>Write the forgot-list.</strong> One line per behavioral gap: what you dropped, why
    the original had it, the one-line rule that would have saved it. Then <strong>restore
    the original</strong> — <code>git checkout HEAD -- core.py</code>, or drop the branch/worktree
    entirely: the rebuild was a probe, not a patch — the
    banked artifact stays canonical.</li>
 <li><strong>Re-study, then re-audit cold.</strong> Study exactly the forgot-list items, nothing
-   else. Wait a week. Run the audit again from step 1. The second pass is where
-   retention happens; the first pass only told you the truth.</li>
+   else. Wait a week. Run the audit again from <strong>Set the terms</strong>. The second pass
+   is where retention happens; the first pass only told you the truth.</li>
 </ol>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    A[original safe in HEAD&lt;br/&gt;rebuild on a branch] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
-    B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
-    C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
-    D --&gt; E[run the suite]
-    E --&gt; F{within tolerance of&lt;br/&gt;banked number?}
-    F -- yes --&gt; G[forgot-list from gaps]
-    F -- no --&gt; G
-    G --&gt; H[restore original&lt;br/&gt;checkout from HEAD]
-    H --&gt; I[re-study exactly those items]
-    I --&gt; J[re-audit cold, ~1 week]
-</pre>
 <h2>State of the art (as of August 2026)</h2>
 <table>
 <thead>
@@ -302,7 +303,7 @@ and "the suite" and "the banked number" below are that project's own.</p>
 <tr>
 <td>"Cognitive debt" framing: Kosmyna et al., EEG essay study — the LLM group showed weakest engagement and poorest recall of their own text (<a href="https://arxiv.org/abs/2506.08872">arXiv:2506.08872</a>); see the methodological critique (<a href="https://arxiv.org/abs/2601.00856">arXiv:2601.00856</a>)</td>
 <td><strong>recognize</strong></td>
-<td>Direction matches authorship≠ownership, but it is a small preprint with a published critique. Motivation, never proof.</td>
+<td>Direction matches authorship≠ownership, but it is a small preprint with a posted critique. Motivation, never proof.</td>
 </tr>
 <tr>
 <td>Desirable difficulties: storage vs retrieval strength; conditions that slow practice improve retention (Bjork &amp; Bjork 2011, <a href="https://bjorklab.psych.ucla.edu/wp-content/uploads/sites/13/2016/04/EBjork_RBjork_2011.pdf">chapter PDF</a>)</td>
@@ -310,14 +311,14 @@ and "the suite" and "the banked number" below are that project's own.</p>
 <td>The theoretical frame: the audit is deliberately difficult because difficulty is what makes the measurement honest and the repair durable.</td>
 </tr>
 <tr>
-<td>Spaced repetition for the forgot-list (Nielsen, <a href="http://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>)</td>
+<td>Spaced repetition for the forgot-list (Nielsen, <a href="https://augmentingcognition.com/ltm.html">Augmenting Long-term Memory</a>)</td>
 <td><strong>adopt</strong></td>
 <td>Each forgot-list item becomes cards; the cold re-audit a week later is the spaced retrieval event.</td>
 </tr>
 <tr>
 <td>"Just re-read the codebase and your notes" as audit prep</td>
 <td><strong>ignore</strong></td>
-<td>The lowest-yield study activity known (Dunlosky). A recognition warm-up that inflates fluency and quietly spoils the measurement.</td>
+<td>The lowest-yield study activity known (<a href="https://doi.org/10.1177/1529100612453266">Dunlosky et al. 2013</a>). A recognition warm-up that inflates fluency and quietly spoils the measurement.</td>
 </tr>
 </tbody>
 </table>

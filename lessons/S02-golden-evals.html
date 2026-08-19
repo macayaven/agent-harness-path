@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S02 — Golden sets &amp; baselines</title>
+  <title>S02-golden-evals — Golden sets &amp; baselines</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -99,14 +99,14 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S01-agent-loop.html">&larr; Prev: S01 — The agent loop</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S03-context-engineering.html">Next: S03-context-engineering — governance decays across compaction &rarr;</a></span></nav>
-<h1>S02 — Golden sets &amp; baselines</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S01-agent-loop.html">&larr; Prev: S01-agent-loop — The agent loop</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S03-context-engineering.html">Next: S03-context-engineering — governance decays across compaction &rarr;</a></span></nav>
+<h1>S02-golden-evals — Golden sets &amp; baselines</h1>
 <p><strong>What this teaches:</strong> an eval suite is a <em>measurement instrument</em>, not a test suite —
 scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
 is a product argument rather than a courtesy number.
 <strong>Time:</strong> ~90 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop).
 <strong>Hands-on:</strong> <a href="../notebooks/s02_scripted_user_eval_toy.ipynb"><code>notebooks/s02_scripted_user_eval_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S02-golden-evals.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S02-golden-evals.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Tests ask "is it broken?"; instruments ask "would I believe the number?"</h3>
@@ -129,7 +129,7 @@ Two options:</p>
   guidance describes the same pattern
   (<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">anthropic.com/engineering/demystifying-evals-for-ai-agents</a>).
   The catch: simulated users are measurably <em>not</em> real users — they ask more
-  questions and stay more polite on identical tasks (<a href="https://www.arxiv.org/pdf/2601.17087">arXiv:2601.17087</a>) —
+  questions and stay more polite on identical tasks (<a href="https://arxiv.org/abs/2601.17087">arXiv:2601.17087</a>) —
   and they inject their own variance into your measurement.</li>
 <li><strong>Scripted user</strong> — a fixed list of user turns, replayed verbatim. Zero diversity,
   zero variance. This is what you use for <em>regression</em>: the same probe, every run,
@@ -154,7 +154,9 @@ in the scaffolding under test. Then — and only then — is the delta attributa
 the scaffolding. Every shared component you <em>don't</em> hold constant is a confound your
 conclusion can't survive. This is also why the naive row matters commercially: naive
 mode <em>is</em> the status quo (a chatbot told to role-play), so <code>governed − naive</code> is the
-measured answer to "why does this product deserve to exist?"</p>
+measured answer to "why does this product deserve to exist?" Bank that number, then
+write the call down in a <strong>decision log</strong> (five lines, dated: what you chose, why,
+what would change your mind). S14 assembles that log; it cannot invent it.</p>
 <h3>3. Two checker tiers — and why safety never rides on the judged one</h3>
 <ul>
 <li><strong>Deterministic tier</strong>: code asserts structure and safety invariants — the refusal
@@ -261,7 +263,7 @@ meaning lives. Aggregate pass rate alone hides <em>which</em> failures you're bu
 <tr>
 <td>Fully synthetic eval pipelines with no human reading of traces</td>
 <td><strong>ignore</strong></td>
-<td>Every credible source puts <em>reading transcripts</em> at the center. Tools that promise otherwise are selling the absence of the one activity that works.</td>
+<td>Every credible source puts <em>reading transcripts</em> at the center (<a href="https://hamel.dev/blog/posts/evals/">Hamel, Evals</a>). Tools that promise otherwise are selling the absence of the one activity that works.</td>
 </tr>
 </tbody>
 </table>
@@ -325,7 +327,7 @@ deserves to exist.</details>
 <p><strong>S03 — Context engineering:</strong> your governed engine's rules live in the context
 window. What happens to those rules as the conversation grows past the window's
 useful length? The loop is solved; the stream is not.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S01-agent-loop.html">&larr; Prev: S01 — The agent loop</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S03-context-engineering.html">Next: S03-context-engineering — governance decays across compaction &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S01-agent-loop.html">&larr; Prev: S01-agent-loop — The agent loop</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S03-context-engineering.html">Next: S03-context-engineering — governance decays across compaction &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S02-golden-evals.md</code> — part of The Agent Harness Path.

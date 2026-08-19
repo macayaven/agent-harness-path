@@ -9,12 +9,19 @@ Fixes and improvements to **this** course: lesson accuracy, notebook bugs, SOTA
 drift, broken links, accessibility, and the build. Not a production harness, and
 not a solution to someone else's take-home.
 
+## Issues
+
+Use GitHub Issues for defects a learner can hit (broken links, lesson/notebook
+mismatch, build or CI failures). One problem per issue, with the file path and
+what you expected. Security reports go to `SECURITY.md`, not the public tracker.
+
 ## Setup
 
-Python 3.11+, `uv`, Git. Git LFS only if you need the videos.
+Python 3.11+, `uv`, Git. Preview videos stream from the public bucket; Git LFS
+only if you are replacing an mp4.
 
 ```bash
-GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/macayaven/agent-harness-path.git
+git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
 uv sync
 ```
@@ -22,9 +29,20 @@ uv sync
 ## Edit, then verify
 
 1. Edit sources in `lessons/src/*.md` or `notebooks/*.ipynb`. Never hand-edit
-   generated `lessons/*.html`.
+   generated `lessons/*.html`. Learners read the generated HTML from a clone
+   (`lessons/index.html`). GitHub's file view of `lessons/src/` is not a
+   supported reader — relative `videos/` paths are rewritten to the public
+   bucket at build time.
 2. Rebuild: `uv run python lessons/build.py`
 3. Check links: `uv run python lessons/check_links.py`
+   After a lesson-HTML change, also:
+
+   ```bash
+   uv run python lessons/check_links.py --http
+   uv run python lessons/check_sota_urls.py
+   ```
+
+   Re-publish videos after adding or replacing an mp4: `scripts/publish_videos.sh`.
 4. Execute any notebook you touched (and its neighbours if you changed a shared
    claim):
 

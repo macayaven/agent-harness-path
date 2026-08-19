@@ -108,7 +108,7 @@ content-identical, with zero model calls — plus what replay can never prove.
 <strong>Time:</strong> ~90 min with the notebook.
 <strong>Prerequisites:</strong> S01 (the loop); S02 (scripted users, fixtures) recommended.
 <strong>Hands-on:</strong> <a href="../notebooks/s08_observability_replay_toy.ipynb"><code>notebooks/s08_observability_replay_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S08-observability-replay.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>Logs say what happened; traces say what caused what</h3>
@@ -238,10 +238,12 @@ solution.</p>
 <li><strong>The dead exporter.</strong> Point the tracer at a backend that raises. Predict
    whether the quiz still completes; compare against the unguarded variant.</li>
 <li><strong>Record, then replay.</strong> Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls and a content-identical transcript.</li>
+   Prove zero live model calls, a content-identical transcript, and
+   <code>assert_exhausted()</code> — every recorded pair was served, nothing left over.</li>
 <li><strong>Replay as tripwire.</strong> Change one scripted answer, replay the old cassette.
    Predict where it breaks — and what a non-strict replayer would have done
-   instead.</li>
+   instead. A second predict-first in the notebook asks whether strict matching
+   fires on a call that never happens.</li>
 <li><strong>The hunt.</strong> A teammate's "harmless" PR adds a dated header and livelier
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove

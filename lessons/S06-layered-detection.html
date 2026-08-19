@@ -109,7 +109,7 @@ tolerate.
 <strong>Time:</strong> ~75 min with the notebook.
 <strong>Prerequisites:</strong> S01 (the loop), S02 (golden sets, the fixture invariant).
 <strong>Hands-on:</strong> <a href="../notebooks/s06_layered_detection_toy.ipynb"><code>notebooks/s06_layered_detection_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S06-layered-detection.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
 <h2>The theory in depth</h2>
 <h3>The threat model: untrusted text meets a system that can act</h3>
@@ -282,7 +282,7 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <td>The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering).</td>
 </tr>
 <tr>
-<td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
+<td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/">OWASP Top 10 for Agentic Applications for 2026</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
 <td><strong>recognize</strong></td>
 <td>The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them.</td>
 </tr>
@@ -309,7 +309,7 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <tr>
 <td>"Safety system prompt" products — one mega-instruction that forbids everything</td>
 <td><strong>ignore</strong></td>
-<td>Prompt-level prohibition is advice to the model, not enforcement. If the whole story is a prompt, there is no detection.</td>
+<td>Prompt-level prohibition is advice to the model, not enforcement (<a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">Willison, lethal trifecta</a>). If the whole story is a prompt, there is no detection.</td>
 </tr>
 </tbody>
 </table>
@@ -325,7 +325,8 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a>
   (May 2026).</strong> Extract: which layers are environmental versus model-level, why
   battle-tested primitives beat custom controls, and the approval-fatigue data —
-  a ~93% approval rate is a detection layer failing quietly.</li>
+  a ~93% approval rate is humans rubber-stamping permission prompts, not a
+  detection layer failing quietly.</li>
 <li><strong>Sharma et al., <a href="https://arxiv.org/abs/2501.18837">Constitutional Classifiers</a>.</strong>
   Extract: the input/output classifier split, and the evaluation protocol — they
   define "universal jailbreak" up front and measure in red-team hours survived.

@@ -93,7 +93,7 @@ Two invariants make the table trustworthy:
 
 Then quantify. Count traces per category, and weight by severity, because raw
 frequency lies about priority: a safety-miss at n=2 can outrank a formatting
-annoyance at n=8 — but you need both columns to *argue* that, and the argument
+annoyance at n=5 — but you need both columns to *argue* that, and the argument
 is what a reviewer or teammate will demand.
 
 ### From taxonomy to eval growth
@@ -152,10 +152,10 @@ experiment — including your guessed categories, which the data will grade.
 |---|---|---|
 | Error analysis as open coding + axial coding on traces, then failure-grown evals (Hamel, [A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/), 2025) | **already in this path** | The assigned reading and the exact loop this session rehearses: notes first, categories second, evals third. |
 | The method itself is 60 years old — open/axial coding from grounded theory (Glaser & Strauss, 1967; [overview](https://en.wikipedia.org/wiki/Grounded_theory)) | **already in this path** | Applied AI rediscovered a social-science method. Categories emerge from data; "constant comparison" is your axial pass. |
-| MAST: a research-grade failure taxonomy for multi-agent systems — 14 failure modes in 3 categories, open-coded from 200+ annotated traces ([arXiv:2503.13657](https://arxiv.org/abs/2503.13657)) | **recognize** | A published top-down taxonomy to sanity-check your bottom-up one against. Note they built it with the same process you just practiced, at annotation-team scale. |
+| MAST: a research-grade failure taxonomy for multi-agent systems — 14 failure modes in 3 categories, built from analysis of 150 traces; MAST-Data is the 1600+-trace annotated dataset ([arXiv:2503.13657](https://arxiv.org/abs/2503.13657)) | **recognize** | A published top-down taxonomy to sanity-check your bottom-up one against. Note they built it with the same process you just practiced, at annotation-team scale. |
 | Eval tasks grown from observed failures; capability evals graduate into the regression floor ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | Where your new tasks land. The denominator change is the mechanism working, not scope creep. |
-| Platforms productize the loop: LangSmith auto-clusters traces for analysis ([langchain.com/langsmith/observability](https://www.langchain.com/langsmith/observability)); Langfuse's academy teaches the manual version ([langfuse.com/academy/monitoring/error-analysis](https://langfuse.com/academy/monitoring/error-analysis)) | **recognize** | Clustering is triage for the reading queue — ordering, not replacement. The vendors' own teaching material still starts with "read the traces." |
-| Fully automated failure discovery: pipelines promising taxonomies and fresh evals with zero human trace-reading | **ignore** | The failure you haven't imagined has no keyword and no cluster centroid. Skipping the reading skips the product. |
+| Platforms productize the loop: LangSmith auto-clusters traces for analysis ([LangSmith observability docs](https://docs.smith.langchain.com/observability)); Langfuse's academy teaches the manual version ([langfuse.com/academy/monitoring/error-analysis](https://langfuse.com/academy/monitoring/error-analysis)) | **recognize** | Clustering is triage for the reading queue — ordering, not replacement. The vendors' own teaching material still starts with "read the traces." |
+| Fully automated failure discovery: pipelines promising taxonomies and fresh evals with zero human trace-reading | **ignore** | The failure you haven't imagined has no keyword and no cluster centroid ([Hamel, Field Guide](https://hamel.dev/blog/posts/field-guide/)). Skipping the reading skips the product. |
 
 ## Annotated readings
 
@@ -170,7 +170,8 @@ experiment — including your guessed categories, which the data will grade.
   abstraction over it. Extract the interception technique — and the attitude.
 - **Cemri et al., [Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657)
   (2025).** Skim the 14-mode taxonomy table, then read how they built it:
-  200+ traces, six expert annotators, open coding. Extract the category
+  analysis of 150 traces, then MAST-Data (1600+ annotated traces). Extract the
+  category
   boundaries — where do they split what you'd merge? — as calibration for
   your own taxonomy's grain size.
 - **[Grounded theory](https://en.wikipedia.org/wiki/Grounded_theory) (overview).**

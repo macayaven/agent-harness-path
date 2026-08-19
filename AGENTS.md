@@ -47,32 +47,40 @@ solutions to someone else's production deliverable.
 │   ├── index.html             — course entry point (generated; src/index.md)
 │   ├── build.py               — renders src/*.md → *.html via template.html
 │   │                              (injects the prev/index/next nav bars)
-│   ├── check_links.py         — relative-link checker for generated HTML
+│   ├── check_links.py         — relative href/src + optional http-link checker
+│   ├── site_urls.py           — GCS base for Video Overview hrefs
 │   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
 │   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
 │   └── videos/SNN-*.mp4       — Gemini Notebook Video Overviews, one per lesson, plus
 │                                S00-course-overview.mp4; canonical name = lesson slug
+│                                (Git LFS archive; build.py points ▶ at the GCS replica)
 └── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
 ```
 
 Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
-`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `review/` (the
-adversarial-review workspace). `uv.lock`, the generated `lessons/*.html`, and
-the vendored mermaid build in `lessons/vendor/` are checked in so everything
-reads offline.
+`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, `scripts/publish_videos.sh`, and
+`review/` (the adversarial-review workspace). `.lfsconfig` skips fetching the
+mp4s on clone (`git lfs pull` to get the archive). `uv.lock`, the generated
+`lessons/*.html`, and the vendored mermaid build in `lessons/vendor/` are checked
+in so lessons and diagrams read offline; preview videos stream.
 
 ## Build and run
 
 - **Build step:** `uv run python lessons/build.py` regenerates all `lessons/*.html`
-  from `lessons/src/*.md`. Re-run after editing any lesson source. The build warns if
+  from `lessons/src/*.md`. Re-run after editing any lesson source. Video hrefs
+  `videos/*.mp4` are rewritten to the public GCS replica. The build warns if
   a non-index lesson has no mermaid diagram.
 - **Link check:** `uv run python lessons/check_links.py` (after a build).
+  Unique http hrefs (GCS videos, SOTA sources):
+  `uv run python lessons/check_links.py --http`.
 - **No product test suite.** Verification is: every notebook runs top-to-bottom
   (`uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb > /dev/null`),
-  the HTML regenerates cleanly, and relative links resolve. CI runs that contract
-  on Python 3.11 and 3.12.
+  the HTML regenerates cleanly, relative hrefs and script/img src resolve, and
+  CI GETs unique http refs in the generated lessons (404 fails; 401/403/429 warn).
+  SOTA table rows must carry a source URL (`lessons/check_sota_urls.py`).
+  The contract runs on Python 3.11 and 3.12.
 - **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
 - **Notebooks run on Python 3.11+, standard library only** — `itertools`, `json`,
   `random`, `statistics`. Zero network, zero API keys, zero cost. This is a hard
@@ -110,7 +118,8 @@ Google Gemini Notebook (formerly NotebookLM) generations — previews/reviews th
 may lag the lesson text; they never replace the notebook (S01–S12) or the protocol
 (S13/S14). Credit Google for branding in the files; do not strip watermarks.
 When adding a new video, name it `SNN-slug.mp4`, drop it in `lessons/videos/`,
-add the header line, and rebuild.
+add the header line, rebuild, and publish the GCS replica with
+`scripts/publish_videos.sh`.
 
 Lessons are self-contained: they teach concepts without assuming any other
 repository.

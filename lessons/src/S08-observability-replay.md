@@ -156,10 +156,12 @@ solution.
 2. **The dead exporter.** Point the tracer at a backend that raises. Predict
    whether the quiz still completes; compare against the unguarded variant.
 3. **Record, then replay.** Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls and a content-identical transcript.
+   Prove zero live model calls, a content-identical transcript, and
+   `assert_exhausted()` — every recorded pair was served, nothing left over.
 4. **Replay as tripwire.** Change one scripted answer, replay the old cassette.
    Predict where it breaks — and what a non-strict replayer would have done
-   instead.
+   instead. A second predict-first in the notebook asks whether strict matching
+   fires on a call that never happens.
 5. **The hunt.** A teammate's "harmless" PR adds a dated header and livelier
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove

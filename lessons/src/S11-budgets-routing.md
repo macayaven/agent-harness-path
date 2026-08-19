@@ -77,7 +77,7 @@ flowchart LR
     S --> M[meter: tokens x price,<br/>latency, wall time]
     L --> M
     C --> M
-    M -- breach --> B[stop_reason=budget_exceeded]
+    M -->|"would breach"| B[stop_reason=budget_exceeded]
 ```
 
 ### The privacy boundary is a routing invariant, enforced as refusal
@@ -138,9 +138,9 @@ variance the toy deliberately does not have.
 ## Exercises (in the notebook, predict first)
 
 1. **The meandering run.** A summarize phase with no convergence criterion on
-   all-large routes. First run it with no budget and watch it price itself into
-   the pass cap. Then set `budget_usd = 0.25`: predict the exact pass it dies
-   on, and the `stop_reason`.
+   all-large routes, `max_passes=12`. Predict: with no budget, what `stop_reason`
+   ends the run and what does it cost? With `budget_usd = 0.25`, after *exactly
+   which* summarize pass does the run die, and with what `stop_reason`?
 2. **Measure the tiers.** Run the 3-month suite under `all-small` and
    `all-large`. Predict, per phase, where small holds its number — then read the
    pass/cost table.
@@ -153,10 +153,10 @@ variance the toy deliberately does not have.
    subtle case: `format` (metadata) on cloud runs fine — and costs more than
    local. Allowed ≠ wise.
 5. **The voice budget.** From the latency models in the suite logs, compute the
-   median per-turn latency across the three fixtures for all-large vs routed
-   against a 1000 ms budget. Predict
-   which fits before running; then name the phase that dominates the losing
-   config and the fix the boundary still permits.
+   three-fixture median per-turn latency for all-large vs routed against a
+   1000 ms budget. Predict which configs fit before running; name the phase
+   that dominates the loser; and what the *forbidden* fix (frontier cloud for
+   content) would have cost in latency.
 
 ## State of the art (as of August 2026)
 
@@ -235,7 +235,7 @@ latency gets engineered (streaming, precompute) rather than bought.</details>
 
 ## What's next
 
-**S12 — Adversarial review and judge calibration:** the routed pipeline still
+**S12 — Judge calibration:** the routed pipeline still
 leans on model judgment — a critic reading transcripts, a judge scoring quality.
 Next session measures the judges themselves: seeded-defect detection rates,
 false positives, and agreement against your own hand labels, because an

@@ -14,8 +14,9 @@ dependencies = ["jupyterlab>=4.0", "markdown>=3.5"]
 
 [project.urls]
 Homepage = "https://github.com/macayaven/agent-harness-path"
-Documentation = "https://carloscrespomacaya.com/agent-harness-path/"
+Documentation = "https://github.com/macayaven/agent-harness-path"
 Issues = "https://github.com/macayaven/agent-harness-path/issues"
+Changelog = "https://github.com/macayaven/agent-harness-path/blob/main/CHANGELOG.md"
 
 [tool.uv]
 package = false

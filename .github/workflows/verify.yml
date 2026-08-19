@@ -31,5 +31,14 @@ jobs:
         run: |
           uv run python lessons/build.py
           git diff --exit-code -- lessons/*.html lessons/index.html
+          if git status --porcelain -- lessons/ | grep -E '^\?\? lessons/.*\.html'; then
+            echo "untracked generated HTML under lessons/" >&2
+            exit 1
+          fi
+      - name: Check SOTA rows have source URLs
+        run: uv run python lessons/check_sota_urls.py
       - name: Check relative links
         run: uv run python lessons/check_links.py
+      - name: Check http links
+        if: matrix.python-version == '3.11'
+        run: uv run python lessons/check_links.py --http

@@ -13,6 +13,8 @@ from pathlib import Path
 
 import markdown
 
+from site_urls import rewrite_video_hrefs
+
 HERE = Path(__file__).resolve().parent
 SRC = HERE / "src"
 TEMPLATE = (HERE / "template.html").read_text(encoding="utf-8")
@@ -105,6 +107,7 @@ def main() -> int:
     for slug in order:
         source = sources[slug]
         html, n_mermaid = render(source, build_nav(slug, order, titles))
+        html = rewrite_video_hrefs(html)
         if n_mermaid == 0 and slug != "index":
             print(f"build.py: WARNING {source.name}: no mermaid diagram found")
         out = HERE / (slug + ".html")

@@ -2,6 +2,26 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## Unreleased
+
+- Generated HTML streams Video Overviews from a public GCS bucket (▶ works
+  without Git LFS). `.lfsconfig` skips fetching the mp4s on clone. There is
+  no hosted HTML mirror: the clone is the reader (`lessons/index.html`).
+- Link check covers `<a href>` and `script`/`img`/`link`/`video`/`source` `src`,
+  plus unique http refs (404 fails; 401/403/429 warn; one retry on transport
+  failure).
+- SOTA table lint: every tagged row must carry an http(s) URL.
+- Lesson/notebook honesty pass from review: S09 coverage is identity-based;
+  S13 protocol numbering matches rendered HTML; S02/S03/S11 predict-first
+  prompts; MAST numbers match the linked abstract; S14 decision log assigned
+  at S02.
+- Fix two SOTA 404s (Willison agent-definition slug → Sep 2025 post; RAGAS
+  faithfulness docs path).
+- Hygiene: arXiv abs for 2601.17087; HTTPS for Nielsen LTM.
+- Notebooks link back to their companion lesson.
+- README Contributing section (issues, CONTRIBUTING.md, CoC, SECURITY.md).
+  GitHub Pages workflow removed so a stale HTML mirror cannot republish.
+
 ## 0.1.0 — 2026-08-17
 
 Public release.
