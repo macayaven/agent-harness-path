@@ -28,11 +28,13 @@ uv sync
 
 ## Edit, then verify
 
-1. Edit sources in `lessons/src/*.md` or `notebooks/*.ipynb`. Never hand-edit
-   generated `lessons/*.html`. Learners read the generated HTML from a clone
+1. Edit sources in `lessons/src/*.md`, `notebooks/*.ipynb`, or `labs/`
+   (protocols and Python). Never hand-edit generated `lessons/*.html`. Learners read the generated HTML from a clone
    (`lessons/index.html`). GitHub's file view of `lessons/src/` is not a
    supported reader — relative `videos/` paths are rewritten to the public
    bucket at build time.
+   Edits to `lessons/src/study-plan.md` must preserve its authoritative external
+   links and workload honesty, then rebuild `lessons/study-plan.html`.
 2. Rebuild: `uv run python lessons/build.py`
 3. Check links: `uv run python lessons/check_links.py`
    After a lesson-HTML change, also:
@@ -40,6 +42,7 @@ uv sync
    ```bash
    uv run python lessons/check_links.py --http
    uv run python lessons/check_sota_urls.py
+   uv run python labs/run.py --all --replay
    ```
 
    Re-publish videos after adding or replacing an mp4: `scripts/publish_videos.sh`.
@@ -62,6 +65,7 @@ refactor). Maintainers will reject:
 
 - toys that are paste-ready production harnesses
 - network calls, API keys, or non-stdlib imports in `notebooks/`
+- `--live` in CI, or secrets committed under `labs/`
 - SOTA rows without a source, or status tags other than the five in `AGENTS.md`
 - cheerleading or padded prose that drops the existing density
 

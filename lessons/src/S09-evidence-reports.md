@@ -7,7 +7,8 @@ claims phrased as checkable observations, and two deterministic validators
 certify checkability, not honesty.
 **Time:** ~75 min with the notebook. **Prerequisites:** S02 (checker tiers, the
 fixture invariant); S08 (traces and replay) helps but is not required.
-**Hands-on:** [`notebooks/s09_evidence_report_toy.ipynb`](../notebooks/s09_evidence_report_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s09_evidence_report_toy.ipynb`](../notebooks/s09_evidence_report_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s09_debrief.md`](../labs/s09_debrief.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S09-evidence-reports.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -184,6 +185,9 @@ depleted reader is you.
    `write_report_rounded_up` (declares the run complete) — which one catches
    that, and which lie does *neither* validator catch? (`write_report_reassuring`
    is the omission variant from exercise 4, not this one.)
+
+
+After the notebook, optional hard path: [debrief + one real round](../labs/s09_debrief.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

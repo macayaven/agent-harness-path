@@ -4,6 +4,13 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- Calibrated six-week study-route overlay: schedules bounded, authoritative
+  external model-layer work and names the evidence to bank without copying
+  external-course materials or expanding the 14-session core.
+- Optional cumulative hard path: `labs/` cassette client, toy trivia-host spine,
+  and S01–S12 protocols. It remains optional and never becomes a production
+  capstone. Notebooks stay stdlib / zero-key. CI runs
+  `uv run python labs/run.py --all --replay` only (never `--live`).
 - Generated HTML streams Video Overviews from a public GCS bucket (▶ works
   without Git LFS). `.lfsconfig` skips fetching the mp4s on clone. There is
   no hosted HTML mirror: the clone is the reader (`lessons/index.html`).

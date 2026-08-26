@@ -5,3 +5,6 @@ _site/
 .ipynb_checkpoints/
 .jupyter/
 .cursor/
+labs/PROGRESS.md
+labs/work/
+labs/reports/last.md

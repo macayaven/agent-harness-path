@@ -7,7 +7,8 @@ violation semantics: what the system does when execution would cross the approve
 boundary.
 **Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop), S02 (naive vs
 governed).
-**Hands-on:** [`notebooks/s05_consent_gate_toy.ipynb`](../notebooks/s05_consent_gate_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s05_consent_gate_toy.ipynb`](../notebooks/s05_consent_gate_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s05_consent.md`](../labs/s05_consent.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S05-consent-gate.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -133,6 +134,9 @@ predictions there before running the solution cell below it.
    run completes. Before reading the clamp log, write down what you think diverged
    from the approved spec. Then decide, in a comment: abort or degrade for (a) a
    coding assistant, (b) this robot?
+
+
+After the notebook, optional hard path: [consent gate on round rules](../labs/s05_consent.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

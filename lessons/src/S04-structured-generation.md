@@ -7,7 +7,8 @@ and why schema-valid is never the same as correct.
 **Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop — the retry
 you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
 score is the same instrument thinking).
-**Hands-on:** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s04_schema.md`](../labs/s04_schema.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S04-structured-generation.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -129,6 +130,9 @@ to — which is the thing you actually needed to know.
    schema-valid. **Predict first:** blinded — write down your expected `device`
    and `priority` for all five briefs *before* running. Then score agreement
    n/5 and identify which failures the validator structurally cannot see.
+
+
+After the notebook, optional hard path: [round spec + validate-and-retry](../labs/s04_schema.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

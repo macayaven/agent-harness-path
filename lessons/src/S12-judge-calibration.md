@@ -9,7 +9,8 @@ dashboard.
 **Time:** ~90 min with the notebook. **Prerequisites:** S02 (two-tier checks —
 the judged column was labeled *uncalibrated* there; this session removes the
 label, with a rate attached).
-**Hands-on:** [`notebooks/s12_judge_calibration_toy.ipynb`](../notebooks/s12_judge_calibration_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s12_judge_calibration_toy.ipynb`](../notebooks/s12_judge_calibration_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s12_judge.md`](../labs/s12_judge.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S12-judge-calibration.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -156,6 +157,9 @@ a property of the pair, not of either alone.
    reaches 10/10 — then inspect the one residual disagreement and explain why
    that class defeats any judge without ground truth.
 
+
+After the notebook, optional hard path: [critic calibration](../labs/s12_judge.md) — same session, live or cassette. Skip it and the easy path is still complete.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
@@ -233,7 +237,6 @@ The aggregate hides the failure; the strata name it.</details>
 ## What's next
 
 **S13-rebuild-from-memory (optional lab):** S01–S12 is the self-contained path.
-If you own a non-trivial system and want the closed-book audit, S13 turns the
-instrument on you: rebuild the core from memory, no assistant, then diff against
-the original. The forgot-list you write afterward is the honest inventory of
-what you actually own. Skip it if you do not yet have a system to audit.
+If you walked the hard path, the audit target is `labs/trivia_host/loop.py`
+against this suite. Otherwise: a non-trivial system you own. Skip it if you do
+not yet have a system to audit.

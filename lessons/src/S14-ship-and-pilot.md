@@ -7,11 +7,11 @@ memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
 **Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
-a non-trivial project of your own to ship. **This session is optional.** The
-path's toys are independent; there is no cumulative build waiting to be shipped,
-so "your system" means one you own. Completing S01–S12 does not require S14.
-**Hands-on:** no notebook — the hands-on is your own system, run through the
-protocol below.
+a non-trivial project of your own to ship — or, if you walked the hard path,
+`labs/trivia_host/`. **This session is optional.** Completing S01–S12 does not
+require S14.
+**Hands-on:** no notebook — the hands-on is your own system (easy) or the trivia
+host (hard), run through the protocol below.
 **Video:** [Gemini Notebook overview](videos/S14-ship-and-pilot.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
@@ -171,9 +171,14 @@ meaningful against a frozen baseline.
 
 ## The protocol
 
-Run this against your own system, in order. Each step has an artifact and a
-"done when" line. Reorder them and the later steps inherit the earlier steps'
-contamination.
+**Hard path:** the system is `labs/trivia_host/`. The public artifact is a
+**fixture** run (naïve vs engine numbers from `labs/run.py`), never a real-round
+transcript. The pilot is one consenting adult playing trivia.
+
+**Easy path:** run this against your own system, in order.
+
+Each step has an artifact and a "done when" line. Reorder them and the later
+steps inherit the earlier steps' contamination.
 
 1. **Freeze the fixtures and the criteria.** Choose end-to-end scenarios the
    system has never processed — not golden-set tasks you tuned against: one

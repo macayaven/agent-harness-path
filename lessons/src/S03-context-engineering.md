@@ -8,7 +8,8 @@ and the proof is a measurement: rule survival probed across the compaction bound
 **Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (scripted probes and deterministic checkers — both get reused here, one level down
 the stack).
-**Hands-on:** [`notebooks/s03_context_engineering_toy.ipynb`](../notebooks/s03_context_engineering_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s03_context_engineering_toy.ipynb`](../notebooks/s03_context_engineering_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s03_context.md`](../labs/s03_context.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S03-context-engineering.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -119,6 +120,9 @@ Run top-to-bottom; write each prediction before running the cell that settles it
    The notebook prints a survival table at labeled distances 0, 25, 50, 100, 150,
    200 — those labels are the actual filler word counts between the rule and the
    probe (the probe itself is not counted).
+
+
+After the notebook, optional hard path: [pinned house rules](../labs/s03_context.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

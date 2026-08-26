@@ -7,7 +7,8 @@ and why the false-trigger count is a product metric you record, not noise you
 tolerate.
 **Time:** ~75 min with the notebook.
 **Prerequisites:** S01 (the loop), S02 (golden sets, the fixture invariant).
-**Hands-on:** [`notebooks/s06_layered_detection_toy.ipynb`](../notebooks/s06_layered_detection_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s06_layered_detection_toy.ipynb`](../notebooks/s06_layered_detection_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s06_policy.md`](../labs/s06_policy.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S06-layered-detection.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -144,6 +145,9 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 5. Red-team rep: write three attack fixtures of your own *before* opening the
    solution cell. Whatever escapes becomes a permanent bank row and a documented
    limitation.
+
+
+After the notebook, optional hard path: [toy quiz policy (no clinical protocol)](../labs/s06_policy.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

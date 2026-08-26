@@ -33,9 +33,10 @@ MERMAID_PRE = (
     r'aria-label="Architecture diagram — described in surrounding prose">\1</pre>'
 )
 
-# Reading order for the prev/next nav bars: index first, then S01..S14.
+# Reading order for the prev/next nav bars: index, study plan, then S01..S14.
 LESSON_ORDER = [
     "index",
+    "study-plan",
     "S01-agent-loop",
     "S02-golden-evals",
     "S03-context-engineering",
@@ -64,8 +65,8 @@ def render_body(source: Path) -> tuple[str, str, int]:
 
 
 def build_nav(slug: str, order: list[str], titles: dict[str, str]) -> str:
-    """Prev/index/next bar. Index gets only the forward link to S01; the
-    last lesson gets no next. Link labels are the targets' rendered H1s."""
+    """Prev/index/next bar. Index gets only the forward link; the last
+    lesson gets no next. Link labels are the targets' rendered H1s."""
     i = order.index(slug)
     prev_link = index_link = next_link = ""
     if i > 0:

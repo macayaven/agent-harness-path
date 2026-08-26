@@ -107,12 +107,12 @@ eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 <strong>Time:</strong> ~20 min reading, then ~90 min for the audit itself.
 <strong>Prerequisites:</strong> S01–S02 to read the protocol (instrument vocabulary). Running
 it honestly needs a system whose suite you built — the S02–S12 instrument, on a
-project you own. <strong>This session is optional.</strong> The path's twelve toys are
-independent, so there is no cumulative build to point at: the audit target is a
-project of yours, built here, at work, or in another course. Completing S01–S12
-does not require S13.
+project you own, <strong>or</strong> <code>labs/trivia_host/</code> if you walked the optional hard path.
+<strong>This session is optional.</strong> Completing S01–S12 does not require S13.
 <strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
-defeat it. The protocol below is the hands-on.
+defeat it. Hard path: the audit target is <code>labs/trivia_host/loop.py</code> against
+<code>uv run python labs/run.py --all --replay</code>. Easy path: a project of yours.
+The protocol below is the hands-on.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
 <h2>The theory in depth</h2>
@@ -236,9 +236,13 @@ repair, verify the repair.</p>
     I --&gt; J[re-audit cold, ~1 week]
 </pre>
 <h2>The protocol</h2>
-<p>One sitting, no interruptions, roughly 90 minutes end to end. It runs against any
-non-trivial project you own — from this path, from work, from another course —
-and "the suite" and "the banked number" below are that project's own.</p>
+<p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
+<p><strong>Hard path:</strong> you built <code>labs/trivia_host/</code>. The core is <code>trivia_host/loop.py</code>;
+the suite is <code>uv run python labs/run.py --all --replay</code> (or <code>--live</code> on your
+endpoint). Do not open <code>labs/reference/</code> during the sitting.</p>
+<p><strong>Easy path:</strong> any non-trivial project you own — from this path, from work, from
+another course — and "the suite" and "the banked number" below are that
+project's own.</p>
 <ol>
 <li><strong>Choose the core.</strong> One component: the load-bearing abstraction, the file
    whose invariants <em>are</em> the system's invariants (in an agent harness, the loop).
