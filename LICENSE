@@ -8,6 +8,7 @@ The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
 - `notebooks/` (toy notebooks)
+- `labs/**/*.py` (optional hard-path client, runner, trivia host, evals)
 - `lessons/build.py`, `lessons/check_links.py`, `lessons/site_urls.py`,
   `lessons/check_sota_urls.py`, `lessons/template.html`
 - `pyproject.toml`, `uv.lock`
@@ -25,8 +26,10 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `lessons/*.html` (generated lessons)
 - `lessons/videos/` (Video Overviews generated with Google Gemini Notebook,
   formerly NotebookLM — see Third-party below)
+- `labs/**/*.md` (hard-path protocols and lab docs)
+- `study/**/*.md` (post-core study records and evidence templates)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `review/`
+  `CHANGELOG.md`
 
 SPDX-License-Identifier: CC-BY-4.0
 

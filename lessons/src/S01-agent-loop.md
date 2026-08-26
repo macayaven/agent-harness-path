@@ -4,7 +4,8 @@
 around a stateless API — and the two invariants that keep it alive: message-list
 preservation and tool-call/tool-result pairing.
 **Time:** ~60 min with the notebook. **Prerequisites:** none beyond Python.
-**Hands-on:** [`notebooks/s01_agent_loop_toy.ipynb`](../notebooks/s01_agent_loop_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s01_agent_loop_toy.ipynb`](../notebooks/s01_agent_loop_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s01_loop.md`](../labs/s01_loop.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S01-agent-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -92,6 +93,9 @@ prediction you'll retroactively fix.
    the thing that ends it is (the harness's, not the model's).
 4. The tool that raises: run the fragile weather service. Predict whether the loop
    crashes or the error becomes data — and where in the transcript it surfaces.
+
+
+After the notebook, optional hard path: [the trivia-host loop](../labs/s01_loop.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

@@ -4,6 +4,19 @@ An honest split between **deliberate difficulty** (keep — it's the mechanism)
 and **accidental difficulty** (fix — it's just missing scaffolding). Then the
 pattern used in every session.
 
+## The model-layer boundary
+
+The model call is the easy part; the harness is the product. This path therefore
+teaches the engineering around the call rather than copying model-layer courses
+into a fifteenth session. The optional
+[six-week study route](lessons/study-plan.html) overlays authoritative external
+work from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional
+Anthropic API course, then defines the evidence to bank.
+
+The overlay supports two complementary learning emphases:
+harness/evals/inference-systems depth and model-layer fundamentals depth. It is
+not part of the 14-session core and contains no copied external-course materials.
+
 ## The deliberate difficulty, and what it buys
 
 A version of this material that hands you production harness code produces a
@@ -14,7 +27,7 @@ moves that force ownership:
 |---|---|---|
 | You type the real system yourself | Bureaucracy, slow | Generation effect + S13 auditability: what you typed, you can rebuild |
 | Toys, not tutorials that finish the job | "Why won't it just explain?" | Critique and prediction beat copy-paste; the notebook is a worked example you break |
-| No cumulative capstone repo in this tree | "Where is the product?" | S01–S12 teach mechanisms; S13/S14 apply them to a system *you* own |
+| No cumulative capstone repo **required** in this tree | "Where is the product?" | S01–S12 teach mechanisms; S13/S14 apply them to a system *you* own. An **optional** hard path accumulates one trivia-host spine — still a toy, not a product |
 | A number closes every measurement | Pressure | Evidence-over-claims, made mechanical |
 | Predict before you run | Extra bookkeeping | Prediction misses are where the learning is |
 
@@ -79,6 +92,8 @@ teaching* — never on avoidable confusion about mechanics.
 
 - **No paste-ready harness.** Toys come from different domains specifically so
   they can't be dropped into production. If one drifts too close, it gets
-  rewritten further away.
+  rewritten further away. The optional trivia-host spine is the same rule:
+  `draw_clue` / `score_answer` / `end_round` / `propose_round_spec`, never a
+  coding-agent workspace.
 - **No lowered evidence bar.** A notebook assertion is not a banked baseline.
 - **No silent SOTA rot.** Tables are dated; a row without a source is omitted.

@@ -7,8 +7,10 @@ Read this before doing anything in this repo. It assumes you know nothing about 
 A **self-contained course** on building, evaluating, and governing LLM agents.
 Entry point: `lessons/index.html`. Fourteen sessions (S01–S14), each a deep HTML
 lesson in `lessons/`; the twelve notebook sessions (S01–S12) pair it with a
-runnable stdlib-only toy notebook in `notebooks/`, while S13/S14 are optional,
-notebook-less protocols the learner runs on a system they already own.
+runnable stdlib-only toy notebook in `notebooks/`. An **optional hard path** in
+`labs/` grows one trivia-host spine (cassette replay or a live OpenAI-compatible
+endpoint). S13/S14 are optional, notebook-less protocols: easy path = a system
+the learner already owns; hard path = `labs/trivia_host/` if they built it.
 
 This repo contains **no product code and no test suite of a product** — it is
 educational material. Each lesson carries a dated state-of-the-art section with
@@ -30,6 +32,10 @@ production harness. This is the repo's core invariant:
 - Notebook numbers never substitute for a banked eval baseline on a system the
   learner owns. The path has its own notebook-local evidence habits
   (predict-first, in-notebook assertions).
+- Labs are the documented exception to "zero network": optional, replay-first,
+  keys never in git, `--live` never in CI. Tools stay in the trivia domain
+  (`propose_round_spec`, `draw_clue`, `score_answer`, `end_round`). A paste-ready
+  generic harness in `labs/` is still a defect.
 
 When writing or editing content here, preserve this rule. Do not produce
 solutions to someone else's production deliverable.
@@ -56,12 +62,12 @@ solutions to someone else's production deliverable.
 │   └── videos/SNN-*.mp4       — Gemini Notebook Video Overviews, one per lesson, plus
 │                                S00-course-overview.mp4; canonical name = lesson slug
 │                                (Git LFS archive; build.py points ▶ at the GCS replica)
-└── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
+├── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
+└── labs/                      — optional hard path (cassettes, trivia_host, protocols)
 ```
 
 Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
-`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, `scripts/publish_videos.sh`, and
-`review/` (the adversarial-review workspace). `.lfsconfig` skips fetching the
+`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `scripts/publish_videos.sh`. `.lfsconfig` skips fetching the
 mp4s on clone (`git lfs pull` to get the archive). `uv.lock`, the generated
 `lessons/*.html`, and the vendored mermaid build in `lessons/vendor/` are checked
 in so lessons and diagrams read offline; preview videos stream.
@@ -80,10 +86,12 @@ in so lessons and diagrams read offline; preview videos stream.
   the HTML regenerates cleanly, relative hrefs and script/img src resolve, and
   CI GETs unique http refs in the generated lessons (404 fails; 401/403/429 warn).
   SOTA table rows must carry a source URL (`lessons/check_sota_urls.py`).
-  The contract runs on Python 3.11 and 3.12.
+  Labs: `uv run python labs/run.py --all --replay` (reference + committed
+  cassettes; never `--live`). The contract runs on Python 3.11 and 3.12.
 - **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
-- **Notebooks run on Python 3.11+, standard library only** — `itertools`, `json`,
-  `random`, `statistics`. Zero network, zero API keys, zero cost. This is a hard
+- **Notebooks run on Python 3.11+, standard library only** (e.g., `itertools`,
+  `json`, `random`, `statistics`, `pathlib`, `tempfile`). Zero network, zero API
+  keys, zero cost. This is a hard
   constraint (see COURSE-MAP.md's session contract, rule 2), not an accident:
   every "model" is a plain Python function returning API-shaped dicts. Nothing in
   `notebooks/` may import anything from `.venv/` — the venv only supplies tooling.
@@ -97,7 +105,8 @@ Follow these when editing existing material or writing a new session.
 Every lesson follows this fixed structure (S01/S02 are the exemplars):
 
 1. H1 `# SNN-slug — Title` + bold header block (**What this teaches:** / **Time:** /
-   **Prerequisites:** / **Hands-on:** linking the notebook; S13/S14 have none).
+   **Prerequisites:** / **Hands-on (easy):** notebook; **Hands-on (hard, optional):**
+   `labs/sNN_*.md`; S13/S14 have no notebook — hard path retargets `trivia_host/`).
 2. **The theory in depth** — 3–5 subsections, ≥1 mermaid diagram.
 3. **Exercises (in the notebook, predict first)** — matching the notebook 1:1
    (S13/S14: **The protocol** instead — a concrete runbook).
@@ -158,3 +167,5 @@ repository.
   a loop missing the append-verbatim line) inside labeled experiments. That is
   teaching material, not a defect — do not "fix" the intentionally broken variants.
 - See `SECURITY.md` for how to report a real vulnerability in the repo itself.
+  Labs may use `OPENAI_API_KEY` in the environment for `--live`; never print or
+  commit it. `--live` is not a CI job.

@@ -39,6 +39,10 @@ jobs:
         run: uv run python lessons/check_sota_urls.py
       - name: Check relative links
         run: uv run python lessons/check_links.py
+      - name: Test lab contracts
+        run: uv run python -m unittest labs/test_contracts.py
+      - name: Replay labs against committed cassettes
+        run: uv run python labs/run.py --all --replay
       - name: Check http links
         if: matrix.python-version == '3.11'
         run: uv run python lessons/check_links.py --http

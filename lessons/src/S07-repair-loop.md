@@ -6,7 +6,8 @@ loop is capped, and the run always ends with an honest stop reason. Same-context
 retry is not repair; it is resampling.
 **Time:** ~60 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (deterministic checks).
-**Hands-on:** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s07_repair.md`](../labs/s07_repair.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S07-repair-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -144,6 +145,9 @@ running the solution cell.
    Watch the loop orbit its own failures.
 5. The contradictory spec: predict the stop reason. Confirm nothing ships. Then
    answer: which failure classes must never enter the loop at all?
+
+
+After the notebook, optional hard path: [bounded regeneration](../labs/s07_repair.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

@@ -6,7 +6,8 @@ product down, and record/replay cassettes that reproduce a run offline,
 content-identical, with zero model calls — plus what replay can never prove.
 **Time:** ~90 min with the notebook.
 **Prerequisites:** S01 (the loop); S02 (scripted users, fixtures) recommended.
-**Hands-on:** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s08_replay.md`](../labs/s08_replay.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S08-observability-replay.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -166,6 +167,9 @@ solution.
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove
    content-identity end to end.
+
+
+After the notebook, optional hard path: [spans + cassette replay](../labs/s08_replay.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

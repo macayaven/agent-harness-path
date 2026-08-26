@@ -4,7 +4,8 @@
 scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
 is a product argument rather than a courtesy number.
 **Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop).
-**Hands-on:** [`notebooks/s02_scripted_user_eval_toy.ipynb`](../notebooks/s02_scripted_user_eval_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s02_scripted_user_eval_toy.ipynb`](../notebooks/s02_scripted_user_eval_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s02_evals.md`](../labs/s02_evals.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S02-golden-evals.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -131,6 +132,9 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
    usefulness — expected facts in the reply, refusal *selectivity* (in-scope turns
    still answered), task completion. What genuinely escapes the deterministic tier
    is open-ended quality: tone, persona.
+
+
+After the notebook, optional hard path: [naïve vs engine on the trivia host](../labs/s02_evals.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

@@ -6,7 +6,8 @@ outcome, route tables as policy-as-data justified by a measured number, and a
 privacy boundary that *refuses to run* when misconfigured.
 **Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (defensible comparisons — the routing argument *is* a delta table).
-**Hands-on:** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s11_budgets.md`](../labs/s11_budgets.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S11-budgets-routing.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -157,6 +158,9 @@ variance the toy deliberately does not have.
    1000 ms budget. Predict which configs fit before running; name the phase
    that dominates the loser; and what the *forbidden* fix (frontier cloud for
    content) would have cost in latency.
+
+
+After the notebook, optional hard path: [budgets and a hard route refusal](../labs/s11_budgets.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

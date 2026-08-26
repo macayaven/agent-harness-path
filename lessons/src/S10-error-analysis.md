@@ -7,7 +7,8 @@ task. The eval suite grows from observed failures, not from imagination.
 **Time:** ~90 min with the notebook.
 **Prerequisites:** S02 (eval suites as measurement instruments); S08 (you need
 traces you can actually pull).
-**Hands-on:** [`notebooks/s10_error_analysis_toy.ipynb`](../notebooks/s10_error_analysis_toy.ipynb)
+**Hands-on (easy):** [`notebooks/s10_error_analysis_toy.ipynb`](../notebooks/s10_error_analysis_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s10_errors.md`](../labs/s10_errors.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S10-error-analysis.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
@@ -145,6 +146,9 @@ experiment — including your guessed categories, which the data will grade.
    check plus one isolating eval task. Predict, then verify: the old engine
    fails the task, the patched engine passes it, the bare fixture fails the
    check.
+
+
+After the notebook, optional hard path: [taxonomy and +3 tasks](../labs/s10_errors.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 
