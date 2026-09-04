@@ -72,6 +72,22 @@ uv sync            # creates .venv/ (Python 3.11+, pinned by uv.lock)
 uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter frontend
 ```
 
+## Recommended optional CourseWeave experience
+
+For a persistent phase-aware guide alongside JupyterLab, the recommended
+optional route is CourseWeave:
+
+```bash
+./scripts/courseweave
+```
+
+The launcher uses an installed `courseweave` executable when available, or the
+exact sibling checkout at `../courseweave`. It opens the learner workspace; it
+does not run commands listed in `courseweave.json`. CourseWeave is not required
+to complete the course. The original `uv run jupyter lab` route above remains
+the zero-network, zero-key core path, apart from explicitly opening a public
+video preview.
+
 ### Two paths
 
 | | Easy (default) | Hard (optional) |

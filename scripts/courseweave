@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Optional CourseWeave learner launcher. Manifest terminal commands remain
+# display/copy-only and are never read or executed by this adapter script.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+COURSE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+SIBLING_ROOT="$(cd "$COURSE_ROOT/.." && pwd -P)/courseweave"
+SELF="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
+
+INSTALLED="$(command -v courseweave 2>/dev/null || true)"
+if [[ -n "$INSTALLED" && ! "$INSTALLED" -ef "$SELF" ]]; then
+  exec "$INSTALLED" launch --course-root "$COURSE_ROOT" "$@"
+fi
+
+if [[ -f "$SIBLING_ROOT/pyproject.toml" && -f "$SIBLING_ROOT/src/courseweave/cli.py" ]]; then
+  if ! command -v uv >/dev/null 2>&1; then
+    echo "courseweave launcher: uv is required for sibling checkout $SIBLING_ROOT" >&2
+    exit 127
+  fi
+  exec uv run --project "$SIBLING_ROOT" courseweave launch \
+    --course-root "$COURSE_ROOT" "$@"
+fi
+
+echo "courseweave launcher: install CourseWeave or place its checkout at $SIBLING_ROOT" >&2
+exit 127
