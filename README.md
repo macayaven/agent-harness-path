@@ -74,8 +74,9 @@ uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter fronte
 
 ## Recommended optional CourseWeave experience
 
-For a persistent phase-aware guide alongside JupyterLab, the recommended
-optional route is CourseWeave:
+For a persistent phase-aware guide alongside JupyterLab, use the verified
+[CourseWeave v0.1.0 release](https://github.com/macayaven/courseweave/releases/tag/v0.1.0)
+with Python 3.11 and JupyterLab 4.6.3, then launch the course:
 
 ```bash
 ./scripts/courseweave
