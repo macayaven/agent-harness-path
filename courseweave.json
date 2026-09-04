@@ -1,0 +1,729 @@
+{
+  "schema_version": 1,
+  "id": "agent-harness-path",
+  "title": "The Agent Harness Path",
+  "description": "A self-contained course on building, evaluating, and governing LLM agents.",
+  "entry_module_id": "s01",
+  "policies": {
+    "content_sharing": "explicit_only",
+    "durable_mutation": "proposal_or_direct_student_action",
+    "terminal_execution": "student_only",
+    "conversation_memory": "session_only",
+    "max_shared_chars": 8192,
+    "workspace_write_globs": []
+  },
+  "modules": [
+    {
+      "id": "s01",
+      "title": "The agent loop",
+      "description": "Make the stateless model/tool loop visible, then break its protocol invariants safely.",
+      "phases": [
+        {
+          "id": "read",
+          "title": "Read the agent-loop lesson",
+          "kind": "read",
+          "teacher_mode": "reading_companion",
+          "surfaces": [
+            {
+              "id": "lesson",
+              "type": "html",
+              "role": "primary",
+              "path": "lessons/S01-agent-loop.html"
+            }
+          ],
+          "completion": {
+            "type": "manual"
+          },
+          "capabilities": {
+            "chat": true,
+            "hint_level": "gentle",
+            "share_selection": true,
+            "share_cell": false,
+            "share_output": false,
+            "create_profile_proposal": false,
+            "create_course_proposal": false,
+            "create_workspace_proposal": false
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the agent-loop overview",
+          "kind": "watch",
+          "teacher_mode": "reading_companion",
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "role": "reference",
+              "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S01-agent-loop.mp4"
+            }
+          ],
+          "completion": {
+            "type": "manual"
+          },
+          "capabilities": {
+            "chat": true,
+            "hint_level": "gentle",
+            "share_selection": false,
+            "share_cell": false,
+            "share_output": false,
+            "create_profile_proposal": false,
+            "create_course_proposal": false,
+            "create_workspace_proposal": false
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict the loop failures",
+          "kind": "predict",
+          "teacher_mode": "socratic_guide",
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "role": "exercise",
+              "path": "notebooks/s01_agent_loop_toy.ipynb",
+              "match": {
+                "cell_ids": [
+                  "69a77fc3",
+                  "fd87655a",
+                  "15f7e677"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "type": "prediction_recorded",
+            "record_id": "s01-prediction"
+          },
+          "capabilities": {
+            "chat": true,
+            "hint_level": "none",
+            "share_selection": false,
+            "share_cell": true,
+            "share_output": false,
+            "create_profile_proposal": false,
+            "create_course_proposal": false,
+            "create_workspace_proposal": false
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Run and break the toy loop",
+          "kind": "experiment",
+          "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "role": "exercise",
+              "path": "notebooks/s01_agent_loop_toy.ipynb",
+              "match": {
+                "cell_ids": [
+                  "ec494b3e",
+                  "5e6e3097",
+                  "fbcd8306",
+                  "12a87824"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "type": "manual"
+          },
+          "capabilities": {
+            "chat": true,
+            "hint_level": "graduated",
+            "share_selection": false,
+            "share_cell": true,
+            "share_output": true,
+            "create_profile_proposal": false,
+            "create_course_proposal": false,
+            "create_workspace_proposal": false
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Build the optional trivia-host loop",
+          "kind": "lab",
+          "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "role": "primary",
+              "path": "labs/s01_loop.md"
+            },
+            {
+              "id": "tools-source",
+              "type": "source",
+              "role": "exercise",
+              "path": "labs/trivia_host/tools.py"
+            },
+            {
+              "id": "loop-source",
+              "type": "source",
+              "role": "exercise",
+              "path": "labs/trivia_host/loop.py"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "role": "exercise",
+              "path": "labs/trivia_host/engine.py"
+            },
+            {
+              "id": "client-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/client.py"
+            },
+            {
+              "id": "deck-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/deck.py"
+            },
+            {
+              "id": "schemas-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/schemas.py"
+            },
+            {
+              "id": "house-rules-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/house_rules.py"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "role": "exercise",
+              "label": "Copy the offline S01 replay command",
+              "argv": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s01",
+                "--replay"
+              ],
+              "cwd": "."
+            }
+          ],
+          "completion": {
+            "type": "receipt_recorded",
+            "record_id": "s01-lab-receipt"
+          },
+          "capabilities": {
+            "chat": true,
+            "hint_level": "graduated",
+            "share_selection": true,
+            "share_cell": false,
+            "share_output": true,
+            "create_profile_proposal": false,
+            "create_course_proposal": false,
+            "create_workspace_proposal": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "s02",
+      "title": "Golden sets and baselines",
+      "description": "Turn a scripted-user suite into a measurement instrument with a naive baseline.",
+      "phases": [
+        {
+          "id": "read",
+          "title": "Read the golden-evals lesson",
+          "kind": "read",
+          "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S02-golden-evals.html"}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch",
+          "title": "Watch the golden-evals overview",
+          "kind": "watch",
+          "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S02-golden-evals.mp4"}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict",
+          "title": "Predict the baseline deltas",
+          "kind": "predict",
+          "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s02_scripted_user_eval_toy.ipynb", "match": {"cell_ids": ["9bdffa54", "d3af51d7"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s02-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment",
+          "title": "Measure naive and governed engines",
+          "kind": "experiment",
+          "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s02_scripted_user_eval_toy.ipynb", "match": {"cell_ids": ["3c77d029", "a2aa48cf"]}}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab",
+          "title": "Bank the optional trivia-host baseline",
+          "kind": "lab",
+          "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s02_evals.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "tasks-source", "type": "source", "role": "reference", "path": "labs/evals/tasks.py"},
+            {"id": "checkers-source", "type": "source", "role": "reference", "path": "labs/evals/checkers.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S02 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s02", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s02-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s03",
+      "title": "Context engineering",
+      "description": "Observe governance decay across compaction and preserve rules at the right boundary.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the context-engineering lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S03-context-engineering.html"}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the context-engineering overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S03-context-engineering.mp4"}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict what survives compaction", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s03_context_engineering_toy.ipynb", "match": {"cell_ids": ["a8d55878", "85285862", "e094f110", "aaf16a92", "94033064"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s03-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Compare context policies", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s03_context_engineering_toy.ipynb", "match": {"cell_ids": ["dcf56abf", "93ea5794", "90776c2a", "07bceb19", "09e960ee"]}}],
+          "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Pin the optional trivia-host rules", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s03_context.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "rules-source", "type": "source", "role": "reference", "path": "labs/house_rules.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S03 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s03", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s03-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s04",
+      "title": "Structured generation",
+      "description": "Treat the schema as an executable contract and retry only with bounded evidence.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the structured-generation lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S04-structured-generation.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the structured-generation overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict schema and retry outcomes", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s04_structured_generation_toy.ipynb", "match": {"cell_ids": ["e1a23bb2", "6f167291", "7da61be9", "1a4099fe"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s04-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Validate, retry, and attack the schema", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s04_structured_generation_toy.ipynb", "match": {"cell_ids": ["38e5ca91", "d8a80401", "09222764", "83a455b4"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Constrain the optional round spec", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s04_schema.md"},
+            {"id": "tools-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/tools.py"},
+            {"id": "schemas-source", "type": "source", "role": "reference", "path": "labs/schemas.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S04 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s04", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s04-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s05",
+      "title": "Consent gates",
+      "description": "Make approval constrain execution across approve, edit, and reject paths.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the consent-gate lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S05-consent-gate.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the consent-gate overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict each consent outcome", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s05_consent_gate_toy.ipynb", "match": {"cell_ids": ["65dad055", "131facd6", "e2055409", "360ae6a9", "4c3086d8"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s05-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Exercise approve, edit, and reject", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s05_consent_gate_toy.ipynb", "match": {"cell_ids": ["25cf8dc2", "76836a57", "be1954da", "63b1cfda", "328db237"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Fence the optional trivia-host execution", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s05_consent.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "schemas-source", "type": "source", "role": "reference", "path": "labs/schemas.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S05 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s05", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s05-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s06",
+      "title": "Layered detection",
+      "description": "Combine a deterministic floor with a measured classifier and policy-as-data ordering.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the layered-detection lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S06-layered-detection.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the layered-detection overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict detection and false triggers", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s06_layered_detection_toy.ipynb", "match": {"cell_ids": ["e6e094bc", "db8764ff", "6fd1e028", "17fc4b40", "eb3312f1"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s06-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Measure the layered policy", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s06_layered_detection_toy.ipynb", "match": {"cell_ids": ["ea33ec95", "e01f063b", "6f1086f9", "b13582e1", "5cfba0f0"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Layer the optional trivia policy", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s06_policy.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "tools-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/tools.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S06 reference replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s06", "--replay", "--impl", "reference"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s06-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s07",
+      "title": "Bounded repair",
+      "description": "Regenerate from a curated failure view with an honest cap and stop reason.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the repair-loop lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S07-repair-loop.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the repair-loop overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S07-repair-loop.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict each bounded repair", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s07_repair_loop_toy.ipynb", "match": {"cell_ids": ["0dfeb0fb", "17144688", "860d1ba8", "87ade9f5", "e78b53c8"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s07-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Run the repair repertoire", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s07_repair_loop_toy.ipynb", "match": {"cell_ids": ["51a7a2df", "ac7c3f22", "378ed1dc", "e87d2e76", "3333d37f"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Bound the optional trivia-host repair", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s07_repair.md"},
+            {"id": "loop-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/loop.py"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S07 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s07", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s07-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s08",
+      "title": "Observability and replay",
+      "description": "Trace enough to explain a run and replay it deterministically offline.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the observability-and-replay lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S08-observability-replay.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the observability-and-replay overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict trace and replay failures", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s08_observability_replay_toy.ipynb", "match": {"cell_ids": ["a0bcdfb0", "5e7deaae", "a46de06c", "c7bbf262", "4d8877aa"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s08-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Trace and replay the toy host", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s08_observability_replay_toy.ipynb", "match": {"cell_ids": ["36cb568f", "84af535b", "861de2de", "41138c1d", "6ebe4cbf", "c31c250b"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Replay the optional trivia host", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s08_replay.md"},
+            {"id": "client-source", "type": "source", "role": "reference", "path": "labs/client.py"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S08 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s08", "--replay"], "cwd": "."},
+            {"id": "s01-replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S01 cassette replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s01", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s08-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s09",
+      "title": "Evidence reports",
+      "description": "Write an honest debrief a depleted reviewer can verify quickly.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the evidence-reports lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S09-evidence-reports.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the evidence-reports overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S09-evidence-reports.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict which reports survive review", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s09_evidence_report_toy.ipynb", "match": {"cell_ids": ["9be8b060", "a555e356", "6216d055", "c082f091", "f3687a78"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s09-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Generate and validate honest reports", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s09_evidence_report_toy.ipynb", "match": {"cell_ids": ["c676a909", "fdc6245d", "f7d9581f", "b399e7d0", "2a5279ba"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Debrief the optional trivia host", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s09_debrief.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S09 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s09", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s09-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "Error analysis",
+      "description": "Turn raw failure traces into a taxonomy and new regression tasks.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the error-analysis lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S10-error-analysis.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the error-analysis overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict the failure taxonomy", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s10_error_analysis_toy.ipynb", "match": {"cell_ids": ["e29ddac3", "de444d72", "1ed050d0", "06f30ddd"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s10-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Code and convert the taxonomy", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s10_error_analysis_toy.ipynb", "match": {"cell_ids": ["69244ac3", "c3ba0e2b", "03d0a7b8"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Grow the optional regression suite", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s10_errors.md"},
+            {"id": "tasks-source", "type": "source", "role": "exercise", "path": "labs/evals/tasks.py"},
+            {"id": "checkers-source", "type": "source", "role": "exercise", "path": "labs/evals/checkers.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S10 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s10", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s10-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "Budgets and routing",
+      "description": "Make cost and privacy boundaries explicit policy rather than hopeful defaults.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the budgets-and-routing lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S11-budgets-routing.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the budgets-and-routing overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict budget and routing outcomes", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s11_budgets_routing_toy.ipynb", "match": {"cell_ids": ["2c72bb15", "c05d5679", "8d2df87f", "3b20842f", "bb698748"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s11-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Measure routes and refusals", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s11_budgets_routing_toy.ipynb", "match": {"cell_ids": ["e2126f69", "64044c9e", "3ac65de6", "17c6235c", "6d57264e"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Bound the optional trivia-host route", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s11_budgets.md"},
+            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
+            {"id": "client-source", "type": "source", "role": "reference", "path": "labs/client.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S11 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s11", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s11-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "Judge calibration",
+      "description": "Measure detection and false positives before trusting a judged tier.",
+      "phases": [
+        {
+          "id": "read", "title": "Read the judge-calibration lesson", "kind": "read", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S12-judge-calibration.html"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "watch", "title": "Watch the judge-calibration overview", "kind": "watch", "teacher_mode": "reading_companion",
+          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4"}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "predict", "title": "Predict critic and judge disagreement", "kind": "predict", "teacher_mode": "socratic_guide",
+          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s12_judge_calibration_toy.ipynb", "match": {"cell_ids": ["b894417f", "59b0dc59", "acdca975", "a6cbf006", "35f8b325", "0f450635"]}}],
+          "completion": {"type": "prediction_recorded", "record_id": "s12-prediction"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "experiment", "title": "Calibrate critics and judges", "kind": "experiment", "teacher_mode": "debugging_coach",
+          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s12_judge_calibration_toy.ipynb", "match": {"cell_ids": ["64fcf43f", "32fe1e01", "a2358ced", "323068e0", "9da60997"]}}], "completion": {"type": "manual"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        },
+        {
+          "id": "lab", "title": "Calibrate the optional trivia critic", "kind": "lab", "teacher_mode": "debugging_coach",
+          "surfaces": [
+            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s12_judge.md"},
+            {"id": "checkers-source", "type": "source", "role": "exercise", "path": "labs/evals/checkers.py"},
+            {"id": "tasks-source", "type": "source", "role": "reference", "path": "labs/evals/tasks.py"},
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S12 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s12", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s12-lab-receipt"},
+          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "Closed-book rebuild audit",
+      "description": "Observe a rebuild from memory without scaffolding, mutation, or substantive help.",
+      "phases": [
+        {
+          "id": "audit",
+          "title": "Run the closed-book audit",
+          "kind": "audit",
+          "teacher_mode": "observer",
+          "surfaces": [
+            {"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S13-rebuild-from-memory.html"},
+            {"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4"},
+            {"id": "tools-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/tools.py"},
+            {"id": "loop-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/loop.py"},
+            {"id": "engine-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/engine.py"}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s13-audit-receipt"},
+          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "Ship and pilot",
+      "description": "Run named verification, bank receipts, and assemble a public artifact without inflating claims.",
+      "phases": [
+        {
+          "id": "ship",
+          "title": "Verify, ship, and pilot",
+          "kind": "ship",
+          "teacher_mode": "reviewer",
+          "surfaces": [
+            {"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S14-ship-and-pilot.html"},
+            {"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4"},
+            {"id": "runner-source", "type": "source", "role": "evidence", "path": "labs/run.py"},
+            {"id": "contracts-source", "type": "source", "role": "evidence", "path": "labs/test_contracts.py"},
+            {"id": "replay-command", "type": "terminal", "role": "evidence", "label": "Copy the offline full-suite replay command", "argv": ["uv", "run", "python", "labs/run.py", "--all", "--replay"], "cwd": "."}
+          ],
+          "completion": {"type": "receipt_recorded", "record_id": "s14-ship-receipt"},
+          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+        }
+      ]
+    }
+  ]
+}
