@@ -8,7 +8,7 @@ COURSE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 SIBLING_ROOT="$(cd "$COURSE_ROOT/.." && pwd -P)/courseweave"
 SELF="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 
-INSTALLED="$(command -v courseweave 2>/dev/null || true)"
+INSTALLED="$(type -P courseweave 2>/dev/null || true)"
 if [[ -n "$INSTALLED" && ! "$INSTALLED" -ef "$SELF" ]]; then
   exec "$INSTALLED" launch --course-root "$COURSE_ROOT" "$@"
 fi

@@ -173,6 +173,30 @@
               "path": "labs/trivia_host/engine.py"
             },
             {
+              "id": "client-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/client.py"
+            },
+            {
+              "id": "deck-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/deck.py"
+            },
+            {
+              "id": "schemas-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/schemas.py"
+            },
+            {
+              "id": "house-rules-source",
+              "type": "source",
+              "role": "reference",
+              "path": "labs/house_rules.py"
+            },
+            {
               "id": "replay-command",
               "type": "terminal",
               "role": "exercise",
@@ -416,7 +440,7 @@
             {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s06_policy.md"},
             {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
             {"id": "tools-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/tools.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S06 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s06", "--replay"], "cwd": "."}
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S06 reference replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s06", "--replay", "--impl", "reference"], "cwd": "."}
           ],
           "completion": {"type": "receipt_recorded", "record_id": "s06-lab-receipt"},
           "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
@@ -494,7 +518,8 @@
             {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s08_replay.md"},
             {"id": "client-source", "type": "source", "role": "reference", "path": "labs/client.py"},
             {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S08 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s08", "--replay"], "cwd": "."}
+            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S08 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s08", "--replay"], "cwd": "."},
+            {"id": "s01-replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S01 cassette replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s01", "--replay"], "cwd": "."}
           ],
           "completion": {"type": "receipt_recorded", "record_id": "s08-lab-receipt"},
           "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}

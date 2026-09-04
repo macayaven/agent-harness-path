@@ -61,7 +61,15 @@ EXPECTED_EXPERIMENT_CELL_IDS = {
 }
 
 EXPECTED_SOURCE_PATHS = {
-    "s01": {"labs/trivia_host/tools.py", "labs/trivia_host/loop.py", "labs/trivia_host/engine.py"},
+    "s01": {
+        "labs/client.py",
+        "labs/deck.py",
+        "labs/house_rules.py",
+        "labs/schemas.py",
+        "labs/trivia_host/tools.py",
+        "labs/trivia_host/loop.py",
+        "labs/trivia_host/engine.py",
+    },
     "s02": {"labs/trivia_host/engine.py", "labs/evals/tasks.py", "labs/evals/checkers.py"},
     "s03": {"labs/trivia_host/engine.py", "labs/house_rules.py"},
     "s04": {"labs/trivia_host/tools.py", "labs/schemas.py"},
@@ -365,7 +373,7 @@ class CourseWeaveManifestTests(unittest.TestCase):
             for surface in all_surfaces(load_manifest_data())
             if surface["type"] == "terminal"
         ]
-        self.assertEqual(len(terminals), 13)
+        self.assertEqual(len(terminals), 14)
         for terminal in terminals:
             argv = terminal["argv"]
             self.assertIsInstance(argv, list)
@@ -374,6 +382,62 @@ class CourseWeaveManifestTests(unittest.TestCase):
             self.assertNotIn("--live", argv)
             self.assertEqual(terminal["cwd"], ".")
             self.assertIn("Copy", terminal["label"])
+
+    def test_s06_terminal_argv_selects_the_reference_implementation(self) -> None:
+        """Catch S06 verification accidentally exercising unfinished learner code."""
+
+        self.assertEqual(
+            self._terminal_argv("s06"),
+            {
+                "replay-command": [
+                    "uv",
+                    "run",
+                    "python",
+                    "labs/run.py",
+                    "--session",
+                    "s06",
+                    "--replay",
+                    "--impl",
+                    "reference",
+                ]
+            },
+        )
+
+    def test_s08_terminal_argv_replays_both_protocol_commands(self) -> None:
+        """Catch omission of the second replay against the shared S01 cassette."""
+
+        self.assertEqual(
+            self._terminal_argv("s08"),
+            {
+                "replay-command": [
+                    "uv",
+                    "run",
+                    "python",
+                    "labs/run.py",
+                    "--session",
+                    "s08",
+                    "--replay",
+                ],
+                "s01-replay-command": [
+                    "uv",
+                    "run",
+                    "python",
+                    "labs/run.py",
+                    "--session",
+                    "s01",
+                    "--replay",
+                ],
+            },
+        )
+
+    def _terminal_argv(self, module_id: str) -> dict[str, list[str]]:
+        modules = {module["id"]: module for module in load_manifest_data()["modules"]}
+        return {
+            surface["id"]: surface["argv"]
+            for phase in modules[module_id]["phases"]
+            for surface in phase["surfaces"]
+            if surface["type"] == "terminal"
+        }
 
     def test_platform_loader_and_resolver_accept_every_phase(self) -> None:
         """Catch drift from the real CourseWeave schema, jail, and resolver contract."""
@@ -519,6 +583,60 @@ class CourseWeaveLauncherTests(unittest.TestCase):
                     str(course_root.resolve()),
                     "--port",
                     "9002",
+                ],
+            )
+
+    def test_exported_courseweave_function_does_not_mask_sibling_fallback(self) -> None:
+        """Catch shell function tokens being treated as executable file paths."""
+
+        self.assertTrue(LAUNCHER_PATH.is_file())
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            course_root = temp / "course"
+            launcher = course_root / "scripts/courseweave"
+            launcher.parent.mkdir(parents=True)
+            shutil.copy2(LAUNCHER_PATH, launcher)
+            sibling = course_root.parent / "courseweave"
+            (sibling / "src/courseweave").mkdir(parents=True)
+            (sibling / "pyproject.toml").write_text(
+                '[project]\nname = "courseweave"\n', encoding="utf-8"
+            )
+            (sibling / "src/courseweave/cli.py").write_text("", encoding="utf-8")
+            capture = temp / "uv-args.txt"
+            function_marker = temp / "function-must-not-run"
+            self._write_executable(
+                temp / "bin/uv", 'printf "%s\\n" "$@" > "$CAPTURE_PATH"'
+            )
+            environment = os.environ.copy()
+            environment["PATH"] = f"{temp / 'bin'}:/usr/bin:/bin"
+            environment["CAPTURE_PATH"] = str(capture)
+            environment["FUNCTION_MARKER"] = str(function_marker)
+            shell_program = """
+courseweave() { printf 'called' > "$FUNCTION_MARKER"; }
+export -f courseweave
+exec "$1" --port 9003
+"""
+            result = subprocess.run(
+                ["/bin/bash", "-c", shell_program, "launcher-test", str(launcher)],
+                text=True,
+                capture_output=True,
+                env=environment,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(function_marker.exists())
+            self.assertEqual(
+                capture.read_text(encoding="utf-8").splitlines(),
+                [
+                    "run",
+                    "--project",
+                    str(sibling.resolve()),
+                    "courseweave",
+                    "launch",
+                    "--course-root",
+                    str(course_root.resolve()),
+                    "--port",
+                    "9003",
                 ],
             )
 
