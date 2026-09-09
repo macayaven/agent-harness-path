@@ -1,0 +1,59 @@
+{
+  "environment": {
+    "playwright": "1.58.0",
+    "system": "Darwin",
+    "machine": "arm64",
+    "font": "Arial, sans-serif; host font resolution",
+    "chromium": "145.0.7632.6"
+  },
+  "diagrams": {
+    "S01-agent-loop": {
+      "inputs": {
+        "source_sha256": "f93eed1ca13f5a1646fc817786c523a87d80422bd5d627441550b58c9d6160b4",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "a132425360d6ccd3302d01275d4cbadb11fcd9786eb8e3209ea53b1d3bb41b33",
+        "config_sha256": "019f3009390c1b7aa6430bc3c010d015ffaafdd981e2aa42f352d78f88af8fa2",
+        "lock_sha256": "b69e5eb84d79e1d1ade9602691311f774e76f4fcdbf9f77f3ec8948f32c27c53"
+      },
+      "svg_sha256": "46145a46d46fd0afa3b5aa8d24a84f1665fd17189037a0a9518afc2eef93add3"
+    },
+    "S02-golden-evals": {
+      "inputs": {
+        "source_sha256": "409e6f482b3c44cd501188169f83724b4c7d00dd77b58fe808c20ed319b7c5e0",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "a132425360d6ccd3302d01275d4cbadb11fcd9786eb8e3209ea53b1d3bb41b33",
+        "config_sha256": "019f3009390c1b7aa6430bc3c010d015ffaafdd981e2aa42f352d78f88af8fa2",
+        "lock_sha256": "b69e5eb84d79e1d1ade9602691311f774e76f4fcdbf9f77f3ec8948f32c27c53"
+      },
+      "svg_sha256": "11d2ebc31564f3a171804543e5304d7c6e423d191cb6476bc9e2591c24be4d89"
+    }
+  }
+}

@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S10-error-analysis.html">&larr; Prev: S10-error-analysis — Failures into taxonomy, taxonomy into evals</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S12-judge-calibration.html">Next: S12-judge-calibration — Measuring the measurers &rarr;</a></span></nav>
-<h1>S11-budgets-routing — Budgets, routing, and the privacy boundary</h1>
+<h1 id="s11-budgets-routing-budgets-routing-and-the-privacy-boundary">S11-budgets-routing — Budgets, routing, and the privacy boundary</h1>
 <p><strong>What this teaches:</strong> a run's cost, latency, and data flow are harness-enforced
 invariants, not operational afterthoughts — budgets that stop runs as a first-class
 outcome, route tables as policy-as-data justified by a measured number, and a
@@ -111,8 +113,8 @@ privacy boundary that <em>refuses to run</em> when misconfigured.
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s11_budgets.md"><code>labs/s11_budgets.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>A runaway agent is a billing bug</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="a-runaway-agent-is-a-billing-bug">A runaway agent is a billing bug</h3>
 <p>S01 gave the loop a <code>max_turns</code> cap because a model that can't stop will run
 forever. The same argument applies to money and time, except worse: <code>max_turns</code>
 bounds iterations but says nothing about what each iteration costs. A loop of
@@ -140,7 +142,7 @@ prices its own call, and a call that would cross the budget is never dispatched
   that line isn't being generously thorough — it's defective. A run that costs
   more than the task is worth has failed even when the transcript looks great.</li>
 </ul>
-<h3>Routing is policy-as-data, justified by a number</h3>
+<h3 id="routing-is-policy-as-data-justified-by-a-number">Routing is policy-as-data, justified by a number</h3>
 <p>Different phases of one pipeline differ wildly in difficulty. Classifying a
 transaction is not writing prose about it; rendering a table is not judging a
 summary. Route everything to the strongest model and you pay frontier rates for
@@ -171,7 +173,7 @@ half is what justifies it:</p>
     C --&gt; M
     M --&gt;|&quot;would breach&quot;| B[stop_reason=budget_exceeded]
 </pre>
-<h3>The privacy boundary is a routing invariant, enforced as refusal</h3>
+<h3 id="the-privacy-boundary-is-a-routing-invariant-enforced-as-refusal">The privacy boundary is a routing invariant, enforced as refusal</h3>
 <p>Routing has a second axis besides cost and quality: <strong>where the data goes</strong>.
 Give every phase a data classification (raw <em>content</em> vs derived <em>metadata</em>) and
 every route a location (<em>local</em> vs <em>cloud</em>). The invariant: content-classified
@@ -192,7 +194,7 @@ classification, not vendor virtue</strong>. Category <em>totals</em> may lawfull
 route; transaction <em>descriptions</em> may not take any cloud route — even the cheap,
 fast, tempting one. And content on a local route can still leak through your own
 logs. "Local = safe, cloud = unsafe" is a starting heuristic, not the policy.</p>
-<h3>Latency is a budget with a human attached</h3>
+<h3 id="latency-is-a-budget-with-a-human-attached">Latency is a budget with a human attached</h3>
 <p>Cost budgets answer to finance; latency budgets answer to the nervous system.
 Human conversational turn-taking clusters around ~250 ms response offsets across
 ten languages (Stivers et al.,
@@ -217,7 +219,7 @@ functions of the fixtures, so three months yield a <strong>three-fixture median<
 stand-in for p50, not a measured one. A real latency claim needs repeated
 sampled trials (timed runs, many of them); the tails users remember live in
 variance the toy deliberately does not have.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <ol>
 <li><strong>The meandering run.</strong> A summarize phase with no convergence criterion on
    all-large routes, <code>max_passes=12</code>. Predict: with no budget, what <code>stop_reason</code>
@@ -241,7 +243,7 @@ variance the toy deliberately does not have.</p>
    content) would have cost in latency.</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s11_budgets.md">budgets and a hard route refusal</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -288,7 +290,7 @@ variance the toy deliberately does not have.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>LMSYS, <a href="https://lmsys.org/blog/2024-07-01-routellm/">RouteLLM blog</a>
   (Jul 2024).</strong> Extract this: the savings-at-fixed-quality table, and the fact
@@ -307,7 +309,7 @@ variance the toy deliberately does not have.</p>
   this: the ~250 ms median response offset and its cross-linguistic stability.
   That is the number your voice latency budget ultimately answers to.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"Budgets are a finance concern."</strong> The invoice arrives a month after the
   bug. The meter belongs in the loop, next to <code>max_turns</code>, denominated in the
@@ -325,7 +327,7 @@ variance the toy deliberately does not have.</p>
   not the average. A config whose p50 fits but whose p95 doubles the budget will
   be remembered as sluggish: budget p50 for "feels human," p95 for "not broken."</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why is budget_exceeded a stop_reason rather than an alert?</summary>
 An agent that can't stop converts software bugs into invoices. An alert notifies
 a human after the money is gone; a stop_reason is a first-class run outcome the
@@ -350,7 +352,7 @@ summarize on the large route — routed median is ~861 ms. The tempting alternat
 frontier cloud at ~790 ms, is off the table: content phases stay local, so
 latency gets engineered (streaming, precompute) rather than bought.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S12 — Judge calibration:</strong> the routed pipeline still
 leans on model judgment — a critic reading transcripts, a judge scoring quality.
 Next session measures the judges themselves: seeded-defect detection rates,

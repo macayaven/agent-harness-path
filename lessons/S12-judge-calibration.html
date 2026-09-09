@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S11-budgets-routing.html">&larr; Prev: S11-budgets-routing — Budgets, routing, and the privacy boundary</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S13-rebuild-from-memory.html">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
-<h1>S12-judge-calibration — Measuring the measurers</h1>
+<h1 id="s12-judge-calibration-measuring-the-measurers">S12-judge-calibration — Measuring the measurers</h1>
 <p><strong>What this teaches:</strong> an unmeasured judge is decoration. Two instruments get
 calibrated here — a <em>critic</em> that finds defects (measured by detection rate and
 false-positive rate on seeded ground truth) and a <em>rubric judge</em> that grades
@@ -114,8 +116,8 @@ label, with a rate attached).
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s12_judge.md"><code>labs/s12_judge.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>The recursion problem: the judge is also a model</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-recursion-problem-the-judge-is-also-a-model">The recursion problem: the judge is also a model</h3>
 <p>S02 split checking into two tiers because deterministic code can't see quality —
 tone, consistency, whether the question was actually answered. So you add a
 judged tier, and immediately inherit the recursion: the judge is itself a model,
@@ -154,7 +156,7 @@ they are measured differently:</p>
 </tr>
 </tbody>
 </table>
-<h3>Seeded defects: ground truth you control</h3>
+<h3 id="seeded-defects-ground-truth-you-control">Seeded defects: ground truth you control</h3>
 <p>You cannot measure a detector without knowing where the defects are — and in
 production you never know. So you manufacture ground truth: take transcripts
 known to be clean, seed each with exactly one subtle defect, mix in clean
@@ -182,7 +184,7 @@ of a detector is whether it catches a known-planted fault.</p>
 they stop being an independent probe. Re-seed fresh ones every calibration
 round — the same reason you never report a judge's agreement on the examples
 you tuned it against.</p>
-<h3>Hand labels before judge output: the calibration protocol</h3>
+<h3 id="hand-labels-before-judge-output-the-calibration-protocol">Hand labels before judge output: the calibration protocol</h3>
 <p>For the rubric judge there is no planted fault — "good enough" is defined by
 <em>your</em> judgment, so the reference judgments are your hand labels and the
 measurement is agreement. The protocol, in order (the order is the protocol):</p>
@@ -223,7 +225,7 @@ agreement; position-swap testing, because order bias does not retire under a
 binary rubric; and a prevalence-aware reading of κ, which deflates exactly when
 a lopsided label stream makes raw agreement look best. Mechanics first — then
 the machinery that makes the number worth gating on.</p>
-<h3>The measured rates decide policy</h3>
+<h3 id="the-measured-rates-decide-policy">The measured rates decide policy</h3>
 <p>The point of both measurements is a decision, not a report:</p>
 <pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
     T[10 transcripts&lt;br/&gt;5 seeded defects + 5 clean] --&gt; C[critic route&lt;br/&gt;finds defects]
@@ -243,7 +245,7 @@ gate. That is how the <em>uncalibrated</em> label from S02 comes off — not by 
 the judge, but by stapling its track record to every number it produces.
 Recalibrate whenever the rubric or the judge model changes; the calibration is
 a property of the pair, not of either alone.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <ol>
 <li>Run the seeded-defect game blind: before the answer key, predict how many
    transcripts the keyword critic will flag — and how many of those flags will
@@ -262,7 +264,7 @@ a property of the pair, not of either alone.</p>
    that class defeats any judge without ground truth.</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s12_judge.md">critic calibration</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -309,7 +311,7 @@ a property of the pair, not of either alone.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/llm-judge/">Creating an LLM Judge</a>.</strong>
   Extract this: binary pass/fail with written critiques (not scores), the
@@ -329,7 +331,7 @@ a property of the pair, not of either alone.</p>
   "start evaluating immediately with small samples" — a small labeled set is a
   feature, not a compromise, as long as you report counts honestly.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"The judge is a stronger model, so its verdict is trustworthy."</strong> Strength
   and agreement are different axes. A frontier model graded against <em>your</em>
@@ -346,7 +348,7 @@ a property of the pair, not of either alone.</p>
   sincerely believe you disagreed with the judge more than you did. The
   protocol's order — labels first — is the whole mechanism.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why must hand labels be written before the judge runs?</summary>
 Because a seen verdict anchors your label. Once you've read the judge's pass/fail
 and its confident rationale, your "independent" label is partially the judge's —
@@ -370,7 +372,7 @@ agrees on all clean transcripts and misses every defective one can still post
 a passable aggregate — and it is blind exactly where a quality gate must see.
 The aggregate hides the failure; the strata name it.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S13-rebuild-from-memory (optional lab):</strong> S01–S12 is the self-contained path.
 If you walked the hard path, the audit target is <code>labs/trivia_host/loop.py</code>
 against this suite. Otherwise: a non-trivial system you own. Skip it if you do

@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "agent-harness-path",
   "title": "The Agent Harness Path",
-  "description": "A self-contained course on building, evaluating, and governing LLM agents.",
+  "description": "A self-contained toy course. S01/S02 offer a guided read, notebook and self-check pilot; later sessions remain available with limited guidance. No completion is certified by an assistant.",
   "entry_module_id": "s01",
   "policies": {
     "content_sharing": "explicit_only",
@@ -10,198 +10,506 @@
     "terminal_execution": "student_only",
     "conversation_memory": "session_only",
     "max_shared_chars": 8192,
-    "workspace_write_globs": []
+    "workspace_write_globs": [],
+    "allowed_share_kinds": [
+      "selection",
+      "cell",
+      "output"
+    ],
+    "allowed_proposal_types": [
+      "profile"
+    ]
   },
   "modules": [
     {
       "id": "s01",
       "title": "The agent loop",
-      "description": "Make the stateless model/tool loop visible, then break its protocol invariants safely.",
+      "description": "Course-owned pilot: read → notebook predictions, attempt and observations → self-check → optional hard lab. Active-study estimates are unvalidated; videos support reading.",
       "phases": [
         {
           "id": "read",
-          "title": "Read the agent-loop lesson",
-          "kind": "read",
-          "teacher_mode": "reading_companion",
+          "title": "Read and trace the theory",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "reading"
+          },
           "surfaces": [
             {
               "id": "lesson",
               "type": "html",
-              "role": "primary",
-              "path": "lessons/S01-agent-loop.html"
-            }
-          ],
-          "completion": {
-            "type": "manual"
-          },
-          "capabilities": {
-            "chat": true,
-            "hint_level": "gentle",
-            "share_selection": true,
-            "share_cell": false,
-            "share_output": false,
-            "create_profile_proposal": false,
-            "create_course_proposal": false,
-            "create_workspace_proposal": false
-          }
-        },
-        {
-          "id": "watch",
-          "title": "Watch the agent-loop overview",
-          "kind": "watch",
-          "teacher_mode": "reading_companion",
-          "surfaces": [
+              "path": "lessons/S01-agent-loop.html",
+              "purpose": "primary",
+              "label": "Read the lesson",
+              "fragment": "the-theory-in-depth"
+            },
             {
               "id": "video",
               "type": "video",
-              "role": "reference",
-              "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S01-agent-loop.mp4"
+              "purpose": "supporting",
+              "label": "Optional Gemini Notebook overview",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S01-agent-loop.mp4"
             }
           ],
           "completion": {
-            "type": "manual"
+            "requirements": [
+              {
+                "id": "s01-reading",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "After reading, write a short trace or counterexample and one question to take to the notebook."
+              }
+            ]
           },
-          "capabilities": {
-            "chat": true,
-            "hint_level": "gentle",
-            "share_selection": false,
-            "share_cell": false,
-            "share_output": false,
-            "create_profile_proposal": false,
-            "create_course_proposal": false,
-            "create_workspace_proposal": false
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "message-pairing",
+                "text": "Trace client-owned weather history, preserving the assistant call message and matching every tool result by call ID; distinguish ordinary assistant text."
+              },
+              {
+                "id": "execution-bound",
+                "text": "Distinguish a final answer, exhausted model-turn budget and recoverable operation error; explain why a hung tool needs a time bound."
+              }
+            ],
+            "duration": {
+              "min_minutes": 20,
+              "max_minutes": 40
+            },
+            "overview": "Use the complete weather mock to trace requests and history. Predict four demonstrations before running them, attempt the two-city transcript, then compare an observation with the prediction. The mock checks only one orphan-result failure class; it is not a full protocol validator or a real forecast service.",
+            "hints": [
+              {
+                "id": "trace-rows",
+                "text": "Draw columns for role, call ID and content. Which line preserves the assistant message, and which line adds an operation result?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "compare-identities",
+                "text": "Compare the set of requested IDs with the supplied results. Function names can repeat for different cities; what distinguishes their requests?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "locate-the-budget",
+                "text": "Find where the loop checks max_turns. Can Python reach that check again while dispatch is still waiting? Keep elapsed time and iteration count separate.",
+                "objective_ids": [
+                  "execution-bound"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "openai-calls",
+                "label": "OpenAI function-calling lifecycle and strict schemas",
+                "url": "https://developers.openai.com/api/docs/guides/function-calling",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "tool-errors",
+                "label": "Anthropic: useful tool error responses",
+                "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
           }
         },
         {
-          "id": "predict",
-          "title": "Predict the loop failures",
-          "kind": "predict",
-          "teacher_mode": "socratic_guide",
+          "id": "notebook",
+          "title": "Notebook: predict, attempt, observe",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "experiment"
+          },
           "surfaces": [
             {
-              "id": "notebook-predict",
+              "id": "notebook",
               "type": "notebook",
-              "role": "exercise",
               "path": "notebooks/s01_agent_loop_toy.ipynb",
-              "match": {
-                "cell_ids": [
+              "purpose": "primary",
+              "label": "Open notebook: predict, attempt, observe",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "5aa42bcc",
                   "69a77fc3",
                   "fd87655a",
-                  "15f7e677"
+                  "15f7e677",
+                  "s01-attempt-prompt",
+                  "s01-attempt-code"
                 ]
               }
             }
           ],
           "completion": {
-            "type": "prediction_recorded",
-            "record_id": "s01-prediction"
+            "requirements": [
+              {
+                "id": "s01-prediction",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Before running experiments: predict the happy-path roles/turns, what fails when the assistant call message is dropped, what ends the repeated-call run, and where the recoverable weather error appears. Give a reason for each."
+              },
+              {
+                "id": "s01-attempt",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "After the demonstrations, attempt the two-city weather transcript in the added notebook cell. Record which call IDs your proposed results cover and why the ordinary explanation needs no tool result. Leave uncertainty explicit."
+              },
+              {
+                "id": "s01-observation",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record one observed transcript row or exception and compare it with your prediction. Explain separately what the turn cap bounds and what a hung tool would require."
+              }
+            ]
           },
-          "capabilities": {
-            "chat": true,
-            "hint_level": "none",
-            "share_selection": false,
-            "share_cell": true,
-            "share_output": false,
-            "create_profile_proposal": false,
-            "create_course_proposal": false,
-            "create_workspace_proposal": false
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": [
+                "s01-prediction"
+              ]
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "socratic"
+              },
+              "hint_level": "graduated",
+              "text": "Ask for the learner’s reasoning first; use progressive authored hints. Do not supply the notebook attempt or native reference before an attempt. Preserve intentionally broken demonstrations. One prediction record unlocks optional help; recorded text is not a correctness judgment."
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "message-pairing",
+                "text": "Trace client-owned weather history, preserving the assistant call message and matching every tool result by call ID; distinguish ordinary assistant text."
+              },
+              {
+                "id": "execution-bound",
+                "text": "Distinguish a final answer, exhausted model-turn budget and recoverable operation error; explain why a hung tool needs a time bound."
+              }
+            ],
+            "duration": {
+              "min_minutes": 30,
+              "max_minutes": 60
+            },
+            "overview": "Use the complete weather mock to trace requests and history. Predict four demonstrations before running them, attempt the two-city transcript, then compare an observation with the prediction. The mock checks only one orphan-result failure class; it is not a full protocol validator or a real forecast service.",
+            "hints": [
+              {
+                "id": "trace-rows",
+                "text": "Draw columns for role, call ID and content. Which line preserves the assistant message, and which line adds an operation result?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "compare-identities",
+                "text": "Compare the set of requested IDs with the supplied results. Function names can repeat for different cities; what distinguishes their requests?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "locate-the-budget",
+                "text": "Find where the loop checks max_turns. Can Python reach that check again while dispatch is still waiting? Keep elapsed time and iteration count separate.",
+                "objective_ids": [
+                  "execution-bound"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "openai-calls",
+                "label": "OpenAI function-calling lifecycle and strict schemas",
+                "url": "https://developers.openai.com/api/docs/guides/function-calling",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "tool-errors",
+                "label": "Anthropic: useful tool error responses",
+                "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
           }
         },
         {
-          "id": "experiment",
-          "title": "Run and break the toy loop",
-          "kind": "experiment",
-          "teacher_mode": "debugging_coach",
+          "id": "self-check",
+          "title": "Self-check and explain",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "review"
+          },
           "surfaces": [
             {
-              "id": "notebook-experiment",
-              "type": "notebook",
-              "role": "exercise",
-              "path": "notebooks/s01_agent_loop_toy.ipynb",
-              "match": {
-                "cell_ids": [
-                  "ec494b3e",
-                  "5e6e3097",
-                  "fbcd8306",
-                  "12a87824"
-                ]
-              }
+              "id": "self-check",
+              "type": "html",
+              "path": "lessons/S01-agent-loop.html",
+              "purpose": "primary",
+              "label": "Open native self-check and reference",
+              "fragment": "self-check"
             }
           ],
           "completion": {
-            "type": "manual"
+            "requirements": [
+              {
+                "id": "s01-reflection",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Attempt the checks before opening native references. Record your explanation, any correction, and one remaining limitation. A check score is formative and never certifies learning."
+              }
+            ]
           },
-          "capabilities": {
-            "chat": true,
-            "hint_level": "graduated",
-            "share_selection": false,
-            "share_cell": true,
-            "share_output": true,
-            "create_profile_proposal": false,
-            "create_course_proposal": false,
-            "create_workspace_proposal": false
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "reviewing"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "message-pairing",
+                "text": "Trace client-owned weather history, preserving the assistant call message and matching every tool result by call ID; distinguish ordinary assistant text."
+              },
+              {
+                "id": "execution-bound",
+                "text": "Distinguish a final answer, exhausted model-turn budget and recoverable operation error; explain why a hung tool needs a time bound."
+              }
+            ],
+            "duration": {
+              "min_minutes": 5,
+              "max_minutes": 10
+            },
+            "overview": "Use the complete weather mock to trace requests and history. Predict four demonstrations before running them, attempt the two-city transcript, then compare an observation with the prediction. The mock checks only one orphan-result failure class; it is not a full protocol validator or a real forecast service.",
+            "hints": [
+              {
+                "id": "trace-rows",
+                "text": "Draw columns for role, call ID and content. Which line preserves the assistant message, and which line adds an operation result?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "compare-identities",
+                "text": "Compare the set of requested IDs with the supplied results. Function names can repeat for different cities; what distinguishes their requests?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "locate-the-budget",
+                "text": "Find where the loop checks max_turns. Can Python reach that check again while dispatch is still waiting? Keep elapsed time and iteration count separate.",
+                "objective_ids": [
+                  "execution-bound"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "openai-calls",
+                "label": "OpenAI function-calling lifecycle and strict schemas",
+                "url": "https://developers.openai.com/api/docs/guides/function-calling",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "tool-errors",
+                "label": "Anthropic: useful tool error responses",
+                "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": [
+              {
+                "id": "call-accounting",
+                "type": "single_choice",
+                "prompt": "One assistant message requests weather lookups A and B. Only result A has been appended. A separate conversation ends with ordinary assistant text and no calls. Which bookkeeping action fits?",
+                "objective_ids": [
+                  "message-pairing"
+                ],
+                "options": [
+                  {
+                    "id": "all-requested",
+                    "text": "Retain the original call message and supply the result for B; the ordinary explanation creates no result obligation.",
+                    "feedback": "Yes. Account for all requested IDs; ordinary text with no calls does not require a tool result."
+                  },
+                  {
+                    "id": "every-assistant",
+                    "text": "Add a tool result after every assistant message in both conversations.",
+                    "feedback": "Ordinary assistant text does not itself request a tool. The obligation follows the tool calls and their IDs."
+                  },
+                  {
+                    "id": "last-row",
+                    "text": "Delete call B so the last result appears complete.",
+                    "feedback": "That rewrites the recorded model decision. Preserve the requested calls and account for their results or stop according to host policy."
+                  }
+                ],
+                "correct_option_id": "all-requested"
+              },
+              {
+                "id": "iteration-vs-time",
+                "type": "single_choice",
+                "prompt": "A weather tool never returns during a loop capped at four model turns. What does that cap establish?",
+                "objective_ids": [
+                  "execution-bound"
+                ],
+                "options": [
+                  {
+                    "id": "four-seconds",
+                    "text": "The whole run finishes within four seconds.",
+                    "feedback": "The parameter counts model iterations, not seconds spent waiting."
+                  },
+                  {
+                    "id": "iteration-only",
+                    "text": "It limits model iterations; a per-operation timeout or deadline is a separate bound.",
+                    "feedback": "Yes. The host cannot check the next iteration while a synchronous tool is still blocked."
+                  },
+                  {
+                    "id": "successful-answer",
+                    "text": "The run is guaranteed to return a weather answer.",
+                    "feedback": "Exhausting a budget can end without an answer; bounded execution and success differ."
+                  }
+                ],
+                "correct_option_id": "iteration-only"
+              }
+            ]
           }
         },
         {
           "id": "lab",
-          "title": "Build the optional trivia-host loop",
-          "kind": "lab",
-          "teacher_mode": "debugging_coach",
+          "title": "Optional hard lab: trivia host",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "project"
+          },
           "surfaces": [
             {
               "id": "lab-guide",
               "type": "markdown",
-              "role": "primary",
-              "path": "labs/s01_loop.md"
+              "path": "labs/s01_loop.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
             },
             {
               "id": "tools-source",
               "type": "source",
-              "role": "exercise",
-              "path": "labs/trivia_host/tools.py"
+              "path": "labs/trivia_host/tools.py",
+              "purpose": "supporting",
+              "label": "Tools Source"
             },
             {
               "id": "loop-source",
               "type": "source",
-              "role": "exercise",
-              "path": "labs/trivia_host/loop.py"
+              "path": "labs/trivia_host/loop.py",
+              "purpose": "supporting",
+              "label": "Loop Source"
             },
             {
               "id": "engine-source",
               "type": "source",
-              "role": "exercise",
-              "path": "labs/trivia_host/engine.py"
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
             },
             {
               "id": "client-source",
               "type": "source",
-              "role": "reference",
-              "path": "labs/client.py"
+              "path": "labs/client.py",
+              "purpose": "reference",
+              "label": "Client Source"
             },
             {
               "id": "deck-source",
               "type": "source",
-              "role": "reference",
-              "path": "labs/deck.py"
+              "path": "labs/deck.py",
+              "purpose": "reference",
+              "label": "Deck Source"
             },
             {
               "id": "schemas-source",
               "type": "source",
-              "role": "reference",
-              "path": "labs/schemas.py"
+              "path": "labs/schemas.py",
+              "purpose": "reference",
+              "label": "Schemas Source"
             },
             {
               "id": "house-rules-source",
               "type": "source",
-              "role": "reference",
-              "path": "labs/house_rules.py"
+              "path": "labs/house_rules.py",
+              "purpose": "reference",
+              "label": "House Rules Source"
             },
             {
               "id": "replay-command",
               "type": "terminal",
-              "role": "exercise",
-              "label": "Copy the offline S01 replay command",
-              "argv": [
+              "label": "Copy S01 replay command (learner implementation)",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
                 "uv",
                 "run",
                 "python",
@@ -209,23 +517,114 @@
                 "--session",
                 "s01",
                 "--replay"
-              ],
-              "cwd": "."
+              ]
+            },
+            {
+              "id": "live-command",
+              "type": "terminal",
+              "label": "Copy S01 live command (optional network and cost)",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s01",
+                "--live"
+              ]
             }
           ],
           "completion": {
-            "type": "receipt_recorded",
-            "record_id": "s01-lab-receipt"
+            "requirements": [
+              {
+                "id": "s01-lab-evidence",
+                "type": "learner_record",
+                "record_kind": "evidence",
+                "prompt": "Attach a local report or code reference (for example labs/reports/last.md), and note your expected replay result, actual result and explanation of remaining failures. Optional live runs need separate deliberate setup."
+              }
+            ]
           },
-          "capabilities": {
-            "chat": true,
-            "hint_level": "graduated",
-            "share_selection": true,
-            "share_cell": false,
-            "share_output": true,
-            "create_profile_proposal": false,
-            "create_course_proposal": false,
-            "create_workspace_proposal": false
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "debugging"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "message-pairing",
+                "text": "Trace client-owned weather history, preserving the assistant call message and matching every tool result by call ID; distinguish ordinary assistant text."
+              },
+              {
+                "id": "execution-bound",
+                "text": "Distinguish a final answer, exhausted model-turn budget and recoverable operation error; explain why a hung tool needs a time bound."
+              }
+            ],
+            "duration": {
+              "min_minutes": 30,
+              "max_minutes": 60
+            },
+            "overview": "Optional trivia-host hard path. Predict before replaying your implementation. The learner runs copied commands. Replay is offline; explicit live mode requires separate endpoint/credential setup and may cost money. Expected unfinished checks at S02 are a baseline to explain, not a course failure. The duration is an initial work block, not a promise to finish the lab.",
+            "hints": [
+              {
+                "id": "trace-rows",
+                "text": "Draw columns for role, call ID and content. Which line preserves the assistant message, and which line adds an operation result?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "compare-identities",
+                "text": "Compare the set of requested IDs with the supplied results. Function names can repeat for different cities; what distinguishes their requests?",
+                "objective_ids": [
+                  "message-pairing"
+                ]
+              },
+              {
+                "id": "locate-the-budget",
+                "text": "Find where the loop checks max_turns. Can Python reach that check again while dispatch is still waiting? Keep elapsed time and iteration count separate.",
+                "objective_ids": [
+                  "execution-bound"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "openai-calls",
+                "label": "OpenAI function-calling lifecycle and strict schemas",
+                "url": "https://developers.openai.com/api/docs/guides/function-calling",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "tool-errors",
+                "label": "Anthropic: useful tool error responses",
+                "url": "https://www.anthropic.com/engineering/writing-tools-for-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
           }
         }
       ]
@@ -233,497 +632,3803 @@
     {
       "id": "s02",
       "title": "Golden sets and baselines",
-      "description": "Turn a scripted-user suite into a measurement instrument with a naive baseline.",
+      "description": "Course-owned pilot: read → notebook predictions, attempt and observations → self-check → optional hard lab. Active-study estimates are unvalidated; videos support reading.",
       "phases": [
         {
           "id": "read",
-          "title": "Read the golden-evals lesson",
-          "kind": "read",
-          "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S02-golden-evals.html"}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "title": "Read and trace the theory",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "reading"
+          },
+          "surfaces": [
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S02-golden-evals.html",
+              "purpose": "primary",
+              "label": "Read the lesson",
+              "fragment": "the-theory-in-depth"
+            },
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "supporting",
+              "label": "Optional Gemini Notebook overview",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S02-golden-evals.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s02-reading",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "After reading, write a short trace or counterexample and one question to take to the notebook."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "checker-blind-spot",
+                "text": "Explain what the fitness scope checker observes and add a fixture-specific useful-routine criterion with known positive and negative cases."
+              },
+              {
+                "id": "controlled-delta",
+                "text": "Separate deterministic toy evidence from seeded latency placeholders and real-model variance; name controls and limitations of a comparison."
+              }
+            ],
+            "duration": {
+              "min_minutes": 20,
+              "max_minutes": 40
+            },
+            "overview": "Read the complete scripted fitness coach and its scope checker. Predict fixture/table/refuses-all outcomes, attempt a useful-routine criterion, and compare observed results. Keep the existing weak checker as a counterexample. Seeded latency slots demonstrate table plumbing; they are not measured speed. Saved notes and check scores do not establish product value or learning efficacy.",
+            "hints": [
+              {
+                "id": "map-the-check",
+                "text": "For each scripted turn, write its user intent. Which part of check_scope observes a response to that particular intent?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "design-counterexample",
+                "text": "Keep scope and routine usefulness as separate columns. Choose a known useful fixture reply and an unhelpful reply; what observable difference could your new criterion test?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "audit-the-measure",
+                "text": "Trace the latency values back to drive. List the shared inputs, the changed engine and any uncontrolled variation before interpreting a delta.",
+                "objective_ids": [
+                  "controlled-delta"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "inspect",
+                "label": "Inspect: dataset, solver and scorer",
+                "url": "https://inspect.aisi.org.uk/",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "agent-evals",
+                "label": "Anthropic: capability, regression and grader calibration",
+                "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
+          }
         },
         {
-          "id": "watch",
-          "title": "Watch the golden-evals overview",
-          "kind": "watch",
-          "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S02-golden-evals.mp4"}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "id": "notebook",
+          "title": "Notebook: predict, attempt, observe",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "experiment"
+          },
+          "surfaces": [
+            {
+              "id": "notebook",
+              "type": "notebook",
+              "path": "notebooks/s02_scripted_user_eval_toy.ipynb",
+              "purpose": "primary",
+              "label": "Open notebook: predict, attempt, observe",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "6e110918",
+                  "9bdffa54",
+                  "d3af51d7",
+                  "s02-attempt-prompt",
+                  "s02-attempt-code"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s02-prediction",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Before running the checker/table/refuses-all cells: predict bare/reference results, naive/governed scope results, and refuses-all behavior. Distinguish the seeded latency column from measured evidence."
+              },
+              {
+                "id": "s02-attempt",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Attempt a useful-routine check in the added notebook cell. State which fitness replies it should accept/reject and one phrasing limitation; do not claim this toy checker validates medical safety."
+              },
+              {
+                "id": "s02-observation",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record scope and useful-routine outcomes for governed and refuses-all. Explain any disagreement with your prediction and what must stay fixed for an interpretable delta."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": [
+                "s02-prediction"
+              ]
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "socratic"
+              },
+              "hint_level": "graduated",
+              "text": "Ask for the learner’s reasoning first; use progressive authored hints. Do not supply the notebook attempt or native reference before an attempt. Preserve intentionally broken demonstrations. One prediction record unlocks optional help; recorded text is not a correctness judgment."
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "checker-blind-spot",
+                "text": "Explain what the fitness scope checker observes and add a fixture-specific useful-routine criterion with known positive and negative cases."
+              },
+              {
+                "id": "controlled-delta",
+                "text": "Separate deterministic toy evidence from seeded latency placeholders and real-model variance; name controls and limitations of a comparison."
+              }
+            ],
+            "duration": {
+              "min_minutes": 30,
+              "max_minutes": 60
+            },
+            "overview": "Read the complete scripted fitness coach and its scope checker. Predict fixture/table/refuses-all outcomes, attempt a useful-routine criterion, and compare observed results. Keep the existing weak checker as a counterexample. Seeded latency slots demonstrate table plumbing; they are not measured speed. Saved notes and check scores do not establish product value or learning efficacy.",
+            "hints": [
+              {
+                "id": "map-the-check",
+                "text": "For each scripted turn, write its user intent. Which part of check_scope observes a response to that particular intent?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "design-counterexample",
+                "text": "Keep scope and routine usefulness as separate columns. Choose a known useful fixture reply and an unhelpful reply; what observable difference could your new criterion test?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "audit-the-measure",
+                "text": "Trace the latency values back to drive. List the shared inputs, the changed engine and any uncontrolled variation before interpreting a delta.",
+                "objective_ids": [
+                  "controlled-delta"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "inspect",
+                "label": "Inspect: dataset, solver and scorer",
+                "url": "https://inspect.aisi.org.uk/",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "agent-evals",
+                "label": "Anthropic: capability, regression and grader calibration",
+                "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
+          }
         },
         {
-          "id": "predict",
-          "title": "Predict the baseline deltas",
-          "kind": "predict",
-          "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s02_scripted_user_eval_toy.ipynb", "match": {"cell_ids": ["9bdffa54", "d3af51d7"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s02-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment",
-          "title": "Measure naive and governed engines",
-          "kind": "experiment",
-          "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s02_scripted_user_eval_toy.ipynb", "match": {"cell_ids": ["3c77d029", "a2aa48cf"]}}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "id": "self-check",
+          "title": "Self-check and explain",
+          "progress": "required",
+          "experience": {
+            "type": "builtin",
+            "id": "review"
+          },
+          "surfaces": [
+            {
+              "id": "self-check",
+              "type": "html",
+              "path": "lessons/S02-golden-evals.html",
+              "purpose": "primary",
+              "label": "Open native self-check and reference",
+              "fragment": "self-check"
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s02-reflection",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Attempt the checks before opening native references. Record your explanation, any correction, and one remaining limitation. A check score is formative and never certifies learning."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "reviewing"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "checker-blind-spot",
+                "text": "Explain what the fitness scope checker observes and add a fixture-specific useful-routine criterion with known positive and negative cases."
+              },
+              {
+                "id": "controlled-delta",
+                "text": "Separate deterministic toy evidence from seeded latency placeholders and real-model variance; name controls and limitations of a comparison."
+              }
+            ],
+            "duration": {
+              "min_minutes": 5,
+              "max_minutes": 10
+            },
+            "overview": "Read the complete scripted fitness coach and its scope checker. Predict fixture/table/refuses-all outcomes, attempt a useful-routine criterion, and compare observed results. Keep the existing weak checker as a counterexample. Seeded latency slots demonstrate table plumbing; they are not measured speed. Saved notes and check scores do not establish product value or learning efficacy.",
+            "hints": [
+              {
+                "id": "map-the-check",
+                "text": "For each scripted turn, write its user intent. Which part of check_scope observes a response to that particular intent?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "design-counterexample",
+                "text": "Keep scope and routine usefulness as separate columns. Choose a known useful fixture reply and an unhelpful reply; what observable difference could your new criterion test?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "audit-the-measure",
+                "text": "Trace the latency values back to drive. List the shared inputs, the changed engine and any uncontrolled variation before interpreting a delta.",
+                "objective_ids": [
+                  "controlled-delta"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "inspect",
+                "label": "Inspect: dataset, solver and scorer",
+                "url": "https://inspect.aisi.org.uk/",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "agent-evals",
+                "label": "Anthropic: capability, regression and grader calibration",
+                "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": [
+              {
+                "id": "refusal-only",
+                "type": "single_choice",
+                "prompt": "A checker requires a refusal marker and signpost somewhere in the transcript, with no forbidden term. A coach refuses every turn. What evidence is still needed?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ],
+                "options": [
+                  {
+                    "id": "enough",
+                    "text": "The pass certifies a useful coach.",
+                    "feedback": "The checker never established that the routine requests were answered."
+                  },
+                  {
+                    "id": "useful-turns",
+                    "text": "Check useful routine content on in-scope turns with known positive and negative cases.",
+                    "feedback": "Yes. A task-specific deterministic check can expose over-refusal; it still needs a stated scope and boundary cases."
+                  },
+                  {
+                    "id": "judge-only",
+                    "text": "Only an LLM judge can ever detect this failure.",
+                    "feedback": "The supplied toy routine facts can be checked deterministically. Open-ended tone is a different criterion."
+                  }
+                ],
+                "correct_option_id": "useful-turns"
+              },
+              {
+                "id": "stub-vs-measurement",
+                "type": "single_choice",
+                "prompt": "Naive and governed show the same p50 seeded latency in this notebook. What can you conclude?",
+                "objective_ids": [
+                  "controlled-delta"
+                ],
+                "options": [
+                  {
+                    "id": "same-speed",
+                    "text": "They have equal measured response speed.",
+                    "feedback": "The numbers are seeded placeholders, not timed calls."
+                  },
+                  {
+                    "id": "plumbing",
+                    "text": "The table aggregates the stub values; the scope-check outcomes are the measured toy comparison.",
+                    "feedback": "Yes. Real latency comparisons require real timings, and missing usage/cost is not zero."
+                  },
+                  {
+                    "id": "governed-faster",
+                    "text": "The governed engine must be faster because it refuses.",
+                    "feedback": "Neither the response type nor these placeholders establish elapsed service time."
+                  }
+                ],
+                "correct_option_id": "plumbing"
+              },
+              {
+                "id": "controlled-comparison",
+                "type": "single_choice",
+                "prompt": "You replay the same user script against a stochastic model after an instruction edit and see a higher score once. Which report is defensible?",
+                "objective_ids": [
+                  "controlled-delta"
+                ],
+                "options": [
+                  {
+                    "id": "proven",
+                    "text": "The instruction is proven better for all users.",
+                    "feedback": "A single probe and trial cannot establish general improvement."
+                  },
+                  {
+                    "id": "no-variance",
+                    "text": "The fixed script removes all model variation.",
+                    "feedback": "It fixes user inputs, not stochastic model or backend behavior."
+                  },
+                  {
+                    "id": "bounded",
+                    "text": "Report model/settings, fixture/checker versions, the changed instruction and the single-trial limitation; consider repeated trials.",
+                    "feedback": "Yes. Distinguish controlled inputs from remaining model variation and limited coverage."
+                  }
+                ],
+                "correct_option_id": "bounded"
+              }
+            ]
+          }
         },
         {
           "id": "lab",
-          "title": "Bank the optional trivia-host baseline",
-          "kind": "lab",
-          "teacher_mode": "debugging_coach",
+          "title": "Optional hard lab: trivia host",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "project"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s02_evals.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "tasks-source", "type": "source", "role": "reference", "path": "labs/evals/tasks.py"},
-            {"id": "checkers-source", "type": "source", "role": "reference", "path": "labs/evals/checkers.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S02 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s02", "--replay"], "cwd": "."}
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s02_evals.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "tasks-source",
+              "type": "source",
+              "path": "labs/evals/tasks.py",
+              "purpose": "reference",
+              "label": "Tasks Source"
+            },
+            {
+              "id": "checkers-source",
+              "type": "source",
+              "path": "labs/evals/checkers.py",
+              "purpose": "reference",
+              "label": "Checkers Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy S02 replay command (learner implementation)",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s02",
+                "--replay"
+              ]
+            },
+            {
+              "id": "live-command",
+              "type": "terminal",
+              "label": "Copy S02 live command (optional network and cost)",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s02",
+                "--live"
+              ]
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s02-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": [
+              {
+                "id": "s02-lab-evidence",
+                "type": "learner_record",
+                "record_kind": "evidence",
+                "prompt": "Attach a local report or code reference (for example labs/reports/last.md), and note your expected replay result, actual result and explanation of remaining failures. Optional live runs need separate deliberate setup."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "debugging"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "checker-blind-spot",
+                "text": "Explain what the fitness scope checker observes and add a fixture-specific useful-routine criterion with known positive and negative cases."
+              },
+              {
+                "id": "controlled-delta",
+                "text": "Separate deterministic toy evidence from seeded latency placeholders and real-model variance; name controls and limitations of a comparison."
+              }
+            ],
+            "duration": {
+              "min_minutes": 30,
+              "max_minutes": 60
+            },
+            "overview": "Optional trivia-host hard path. Predict before replaying your implementation. The learner runs copied commands. Replay is offline; explicit live mode requires separate endpoint/credential setup and may cost money. Expected unfinished checks at S02 are a baseline to explain, not a course failure. The duration is an initial work block, not a promise to finish the lab.",
+            "hints": [
+              {
+                "id": "map-the-check",
+                "text": "For each scripted turn, write its user intent. Which part of check_scope observes a response to that particular intent?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "design-counterexample",
+                "text": "Keep scope and routine usefulness as separate columns. Choose a known useful fixture reply and an unhelpful reply; what observable difference could your new criterion test?",
+                "objective_ids": [
+                  "checker-blind-spot"
+                ]
+              },
+              {
+                "id": "audit-the-measure",
+                "text": "Trace the latency values back to drive. List the shared inputs, the changed engine and any uncontrolled variation before interpreting a delta.",
+                "objective_ids": [
+                  "controlled-delta"
+                ]
+              }
+            ],
+            "sources": [
+              {
+                "id": "inspect",
+                "label": "Inspect: dataset, solver and scorer",
+                "url": "https://inspect.aisi.org.uk/",
+                "reviewed_date": "2026-09-09"
+              },
+              {
+                "id": "agent-evals",
+                "label": "Anthropic: capability, regression and grader calibration",
+                "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+                "reviewed_date": "2026-09-09"
+              }
+            ],
+            "checks": []
+          }
         }
       ]
     },
     {
       "id": "s03",
       "title": "Context engineering",
-      "description": "Observe governance decay across compaction and preserve rules at the right boundary.",
+      "description": "Observe governance decay across compaction and preserve rules at the right boundary. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the context-engineering lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S03-context-engineering.html"}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the context-engineering overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S03-context-engineering.mp4"}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict what survives compaction", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s03_context_engineering_toy.ipynb", "match": {"cell_ids": ["a8d55878", "85285862", "e094f110", "aaf16a92", "94033064"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s03-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Compare context policies", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s03_context_engineering_toy.ipynb", "match": {"cell_ids": ["dcf56abf", "93ea5794", "90776c2a", "07bceb19", "09e960ee"]}}],
-          "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Pin the optional trivia-host rules", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the context-engineering lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s03_context.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "rules-source", "type": "source", "role": "reference", "path": "labs/house_rules.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S03 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s03", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S03-context-engineering.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s03-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the context-engineering overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S03-context-engineering.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict what survives compaction — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s03_context_engineering_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "a8d55878",
+                  "85285862",
+                  "e094f110",
+                  "aaf16a92",
+                  "94033064"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s03-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Compare context policies — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s03_context_engineering_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "dcf56abf",
+                  "93ea5794",
+                  "90776c2a",
+                  "07bceb19",
+                  "09e960ee"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Pin the optional trivia-host rules — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s03_context.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "rules-source",
+              "type": "source",
+              "path": "labs/house_rules.py",
+              "purpose": "reference",
+              "label": "Rules Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S03 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s03",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s03-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s04",
       "title": "Structured generation",
-      "description": "Treat the schema as an executable contract and retry only with bounded evidence.",
+      "description": "Treat the schema as an executable contract and retry only with bounded evidence. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the structured-generation lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S04-structured-generation.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the structured-generation overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict schema and retry outcomes", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s04_structured_generation_toy.ipynb", "match": {"cell_ids": ["e1a23bb2", "6f167291", "7da61be9", "1a4099fe"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s04-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Validate, retry, and attack the schema", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s04_structured_generation_toy.ipynb", "match": {"cell_ids": ["38e5ca91", "d8a80401", "09222764", "83a455b4"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Constrain the optional round spec", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the structured-generation lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s04_schema.md"},
-            {"id": "tools-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/tools.py"},
-            {"id": "schemas-source", "type": "source", "role": "reference", "path": "labs/schemas.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S04 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s04", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S04-structured-generation.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s04-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the structured-generation overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict schema and retry outcomes — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s04_structured_generation_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "e1a23bb2",
+                  "6f167291",
+                  "7da61be9",
+                  "1a4099fe"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s04-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Validate, retry, and attack the schema — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s04_structured_generation_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "38e5ca91",
+                  "d8a80401",
+                  "09222764",
+                  "83a455b4"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Constrain the optional round spec — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s04_schema.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "tools-source",
+              "type": "source",
+              "path": "labs/trivia_host/tools.py",
+              "purpose": "supporting",
+              "label": "Tools Source"
+            },
+            {
+              "id": "schemas-source",
+              "type": "source",
+              "path": "labs/schemas.py",
+              "purpose": "reference",
+              "label": "Schemas Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S04 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s04",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s04-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s05",
       "title": "Consent gates",
-      "description": "Make approval constrain execution across approve, edit, and reject paths.",
+      "description": "Make approval constrain execution across approve, edit, and reject paths. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the consent-gate lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S05-consent-gate.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the consent-gate overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict each consent outcome", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s05_consent_gate_toy.ipynb", "match": {"cell_ids": ["65dad055", "131facd6", "e2055409", "360ae6a9", "4c3086d8"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s05-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Exercise approve, edit, and reject", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s05_consent_gate_toy.ipynb", "match": {"cell_ids": ["25cf8dc2", "76836a57", "be1954da", "63b1cfda", "328db237"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Fence the optional trivia-host execution", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the consent-gate lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s05_consent.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "schemas-source", "type": "source", "role": "reference", "path": "labs/schemas.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S05 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s05", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S05-consent-gate.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s05-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the consent-gate overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict each consent outcome — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s05_consent_gate_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "65dad055",
+                  "131facd6",
+                  "e2055409",
+                  "360ae6a9",
+                  "4c3086d8"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s05-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Exercise approve, edit, and reject — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s05_consent_gate_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "25cf8dc2",
+                  "76836a57",
+                  "be1954da",
+                  "63b1cfda",
+                  "328db237"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Fence the optional trivia-host execution — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s05_consent.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "schemas-source",
+              "type": "source",
+              "path": "labs/schemas.py",
+              "purpose": "reference",
+              "label": "Schemas Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S05 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s05",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s05-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s06",
       "title": "Layered detection",
-      "description": "Combine a deterministic floor with a measured classifier and policy-as-data ordering.",
+      "description": "Combine a deterministic floor with a measured classifier and policy-as-data ordering. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the layered-detection lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S06-layered-detection.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the layered-detection overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict detection and false triggers", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s06_layered_detection_toy.ipynb", "match": {"cell_ids": ["e6e094bc", "db8764ff", "6fd1e028", "17fc4b40", "eb3312f1"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s06-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Measure the layered policy", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s06_layered_detection_toy.ipynb", "match": {"cell_ids": ["ea33ec95", "e01f063b", "6f1086f9", "b13582e1", "5cfba0f0"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Layer the optional trivia policy", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the layered-detection lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s06_policy.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "tools-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/tools.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S06 reference replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s06", "--replay", "--impl", "reference"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S06-layered-detection.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s06-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the layered-detection overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict detection and false triggers — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s06_layered_detection_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "e6e094bc",
+                  "db8764ff",
+                  "6fd1e028",
+                  "17fc4b40",
+                  "eb3312f1"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s06-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Measure the layered policy — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s06_layered_detection_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "ea33ec95",
+                  "e01f063b",
+                  "6f1086f9",
+                  "b13582e1",
+                  "5cfba0f0"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Layer the optional trivia policy — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s06_policy.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "tools-source",
+              "type": "source",
+              "path": "labs/trivia_host/tools.py",
+              "purpose": "supporting",
+              "label": "Tools Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S06 reference replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s06",
+                "--replay",
+                "--impl",
+                "reference"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s06-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s07",
       "title": "Bounded repair",
-      "description": "Regenerate from a curated failure view with an honest cap and stop reason.",
+      "description": "Regenerate from a curated failure view with an honest cap and stop reason. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the repair-loop lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S07-repair-loop.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the repair-loop overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S07-repair-loop.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict each bounded repair", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s07_repair_loop_toy.ipynb", "match": {"cell_ids": ["0dfeb0fb", "17144688", "860d1ba8", "87ade9f5", "e78b53c8"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s07-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Run the repair repertoire", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s07_repair_loop_toy.ipynb", "match": {"cell_ids": ["51a7a2df", "ac7c3f22", "378ed1dc", "e87d2e76", "3333d37f"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Bound the optional trivia-host repair", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the repair-loop lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s07_repair.md"},
-            {"id": "loop-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/loop.py"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S07 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s07", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S07-repair-loop.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s07-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the repair-loop overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S07-repair-loop.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict each bounded repair — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s07_repair_loop_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "0dfeb0fb",
+                  "17144688",
+                  "860d1ba8",
+                  "87ade9f5",
+                  "e78b53c8"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s07-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Run the repair repertoire — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s07_repair_loop_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "51a7a2df",
+                  "ac7c3f22",
+                  "378ed1dc",
+                  "e87d2e76",
+                  "3333d37f"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Bound the optional trivia-host repair — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s07_repair.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "loop-source",
+              "type": "source",
+              "path": "labs/trivia_host/loop.py",
+              "purpose": "supporting",
+              "label": "Loop Source"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S07 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s07",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s07-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s08",
       "title": "Observability and replay",
-      "description": "Trace enough to explain a run and replay it deterministically offline.",
+      "description": "Trace enough to explain a run and replay it deterministically offline. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the observability-and-replay lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S08-observability-replay.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the observability-and-replay overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict trace and replay failures", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s08_observability_replay_toy.ipynb", "match": {"cell_ids": ["a0bcdfb0", "5e7deaae", "a46de06c", "c7bbf262", "4d8877aa"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s08-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Trace and replay the toy host", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s08_observability_replay_toy.ipynb", "match": {"cell_ids": ["36cb568f", "84af535b", "861de2de", "41138c1d", "6ebe4cbf", "c31c250b"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Replay the optional trivia host", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the observability-and-replay lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s08_replay.md"},
-            {"id": "client-source", "type": "source", "role": "reference", "path": "labs/client.py"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S08 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s08", "--replay"], "cwd": "."},
-            {"id": "s01-replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S01 cassette replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s01", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S08-observability-replay.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s08-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the observability-and-replay overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict trace and replay failures — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s08_observability_replay_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "a0bcdfb0",
+                  "5e7deaae",
+                  "a46de06c",
+                  "c7bbf262",
+                  "4d8877aa"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s08-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Trace and replay the toy host — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s08_observability_replay_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "36cb568f",
+                  "84af535b",
+                  "861de2de",
+                  "41138c1d",
+                  "6ebe4cbf",
+                  "c31c250b"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Replay the optional trivia host — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s08_replay.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "client-source",
+              "type": "source",
+              "path": "labs/client.py",
+              "purpose": "reference",
+              "label": "Client Source"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S08 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s08",
+                "--replay"
+              ]
+            },
+            {
+              "id": "s01-replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S01 cassette replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s01",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s08-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s09",
       "title": "Evidence reports",
-      "description": "Write an honest debrief a depleted reviewer can verify quickly.",
+      "description": "Write an honest debrief a depleted reviewer can verify quickly. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the evidence-reports lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S09-evidence-reports.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the evidence-reports overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S09-evidence-reports.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict which reports survive review", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s09_evidence_report_toy.ipynb", "match": {"cell_ids": ["9be8b060", "a555e356", "6216d055", "c082f091", "f3687a78"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s09-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Generate and validate honest reports", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s09_evidence_report_toy.ipynb", "match": {"cell_ids": ["c676a909", "fdc6245d", "f7d9581f", "b399e7d0", "2a5279ba"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Debrief the optional trivia host", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the evidence-reports lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s09_debrief.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S09 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s09", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S09-evidence-reports.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s09-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the evidence-reports overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S09-evidence-reports.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict which reports survive review — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s09_evidence_report_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "9be8b060",
+                  "a555e356",
+                  "6216d055",
+                  "c082f091",
+                  "f3687a78"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s09-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Generate and validate honest reports — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s09_evidence_report_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "c676a909",
+                  "fdc6245d",
+                  "f7d9581f",
+                  "b399e7d0",
+                  "2a5279ba"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Debrief the optional trivia host — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s09_debrief.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S09 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s09",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s09-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s10",
       "title": "Error analysis",
-      "description": "Turn raw failure traces into a taxonomy and new regression tasks.",
+      "description": "Turn raw failure traces into a taxonomy and new regression tasks. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the error-analysis lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S10-error-analysis.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the error-analysis overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict the failure taxonomy", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s10_error_analysis_toy.ipynb", "match": {"cell_ids": ["e29ddac3", "de444d72", "1ed050d0", "06f30ddd"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s10-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Code and convert the taxonomy", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s10_error_analysis_toy.ipynb", "match": {"cell_ids": ["69244ac3", "c3ba0e2b", "03d0a7b8"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Grow the optional regression suite", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the error-analysis lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s10_errors.md"},
-            {"id": "tasks-source", "type": "source", "role": "exercise", "path": "labs/evals/tasks.py"},
-            {"id": "checkers-source", "type": "source", "role": "exercise", "path": "labs/evals/checkers.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S10 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s10", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S10-error-analysis.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s10-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the error-analysis overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict the failure taxonomy — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s10_error_analysis_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "e29ddac3",
+                  "de444d72",
+                  "1ed050d0",
+                  "06f30ddd"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s10-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Code and convert the taxonomy — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s10_error_analysis_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "69244ac3",
+                  "c3ba0e2b",
+                  "03d0a7b8"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Grow the optional regression suite — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s10_errors.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "tasks-source",
+              "type": "source",
+              "path": "labs/evals/tasks.py",
+              "purpose": "supporting",
+              "label": "Tasks Source"
+            },
+            {
+              "id": "checkers-source",
+              "type": "source",
+              "path": "labs/evals/checkers.py",
+              "purpose": "supporting",
+              "label": "Checkers Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S10 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s10",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s10-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s11",
       "title": "Budgets and routing",
-      "description": "Make cost and privacy boundaries explicit policy rather than hopeful defaults.",
+      "description": "Make cost and privacy boundaries explicit policy rather than hopeful defaults. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the budgets-and-routing lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S11-budgets-routing.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the budgets-and-routing overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict budget and routing outcomes", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s11_budgets_routing_toy.ipynb", "match": {"cell_ids": ["2c72bb15", "c05d5679", "8d2df87f", "3b20842f", "bb698748"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s11-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Measure routes and refusals", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s11_budgets_routing_toy.ipynb", "match": {"cell_ids": ["e2126f69", "64044c9e", "3ac65de6", "17c6235c", "6d57264e"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Bound the optional trivia-host route", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the budgets-and-routing lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s11_budgets.md"},
-            {"id": "engine-source", "type": "source", "role": "exercise", "path": "labs/trivia_host/engine.py"},
-            {"id": "client-source", "type": "source", "role": "reference", "path": "labs/client.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S11 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s11", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S11-budgets-routing.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s11-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the budgets-and-routing overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict budget and routing outcomes — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s11_budgets_routing_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "2c72bb15",
+                  "c05d5679",
+                  "8d2df87f",
+                  "3b20842f",
+                  "bb698748"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s11-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Measure routes and refusals — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s11_budgets_routing_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "e2126f69",
+                  "64044c9e",
+                  "3ac65de6",
+                  "17c6235c",
+                  "6d57264e"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Bound the optional trivia-host route — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s11_budgets.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            },
+            {
+              "id": "client-source",
+              "type": "source",
+              "path": "labs/client.py",
+              "purpose": "reference",
+              "label": "Client Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S11 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s11",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s11-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s12",
       "title": "Judge calibration",
-      "description": "Measure detection and false positives before trusting a judged tier.",
+      "description": "Measure detection and false positives before trusting a judged tier. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
-          "id": "read", "title": "Read the judge-calibration lesson", "kind": "read", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S12-judge-calibration.html"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "watch", "title": "Watch the judge-calibration overview", "kind": "watch", "teacher_mode": "reading_companion",
-          "surfaces": [{"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4"}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "predict", "title": "Predict critic and judge disagreement", "kind": "predict", "teacher_mode": "socratic_guide",
-          "surfaces": [{"id": "notebook-predict", "type": "notebook", "role": "exercise", "path": "notebooks/s12_judge_calibration_toy.ipynb", "match": {"cell_ids": ["b894417f", "59b0dc59", "acdca975", "a6cbf006", "35f8b325", "0f450635"]}}],
-          "completion": {"type": "prediction_recorded", "record_id": "s12-prediction"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": true, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "experiment", "title": "Calibrate critics and judges", "kind": "experiment", "teacher_mode": "debugging_coach",
-          "surfaces": [{"id": "notebook-experiment", "type": "notebook", "role": "exercise", "path": "notebooks/s12_judge_calibration_toy.ipynb", "match": {"cell_ids": ["64fcf43f", "32fe1e01", "a2358ced", "323068e0", "9da60997"]}}], "completion": {"type": "manual"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": false, "share_cell": true, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
-        },
-        {
-          "id": "lab", "title": "Calibrate the optional trivia critic", "kind": "lab", "teacher_mode": "debugging_coach",
+          "id": "read",
+          "title": "Read the judge-calibration lesson — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lab-guide", "type": "markdown", "role": "primary", "path": "labs/s12_judge.md"},
-            {"id": "checkers-source", "type": "source", "role": "exercise", "path": "labs/evals/checkers.py"},
-            {"id": "tasks-source", "type": "source", "role": "reference", "path": "labs/evals/tasks.py"},
-            {"id": "replay-command", "type": "terminal", "role": "exercise", "label": "Copy the offline S12 replay command", "argv": ["uv", "run", "python", "labs/run.py", "--session", "s12", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S12-judge-calibration.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s12-lab-receipt"},
-          "capabilities": {"chat": true, "hint_level": "graduated", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "watch",
+          "title": "Watch the judge-calibration overview — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "predict",
+          "title": "Predict critic and judge disagreement — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-predict",
+              "type": "notebook",
+              "path": "notebooks/s12_judge_calibration_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Predict",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "b894417f",
+                  "59b0dc59",
+                  "acdca975",
+                  "a6cbf006",
+                  "35f8b325",
+                  "0f450635"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s12-predict",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own predict notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "experiment",
+          "title": "Calibrate critics and judges — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "notebook-experiment",
+              "type": "notebook",
+              "path": "notebooks/s12_judge_calibration_toy.ipynb",
+              "purpose": "supporting",
+              "label": "Notebook Experiment",
+              "selector": {
+                "type": "cell_ids",
+                "values": [
+                  "64fcf43f",
+                  "32fe1e01",
+                  "a2358ced",
+                  "323068e0",
+                  "9da60997"
+                ]
+              }
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "id": "lab",
+          "title": "Calibrate the optional trivia critic — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
+          "surfaces": [
+            {
+              "id": "lab-guide",
+              "type": "markdown",
+              "path": "labs/s12_judge.md",
+              "purpose": "primary",
+              "label": "Lab Guide"
+            },
+            {
+              "id": "checkers-source",
+              "type": "source",
+              "path": "labs/evals/checkers.py",
+              "purpose": "supporting",
+              "label": "Checkers Source"
+            },
+            {
+              "id": "tasks-source",
+              "type": "source",
+              "path": "labs/evals/tasks.py",
+              "purpose": "reference",
+              "label": "Tasks Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline S12 replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--session",
+                "s12",
+                "--replay"
+              ]
+            }
+          ],
+          "completion": {
+            "requirements": [
+              {
+                "id": "s12-lab",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own lab notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated"
+            },
+            "sharing": {
+              "allow": [
+                "selection",
+                "cell",
+                "output"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          }
         }
       ]
     },
     {
       "id": "s13",
       "title": "Closed-book rebuild audit",
-      "description": "Observe a rebuild from memory without scaffolding, mutation, or substantive help.",
+      "description": "Observe a rebuild from memory without scaffolding, mutation, or substantive help. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
           "id": "audit",
-          "title": "Run the closed-book audit",
-          "kind": "audit",
-          "teacher_mode": "observer",
+          "title": "Run the closed-book audit — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S13-rebuild-from-memory.html"},
-            {"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4"},
-            {"id": "tools-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/tools.py"},
-            {"id": "loop-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/loop.py"},
-            {"id": "engine-source", "type": "source", "role": "evidence", "path": "labs/trivia_host/engine.py"}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S13-rebuild-from-memory.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            },
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4"
+            },
+            {
+              "id": "tools-source",
+              "type": "source",
+              "path": "labs/trivia_host/tools.py",
+              "purpose": "supporting",
+              "label": "Tools Source"
+            },
+            {
+              "id": "loop-source",
+              "type": "source",
+              "path": "labs/trivia_host/loop.py",
+              "purpose": "supporting",
+              "label": "Loop Source"
+            },
+            {
+              "id": "engine-source",
+              "type": "source",
+              "path": "labs/trivia_host/engine.py",
+              "purpose": "supporting",
+              "label": "Engine Source"
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s13-audit-receipt"},
-          "capabilities": {"chat": true, "hint_level": "none", "share_selection": false, "share_cell": false, "share_output": false, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": [
+              {
+                "id": "s13-audit",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own audit notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "observer_only",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "none"
+            },
+            "sharing": {
+              "allow": []
+            },
+            "proposals": {
+              "allow": []
+            }
+          }
         }
       ]
     },
     {
       "id": "s14",
       "title": "Ship and pilot",
-      "description": "Run named verification, bank receipts, and assemble a public artifact without inflating claims.",
+      "description": "Run named verification, bank receipts, and assemble a public artifact without inflating claims. Native materials remain accessible; limited guidance outside the S01/S02 pilot.",
       "phases": [
         {
           "id": "ship",
-          "title": "Verify, ship, and pilot",
-          "kind": "ship",
-          "teacher_mode": "reviewer",
+          "title": "Verify, ship, and pilot — limited guidance",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "generic"
+          },
           "surfaces": [
-            {"id": "lesson", "type": "html", "role": "primary", "path": "lessons/S14-ship-and-pilot.html"},
-            {"id": "video", "type": "video", "role": "reference", "url": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4"},
-            {"id": "runner-source", "type": "source", "role": "evidence", "path": "labs/run.py"},
-            {"id": "contracts-source", "type": "source", "role": "evidence", "path": "labs/test_contracts.py"},
-            {"id": "replay-command", "type": "terminal", "role": "evidence", "label": "Copy the offline full-suite replay command", "argv": ["uv", "run", "python", "labs/run.py", "--all", "--replay"], "cwd": "."}
+            {
+              "id": "lesson",
+              "type": "html",
+              "path": "lessons/S14-ship-and-pilot.html",
+              "purpose": "primary",
+              "label": "Lesson"
+            },
+            {
+              "id": "video",
+              "type": "video",
+              "purpose": "reference",
+              "label": "Video",
+              "src": "https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4"
+            },
+            {
+              "id": "runner-source",
+              "type": "source",
+              "path": "labs/run.py",
+              "purpose": "supporting",
+              "label": "Runner Source"
+            },
+            {
+              "id": "contracts-source",
+              "type": "source",
+              "path": "labs/test_contracts.py",
+              "purpose": "supporting",
+              "label": "Contracts Source"
+            },
+            {
+              "id": "replay-command",
+              "type": "terminal",
+              "label": "Copy the offline full-suite replay command",
+              "cwd": ".",
+              "purpose": "supporting",
+              "command": [
+                "uv",
+                "run",
+                "python",
+                "labs/run.py",
+                "--all",
+                "--replay"
+              ]
+            }
           ],
-          "completion": {"type": "receipt_recorded", "record_id": "s14-ship-receipt"},
-          "capabilities": {"chat": true, "hint_level": "gentle", "share_selection": true, "share_cell": false, "share_output": true, "create_profile_proposal": false, "create_course_proposal": false, "create_workspace_proposal": false}
+          "completion": {
+            "requirements": [
+              {
+                "id": "s14-ship",
+                "type": "learner_record",
+                "record_kind": "text",
+                "prompt": "Record your own ship notes using the native course instructions. Limited guidance; no automatic correctness judgment."
+              }
+            ]
+          },
+          "teacher": {
+            "access": {
+              "mode": "observer_only",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "none"
+            },
+            "sharing": {
+              "allow": []
+            },
+            "proposals": {
+              "allow": []
+            }
+          }
         }
       ]
     }
-  ]
+  ],
+  "runtime": {
+    "type": "jupyter",
+    "kernel": {
+      "type": "python_uv_project"
+    }
+  }
 }

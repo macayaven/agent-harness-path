@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html">&larr; Prev: S12-judge-calibration — Measuring the measurers</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
-<h1>S13-rebuild-from-memory — The closed-book audit</h1>
+<h1 id="s13-rebuild-from-memory-the-closed-book-audit">S13-rebuild-from-memory — The closed-book audit</h1>
 <p><strong>What this teaches:</strong> why "I built it" is not evidence that you own it — and the one
 measurement that is: a closed-book rebuild of the core component, judged by your own
 eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
@@ -115,8 +117,8 @@ defeat it. Hard path: the audit target is <code>labs/trivia_host/loop.py</code> 
 The protocol below is the hands-on.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>Authorship is not ownership</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="authorship-is-not-ownership">Authorship is not ownership</h3>
 <p>Take any non-trivial project you own — built in this path, at work, or in another
 course — much of it, these days, with an assistant in the loop. Owning it feels
 like authorship. Mechanically, it was closer to code review: you
@@ -142,7 +144,7 @@ who delegated to AI produced comparable output but scored dramatically lower on
 mastery of what they had just <em>built</em>
 (<a href="https://arxiv.org/abs/2601.20245">arXiv:2601.20245</a>). The felt sense of
 competence is not evidence. The audit replaces it with evidence.</p>
-<h3>The audit is a measurement instrument</h3>
+<h3 id="the-audit-is-a-measurement-instrument">The audit is a measurement instrument</h3>
 <p>Same stance as S02: the rebuild is a probe, the suite is the checker, and the only
 question is "would I believe the number?" The naive self-audit — scroll through the
 code, nod, conclude ownership — fails for the same reason an unvalidated checker
@@ -163,7 +165,7 @@ nothing.</p>
 <li><strong>The byproducts are captured.</strong> The diff is not waste; it is the raw material
    of the forgot-list.</li>
 </ol>
-<h3>The suite is the decision instrument; the diff is the diagnosis</h3>
+<h3 id="the-suite-is-the-decision-instrument-the-diff-is-the-diagnosis">The suite is the decision instrument; the diff is the diagnosis</h3>
 <p>This is why the audit sits at S13 and not S03: it consumes the instrument the rest
 of the path teaches. Without a defended eval suite, the only bar a rebuild can
 clear is "it runs and feels right" — the fluency illusion with extra steps. With
@@ -205,7 +207,7 @@ noisy suite can miss a real regression wherever you set it. That is why the suit
 is the audit's <em>decision instrument</em> rather than its whole judgment: the hunk
 review above stays a separate step, and behavioral-gap hunks feed the forgot-list
 even when the number comes back green.</p>
-<h3>The forgot-list is the deliverable</h3>
+<h3 id="the-forgot-list-is-the-deliverable">The forgot-list is the deliverable</h3>
 <p>The number tells you <em>whether</em> you own the system; the forgot-list tells you <em>which
 parts</em> you don't. This is S10's error analysis turned inward: each behavioral gap
 becomes a taxonomy entry — what you dropped, why the original had it, the one-line
@@ -235,7 +237,7 @@ repair, verify the repair.</p>
     H --&gt; I[re-study exactly those items]
     I --&gt; J[re-audit cold, ~1 week]
 </pre>
-<h2>The protocol</h2>
+<h2 id="the-protocol">The protocol</h2>
 <p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
 <p><strong>Hard path:</strong> you built <code>labs/trivia_host/</code>. The core is <code>trivia_host/loop.py</code>;
 the suite is <code>uv run python labs/run.py --all --replay</code> (or <code>--live</code> on your
@@ -279,7 +281,7 @@ project's own.</p>
    else. Wait a week. Run the audit again from <strong>Set the terms</strong>. The second pass
    is where retention happens; the first pass only told you the truth.</li>
 </ol>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -326,7 +328,7 @@ project's own.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Karpicke &amp; Roediger, <a href="https://doi.org/10.1126/science.1152408">The Critical Importance of Retrieval for Learning</a>
   (<em>Science</em>, 2008).</strong> Extract this: the prediction reversal — students forecast
@@ -346,7 +348,7 @@ project's own.</p>
   performance-during-practice is a misleading index of learning — the reason the
   audit is closed-book, timed, and re-run cold.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"I wrote it, so I own it."</strong> Assisted authorship is code review, and review
   trains recognition. The audit exists precisely because authorship and ownership
@@ -365,7 +367,7 @@ project's own.</p>
 <li><strong>Re-studying everything after a bad audit.</strong> The forgot-list is the
   deliverable; blanket re-study is the rereading fallacy at curriculum scale.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why does re-reading your own code overestimate what you can rebuild?</summary>
 Re-reading trains recognition fluency — the code feels familiar, and familiarity
 masquerades as knowledge. Recall (producing the code unaided) draws on storage
@@ -389,7 +391,7 @@ defended number, "it runs and feels right" is the only bar, and that bar is the
 fluency illusion. And it needs a system large enough that ownership is genuinely
 in doubt — a project you own, not a toy.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S14-ship-and-pilot:</strong> the audit proves the system is yours; the last session
 proves it works for someone who is not you. Acceptance runs on unseen scenarios,
 assembled architecture and failure documentation, and a public evidence artifact —

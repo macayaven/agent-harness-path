@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S09-evidence-reports.html">&larr; Prev: S09-evidence-reports — The report a depleted reader can trust</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S11-budgets-routing.html">Next: S11-budgets-routing — Budgets, routing, and the privacy boundary &rarr;</a></span></nav>
-<h1>S10-error-analysis — Failures into taxonomy, taxonomy into evals</h1>
+<h1 id="s10-error-analysis-failures-into-taxonomy-taxonomy-into-evals">S10-error-analysis — Failures into taxonomy, taxonomy into evals</h1>
 <p><strong>What this teaches:</strong> open-coded error analysis — reading failure traces into
 free-form notes, grouping the notes into a labeled taxonomy, prioritizing by
 frequency × severity, and converting each recurrent category into a new eval
@@ -112,8 +114,8 @@ traces you can actually pull).
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s10_errors.md"><code>labs/s10_errors.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>The number says something is wrong; reading says what</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-number-says-something-is-wrong-reading-says-what">The number says something is wrong; reading says what</h3>
 <p>Your suite says 6/9. Two different systems can both score 6/9 — one failing on
 safety, one failing on formatting — and the number cannot tell them apart. The
 aggregate is a smoke detector: it tells you there is a fire and roughly where,
@@ -135,7 +137,7 @@ applied AI is <em>skipping</em> this loop and going straight from "the number mo
 to a fix (<a href="https://hamel.dev/blog/posts/field-guide/">hamel.dev/blog/posts/field-guide</a>).
 A fix chosen before the failures are classified fixes the loudest bug, not the
 most frequent one.</p>
-<h3>Open coding: let the data name the categories</h3>
+<h3 id="open-coding-let-the-data-name-the-categories">Open coding: let the data name the categories</h3>
 <p>The method is borrowed, not invented. Qualitative researchers have done
 "categories from data" since Glaser &amp; Strauss's grounded theory (1967):
 <strong>open coding</strong> means reading each artifact and writing a free-form note about
@@ -162,7 +164,7 @@ a novel failure gets misfiled or dumped in "other." The diagnostic: <strong>if
 will guess the categories before reading, then watch the data grade your
 guess. Most people's guesses miss at least one bucket that turns out to be
 real.</p>
-<h3>Axial coding: a taxonomy that earns its rows</h3>
+<h3 id="axial-coding-a-taxonomy-that-earns-its-rows">Axial coding: a taxonomy that earns its rows</h3>
 <p><strong>Axial coding</strong> is the grouping pass: lay the notes side by side, cluster the
 ones describing the same underlying cause, and name each cluster. The output
 is a taxonomy — a table whose every row has to earn its place:</p>
@@ -204,7 +206,7 @@ is a taxonomy — a table whose every row has to earn its place:</p>
 frequency lies about priority: a safety-miss at n=2 can outrank a formatting
 annoyance at n=5 — but you need both columns to <em>argue</em> that, and the argument
 is what a reviewer or teammate will demand.</p>
-<h3>From taxonomy to eval growth</h3>
+<h3 id="from-taxonomy-to-eval-growth">From taxonomy to eval growth</h3>
 <p>A prioritized taxonomy is a to-do list with two kinds of items:</p>
 <ul>
 <li><strong>Fixes</strong>, for the top categories — prompt changes, guardrails, tool changes.</li>
@@ -231,7 +233,7 @@ substitute they file confidently and wrong, and the notebook will show you the
 ugliest version of that: the auto-filer undercounting the safety bucket
 exactly where it has no keywords. The failure you have not imagined has no
 keyword and no cluster centroid yet.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <p>Run top-to-bottom. Write predictions as comments <em>before</em> running each
 experiment — including your guessed categories, which the data will grade.</p>
 <ol>
@@ -251,7 +253,7 @@ experiment — including your guessed categories, which the data will grade.</p>
    check.</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s10_errors.md">taxonomy and +3 tasks</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -293,7 +295,7 @@ experiment — including your guessed categories, which the data will grade.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/field-guide/">A Field Guide to Rapidly Improving AI Products</a>
   (Mar 2025).</strong> The primary source. Extract: the open/axial two-phase loop,
@@ -316,7 +318,7 @@ experiment — including your guessed categories, which the data will grade.</p>
   themselves get revised. That is why your taxonomy is a draft until the last
   trace is read.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>Fix first, classify later.</strong> You read one ugly trace and patch it
   immediately. That is whack-a-mole: you fixed the loudest bug, and the
@@ -336,7 +338,7 @@ experiment — including your guessed categories, which the data will grade.</p>
   toy demonstrates, they undercount exactly the bucket where being wrong
   hurts most. Use them to order the queue, never to close it.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why must category names come from the data instead of a pre-made list?</summary>
 A list written before reading encodes what you already believe. Failures you
 haven't imagined — the ones the exercise exists to find — get forced into
@@ -359,7 +361,7 @@ regression guard. The suite growing bottom-up from failures *is* the
 mechanism — today's failure-grown task is tomorrow's merge gate, and the
 denominator is the ledger of failure modes you now provably watch.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S11 — Budgets, routing, and the privacy boundary:</strong> your suite now grows
 every time the product fails in a new way, which means you will run it often —
 and every run costs tokens, latency, and a decision about which model serves

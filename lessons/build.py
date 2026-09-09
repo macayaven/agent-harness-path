@@ -2,29 +2,31 @@
 """Render lessons/src/*.md to lessons/*.html using template.html.
 
 Stdlib + the `markdown` package only (uv-managed, see pyproject.toml).
-Mermaid code fences are converted to <pre class="mermaid"> so the template's
-mermaid.js (vendored at lessons/vendor/, browser-side) can render them.
+Pilot Mermaid fences use committed static SVG with input/asset freshness checks.
+Other lessons retain the vendored native browser renderer.
 Each page also gets a prev/index/next nav bar, top and bottom of <main>.
 """
 
 import re
+import html
 import sys
 from pathlib import Path
 
 import markdown
 
 from site_urls import rewrite_video_hrefs
+from static_diagrams import PILOT, static_image
 
 HERE = Path(__file__).resolve().parent
 SRC = HERE / "src"
 TEMPLATE = (HERE / "template.html").read_text(encoding="utf-8")
 
-MD = markdown.Markdown(extensions=["tables", "fenced_code"])
+MD = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
 
 # python-markdown emits mermaid fences as <pre><code class="language-mermaid">;
 # mermaid.js wants <pre class="mermaid"> with raw text. role="img" + aria-label
 # give screen readers a generic stand-in; the prose around each diagram carries
-# the actual description (no per-diagram alt text).
+# the actual description for non-pilot diagrams. Pilot SVG uses specific alt text.
 MERMAID_RE = re.compile(
     r'<pre><code class="language-mermaid">(.*?)</code></pre>', re.DOTALL
 )
@@ -58,7 +60,10 @@ def render_body(source: Path) -> tuple[str, str, int]:
     """Convert one source file; return (body HTML, H1 title, mermaid count)."""
     MD.reset()
     body = MD.convert(source.read_text(encoding="utf-8"))
-    body, n = MERMAID_RE.subn(MERMAID_PRE, body)
+    if source.stem in PILOT:
+        body, n = MERMAID_RE.subn(lambda match: static_image(source.stem, html.unescape(match.group(1))), body)
+    else:
+        body, n = MERMAID_RE.subn(MERMAID_PRE, body)
     title_match = re.search(r"<h1[^>]*>(.*?)</h1>", body)
     title = title_match.group(1) if title_match else source.stem
     return body, title, n

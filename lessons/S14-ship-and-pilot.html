@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S13-rebuild-from-memory.html">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"></span></nav>
-<h1>S14-ship-and-pilot — The cold run, the pilot, and the public artifact</h1>
+<h1 id="s14-ship-and-pilot-the-cold-run-the-pilot-and-the-public-artifact">S14-ship-and-pilot — The cold run, the pilot, and the public artifact</h1>
 <p><strong>What this teaches:</strong> shipping is the last measurement, not a mood — a cold
 acceptance run on unseen input, one pilot with a second human under a written
 protocol, documentation <em>assembled</em> from artifacts rather than composed from
@@ -115,8 +117,8 @@ require S14.
 host (hard), run through the protocol below.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S14-ship-and-pilot.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>Done is a measurement, not a mood</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="done-is-a-measurement-not-a-mood">Done is a measurement, not a mood</h3>
 <p>Every system feels finished from the inside. You know which inputs it handles,
 which routes are warm, which pauses to narrate over. That knowledge is exactly
 the problem: a run you conduct on inputs you chose, in an environment you
@@ -140,7 +142,7 @@ second fixture, a holdout frozen at the same time and never opened during
 fixing. The one move that is actually fatal is editing the fixture to fit — that is
 S02's "gaming the check" move at ship scale, with no checker left above you to
 catch it.</p>
-<h3>The second human changes the instrument</h3>
+<h3 id="the-second-human-changes-the-instrument">The second human changes the instrument</h3>
 <p>You are the least representative user your system will ever have. You know
 what it is for, what it can't do, and — worst of all — what you meant by every
 label on the screen. The <strong>pilot</strong> is therefore done by someone
@@ -180,7 +182,7 @@ house — not the wiring, not the market, not the next occupant.</p>
     F --&gt; G[adversarial review&lt;br/&gt;fix what is real,&lt;br/&gt;rebut the rest in writing]
     G --&gt; H[tag v1.0.0&lt;br/&gt;evidence covers the claims]
 </pre>
-<h3>Assembly, not composition</h3>
+<h3 id="assembly-not-composition">Assembly, not composition</h3>
 <p>Documentation written at ship time, from memory, describes the system you
 <em>meant</em> to build. The decisions have faded; what remains is intent, and intent
 reads well and matches nothing. Hence the session's core move: <strong>the docs are
@@ -236,7 +238,7 @@ Top failure categories with counts, what fixed them, what remains — including
 the uncomfortable numbers (your false-trigger rate, your judge-agreement
 score), stated plainly. A failures doc without the worst number in it is
 marketing wearing a hair shirt.</p>
-<h3>Public evidence, not vision</h3>
+<h3 id="public-evidence-not-vision">Public evidence, not vision</h3>
 <p>The last artifact is public: a write-up or ~10-minute recording of one full
 run, end to end, with the naive-vs-governed numbers. Two invariants:</p>
 <ul>
@@ -263,7 +265,7 @@ artifact — is not SemVer's; it is this path's own release policy, signed at th
 tag. No more. Everything deliberately parked (wider pilots, new surfaces,
 dashboards) starts from the tag, not before it — a parked list is only
 meaningful against a frozen baseline.</p>
-<h2>The protocol</h2>
+<h2 id="the-protocol">The protocol</h2>
 <p><strong>Hard path:</strong> the system is <code>labs/trivia_host/</code>. The public artifact is a
 <strong>fixture</strong> run (naïve vs engine numbers from <code>labs/run.py</code>), never a real-round
 transcript. The pilot is one consenting adult playing trivia.</p>
@@ -315,7 +317,7 @@ steps inherit the earlier steps' contamination.</p>
    own release policy, not SemVer's. <em>Done when:</em> every objection has a fix or a written rebuttal, and the
    parked list (everything after v1.0.0) is written down, not started.</li>
 </ol>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -367,7 +369,7 @@ steps inherit the earlier steps' contamination.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Google SRE book, <a href="https://sre.google/sre-book/postmortem-culture/">Postmortem Culture: Learning from Failure</a>
   (ch. 15).</strong> Extract the blameless constraint — describe mechanisms and
@@ -387,7 +389,7 @@ steps inherit the earlier steps' contamination.</p>
   and the rule to ask about past behavior, not future intentions. Governs how
   you record the pilot's honest reaction.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"The demo went fine, so it's done."</strong> The warm-path illusion: chosen
   input, warm route, narration over the stalls. Cold, unseen, criteria-first —
@@ -405,7 +407,7 @@ steps inherit the earlier steps' contamination.</p>
   evidence covers exactly what the artifact asserts — and an unsupported claim
   at tag time is the bug every later session inherits.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why must the acceptance run be cold, on unseen input, with criteria written first?</summary>
 Because anything warmer measures your memory of the system: you subconsciously
 steer toward inputs it handles and away from known weak spots. Unseen input
@@ -435,7 +437,7 @@ audit, while the fixture rule is mechanical. And the fixture run is
 reproducible: the numbers carry the evidence; intimacy adds risk, not
 credibility.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p>There is no S15. What you own after the tag: a core you can rebuild from
 memory (S13), a measurement instrument you can defend (S02), the mechanisms of
 a governed, observed, budgeted, calibrated harness (S05–S12) — and, for the

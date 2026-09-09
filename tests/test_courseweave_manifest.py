@@ -1,20 +1,14 @@
-"""Contract tests for the Agent Harness Path CourseWeave adapter."""
-
+"""Native adapter/content checks; real installed contract: scripts/verify_courseweave.py."""
 from __future__ import annotations
-
 import json
 import os
-import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-
-
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST_PATH = ROOT / "courseweave.json"
 LAUNCHER_PATH = ROOT / "scripts/courseweave"
-
+MANIFEST_PATH = ROOT / "courseweave.json"
 EXPECTED_MODULES = {
     "s01": ("S01-agent-loop", "s01_agent_loop_toy", "s01_loop"),
     "s02": ("S02-golden-evals", "s02_scripted_user_eval_toy", "s02_evals"),
@@ -86,648 +80,156 @@ EXPECTED_SOURCE_PATHS = {
 }
 
 
-def load_manifest_data() -> dict[str, object]:
-    return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
+def load_manifest_data():
+    return json.loads(MANIFEST_PATH.read_text())
 
-def phase_map(module: dict[str, object]) -> dict[str, dict[str, object]]:
+def phase_map(module):
     return {phase["id"]: phase for phase in module["phases"]}
 
-
-def all_surfaces(manifest: dict[str, object]) -> list[dict[str, object]]:
-    return [
-        surface
-        for module in manifest["modules"]
-        for phase in module["phases"]
-        for surface in phase["surfaces"]
-    ]
-
+def all_surfaces(manifest):
+    return [s for m in manifest["modules"] for p in m["phases"] for s in p["surfaces"]]
 
 class CourseWeaveManifestTests(unittest.TestCase):
-    def test_s01_is_a_complete_predict_first_slice(self) -> None:
-        """Catch a missing or incomplete first module before expansion to S02-S14."""
-
-        self.assertTrue(MANIFEST_PATH.is_file(), "courseweave.json must exist")
+    def test_v2_read_notebook_self_check_optional_lab_route(self):
         manifest = load_manifest_data()
-        s01 = manifest["modules"][0]
-        self.assertEqual(s01["id"], "s01")
-
-        phases = {phase["id"]: phase for phase in s01["phases"]}
-        self.assertEqual(list(phases), ["read", "watch", "predict", "experiment", "lab"])
-        self.assertEqual(phases["predict"]["kind"], "predict")
-        self.assertEqual(
-            phases["predict"]["completion"],
-            {"type": "prediction_recorded", "record_id": "s01-prediction"},
-        )
-
-        surfaces = [
-            surface
-            for phase in s01["phases"]
-            for surface in phase["surfaces"]
-        ]
-        local_paths = {surface.get("path") for surface in surfaces}
-        self.assertIn("lessons/S01-agent-loop.html", local_paths)
-        self.assertIn("notebooks/s01_agent_loop_toy.ipynb", local_paths)
-        self.assertIn("labs/s01_loop.md", local_paths)
-        self.assertIn("labs/trivia_host/loop.py", local_paths)
-
-        video = next(surface for surface in surfaces if surface["type"] == "video")
-        self.assertEqual(
-            video["url"],
-            "https://storage.googleapis.com/"
-            "macayaven-agent-harness-path-videos/S01-agent-loop.mp4",
-        )
-        self.assertNotIn("path", video)
-
-        notebook_surfaces = [
-            surface for surface in surfaces if surface["type"] == "notebook"
-        ]
-        self.assertEqual(
-            notebook_surfaces[0]["match"]["cell_ids"],
-            ["69a77fc3", "fd87655a", "15f7e677"],
-        )
-        all_cell_ids = {
-            cell["id"]
-            for cell in json.loads(
-                (ROOT / "notebooks/s01_agent_loop_toy.ipynb").read_text(
-                    encoding="utf-8"
-                )
-            )["cells"]
-        }
-        for surface in notebook_surfaces:
-            self.assertLessEqual(set(surface["match"]["cell_ids"]), all_cell_ids)
-
-        terminal = next(
-            surface for surface in surfaces if surface["type"] == "terminal"
-        )
-        self.assertEqual(
-            terminal["argv"],
-            ["uv", "run", "python", "labs/run.py", "--session", "s01", "--replay"],
-        )
-        self.assertEqual(terminal["cwd"], ".")
-
-    def test_manifest_maps_every_session_and_public_video(self) -> None:
-        """Catch a missing course session or a non-playable local-video selection."""
-
-        manifest = load_manifest_data()
-        modules = {module["id"]: module for module in manifest["modules"]}
-        self.assertEqual(list(modules), [f"s{number:02d}" for number in range(1, 15)])
-
-        for module_id, (lesson_slug, notebook_slug, lab_slug) in EXPECTED_MODULES.items():
-            phases = phase_map(modules[module_id])
-            self.assertEqual(
-                list(phases), ["read", "watch", "predict", "experiment", "lab"]
-            )
-            surfaces = [
-                surface
-                for phase in modules[module_id]["phases"]
-                for surface in phase["surfaces"]
-            ]
-            self.assertIn(
-                f"lessons/{lesson_slug}.html",
-                {surface.get("path") for surface in surfaces},
-            )
-            self.assertIn(
-                f"notebooks/{notebook_slug}.ipynb",
-                {surface.get("path") for surface in surfaces},
-            )
-            self.assertIn(
-                f"labs/{lab_slug}.md",
-                {surface.get("path") for surface in surfaces},
-            )
-            video = next(surface for surface in surfaces if surface["type"] == "video")
-            self.assertEqual(
-                video,
-                {
-                    "id": "video",
-                    "type": "video",
-                    "role": "reference",
-                    "url": "https://storage.googleapis.com/"
-                    f"macayaven-agent-harness-path-videos/{lesson_slug}.mp4",
-                },
-            )
-
-        for module_id, lesson_slug in {
-            "s13": "S13-rebuild-from-memory",
-            "s14": "S14-ship-and-pilot",
-        }.items():
-            paths = {
-                surface.get("path")
-                for phase in modules[module_id]["phases"]
-                for surface in phase["surfaces"]
-            }
-            self.assertIn(f"lessons/{lesson_slug}.html", paths)
-            video = next(
-                surface
-                for phase in modules[module_id]["phases"]
-                for surface in phase["surfaces"]
-                if surface["type"] == "video"
-            )
-            self.assertEqual(
-                video["url"],
-                "https://storage.googleapis.com/"
-                f"macayaven-agent-harness-path-videos/{lesson_slug}.mp4",
-            )
-            self.assertNotIn("path", video)
-
-    def test_predict_and_experiment_cell_ids_are_real_and_disjoint(self) -> None:
-        """Catch stale notebook matches and prediction cells that reveal solutions."""
-
-        modules = {module["id"]: module for module in load_manifest_data()["modules"]}
-        for module_id, (_, notebook_slug, _) in EXPECTED_MODULES.items():
-            self.assertIn(module_id, modules)
-            notebook = json.loads(
-                (ROOT / f"notebooks/{notebook_slug}.ipynb").read_text(encoding="utf-8")
-            )
-            cells = {cell["id"]: cell for cell in notebook["cells"]}
-            phases = phase_map(modules[module_id])
-            predict_match = phases["predict"]["surfaces"][0]["match"]
-            experiment_match = phases["experiment"]["surfaces"][0]["match"]
-            self.assertEqual(
-                predict_match["cell_ids"], EXPECTED_PREDICT_CELL_IDS[module_id]
-            )
-            self.assertEqual(
-                experiment_match["cell_ids"], EXPECTED_EXPERIMENT_CELL_IDS[module_id]
-            )
-            self.assertLessEqual(set(predict_match["cell_ids"]), set(cells))
-            self.assertLessEqual(set(experiment_match["cell_ids"]), set(cells))
-            self.assertTrue(
-                set(predict_match["cell_ids"]).isdisjoint(
-                    experiment_match["cell_ids"]
-                )
-            )
-
-    def test_phase_completion_and_capability_policies_preserve_learner_ownership(self) -> None:
-        """Catch phase reordering, unlocked predictions, or teacher mutation authority."""
-
-        manifest = load_manifest_data()
-        self.assertEqual(
-            manifest["policies"],
-            {
-                "content_sharing": "explicit_only",
-                "durable_mutation": "proposal_or_direct_student_action",
-                "terminal_execution": "student_only",
-                "conversation_memory": "session_only",
-                "max_shared_chars": 8192,
-                "workspace_write_globs": [],
-            },
-        )
-        for module in manifest["modules"][:12]:
+        self.assertEqual(manifest["schema_version"], 2)
+        self.assertEqual([m["id"] for m in manifest["modules"]], [f"s{n:02d}" for n in range(1,15)])
+        for module in manifest["modules"][:2]:
             phases = phase_map(module)
-            self.assertLess(
-                list(phases).index("predict"), list(phases).index("experiment")
-            )
-            self.assertEqual(phases["predict"]["kind"], "predict")
-            self.assertEqual(phases["predict"]["teacher_mode"], "socratic_guide")
-            self.assertEqual(
-                phases["predict"]["completion"],
-                {
-                    "type": "prediction_recorded",
-                    "record_id": f"{module['id']}-prediction",
-                },
-            )
-            self.assertEqual(phases["predict"]["capabilities"]["hint_level"], "none")
-            for phase in module["phases"]:
-                capabilities = phase["capabilities"]
-                self.assertFalse(capabilities["create_profile_proposal"])
-                self.assertFalse(capabilities["create_course_proposal"])
-                self.assertFalse(capabilities["create_workspace_proposal"])
+            self.assertEqual(list(phases), ["read", "notebook", "self-check", "lab"])
+            self.assertEqual([p["progress"] for p in phases.values()], ["required"]*3+["optional"])
+            self.assertEqual(phases["read"]["surfaces"][0]["fragment"], "the-theory-in-depth")
+            self.assertEqual(phases["self-check"]["surfaces"][0]["fragment"], "self-check")
+            self.assertEqual(phases["notebook"]["teacher"]["access"]["requires"], [module["id"]+"-prediction"])
+            self.assertEqual(len(phases["notebook"]["completion"]["requirements"]), 3)
+            self.assertEqual(phases["notebook"]["surfaces"][0]["id"], "notebook")
+            self.assertEqual(phases["notebook"]["surfaces"][0]["purpose"], "primary")
+            self.assertTrue(phases["self-check"]["learning"]["checks"])
+        for module in manifest["modules"][2:]:
+            self.assertIn("limited guidance", module["description"].lower())
 
-    def test_s13_is_observer_only_and_s14_is_verification_ship(self) -> None:
-        """Catch substantive audit help or mutation-capable release coaching."""
+    def test_maps_every_course_file_video_and_original_prediction_cell(self):
+        modules = {m["id"]:m for m in load_manifest_data()["modules"]}
+        for mid,(lesson, notebook, lab) in EXPECTED_MODULES.items():
+            surfaces = all_surfaces({"modules":[modules[mid]]})
+            paths = {s.get("path") for s in surfaces}
+            self.assertTrue({f"lessons/{lesson}.html",f"notebooks/{notebook}.ipynb",f"labs/{lab}.md"} <= paths)
+            self.assertEqual(next(s for s in surfaces if s["type"]=="video")["src"],
+                f"https://storage.googleapis.com/macayaven-agent-harness-path-videos/{lesson}.mp4")
+            cells = {c["id"]:c for c in json.loads((ROOT/f"notebooks/{notebook}.ipynb").read_text())["cells"]}
+            selected = set()
+            for surface in surfaces:
+                if surface["type"]=="notebook":
+                    ids = set(surface["selector"]["values"])
+                    self.assertTrue(ids <= cells.keys())
+                    selected |= ids
+            self.assertTrue(set(EXPECTED_PREDICT_CELL_IDS[mid]) <= selected)
+            if mid not in {"s01","s02"}:
+                self.assertTrue(set(EXPECTED_EXPERIMENT_CELL_IDS[mid]) <= selected)
+            else:
+                # Pre-attempt grounding selects questions/attempts, never code demonstrations/answers.
+                self.assertTrue(selected.isdisjoint(EXPECTED_EXPERIMENT_CELL_IDS[mid]))
+                self.assertFalse(any("SOLUTION" in "".join(cells[c]["source"]) for c in selected))
+        for mid, expected in EXPECTED_SOURCE_PATHS.items():
+            self.assertEqual({s["path"] for s in all_surfaces({"modules":[modules[mid]]}) if s["type"]=="source"}, expected)
+        for mid, slug in {"s13":"S13-rebuild-from-memory","s14":"S14-ship-and-pilot"}.items():
+            surfaces = all_surfaces({"modules":[modules[mid]]})
+            self.assertIn(f"lessons/{slug}.html", {s.get("path") for s in surfaces})
+            self.assertTrue(next(s for s in surfaces if s["type"]=="video")["src"].endswith(slug+".mp4"))
+            self.assertEqual(modules[mid]["phases"][0]["teacher"]["access"]["mode"], "observer_only")
 
-        modules = {module["id"]: module for module in load_manifest_data()["modules"]}
-        self.assertIn("s13", modules)
-        self.assertIn("s14", modules)
-        self.assertEqual([phase["id"] for phase in modules["s13"]["phases"]], ["audit"])
-        audit = modules["s13"]["phases"][0]
-        self.assertEqual((audit["kind"], audit["teacher_mode"]), ("audit", "observer"))
-        self.assertEqual(
-            audit["completion"],
-            {"type": "receipt_recorded", "record_id": "s13-audit-receipt"},
-        )
-        self.assertEqual(audit["capabilities"]["hint_level"], "none")
-
-        self.assertEqual([phase["id"] for phase in modules["s14"]["phases"]], ["ship"])
-        ship = modules["s14"]["phases"][0]
-        self.assertEqual((ship["kind"], ship["teacher_mode"]), ("ship", "reviewer"))
-        self.assertEqual(
-            ship["completion"],
-            {"type": "receipt_recorded", "record_id": "s14-ship-receipt"},
-        )
-        for phase in (audit, ship):
-            capabilities = phase["capabilities"]
-            self.assertFalse(capabilities["create_profile_proposal"])
-            self.assertFalse(capabilities["create_course_proposal"])
-            self.assertFalse(capabilities["create_workspace_proposal"])
-
-    def test_ids_are_unique_in_their_schema_scopes(self) -> None:
-        """Catch ambiguous module, phase, or surface resolution."""
-
+    def test_unique_coordinates_local_jail_and_learner_authority(self):
         manifest = load_manifest_data()
-        module_ids = [module["id"] for module in manifest["modules"]]
-        self.assertEqual(len(module_ids), len(set(module_ids)))
+        policies = manifest["policies"]
+        self.assertEqual(policies["content_sharing"], "explicit_only")
+        self.assertEqual(policies["durable_mutation"], "proposal_or_direct_student_action")
+        self.assertEqual(policies["terminal_execution"], "student_only")
+        self.assertEqual(policies["conversation_memory"], "session_only")
+        self.assertEqual(policies["workspace_write_globs"], [])
+        self.assertEqual(policies["allowed_proposal_types"], ["profile"])
         for module in manifest["modules"]:
-            phase_ids = [phase["id"] for phase in module["phases"]]
-            self.assertEqual(len(phase_ids), len(set(phase_ids)))
+            self.assertEqual(len(module["phases"]), len(phase_map(module)))
             for phase in module["phases"]:
-                surface_ids = [surface["id"] for surface in phase["surfaces"]]
-                self.assertEqual(len(surface_ids), len(set(surface_ids)))
+                self.assertEqual(len(phase["surfaces"]), len({s["id"] for s in phase["surfaces"]}))
+                self.assertFalse(set(phase["teacher"]["proposals"]["allow"]) - {"profile"})
+        for s in all_surfaces(manifest):
+            relative = s.get("path", s.get("cwd"))
+            if relative:
+                target = (ROOT / relative).resolve()
+                self.assertTrue(target.is_relative_to(ROOT.resolve()), relative)
+                self.assertTrue(target.is_dir() if s["type"]=="terminal" else target.is_file(), relative)
 
-    def test_all_local_paths_exist_and_resolve_inside_the_course(self) -> None:
-        """Catch missing artifacts, parent traversal, and symlink jail escapes."""
-
-        manifest = load_manifest_data()
-        root = ROOT.resolve()
-        for surface in all_surfaces(manifest):
-            relative = surface.get("path")
-            if relative is None:
-                relative = surface.get("cwd")
-            if relative is None:
-                continue
-            target = (ROOT / relative).resolve()
-            self.assertTrue(target.is_relative_to(root), relative)
-            if surface["type"] == "terminal":
-                self.assertTrue(target.is_dir(), relative)
-            else:
-                self.assertTrue(target.is_file(), relative)
-
-    def test_relevant_learner_python_surfaces_are_mapped(self) -> None:
-        """Catch a session whose lab opens prose but omits the code under study."""
-
-        modules = {module["id"]: module for module in load_manifest_data()["modules"]}
-        for module_id, expected_paths in EXPECTED_SOURCE_PATHS.items():
-            actual_paths = {
-                surface["path"]
-                for phase in modules[module_id]["phases"]
-                for surface in phase["surfaces"]
-                if surface["type"] == "source"
-            }
-            self.assertEqual(actual_paths, expected_paths)
-
-    def test_terminal_surfaces_are_structured_offline_copy_only_commands(self) -> None:
-        """Catch shell strings, live mode, or commands outside the replay runner."""
-
-        terminals = [
-            surface
-            for surface in all_surfaces(load_manifest_data())
-            if surface["type"] == "terminal"
-        ]
-        self.assertEqual(len(terminals), 14)
-        for terminal in terminals:
-            argv = terminal["argv"]
-            self.assertIsInstance(argv, list)
-            self.assertEqual(argv[:4], ["uv", "run", "python", "labs/run.py"])
-            self.assertIn("--replay", argv)
-            self.assertNotIn("--live", argv)
-            self.assertEqual(terminal["cwd"], ".")
-            self.assertIn("Copy", terminal["label"])
-
-    def test_s06_terminal_argv_selects_the_reference_implementation(self) -> None:
-        """Catch S06 verification accidentally exercising unfinished learner code."""
-
-        self.assertEqual(
-            self._terminal_argv("s06"),
-            {
-                "replay-command": [
-                    "uv",
-                    "run",
-                    "python",
-                    "labs/run.py",
-                    "--session",
-                    "s06",
-                    "--replay",
-                    "--impl",
-                    "reference",
-                ]
-            },
-        )
-
-    def test_s08_terminal_argv_replays_both_protocol_commands(self) -> None:
-        """Catch omission of the second replay against the shared S01 cassette."""
-
-        self.assertEqual(
-            self._terminal_argv("s08"),
-            {
-                "replay-command": [
-                    "uv",
-                    "run",
-                    "python",
-                    "labs/run.py",
-                    "--session",
-                    "s08",
-                    "--replay",
-                ],
-                "s01-replay-command": [
-                    "uv",
-                    "run",
-                    "python",
-                    "labs/run.py",
-                    "--session",
-                    "s01",
-                    "--replay",
-                ],
-            },
-        )
-
-    def _terminal_argv(self, module_id: str) -> dict[str, list[str]]:
-        modules = {module["id"]: module for module in load_manifest_data()["modules"]}
-        return {
-            surface["id"]: surface["argv"]
-            for phase in modules[module_id]["phases"]
-            for surface in phase["surfaces"]
-            if surface["type"] == "terminal"
-        }
-
-    def test_platform_loader_and_resolver_accept_every_phase(self) -> None:
-        """Catch drift from the real CourseWeave schema, jail, and resolver contract."""
-
-        platform_root = ROOT.parent / "courseweave"
-        if not (platform_root / "src/courseweave/manifest.py").is_file():
-            self.skipTest("exact sibling CourseWeave checkout is unavailable")
-        python = platform_root / ".venv/bin/python"
-        if not python.is_file():
-            self.skipTest("exact sibling CourseWeave environment is unavailable")
-        program = """
-import json
-import sys
-from pathlib import Path
-from courseweave.context import resolve_context
-from courseweave.manifest import load_manifest
-from courseweave.models import ResolutionState, WorkspaceContext
-
-manifest = load_manifest(Path(sys.argv[1]), runnable=True)
-resolved_phases = []
-for sequence, module in enumerate(manifest.modules, start=1):
-    for phase in module.phases:
-        for surface_index, surface in enumerate(phase.surfaces):
-            context_data = {
-                "source_id": "adapter-contract",
-                "sequence": sequence * 100 + surface_index,
-            }
-            state = ResolutionState(
-                last_module_id=module.id,
-                last_phase_id=phase.id,
-            )
-            if surface.type == "notebook":
-                context_data["active_path"] = surface.path
-                if surface.match and surface.match.cell_ids:
-                    context_data["active_cell_id"] = surface.match.cell_ids[0]
-            elif surface.type == "terminal":
-                context_data["explicit_module_id"] = module.id
-                context_data["terminal_surface_id"] = surface.id
-            elif getattr(surface, "path", None) is not None:
-                context_data["active_path"] = surface.path
-            else:
-                context_data["explicit_module_id"] = module.id
-                context_data["explicit_phase_id"] = phase.id
-            resolved = resolve_context(
-                manifest,
-                state,
-                WorkspaceContext(**context_data),
-            )
-            assert (resolved.module_id, resolved.phase_id) == (module.id, phase.id)
-        resolved_phases.append([module.id, phase.id])
-print(json.dumps(resolved_phases))
-"""
-        environment = os.environ.copy()
-        environment["PYTHONPATH"] = str(platform_root / "src")
-        result = subprocess.run(
-            [str(python), "-c", program, str(ROOT)],
-            text=True,
-            capture_output=True,
-            env=environment,
-            check=False,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        expected = [
-            [module["id"], phase["id"]]
-            for module in load_manifest_data()["modules"]
-            for phase in module["phases"]
-        ]
-        self.assertEqual(json.loads(result.stdout), expected)
-
+    def test_copy_commands_match_actual_lab_modes(self):
+        modules = {m["id"]:m for m in load_manifest_data()["modules"]}
+        terminals = [s for s in all_surfaces(load_manifest_data()) if s["type"]=="terminal"]
+        self.assertEqual(len(terminals),16)  # original 14 replay commands + S01/S02 explicit live
+        for s in terminals:
+            self.assertEqual(s["command"][:4],["uv","run","python","labs/run.py"])
+            self.assertEqual(s["cwd"],".")
+            self.assertIn("Copy",s["label"])
+            self.assertEqual(sum(flag in s["command"] for flag in ["--replay","--live"]),1)
+        def commands(mid):
+            return {s["id"]:s["command"] for s in all_surfaces({"modules":[modules[mid]]}) if s["type"]=="terminal"}
+        self.assertEqual(commands("s06"), {"replay-command":["uv","run","python","labs/run.py","--session","s06","--replay","--impl","reference"]})
+        self.assertEqual(commands("s08"), {"replay-command":["uv","run","python","labs/run.py","--session","s08","--replay"],"s01-replay-command":["uv","run","python","labs/run.py","--session","s01","--replay"]})
 
 class CourseWeaveLauncherTests(unittest.TestCase):
-    def _write_executable(self, path: Path, body: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8")
-        path.chmod(0o755)
-
-    def test_installed_courseweave_is_execed_with_argv_intact(self) -> None:
-        """Catch lossy argument joining or a non-learner default subcommand."""
-
-        self.assertTrue(LAUNCHER_PATH.is_file())
+    def test_explicit_interpreters_and_external_state_preserve_argv(self):
         with tempfile.TemporaryDirectory() as directory:
-            temp = Path(directory)
-            capture = temp / "args.txt"
-            self._write_executable(
-                temp / "bin/courseweave", 'printf "%s\\n" "$@" > "$CAPTURE_PATH"'
-            )
-            environment = os.environ.copy()
-            environment["PATH"] = f"{temp / 'bin'}:/usr/bin:/bin"
-            environment["CAPTURE_PATH"] = str(capture)
-            result = subprocess.run(
-                [str(LAUNCHER_PATH), "--port", "9001"],
-                text=True,
-                capture_output=True,
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(
-                capture.read_text(encoding="utf-8").splitlines(),
-                ["launch", "--course-root", str(ROOT), "--port", "9001"],
-            )
+            temp=Path(directory); capture=temp/"args"
+            platform=temp/"platform python"; kernel=temp/"kernel python"
+            platform.write_text('#!/bin/sh\ncase "$*" in *--help*) echo --kernel-python;; *) printf "%s\\n" "$@" > "$CAPTURE_PATH";; esac\n')
+            platform.chmod(0o755); kernel.write_text("unused"); kernel.chmod(0o755)
+            result=subprocess.run([str(LAUNCHER_PATH),"--platform-python",str(platform),"--kernel-python",str(kernel),"--state-dir",str((temp/"state").resolve()),"--port","9001"],capture_output=True,text=True,env=os.environ|{"CAPTURE_PATH":str(capture)})
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(capture.read_text().splitlines(),["-m","courseweave","launch","--course-root",str(ROOT),"--kernel-python",str(kernel),"--state-dir",str((temp/"state").resolve()),"--port","9001"])
+            self.assertIn("Course kernel",result.stderr)
 
-    def test_exact_sibling_checkout_is_the_only_source_fallback(self) -> None:
-        """Catch CWD-dependent or arbitrary platform-checkout discovery."""
+    def test_no_implicit_path_or_sibling_discovery(self):
+        result=subprocess.run([str(LAUNCHER_PATH)],capture_output=True,text=True)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn("--platform-python",result.stderr)
 
-        self.assertTrue(LAUNCHER_PATH.is_file())
+    def test_unsupported_artifact_fails_before_launch(self):
         with tempfile.TemporaryDirectory() as directory:
-            temp = Path(directory)
-            course_root = temp / "course with spaces"
-            launcher = course_root / "scripts/courseweave"
-            launcher.parent.mkdir(parents=True)
-            shutil.copy2(LAUNCHER_PATH, launcher)
-            sibling = course_root.parent / "courseweave"
-            (sibling / "src/courseweave").mkdir(parents=True)
-            (sibling / "pyproject.toml").write_text(
-                '[project]\nname = "courseweave"\n', encoding="utf-8"
-            )
-            (sibling / "src/courseweave/cli.py").write_text("", encoding="utf-8")
-            capture = temp / "uv-args.txt"
-            self._write_executable(
-                temp / "bin/uv", 'printf "%s\\n" "$@" > "$CAPTURE_PATH"'
-            )
-            environment = os.environ.copy()
-            environment["PATH"] = f"{temp / 'bin'}:/usr/bin:/bin"
-            environment["CAPTURE_PATH"] = str(capture)
-            result = subprocess.run(
-                [str(launcher), "--port", "9002"],
-                text=True,
-                capture_output=True,
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(
-                capture.read_text(encoding="utf-8").splitlines(),
-                [
-                    "run",
-                    "--project",
-                    str(sibling.resolve()),
-                    "courseweave",
-                    "launch",
-                    "--course-root",
-                    str(course_root.resolve()),
-                    "--port",
-                    "9002",
-                ],
-            )
+            p=Path(directory)/"old-python";p.write_text("#!/bin/sh\necho old-help\n");p.chmod(0o755)
+            result=subprocess.run([str(LAUNCHER_PATH),"--platform-python",str(p),"--kernel-python",str(p),"--state-dir",directory],capture_output=True,text=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn("pilot artifact",result.stderr)
 
-    def test_exported_courseweave_function_does_not_mask_sibling_fallback(self) -> None:
-        """Catch shell function tokens being treated as executable file paths."""
-
-        self.assertTrue(LAUNCHER_PATH.is_file())
+    def test_manifest_commands_are_never_executed_and_path_functions_are_ignored(self):
+        import shutil
         with tempfile.TemporaryDirectory() as directory:
-            temp = Path(directory)
-            course_root = temp / "course"
-            launcher = course_root / "scripts/courseweave"
-            launcher.parent.mkdir(parents=True)
-            shutil.copy2(LAUNCHER_PATH, launcher)
-            sibling = course_root.parent / "courseweave"
-            (sibling / "src/courseweave").mkdir(parents=True)
-            (sibling / "pyproject.toml").write_text(
-                '[project]\nname = "courseweave"\n', encoding="utf-8"
-            )
-            (sibling / "src/courseweave/cli.py").write_text("", encoding="utf-8")
-            capture = temp / "uv-args.txt"
-            function_marker = temp / "function-must-not-run"
-            self._write_executable(
-                temp / "bin/uv", 'printf "%s\\n" "$@" > "$CAPTURE_PATH"'
-            )
-            environment = os.environ.copy()
-            environment["PATH"] = f"{temp / 'bin'}:/usr/bin:/bin"
-            environment["CAPTURE_PATH"] = str(capture)
-            environment["FUNCTION_MARKER"] = str(function_marker)
-            shell_program = """
-courseweave() { printf 'called' > "$FUNCTION_MARKER"; }
-export -f courseweave
-exec "$1" --port 9003
-"""
-            result = subprocess.run(
-                ["/bin/bash", "-c", shell_program, "launcher-test", str(launcher)],
-                text=True,
-                capture_output=True,
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertFalse(function_marker.exists())
-            self.assertEqual(
-                capture.read_text(encoding="utf-8").splitlines(),
-                [
-                    "run",
-                    "--project",
-                    str(sibling.resolve()),
-                    "courseweave",
-                    "launch",
-                    "--course-root",
-                    str(course_root.resolve()),
-                    "--port",
-                    "9003",
-                ],
-            )
-
-    def test_missing_installed_and_sibling_courseweave_fails_clearly(self) -> None:
-        """Catch silent fallback to an unrelated interpreter or checkout."""
-
-        self.assertTrue(LAUNCHER_PATH.is_file())
-        with tempfile.TemporaryDirectory() as directory:
-            course_root = Path(directory) / "course"
-            launcher = course_root / "scripts/courseweave"
-            launcher.parent.mkdir(parents=True)
-            shutil.copy2(LAUNCHER_PATH, launcher)
-            environment = os.environ.copy()
-            environment["PATH"] = "/usr/bin:/bin"
-            result = subprocess.run(
-                [str(launcher)],
-                text=True,
-                capture_output=True,
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 127)
-            self.assertIn("install CourseWeave or place its checkout at", result.stderr)
-
-    def test_launcher_does_not_execute_manifest_terminal_argv(self) -> None:
-        """Catch adapter-side command autonomy before CourseWeave owns the launch."""
-
-        self.assertTrue(LAUNCHER_PATH.is_file())
-        with tempfile.TemporaryDirectory() as directory:
-            temp = Path(directory)
-            course_root = temp / "course"
-            launcher = course_root / "scripts/courseweave"
-            launcher.parent.mkdir(parents=True)
-            shutil.copy2(LAUNCHER_PATH, launcher)
-            marker = temp / "must-not-exist"
-            (course_root / "courseweave.json").write_text(
-                json.dumps({"terminal": {"argv": ["touch", str(marker)]}}),
-                encoding="utf-8",
-            )
-            self._write_executable(temp / "bin/courseweave", "exit 0")
-            environment = os.environ.copy()
-            environment["PATH"] = f"{temp / 'bin'}:/usr/bin:/bin"
-            result = subprocess.run(
-                [str(launcher)],
-                text=True,
-                capture_output=True,
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
+            temp=Path(directory);course=temp/'course';(course/'scripts').mkdir(parents=True)
+            launcher=course/'scripts/courseweave';shutil.copy2(LAUNCHER_PATH,launcher)
+            marker=temp/'must-not-exist'
+            (course/'courseweave.json').write_text(json.dumps({'terminal':{'command':['touch',str(marker)]}}))
+            platform=temp/'platform';platform.write_text('#!/bin/sh\ncase "$*" in *--help*) echo --kernel-python;; *) exit 0;; esac\n');platform.chmod(0o755)
+            kernel=temp/'kernel';kernel.symlink_to(platform)
+            shell='courseweave() { touch "$MARKER"; }; export -f courseweave; exec "$@"'
+            result=subprocess.run(['/bin/bash','-c',shell,'test',str(launcher),'--platform-python',str(platform),'--kernel-python',str(kernel),'--state-dir',str(temp/'state')],capture_output=True,text=True,env=os.environ|{'MARKER':str(marker)})
+            self.assertEqual(result.returncode,0,result.stderr)
             self.assertFalse(marker.exists())
+            self.assertIn(str(kernel),result.stderr)
+        for name in ["OPENAI_API_KEY","ANTHROPIC_API_KEY","curl ","wget "]:
+            self.assertNotIn(name,LAUNCHER_PATH.read_text())
 
+    def test_external_state_cannot_alias_course_or_its_ancestor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            platform=Path(directory)/'platform';platform.write_text('#!/bin/sh\necho --kernel-python\n');platform.chmod(0o755)
+            for state in [ROOT/'state',ROOT,ROOT.parent]:
+                result=subprocess.run([str(LAUNCHER_PATH),'--platform-python',str(platform),'--kernel-python',str(platform),'--state-dir',str(state)],capture_output=True,text=True)
+                self.assertNotEqual(result.returncode,0)
+                self.assertIn('outside the course',result.stderr)
 
 class CourseWeaveDocumentationTests(unittest.TestCase):
-    def test_courseweave_state_is_ignored(self) -> None:
-        """Catch learner state becoming a tracked course artifact."""
+    def test_optional_native_route_and_external_state(self):
+        readme=(ROOT/"README.md").read_text()
+        self.assertIn("Recommended optional CourseWeave experience",readme)
+        self.assertIn("uv run jupyter lab",readme)
+        self.assertIn("zero network",readme.lower())
+        self.assertIn("--platform-python",readme)
+        self.assertIn(".courseweave/",(ROOT/".gitignore").read_text().splitlines())
 
-        ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
-        self.assertIn(".courseweave/", ignored)
-
-    def test_quickstart_is_recommended_optional_and_preserves_offline_route(self) -> None:
-        """Catch CourseWeave replacing the existing zero-network course path."""
-
-        readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("Recommended optional CourseWeave experience", readme)
-        courseweave_section = readme.split(
-            "## Recommended optional CourseWeave experience", maxsplit=1
-        )[1]
-        self.assertIn("./scripts/courseweave", courseweave_section)
-        self.assertIn("optional", courseweave_section.lower())
-        self.assertIn("uv run jupyter lab", readme)
-        self.assertIn("zero network", readme.lower())
-
-    def test_adapter_adds_no_secret_or_live_execution_coupling(self) -> None:
-        """Catch credential discovery, live mode, or network clients in adapter wiring."""
-
-        manifest = load_manifest_data()
-        serialized = json.dumps(manifest)
-        self.assertTrue(LAUNCHER_PATH.is_file())
-        launcher = LAUNCHER_PATH.read_text(encoding="utf-8")
-        for forbidden in (
-            "--live",
-            "OPENAI_API_KEY",
-            "ANTHROPIC_API_KEY",
-            "COURSEWEAVE_CAPABILITY_TOKEN",
-            "curl ",
-            "wget ",
-        ):
-            self.assertNotIn(forbidden, serialized)
-            self.assertNotIn(forbidden, launcher)
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=="__main__": unittest.main()

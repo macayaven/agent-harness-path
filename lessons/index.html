@@ -95,12 +95,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="study-plan.html">Next: Six-week calibrated post-core / BYO-artifact overlay &rarr;</a></span></nav>
-<h1>The Agent Harness Path</h1>
+<h1 id="the-agent-harness-path">The Agent Harness Path</h1>
 <p>A self-contained course on building, evaluating, and governing LLM agents — twelve
 notebook sessions plus two optional protocol sessions (S13 rebuild audit, S14 ship
 &amp; pilot). The <strong>default core notebook route</strong> is zero network, zero API keys, zero
@@ -118,7 +120,7 @@ run the notebooks.</p>
 <p>S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own — or, if you walked the hard path in <code>labs/</code>, against
 the trivia host you built.</p>
-<h2>Core route and post-core overlay</h2>
+<h2 id="core-route-and-post-core-overlay">Core route and post-core overlay</h2>
 <ul>
 <li><strong>Core harness route (start here):</strong> work through S01–S12, then optionally use
   S13/S14 and <code>labs/</code>. If you are new to harnesses, complete S01–S12 before using
@@ -134,7 +136,7 @@ the trivia host you built.</p>
 <p>The model call is the easy part; the harness is the product. The overlay supports
 two complementary learning emphases: harness/evals/inference-systems depth and
 model-layer fundamentals depth.</p>
-<h2>How to work a session</h2>
+<h2 id="how-to-work-a-session">How to work a session</h2>
 <ol>
 <li><strong>Read the lesson</strong> (20–40 min). The theory-in-depth section is the core; the
    state-of-the-art table tells you what the industry currently does about it.</li>
@@ -153,7 +155,7 @@ model-layer fundamentals depth.</p>
 </ol>
 <p>Setup: <code>uv sync</code> once, then <code>uv run jupyter lab</code> (or open the notebooks in any
 Jupyter frontend). Notebook code is Python standard library only.</p>
-<h2>The sessions</h2>
+<h2 id="the-sessions">The sessions</h2>
 <table>
 <thead>
 <tr>
@@ -287,7 +289,7 @@ built it. Completing S01–S12 does not require them, and does not require <code
 NotebookLM; in <code>lessons/videos/</code>; generated 14 Aug 2026). Use them as preview or
 review — the learning happens in the notebook (S01–S12) or the protocol
 (S13/S14), not the video. Google branding in the files is Google's.</p>
-<h2>The pedagogical commitments</h2>
+<h2 id="the-pedagogical-commitments">The pedagogical commitments</h2>
 <ul>
 <li><strong>Toys from real domains, never the artifact.</strong> Every notebook is a small complete
   system — a hotel concierge, a repair shop, a mopbot, a trivia host — chosen so the
@@ -299,7 +301,7 @@ review — the learning happens in the notebook (S01–S12) or the protocol
 <li><strong>State of the art, dated.</strong> Each lesson's SOTA table is stamped "as of August 2026"
   and every claim carries a source. Treat anything older than a year as history.</li>
 </ul>
-<h2>License</h2>
+<h2 id="license">License</h2>
 <p>Apache-2.0 for notebooks, labs Python, and tooling; CC BY 4.0 for lessons,
 videos, docs, and lab protocols. Cited sources remain their authors'. Google
 branding in the Video Overviews is Google's. See <code>LICENSE</code> in the repository

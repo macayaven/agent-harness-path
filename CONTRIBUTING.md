@@ -73,3 +73,44 @@ refactor). Maintainers will reject:
 
 `CODE_OF_CONDUCT.md`. Report CoC issues via GitHub issues (maintainers will
 convert to private if needed) or email macayaven@gmail.com.
+
+## Pilot adapter and static diagrams
+
+Run `uv run python -m unittest discover -s tests -v` for native adapter/content
+checks (also run in CI). Original notebook cells are protected by a checked-in
+semantic hash receipt; add learner attempt cells without changing original IDs,
+sources, metadata or outputs. Execute notebooks after edits as above.
+
+S01/S02 use committed SVG, so offline clone-and-read and ordinary HTML builds need
+no browser or Node. To change a Mermaid source, renderer, options or Python lock:
+
+```bash
+uv sync --frozen --group diagrams
+uv run --group diagrams playwright install chromium
+uv run --group diagrams python lessons/render_diagrams.py
+uv run --group diagrams python lessons/render_diagrams.py --check
+uv run python lessons/build.py
+```
+
+The course owns the pinned `playwright==1.58.0` optional dependency and uses its
+vendored Mermaid under the existing MIT notice. It never imports sibling
+node_modules. The renderer fixes options, viewport and source-seeded IDs, renders
+each diagram in two fresh pages and records Chromium/host/font details plus source,
+vendor, renderer, config, lock and SVG hashes. Ordinary builds fail on stale hashes.
+`--check` additionally compares fresh output to committed bytes on the recorded
+renderer/font host; cross-OS/font determinism is **not** claimed. CI performs the
+portable source/asset freshness checks, not a false cross-host byte equivalence
+claim. Inspect regenerated diagrams visually and retain their meaningful text
+alternatives. Other lessons keep the original native browser Mermaid path; never
+relax CourseWeave's scripts-disabled reader to accommodate them.
+
+Real compatibility is a separate mandatory installed-artifact check, with no
+conditional sibling skip:
+
+```bash
+/absolute/path/courseweave-pilot-env/bin/python -I scripts/verify_courseweave.py
+```
+
+Use the final wheel, not an editable install. See study/COURSEWEAVE-PILOT.md for the
+explicit launcher/kernel/state interface and the platform-owned installed browser,
+provider and kernel isolation acceptance beyond this read-only contract check.

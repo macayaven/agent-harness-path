@@ -3,7 +3,8 @@
 **What this teaches:** what an LLM agent actually is mechanically — a client-side loop
 around a stateless API — and the two invariants that keep it alive: message-list
 preservation and tool-call/tool-result pairing.
-**Time:** ~60 min with the notebook. **Prerequisites:** none beyond Python.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings; optional lab time is separate. **Prerequisites:** none beyond Python.
 **Hands-on (easy):** [`notebooks/s01_agent_loop_toy.ipynb`](../notebooks/s01_agent_loop_toy.ipynb)
 **Hands-on (hard, optional):** [`labs/s01_loop.md`](../labs/s01_loop.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S01-agent-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
@@ -14,14 +15,16 @@ preservation and tool-call/tool-result pairing.
 
 ### The API is stateless; the loop is the agent
 
-Every call to a chat-completions-style API is independent. The model does not remember
-your previous request, does not keep a session, does not "know what we were doing."
-What it sees is exactly one thing: the `messages` list you send. Memory, personality,
-progress — all of it is that list, re-sent in full, every call.
+In the notebook’s client-owned Chat Completions shape, each model call receives
+the `messages` list supplied by the caller. Earlier turns matter only when that
+list carries them forward. Treat the list as explicit input: compare the first
+request with the next and identify what changed. The local mock has no hidden
+conversation store. Real providers can offer other state interfaces; this lesson
+does not claim that every API is stateless.
 
 This lesson teaches the **client-owned loop** — you hold the message list. That is
-deliberate: local and open-model stacks still work exactly this way, and the stateful
-alternatives (see the SOTA table) are this same loop with the list moved server-side.
+deliberate: it makes the bookkeeping inspectable. Stateful alternatives can manage
+history for you, but tool execution, failure policy and stopping still need owners.
 
 An *agent* is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:
@@ -36,43 +39,92 @@ flowchart LR
     A --> C
 ```
 
-That is the entire architecture. Simon Willison's definition — *"an LLM agent runs
-tools in a loop to achieve a goal"* — is deliberately unglamorous
-([simonwillison.net](https://simonwillison.net/2025/Sep/18/agents/)).
-Everything else — planning, memory, reflection, multi-agent — is a modification of
-this diagram, usually by editing what goes into the messages list.
+This diagram is the notebook's complete control-flow skeleton. The model proposes
+an action or a final answer; Python owns whether to execute, how to record the
+result, and when to stop. The arrow back to the model carries **history**, not an
+invocation of the tool inside the model. Trace that distinction with your finger
+before looking at the implementation.
 
 ### The two mechanical invariants
 
 The protocol has rules that are invisible until you break them:
 
-1. **Append-verbatim.** The assistant message that contains the tool call must go into
-   the history *exactly as received* — including its tool-call metadata — followed by
-   the tool result. If you reformat, summarize, or drop it, the next request contains
-   a tool result whose call was never made: an **orphaned tool result**, and real APIs
-   reject it with a 400. This is one of the most common production breakages in agent
-   code, and it usually appears when someone adds retry or compaction logic later
-   (real-world instances:
-   [learn-claude-code#325](https://github.com/shareAI-lab/learn-claude-code/issues/325),
-   [anthropics/claude-code#62577](https://github.com/anthropics/claude-code/issues/62577)).
-2. **Tool errors are messages, not exceptions.** When a tool raises, the correct move
-   is to catch it and append the error *as the tool result* (Anthropic's protocol has
-   `is_error: true` for exactly this), so the model can see what happened and adapt.
-   Letting the exception kill the loop throws away everything the run had
-   accomplished. Anthropic's tool-design guidance makes the same point from the other
-   side: error text is *prompt content* — write tool errors the model can recover
-   from ([anthropic.com/engineering/writing-tools-for-agents](https://www.anthropic.com/engineering/writing-tools-for-agents)).
+1. **Preserve the assistant call message.** Retain its protocol fields, including
+   the call IDs and arguments, before appending results. Each requested call needs
+   a result associated with its ID before continuing the model conversation. One
+   assistant message may request several tools; the results form a group. An ordinary
+   final assistant explanation with no calls needs no tool result. The
+   [OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)
+   describes zero, one or multiple calls and preserving the message while returning
+   the results. Dropping the call message but keeping a result creates an orphan.
+2. **Choose how a recoverable tool failure enters the conversation.** In this toy,
+   `dispatch` catches the fragile weather service's exception and returns a short
+   error string. The loop records it against the call ID so the mock can respond.
+   This is a selected continuation policy, not a rule to catch every exception and
+   expose its text. A host may stop on failure; sensitive internals should not become
+   tool output. Anthropic's [tool-writing guidance](https://www.anthropic.com/engineering/writing-tools-for-agents)
+   treats useful error responses as information for a subsequent correction. Its
+   wire format is different from this OpenAI-shaped toy; do not substitute field
+   names across APIs.
 
 The notebook's mock model rejects orphaned tool results the way a real API does
 — that one failure class, not full protocol validation — so the experiments
 fail the way production would, cheaply.
 
-### Where the model stops being the hard part
+### A worked trace: state, operation, evidence
 
-Once the loop works, the failures move elsewhere: the context fills up, the model
-loops without terminating, tool results poison the history. That is why the field's
-attention moved from "the loop" to *what flows through it* — context engineering,
-which is S03's topic. The loop is solved; the stream is not.
+Start with a weather question and label three different things: the **request**
+(the list sent to `mock_model`), the **assistant message** inside the response, and
+what `dispatch` returns. The response envelope contains usage metadata too, but
+`run_loop` extracts the assistant message before recording it. Appending the entire
+response envelope would put the wrong shape into history. Appending only the
+assistant's text would lose the tool call when its content is null.
+
+For a trace on paper, draw columns for row number, role, call IDs and content.
+Read `_tool_call`: the function builds a fresh ID, a function name and JSON-encoded
+arguments. Then read `dispatch`: it decodes the arguments, looks up a Python
+function in `TOOLS`, and calls it. The ID does not choose the Python function;
+the name does. The ID associates the eventual result with the requested operation.
+That separation becomes especially useful when the same function is called for
+two cities. Equal function names do not make their results interchangeable.
+
+At the loop boundary, distinguish **message validity** from **answer truth**. A
+well-paired result saying a fixture city is sunny can be structurally valid and
+factually wrong outside the fixture. A schema can constrain a city to a string
+without checking that a city exists. The notebook's weather dictionary is a toy
+oracle: its behavior is completely visible, which lets you isolate control flow
+without a real forecast service. Do not turn its response into a weather claim.
+
+Now make the loop state deliberately wrong in your mental trace: erase the
+assistant call message but retain the tool result. Locate the first function that
+will read that malformed history. The demonstration already contains this broken
+variant; you are predicting its behavior, not repairing a production defect.
+After running it, match the exception to the row you erased. A failure at the
+next model call can originate in bookkeeping performed during the previous turn.
+
+### Stopping and recovery are different decisions
+
+The mock can choose an answer with no tool calls; the host can also exhaust
+`max_turns`. Those are different outcomes. Inspect the returned answer as well as
+the turn count: a bounded run is not automatically a successful run. The toy's cap
+counts **model iterations**, including ones that ask for tools. It does not promise
+that a tool finishes. If a tool never returns, Python may never reach the next
+iteration check. A per-operation timeout or overall deadline addresses elapsed
+waiting; the turn budget addresses repeated model decisions. We do not implement
+a general executor here.
+
+For the fragile service, separate three observations: an operation failed, the
+host chose to continue with an error result, and the final model text mentioned
+that result. Continuation is not successful weather retrieval. The toy catches
+broad exceptions for the visible experiment; it is deliberately incomplete as a
+real execution policy. Preserve this experiment and explain its boundary rather
+than silently "hardening" it into a general harness.
+
+Active reading means drawing the state table and tracing those two counterfactuals,
+not spending 40 minutes on the page. If the trace is already obvious, move on;
+if JSON roles are new, spend the time aligning each row with a line in `run_loop`.
+Record one uncertainty before the notebook so the later observation has something
+to correct.
 
 ## Exercises (in the notebook, predict first)
 
@@ -94,75 +146,86 @@ prediction you'll retroactively fix.
 4. The tool that raises: run the fragile weather service. Predict whether the loop
    crashes or the error becomes data — and where in the transcript it surfaces.
 
+5. Attempt the added **two-city weather transcript** cell without opening the
+   reference. Supply result records for the supplied calls, preserve their original
+   message, and explain whether a separate ordinary explanation needs a tool result.
+   Run your attempt only after recording the prediction. The native self-check
+   below contains a foldable reference for comparison; it does not fill the cell.
+6. Write a prediction/observation pair and explain one limit of the mock validator.
 
 After the notebook, optional hard path: [the trivia-host loop](../labs/s01_loop.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
-## State of the art (as of August 2026)
+## State of the art (as of September 9, 2026)
 
-Mapped to *recognize vs adopt*: what the field converged on that this session already
-teaches, what's newer, what to ignore for now.
+These are narrow primary-source observations reviewed on this date, not a ranking
+of frameworks or a claim that the whole industry uses one design.
 
 | Development | Status | Take |
 |---|---|---|
-| "Agents are just loops" is now the industry baseline definition (Willison; Anthropic's [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents): "start by using LLM APIs directly") | **already in this path** | You are learning the thing the industry considers the durable core. |
-| Frameworks consolidated: AutoGen + Semantic Kernel merged into [Microsoft Agent Framework](https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/) (Oct 2025); [OpenAI Swarm](https://github.com/openai/swarm) superseded by the [Agents SDK](https://github.com/openai/openai-agents-python); [LangGraph](https://langfuse.com/blog/2025-03-19-ai-agent-comparison), [Google ADK](https://google.github.io/adk-docs/), [Pydantic AI](https://ai.pydantic.dev) are the serious production set | **recognize** | Frameworks now sell the loop as a product. Learn the loop first — which is what you're doing — so a framework is a choice, not a crutch. |
-| Anthropic's own Dec-2024 post now carries a banner steering readers to managed agent infrastructure ([Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)) | **recognize** | The minimal loop survives as *pedagogy* while vendors productize it. Knowing the loop is how you evaluate what they're selling. |
-| Code-as-action loops ([smolagents](https://github.com/huggingface/smolagents): the model writes Python instead of JSON tool calls) | **recognize** | A different point in the same design space. Same loop, different action encoding. |
-| `strict: true` tool schemas for guaranteed-conformant arguments ([OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | When you hit real APIs: cheap reliability win; the toy's mock doesn't model it. |
-| OpenAI's stateful Responses API (Conversations, `previous_response_id`) is now the recommended default for new projects; Chat Completions "remains supported" ([migration guide](https://developers.openai.com/api/docs/guides/migrate-to-responses)) | **recognize** | Server-side state moves the message-list management this lesson teaches into the platform. Learn the client-owned loop anyway: it's the mental model that survives every vendor abstraction, and every local/open-model stack still works this way. |
-| Multi-agent orchestration frameworks | **ignore** | For now — OpenAI's own guide: [start with a single agent](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/). S05 and S11 cover when structure actually pays. |
+| Simple workflows and agents ([Anthropic, Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)) | **already in this path** | The workflows-versus-agents distinction helps identify who selects the next step. Start with the simple composition you can inspect. |
+| [Microsoft Agent Framework](https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/) brings together ideas from Semantic Kernel and AutoGen, with migration paths; the predecessor projects remain supported | **recognize** | A framework can own orchestration. Inspect its state and execution boundaries before adopting it. |
+| Strict function schemas ([OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) require closed objects and required fields; nullable fields can represent optional values | **adopt** | When using a provider that supports this contract, schema adherence helps with argument shape. It does not establish truth, permission or safe execution. The toy does not simulate strict mode. |
+| OpenAI recommends Responses for new projects while Chat Completions remains supported ([migration guide](https://developers.openai.com/api/docs/guides/migrate-to-responses)) | **recognize** | This is OpenAI's recommendation. Compare client-owned history with the provider's state interface; neither chooses your tool failure policy for you. |
 
 ## Annotated readings
 
-- **Anthropic, [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-  (Dec 2024).** The canonical primary source. Extract this: the workflows-vs-agents
-  distinction, and the observation that the most successful deployments were
-  "simple, composable patterns," not frameworks. The framework survey inside it is
-  dated (the post's own banner says so); the philosophy is not.
-- **OpenAI, [A Practical Guide to Building Agents](https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/)
-  (2025).** Extract this: agent = model + tools + instructions, and `max_turns` as
-  the explicit non-termination guardrail — the same cap you just exercised in the toy.
-- **Drew Breunig, [How contexts fail and how to fix them](https://www.dbreunig.com/2025/06/22/how-contexts-fail-and-how-to-fix-them.html)
-  (Jun 2025).** The four failure modes (poisoning, distraction, confusion, clash).
-  Read it now as a preview; it becomes the working vocabulary of S03.
+- **[OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling).**
+  Extract the lifecycle: receive calls, retain their assistant message, execute
+  operations and return ID-matched results. Compare a multi-call response with the
+  notebook's single-call happy path. Read strict-mode constraints separately.
+- **[Anthropic, Building effective agents](https://www.anthropic.com/engineering/building-effective-agents).**
+  Extract the workflows-versus-agents distinction and simple composable patterns.
+  Publication context is December 2024; the conceptual comparison is useful here
+  without treating a changing site banner as evidence.
+- **[Anthropic, Writing effective tools](https://www.anthropic.com/engineering/writing-tools-for-agents).**
+  Inspect how error information helps a later correction. Compare that goal with
+  the toy's broad exception catch; a useful learning example is not a full policy.
 
 ## Misconceptions and failure modes
 
-- **"The model remembers our conversation."** It doesn't. You re-send the whole
-  transcript every call. Anyone who believes otherwise writes retry logic that drops
-  messages — and ships orphaned-tool-result 400s.
-- **Retrying a failed call without the failed attempt in history.** The model can't
-  adapt to an error it never saw. Append the failure, then continue.
-- **Catching tool errors at the loop level.** That converts a recoverable,
-  model-visible event into a run-killing exception. Errors belong *in* the messages.
-- **Loop non-termination.** No authoritative postmortem exists, but every production
-  guide converges on the same three defenses: descriptive tool errors, a deterministic
-  repeat-detector, and a hard iteration cap. The toy demonstrates the cap; the other
-  two are S06/S07 material.
+- **"Every assistant message needs a tool result."** Only messages containing
+  tool calls introduce result obligations. An ordinary final answer does not.
+- **"The immediately previous message must contain the matching call."** A
+  multi-call assistant message can be followed by several result messages. Account
+  for every call ID in the group rather than looking back exactly one row.
+- **"The cap means success, and bounded turns mean bounded time."** Inspect the
+  final outcome separately; a hung tool needs an elapsed-time bound.
+- **"Errors must always be exposed and retried."** Continue only when host policy
+  permits it; a short recoverable error result is one possible decision.
 
 ## Self-check
 
-<details><summary>Why can't the model "just remember" the last turn?</summary>
-The API is stateless: each request is independent and contains the full messages
-list. There is no server-side conversation state to remember — continuity is entirely
-client-side list management.</details>
+Try each explanation before expanding it. The native disclosure controls work
+with Tab and Enter/Space. Optional assistant discussion uses the same conversation;
+opening a reference is a learner action, not evidence of mastery.
 
-<details><summary>What exactly makes a tool result "orphaned"?</summary>
-A tool result appears in the messages list without the assistant message containing
-its matching tool call immediately before it. Real APIs validate the pairing and
-reject the request (400). It happens when retry/compaction code drops or rewrites the
-assistant message but keeps the result.</details>
+<details><summary>What exactly makes a tool result orphaned? Does ordinary assistant text need a result?</summary>
+An orphan result has no retained assistant call with its matching ID. One assistant
+message can carry several calls followed by several ID-matched results. An ordinary
+assistant explanation with no calls introduces no result obligation. The notebook
+validator checks only that a prior call exists, not every real protocol rule.</details>
 
-<details><summary>A tool raises mid-run. Two handling strategies — which is correct and why?</summary>
-Kill the loop with the exception, or catch it and append the error as the tool
-result. The second: the error becomes model-visible context, the model can adapt or
-degrade gracefully, and the run's prior progress survives. The first throws away
-work and teaches the model nothing.</details>
+<details><summary>A tool raises mid-run. When can the loop continue?</summary>
+If the host elects to continue, a bounded, useful error result associated with the
+call lets the model react. The host may instead stop. The toy's catch-all and raw
+error text are instructional simplifications, not a recommended universal policy.</details>
 
-<details><summary>Why is `max_turns` a correctness mechanism and not just a cost cap?</summary>
-Because a model stuck in a tool loop will otherwise run forever — Breunig's
-"distraction" failure mode. A hard cap is the only defense that works even when every
-smarter mechanism fails.</details>
+<details><summary>What does max_turns bound, and what does it leave unbounded?</summary>
+It bounds model iterations. It does not bound an individual tool that never returns.
+A per-operation timeout or overall deadline addresses waiting. Exhausting the cap
+also does not establish that the requested weather answer was produced.</details>
+
+<details><summary>Two-city notebook attempt: compare your transcript after attempting it</summary>
+<pre><code>proposed_results = [
+    {"role": "tool", "tool_call_id": "weather-madrid", "content": "22C, sunny (fixture)"},
+    {"role": "tool", "tool_call_id": "weather-oslo", "content": "9C, cloudy (fixture)"},
+]
+repaired = [weather_calls, *proposed_results]
+</code></pre>
+Keep weather_calls unchanged, including both call IDs and function arguments.
+These are made-up fixture observations. The ordinary explanation needs no tool
+result. Compare your IDs, roles and result coverage; the exercise does not validate
+truth, ordering in every provider protocol, duplicate calls or tool execution.</details>
 
 ## What's next
 
