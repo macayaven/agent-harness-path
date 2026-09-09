@@ -1,8 +1,8 @@
 # Immediate unaided transfer — library reservations
 
-Do this after S01/S02, before looking at the separate RUBRIC.md. This is a new toy
-domain, not a real library service. Plan 8–12 minutes, but record actual time. Use
-paper or a local copy of `attempt.py` and `fixtures.json`. No CourseWeave or model
+Do this after S01/S02. Save the complete attempt before opening any scoring
+dimensions or answer key. This is a new toy domain, not a real library service.
+Plan 8–12 minutes, but record actual time. Use paper or a local copy of `attempt.py` and `fixtures.json`. No CourseWeave or model
 is needed. Leave the assistant closed and don't read the delayed variant yet.
 
 Open `fixtures.json` at `immediate`, or run:
@@ -36,6 +36,16 @@ The current check looks **only** at the second reply and passes if it equals
 6. An instruction edit raises the score in one real-model run. Name at least two
    controls to hold fixed or report, and one limitation of that single run.
 
-Save the unaided reasoning **before** checking it. Afterward compare with the
-separate rubric and retain corrections separately. Hint-assisted corrections must
-not replace the original unaided result. If you used any help, mark that fact.
+## After saving the immediate attempt
+
+Save the complete unaided answer, reasoning and actual time **before** checking it.
+Only then open the [general scoring dimensions](RUBRIC.md) and the
+[immediate reference](IMMEDIATE-KEY.md). Immediate feedback is allowed now, before
+the optional 24–72 hour delay. Keep corrections separate; they must not replace
+the original unaided result. If you used help before saving, record it.
+
+Record in notes whether and when you read immediate feedback. Later delayed
+observations include possible effects of that feedback and cannot isolate
+retention from the course alone. Leave the delayed key unopened until after its
+own saved attempt. If it is exposed early, record prior assistance in `help_used`
+and notes; the delayed result must not be labeled unaided.

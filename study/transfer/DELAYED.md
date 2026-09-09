@@ -1,9 +1,16 @@
 # Delayed unaided transfer — museum tickets
 
-Use 24–72 hours after the immediate task, before revisiting its key. Record actual
-elapsed delay. This is a written option, not a reminder or scheduled automation.
-Do not treat different wording as proven equivalent difficulty. Plan 8–12 minutes;
-missing results stay missing.
+Use 24–72 hours after the immediate task and record the actual elapsed delay.
+Immediate feedback may already have been read **after saving the immediate
+attempt**. Record whether and when you read it. The delayed observation includes
+possible immediate-feedback effects; it does not isolate course-only retention.
+
+Work without consulting the assistant, hints, scoring dimensions or either key
+during this attempt. Do not open the delayed key before saving your answer. If
+it was exposed earlier, record that prior assistance in `help_used` and notes and
+do not label the delayed score unaided. This is a written option, not a reminder
+or scheduled automation. Different wording is not proven equivalent difficulty.
+Plan 8–12 minutes; missing results stay missing.
 
 Open `fixtures.json` at `delayed`, or run:
 
@@ -23,6 +30,11 @@ python study/transfer/attempt.py --variant delayed
 4. Distinguish fixing the scripted user from fixing model randomness. Name controls
    and a remaining limitation before interpreting a one-run score increase.
 
-Work unaided, save the answer and actual time, then use RUBRIC.md. Record any
-assisted correction separately. A matching ID is bookkeeping evidence, not proof
-of truthful seat data or authorized execution.
+## After saving the delayed attempt
+
+Save the complete answer, reasoning and actual time. Only then open the
+[general scoring dimensions](RUBRIC.md) and the [delayed reference](DELAYED-KEY.md).
+Keep any assisted correction separate from the saved attempt. Record immediate
+feedback history and any premature delayed-key exposure as described above; an
+exposed answer cannot later become an unaided result. A matching ID is bookkeeping
+evidence, not proof of truthful seat data or authorized execution.

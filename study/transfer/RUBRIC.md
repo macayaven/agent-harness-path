@@ -1,42 +1,29 @@
-# After-attempt rubric — exploratory, separate from course progress
+# General scoring dimensions — after a saved attempt
 
-Read only after saving the unaided attempt. No automatic assistant grounding or
-manifest surface points to this file. It is inspectable course-owned teaching
-material, not a secret test or psychometrically validated scale.
+Read these dimensions only after saving the corresponding attempt. This file
+contains no fixture-specific answer key. Use the reference linked at the end of
+that task's prompt only after its own saved attempt. No manifest or automatic
+assistant grounding points to these scoring materials.
 
-Score each dimension 0/1/2 and preserve the reason. The total 0–8 is an exploratory
-observation. A correction after help does not become an unaided pass.
+Score each dimension 0/1/2 and preserve the reasoning. The total 0–8 is an
+exploratory observation, separate from course progress and certification. These
+are authored dimensions, not a psychometrically validated scale. Corrections after
+help must remain separate from the original attempt.
 
 | Dimension | 0 | 1 | 2 |
 |---|---|---|---|
-| Call accounting | Misses unresolved/wrong ID or demands tools after ordinary text | Finds the error but loses call metadata or misses a requested result | Preserves assistant calls, matches all IDs, distinguishes ordinary text |
-| Execution bound | Treats turn cap as timeout | Notices waiting without naming a concrete bound | Distinguishes model-turn cap from per-operation timeout/deadline |
-| Checker blind spot | Equates refusal-only pass with usefulness | Notices a blind spot but cannot give a useful check | Explains selective/always-refusing tie and supplies a fixture-specific useful check |
-| Interpretable delta | Claims one score proves general improvement | Names one control/limitation | Names controls and remaining single-run/model-variance limitation |
+| Call accounting | Misses the transcript obligation | Finds an issue but gives an incomplete repair or explanation | Accounts for the requested operations and explains the repair without losing call metadata |
+| Execution bound | Misidentifies what the stated limit bounds | Notices a limitation without a concrete additional bound | Distinguishes the bounds and explains what each controls |
+| Checker blind spot | Treats the current pass as sufficient | Notices a blind spot but cannot give a useful check | Explains the missing criterion and supplies a fixture-specific check with a boundary |
+| Interpretable delta | Claims one score proves general improvement | Names one control or limitation | Names controls and a remaining limitation of the observation |
 
-Immediate reference: `branches-18` lacks a result. Preserve the original two-call
-assistant message, keep result `lookup-17`, append a `branches-18` tool result with
-clearly made-up branch data, then continue. No tool result follows from the separate
-ordinary explanation. Five turns do not time out an unresponsive operation.
+Record variant, actual delay, reasoning, scores and assistance using the existing
+observation template. For a delayed attempt, also record in notes whether and when
+you read immediate feedback. Delayed observations include possible effects of
+that feedback; they do not isolate retention from the course alone.
 
-The refusal check passes selective and refuses-everything. A check such as
-`replies[0] == "Yes, available at Central."` distinguishes useful behavior for this
-fixture, while rejecting valid paraphrases and failing to establish real inventory
-truth. Keep the useful and refusal criteria as separate observations.
-
-Delayed reference: preserve `sessions-31` and correct the mismatched result ID
-`sessions-13` to `sessions-31`; in a real system first verify that the result belongs
-to that call rather than blindly relabeling unrelated data. This fixture supplies
-the intended session result. Ordinary entrance text introduces no tool obligation.
-Use a timeout/deadline to bound waiting. Check the useful first reply (15:00 and 12
-seats in this fixture) as well as the refusal second reply. Selective and
-refuses-everything tie under the current refusal-only criterion.
-
-For both variants, examples of controls include script, fixtures/tool outputs,
-checker and model versions/settings, with the edited instruction identified. A
-fixed user script removes user-side variation; a stochastic model may still vary.
-Repeated runs and wider task coverage answer questions that one probe cannot.
-
-Record variant/delay, unaided scores and reasoning, any help already used, then a
-separate corrected explanation if desired. Do not copy this key into a pre-attempt
-lesson scope or learner prediction field to make progress look complete.
+If the delayed key was exposed before the saved delayed attempt, record that as
+prior assistance in `help_used` and notes. Do not label the resulting delayed score
+unaided. A later correction cannot erase that exposure or retroactively create an
+unaided result. Do not copy reference text into a pre-attempt lesson scope or
+prediction field to make progress look complete.

@@ -52,11 +52,24 @@ a success requirement.
 
 ## 3. Unaided transfer, then optional delayed check
 
-Use [transfer/IMMEDIATE.md](transfer/IMMEDIATE.md) unaided, then the separate rubric.
-Use [transfer/DELAYED.md](transfer/DELAYED.md) 24–72 hours later if desired, before
-reviewing the immediate key. Record actual delay and missing results as missing.
-The fixtures and starter use only Python's standard library with no course runtime
-or model. The rubric is separate from the CourseWeave manifest and UI progress.
+1. Follow [transfer/IMMEDIATE.md](transfer/IMMEDIATE.md) unaided. Save the complete
+   answer, reasoning and actual time before opening scoring material. Only after
+   saving, use the general scoring dimensions and immediate reference linked at
+   the end of that prompt. Immediate feedback is allowed then; keep corrections
+   separate and record whether and when you read it.
+2. If desired, follow [transfer/DELAYED.md](transfer/DELAYED.md) 24–72 hours later.
+   Record actual delay and prior immediate feedback. Do not consult feedback,
+   hints or the assistant during this attempt. Save the complete delayed answer
+   before opening the scoring dimensions and delayed reference linked at its end.
+   The delayed key must remain unopened until that saved attempt. Record any
+   accidental early exposure as prior assistance in `help_used` and notes, rather
+   than reporting an unaided delayed score.
+
+Delayed observations include possible immediate-feedback effects as well as course
+and practice exposure; they do not isolate retention from the course alone.
+Missing results stay missing. The fixtures and starter use only Python's standard
+library with no course runtime or model. General scoring dimensions and the two
+separate references remain outside the CourseWeave manifest and UI progress.
 
 ## 4. What to record and when to continue
 
