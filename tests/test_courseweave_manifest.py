@@ -126,7 +126,12 @@ class CourseWeaveManifestTests(unittest.TestCase):
                     selected |= ids
             self.assertTrue(set(EXPECTED_PREDICT_CELL_IDS[mid]) <= selected)
             if mid not in {"s01","s02"}:
-                self.assertTrue(set(EXPECTED_EXPERIMENT_CELL_IDS[mid]) <= selected)
+                phases = phase_map(modules[mid])
+                predicted = phases["predict"]["surfaces"][0]["selector"]["values"]
+                experimented = phases["experiment"]["surfaces"][0]["selector"]["values"]
+                self.assertEqual(predicted, EXPECTED_PREDICT_CELL_IDS[mid])
+                self.assertEqual(experimented, EXPECTED_EXPERIMENT_CELL_IDS[mid])
+                self.assertTrue(set(predicted).isdisjoint(experimented))
             else:
                 # Pre-attempt grounding selects questions/attempts, never code demonstrations/answers.
                 self.assertTrue(selected.isdisjoint(EXPECTED_EXPERIMENT_CELL_IDS[mid]))
