@@ -1,8 +1,8 @@
 # S02-golden-evals — Golden sets & baselines
 
-**What this teaches:** an eval suite is a *measurement instrument*, not a test suite —
-scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
-is a product argument rather than a courtesy number.
+**What this teaches:** an eval suite is a *measurement instrument* that can include
+regression tests — scripted users, two-tier checkers, the fixture invariant, and
+what a naive baseline comparison supports within a declared fixture.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not observed timings; optional lab time is separate. **Prerequisites:** S01 (the loop).
 **Hands-on (easy):** [`notebooks/s02_scripted_user_eval_toy.ipynb`](../notebooks/s02_scripted_user_eval_toy.ipynb)
@@ -171,9 +171,10 @@ counterexample into an additional observable criterion.
    past the pass/fail column. Turns are a real count; the latency column in this
    toy is a **seeded stub** (plumbing demo, identical by construction across
    engines) — the *measured* delta is the scope-check. In a real suite, p50
-   latency is a product number you actually time. The naive row is the status
-   quo; the scope-check delta is the measured reason the harness deserves to
-   exist.
+   latency is a quantity you actually time. The naive row supplies a comparison
+   under the same fixture; the scope-check delta is an observation about that
+   rule. It motivates a hypothesis to test with usefulness checks and broader
+   fixtures, and supplies no product-value or learner-outcome proof.
 3. The engine that refuses everything: predict whether it passes `check_scope`
    and whether its replies meet each scripted user intent. Run only after writing
    your reasoning. Distinguish a weakness of this checker from a limitation of all

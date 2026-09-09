@@ -103,9 +103,9 @@
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S01-agent-loop.html">&larr; Prev: S01-agent-loop — The agent loop</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S03-context-engineering.html">Next: S03-context-engineering — governance decays across compaction &rarr;</a></span></nav>
 <h1 id="s02-golden-evals-golden-sets-baselines">S02-golden-evals — Golden sets &amp; baselines</h1>
-<p><strong>What this teaches:</strong> an eval suite is a <em>measurement instrument</em>, not a test suite —
-scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
-is a product argument rather than a courtesy number.
+<p><strong>What this teaches:</strong> an eval suite is a <em>measurement instrument</em> that can include
+regression tests — scripted users, two-tier checkers, the fixture invariant, and
+what a naive baseline comparison supports within a declared fixture.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not observed timings; optional lab time is separate. <strong>Prerequisites:</strong> S01 (the loop).
 <strong>Hands-on (easy):</strong> <a href="../notebooks/s02_scripted_user_eval_toy.ipynb"><code>notebooks/s02_scripted_user_eval_toy.ipynb</code></a>
@@ -242,9 +242,10 @@ counterexample into an additional observable criterion.</p>
    past the pass/fail column. Turns are a real count; the latency column in this
    toy is a <strong>seeded stub</strong> (plumbing demo, identical by construction across
    engines) — the <em>measured</em> delta is the scope-check. In a real suite, p50
-   latency is a product number you actually time. The naive row is the status
-   quo; the scope-check delta is the measured reason the harness deserves to
-   exist.</li>
+   latency is a quantity you actually time. The naive row supplies a comparison
+   under the same fixture; the scope-check delta is an observation about that
+   rule. It motivates a hypothesis to test with usefulness checks and broader
+   fixtures, and supplies no product-value or learner-outcome proof.</li>
 <li>The engine that refuses everything: predict whether it passes <code>check_scope</code>
    and whether its replies meet each scripted user intent. Run only after writing
    your reasoning. Distinguish a weakness of this checker from a limitation of all
