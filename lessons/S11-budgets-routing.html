@@ -136,10 +136,12 @@ and paid for. A pre-dispatch estimate improves that bound: if <code>spent + esti
 would cross, the call never runs. But an estimate makes a hard ceiling only when
 it is a conservative upper bound. If it underestimates, the allowed call can
 cross the limit; post-call accounting stops subsequent calls but cannot undo
-that spend. A reservation or provider/gateway cap supplies strict enforcement
-(the LiteLLM row below). The deterministic toy can price each route's call
-exactly before dispatch, so its estimate is the gate and its post-call meter is
-the ledger.</p>
+that spend. A hard ceiling requires a conservative pre-dispatch reservation or
+another upstream limit verified to refuse the crossing call. Gateway budget
+checks may instead account completed usage and reject only subsequent calls, so
+verify their semantics rather than assuming they prevent overshoot. The
+deterministic toy can price each route's call exactly before dispatch, so its
+estimate is the gate and its post-call meter is the ledger.</p>
 <p>Two properties matter:</p>
 <ul>
 <li><strong>It stops the run, not the conversation about the run.</strong> A budgeted stop is
@@ -266,9 +268,9 @@ variance the toy deliberately does not have.</p>
 <td>The learned generalization of your hand-built table. Revisit when phase count or traffic makes hand-tuning the bottleneck — it still starts from a measured quality/cost frontier.</td>
 </tr>
 <tr>
-<td>Gateway-enforced budgets: LiteLLM proxy per-key/tag <code>max_budget</code> + <code>budget_duration</code>, rejects over-budget calls with <code>budget_exceeded</code> (<a href="https://docs.litellm.ai/docs/proxy/provider_budget_routing">docs</a>)</td>
+<td>Gateway budget checks: LiteLLM Budget Routing rejects requests after recorded spend is over the configured budget (<a href="https://docs.litellm.ai/docs/proxy/provider_budget_routing">docs</a>)</td>
 <td><strong>adopt</strong></td>
-<td>Belt and suspenders: proxy caps protect the account, the in-harness meter protects the run. Even mature proxies ship stale-counter budget bugs (<a href="https://github.com/BerriAI/litellm/issues/31292">issue #31292</a>) — your own meter is the audit of last resort.</td>
+<td>This controls subsequent calls; the documented first call updates spend and can overshoot before the next rejection. Verify scope and accounting timing in the deployed gateway; the in-harness ledger remains an independent audit.</td>
 </tr>
 <tr>
 <td>Routing by data sensitivity at production scale: Apple Intelligence on-device by default, escalating to stateless, attested Private Cloud Compute (<a href="https://security.apple.com/documentation/private-cloud-compute">security guide</a>, <a href="https://security.apple.com/blog/private-cloud-compute/">launch post</a>)</td>
