@@ -8,9 +8,9 @@ can read. An **optional hard path** (`labs/`) grows one toy trivia-host spine
 against a real OpenAI-compatible endpoint *or* committed cassettes. Completing
 S01–S12 never requires a lab.
 
-**Start here:** clone the repo and open
-[`lessons/index.html`](lessons/index.html). Click ▶ to watch a preview (streams
-from a public bucket). A 9-minute
+**Start here:** choose the native route below, then open
+[`lessons/index.html`](lessons/index.html) and begin S01. Click ▶ to watch an
+optional preview (streams from a public bucket). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
 covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
 overviews, formerly NotebookLM; the lesson + notebook are canonical). Then run
@@ -65,44 +65,78 @@ judge calibration → (optional) rebuild from memory → (optional) ship & pilot
 
 ## Quickstart
 
+The native route works on macOS or Linux with Git, Python 3.11+ and
+[uv](https://docs.astral.sh/uv/getting-started/installation/). It reads no API
+credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
+
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-uv sync            # creates .venv/ (Python 3.11+, pinned by uv.lock)
-uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter frontend
+uv sync --frozen
+uv run jupyter lab
 ```
 
-This native route is the supported public starting point. It needs no CourseWeave
-installation and keeps learner work in files you choose. Copy edited notebooks,
-progress notes and experiment output outside the Git checkout if you want them to
-survive a clean clone, branch switch or course upgrade.
+Open `lessons/index.html` in a browser and `notebooks/s01_agent_loop_toy.ipynb`
+in JupyterLab. Read the theory and diagram, write your prediction before running
+the corresponding cell, attempt the exercise, then answer the lesson self-check.
+Repeat that route through S12. Copy edited notebooks, progress notes and
+experiment output outside the Git checkout so they survive a clean clone, branch
+switch or course upgrade.
 
-## Recommended optional CourseWeave experience — current status
+## Recommended optional CourseWeave experience
 
-CourseWeave is an optional application for the same S01–S14 course. The public
-CourseWeave `v0.1.0` wheel is incompatible with this repository's schema-v2
-manifest. A compatible wheel has passed the bounded local pilot checks, but it has
-not been published and has no public download URL yet. Until a compatible platform
-release exists, outside learners should use the native quickstart above.
+CourseWeave is an optional continuous guide for the same course. Its v0.2.0
+macOS bundle is prepared but **not published yet**. Do not run the commands below
+until the [CourseWeave v0.2.0 release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
+lists both `agent-harness-path-courseweave-0.2.0-macos.tar.gz` and
+`SHA256SUMS`. Public CourseWeave v0.1.0 uses schema v1 and is incompatible with
+this course.
 
-If you have been given the compatible pilot asset explicitly, use its **Start
-Course.command** and README. First launch creates a fresh full-course study folder;
-it does not migrate or overwrite an earlier S01/S02 workspace. The
-[full-course study guide](study/FULL-COURSE.md) explains the route and feedback
-boundary. For a source-based local evaluation, install that supplied wheel in a
-separate platform venv and launch with its absolute interpreter path:
+After publication, install [uv](https://docs.astral.sh/uv/getting-started/installation/),
+change Terminal to a nonsynced local download folder, and run:
 
-```bash
-./scripts/courseweave --platform-python /absolute/path/courseweave-pilot-env/bin/python --state-dir /absolute/path/pilot-learner-state
+```sh
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/agent-harness-path-courseweave-0.2.0-macos.tar.gz
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/SHA256SUMS
+shasum -a 256 --check SHA256SUMS --ignore-missing | grep -F 'agent-harness-path-courseweave-0.2.0-macos.tar.gz: OK'
+tar -xzf agent-harness-path-courseweave-0.2.0-macos.tar.gz
+cd "CourseWeave Student Pilot v0.2.0"
+./"Start Course.command" --no-provider
 ```
 
-See [pilot installation and contract](study/COURSEWEAVE-PILOT.md) and the
-[first-test protocol](study/FIRST-TEST.md). The launcher requires a compatible
-pilot artifact with explicit separate course-kernel support; it does not discover
-a sibling checkout or execute copied lab commands. The earlier CourseWeave
-`v0.1.0` release is not this schema-v2 pilot. S01–S12 offer reading → notebook
-predictions, attempts and observations → self-check → optional hard lab, with
-lesson-specific guidance.
+Continue only when the checksum command reports the named bundle as `OK`. First
+start installs isolated runtimes and creates
+`~/Library/Application Support/CourseWeave/Agent Harness Path v0.2.0`; it does
+not migrate or overwrite an earlier workspace. No source checkout, Node, separate
+Jupyter installation or API key is required. Keep the Terminal open while
+studying, save notebooks and press Ctrl-C there to stop. Run the same Start
+command to resume.
+
+The assistant remains off even if the shell contains provider keys. Reading,
+notebooks, hints and self-checks still work. To opt in for one launch, use hidden
+key input and name the model:
+
+```sh
+./"Start Course.command" --provider openai --model YOUR_OPENAI_MODEL
+./"Start Course.command" --provider anthropic --model YOUR_ANTHROPIC_MODEL
+```
+
+Add `--base-url` only when required. Never put a key in a command argument,
+notebook or issue. Credential-manager users can set `COURSEWEAVE_PROVIDER`, the
+matching model/key variables and optional base URL, then use `--provider-env`.
+The launcher loads no `.env` file and sends no key to the course kernel. The
+supported assistant profile is text-only; provider configuration is checked on
+the first question and does not prove arbitrary live or tool behavior.
+
+Contributors validating a source-built application keep that route separate:
+`scripts/courseweave` requires an explicit `--platform-python` and external
+`--state-dir`, as documented in its help. It does not replace the checksum-bound
+student bundle.
+
+See the [guided installation and contract](study/COURSEWEAVE-PILOT.md),
+[full-course study guide](study/FULL-COURSE.md), and optional
+[first-test protocol](study/FIRST-TEST.md). S01–S12 offer reading → notebook
+prediction/attempt/observation → self-check → optional hard lab.
 S13/S14 remain optional notebook-free protocols, with unaided work separated from
 permitted preparation and review. The original `uv run jupyter lab` route above remains the
 independent zero-network, zero-key core path, apart from deliberately opening a
@@ -159,8 +193,13 @@ Reports and patches that make the path more accurate, easier to start, or
 honest about its limits are welcome. The bar is the same as the lessons:
 evidence over claims, no paste-ready harness, no secrets in the tree.
 
-1. Open an [issue](https://github.com/macayaven/agent-harness-path/issues) for a
-   broken link, a SOTA source that moved, or a lesson/notebook contradiction.
+1. Use the one-click
+   [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
+   for setup or study friction. Submission is deliberate; the course and
+   CourseWeave send no telemetry or files to GitHub. Include the public
+   session/activity, what you tried, expected and observed, and any recovery.
+   Remove credentials, raw chats, participant content, private project details,
+   local paths and full notebook/work products.
 2. Read [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request (how to edit
    sources, the verify commands, what maintainers will reject).
 3. By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -25,11 +25,11 @@ repository, package version and release process.
   and transfer protocol.
 
 The public CourseWeave `v0.1.0` wheel is not compatible with this course's
-schema-v2 manifest. A compatible artifact has been tested locally, but it is not
-published and has no public URL. Outside learners can use the native route without
-CourseWeave. If a compatible asset is later released, its package version,
-checksum and installation instructions must come from the CourseWeave release;
-the course tag does not version the application.
+schema-v2 manifest. The v0.2.0 macOS bundle and its public URL are documented as
+a release candidate, but they are not available while the linked release notes
+remain Draft. Outside learners can use the native route without CourseWeave.
+After publication, verify the named bundle against the CourseWeave-owned
+`SHA256SUMS` before extraction; the course tag does not version the application.
 
 ## Release evidence
 
@@ -58,3 +58,9 @@ and raw operational logs. A local acceptance report supports only the named
 artifact, environment and checks. It does not establish general accessibility,
 learning efficacy, teacher workflows, live-provider behavior, compliance or
 production readiness.
+
+The one-click
+[course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
+covers native study, optional labs, the CourseWeave route and S13/S14. Submission
+is learner-controlled; neither course route sends telemetry, notebooks, chats or
+the optional observation CSV to GitHub automatically.

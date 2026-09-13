@@ -33,6 +33,9 @@ used by the local pilot is not a public release asset.
 - Course adapter, launcher and installed-artifact verification contracts for an
   explicitly supplied compatible CourseWeave wheel, separate platform/course
   interpreters and learner state outside the repository.
+- A one-click course-feedback form for native study, optional labs, the guided
+  CourseWeave route and S13/S14, with deliberate submission and explicit
+  redaction of credentials, chats, participant content, private paths and work.
 - Course content, adapter and preservation tests. The current suite covers 24
   unit tests; CI also executes all 12 notebooks, rebuilds the 16 generated HTML
   pages, checks SOTA URLs and links, tests lab contracts and replays committed
@@ -63,6 +66,11 @@ used by the local pilot is not a public release asset.
   adapter, all-diagram workflow, public/private evidence boundary and separate
   course/platform releases. GitHub Pages automation was removed to avoid serving
   stale generated HTML.
+- Learner documentation now gives complete native and post-publication guided
+  macOS setup, verifies the exact CourseWeave-owned bundle against `SHA256SUMS`,
+  starts provider-off in a fresh v0.2.0 study home, and keeps source development
+  as contributor material. The optional observation CSV stays local unless the
+  learner deliberately submits a sanitized summary.
 
 ### Fixed
 

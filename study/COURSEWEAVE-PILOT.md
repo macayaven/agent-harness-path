@@ -8,65 +8,52 @@ records; it does not certify completion or replace the native lessons.
 
 ## Public availability
 
-The course and CourseWeave are separate releases. The course's existing public
-tag is `v0.1.0`; the recommended next course version is `v0.2.0`, which has not
-been tagged. CourseWeave's public `v0.1.0` wheel cannot load this schema-v2
-manifest. A compatible wheel has passed the bounded local checks recorded in the
-[pilot report](../docs/verification/student-pilot-2026-09-13.md), but it has not
-been published and has no public download URL. Public users should use the native
-route unless they have received the compatible pilot asset explicitly.
+The course and CourseWeave are separate releases. Their v0.2.0 candidates and
+the CourseWeave-owned macOS student bundle are prepared but **not published
+yet**. Public CourseWeave v0.1.0 cannot load this schema-v2 manifest. Until the
+[CourseWeave v0.2.0 release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
+lists and verifies the named bundle and checksum file, use the native route.
 
-## Install the explicit local pilot artifact
+## Install the macOS bundle after publication
 
-This schema-v2 branch requires the coherent pilot wheel with `launch
---kernel-python` support. The earlier v0.1.0 release/source sibling is not a
-compatible fallback. If you are an evaluator who has been given the tested pilot
-wheel, substitute its **absolute path** below. These are local evaluation examples,
-not public installation instructions or a claim that the course repository
-contains an application asset.
+You need macOS, internet access for the first setup, and
+[uv](https://docs.astral.sh/uv/getting-started/installation/). Change Terminal
+to a nonsynced local download folder and run:
 
-```bash
-uv venv --python 3.11 /absolute/path/courseweave-pilot-env
-uv pip install --python /absolute/path/courseweave-pilot-env/bin/python /absolute/path/courseweave-pilot.whl
-uv sync --frozen
-/absolute/path/courseweave-pilot-env/bin/python -I scripts/verify_courseweave.py
-./scripts/courseweave --platform-python /absolute/path/courseweave-pilot-env/bin/python --state-dir /absolute/path/pilot-learner-state
+```sh
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/agent-harness-path-courseweave-0.2.0-macos.tar.gz
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/SHA256SUMS
+shasum -a 256 --check SHA256SUMS --ignore-missing | grep -F 'agent-harness-path-courseweave-0.2.0-macos.tar.gz: OK'
+tar -xzf agent-harness-path-courseweave-0.2.0-macos.tar.gz
+cd "CourseWeave Student Pilot v0.2.0"
+./"Start Course.command" --no-provider
 ```
 
-The launcher accepts `--platform-python` and `--state-dir` (both required),
-`--kernel-python` (defaults to this course's `.venv/bin/python`), and `--port`
-(default 8765). It prints the three selected paths and invokes:
+Continue only when the checksum command reports the named archive as `OK`. The
+archive expands to one top-level `CourseWeave Student Pilot v0.2.0` folder. Its
+seven files contain the exact application wheel, course archive and runtime
+constraints selected for the release. The launcher builds separate application
+and course interpreters, and the notebook interpreter receives no provider key.
+It does not discover a sibling checkout, another CourseWeave installation or a
+private receipt.
 
-```text
-<platform-python> -m courseweave launch --course-root <this-course> --kernel-python <course-python> --state-dir <external-state> --port <port>
-```
+First start creates the versioned study home
+`~/Library/Application Support/CourseWeave/Agent Harness Path v0.2.0`. Do not
+point it at an earlier S01/S02 workspace and do not delete that workspace after
+the new route opens. A different course edition is refused rather than merged.
+There is no automatic state migration. Learner-edited notebooks, progress notes
+and experiment output remain learner-owned files; returning to the native course
+or an older CourseWeave environment does not rewrite them.
 
-Keep interpreter paths pointing through their venv `bin/python`; resolving their
-symlinks to a base interpreter loses environment selection. The platform hosts
-CourseWeave/Jupyter and provider integration. The course interpreter runs notebooks
-and has no CourseWeave/provider dependency requirement. Learner state belongs in a
-separate external directory, never inside the course or at an ancestor of it.
-The launcher fails clearly if the artifact lacks the explicit kernel interface;
-it never discovers a sibling checkout, searches PATH for another CourseWeave,
-reads lab commands or installs software on launch. Final installed-artifact
-acceptance must verify the **actual** kernel executable and credential stripping;
-printing a path alone is not isolation proof.
-
-Use a fresh external state directory for the full-course manifest. Do not point it
-at an earlier S01/S02 workspace and do not delete that workspace after the new
-pilot opens. There is no automatic state migration. Learner-edited notebooks,
-progress notes and experiment output remain learner-owned files outside the Git
-checkout; returning to the native course or an older CourseWeave environment does
-not rewrite them.
-
-No provider credential is read by this course adapter. Configure an optional
-provider through the platform's documented custody path. CourseWeave's session-only
-raw conversation policy concerns its own storage; an upstream gateway/provider
-can log prompts and responses. Review its retention settings before using Share.
-Gateway/provider logging is mutable external configuration; verify it at final
-acceptance rather than relying on this document. Use only public toy material in
-exploratory probes. The lesson text and optional one-answer Share
-have different scopes; inspect and clear lesson scope when appropriate.
+The assistant is off by default, including when inherited API-key variables
+exist. For one deliberate interactive launch, use `--provider openai --model
+YOUR_OPENAI_MODEL` or the corresponding `anthropic` command; the launcher asks
+for the key with hidden input. A credential manager may inject the selected
+provider/model/key variables for `--provider-env`. No `.env` file is loaded and
+keys never belong in arguments, course files, notebooks, feedback or evidence.
+An upstream gateway/provider can log prompts and responses, so review its
+retention before using Share. The accepted bundle profile is text-only; one live
+result does not establish tool or arbitrary-provider compatibility.
 
 ## Guided route and actual contract
 

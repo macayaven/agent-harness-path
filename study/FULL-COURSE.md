@@ -2,12 +2,12 @@
 
 The public starting point is the native course: follow the root README, run
 `uv sync --frozen`, open [the course index](../lessons/index.html), and use
-`uv run jupyter lab`. If you received a compatible CourseWeave Student Pilot
-folder explicitly, use its **Start Course.command** and README. First start creates
-a fresh full-course study copy and isolated runtimes; it does not migrate or
-replace an earlier S01/S02 workspace. The public CourseWeave `v0.1.0` wheel is
-incompatible with this schema-v2 guide, and no compatible wheel is publicly
-available yet.
+`uv run jupyter lab`. After the CourseWeave v0.2.0 release page publishes the
+bundle and checksum named in the README, the optional macOS guided route starts
+with its **Start Course.command**. First start creates a fresh versioned
+full-course study copy and isolated runtimes; it does not migrate or replace an
+earlier S01/S02 workspace. Public CourseWeave v0.1.0 is incompatible with this
+schema-v2 guide.
 
 Keep learner work on nonsynced local storage outside the Git checkout. Copy an
 edited notebook before a clean clone, branch switch or version change. Keep an old
@@ -82,7 +82,11 @@ consenting person, publication or learning result.
 
 Copy [the observation CSV](PILOT-OBSERVATIONS.template.csv) into your own nonsynced
 notes folder outside the repository. Use the session/activity as `task_id`; the
-template is optional.
+template is optional. It remains local unless you choose to copy a short,
+sanitized observation into the one-click
+[course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml).
+CourseWeave does not send the CSV, notebooks, chat or telemetry to GitHub. Review
+the issue preview and submit only when you intend to make it public.
 For each friction point, record what you tried, expected and observed, how you
 recovered, and whether the assistant/hint was grounded or exposed a solution too
 soon. Keep the original prediction/attempt, your correction and actual study time.
@@ -90,7 +94,9 @@ Mark unobserved usage/cost and missing results as unavailable, never zero.
 
 Do not include credentials, raw-chat exports or real participant/session content.
 A short paraphrase normally suffices. Do not publish private project names or
-machine-specific paths. Record skipped material as skipped and
+machine-specific paths, full notebooks or work products. Include a public
+session/activity or repository-relative path, the minimum reproduction, expected
+and observed behavior, and any recovery. Record skipped material as skipped and
 partial work as partial. Your observations can identify defects and guide course
 improvement; they do not establish general learning gains or readiness.
 
