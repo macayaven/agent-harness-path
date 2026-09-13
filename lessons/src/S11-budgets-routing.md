@@ -29,12 +29,14 @@ completion, not a crash.
 
 One refinement to "crossing the budget ends the run": a meter that reads only
 *after* each call is a **soft stop** — the crossing call was already dispatched
-and paid for. A hard budget reads **ahead**: a pre-dispatch estimate or
-reservation (if `spent + estimate` would cross, the call never runs), or
-provider/gateway caps that reject the over-budget call at the account level
-(the LiteLLM row below). The toy implements the pre-dispatch gate: each route
-prices its own call, and a call that would cross the budget is never dispatched
-— the post-call meter stays as the ledger, the estimate is the gate.
+and paid for. A pre-dispatch estimate improves that bound: if `spent + estimate`
+would cross, the call never runs. But an estimate makes a hard ceiling only when
+it is a conservative upper bound. If it underestimates, the allowed call can
+cross the limit; post-call accounting stops subsequent calls but cannot undo
+that spend. A reservation or provider/gateway cap supplies strict enforcement
+(the LiteLLM row below). The deterministic toy can price each route's call
+exactly before dispatch, so its estimate is the gate and its post-call meter is
+the ledger.
 
 Two properties matter:
 
