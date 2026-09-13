@@ -24,8 +24,120 @@
     {
       "id": "s01",
       "title": "The agent loop",
-      "description": "Read → notebook predictions, attempt and observations → self-check. Optional trivia-host lab and video. Study times are estimates; saved records and check feedback do not certify learning.",
+      "description": "Optional course orientation, then read → notebook predictions, attempt and observations → self-check. Optional trivia-host lab and video. Study times are estimates; saved records and check feedback do not certify learning.",
       "phases": [
+        {
+          "id": "orientation",
+          "title": "Course orientation",
+          "progress": "optional",
+          "experience": {
+            "type": "builtin",
+            "id": "reading"
+          },
+          "surfaces": [
+            {
+              "id": "course-index",
+              "type": "html",
+              "path": "lessons/index.html",
+              "purpose": "reference",
+              "label": "Course index — S01"
+            },
+            {
+              "id": "study-plan",
+              "type": "html",
+              "path": "lessons/study-plan.html",
+              "purpose": "reference",
+              "label": "Study-plan overlay — S01"
+            },
+            {
+              "id": "lab-workspace-guide",
+              "type": "markdown",
+              "path": "labs/README.md",
+              "purpose": "reference",
+              "label": "Lab workspace guide — S01"
+            },
+            {
+              "id": "progress-template",
+              "type": "markdown",
+              "path": "study/PROGRESS.template.md",
+              "purpose": "reference",
+              "label": "Optional progress template — S01"
+            }
+          ],
+          "completion": {
+            "requirements": []
+          },
+          "teacher": {
+            "access": {
+              "mode": "available",
+              "requires": []
+            },
+            "guidance": {
+              "style": {
+                "type": "builtin",
+                "id": "explanatory"
+              },
+              "hint_level": "graduated",
+              "text": "Orient the learner to the whole fourteen-session course and optional planning overlay. Keep required course activity distinct from optional scheduling suggestions; do not infer completion or mastery from opening these references."
+            },
+            "sharing": {
+              "allow": [
+                "selection"
+              ]
+            },
+            "proposals": {
+              "allow": [
+                "profile"
+              ]
+            }
+          },
+          "learning": {
+            "objectives": [
+              {
+                "id": "course-route",
+                "text": "Locate the twelve required reading, notebook and self-check sequences and distinguish them from the optional S13 and S14 protocols."
+              },
+              {
+                "id": "planning-overlay",
+                "text": "Use the study-plan overlay as scheduling guidance while keeping its external readings and bring-your-own-artifact work outside CourseWeave progress claims."
+              },
+              {
+                "id": "workspace-references",
+                "text": "Locate the lab workspace guide and optional progress template without treating a copied plan or opened file as evidence of completed work."
+              }
+            ],
+            "duration": {
+              "min_minutes": 5,
+              "max_minutes": 15
+            },
+            "overview": "Use the course index to see the fourteen-session route, the study-plan page to schedule optional external work, and the workspace references to locate labs and keep private notes. This orientation is a reference activity: opening it records no completion and does not certify learning or outside work.",
+            "hints": [
+              {
+                "id": "count-required-route",
+                "text": "Count the repeated read, notebook and self-check sequence from S01 through S12, then compare it with the optional S13 and S14 protocols.",
+                "objective_ids": [
+                  "course-route"
+                ]
+              },
+              {
+                "id": "separate-schedule-progress",
+                "text": "Treat the study plan as a calendar suggestion. Which entries rely on external reading or personal artifacts that CourseWeave cannot observe?",
+                "objective_ids": [
+                  "planning-overlay"
+                ]
+              },
+              {
+                "id": "locate-reference-files",
+                "text": "Use the workspace guide to find runnable labs and the template to structure private notes. Neither opening nor copying them establishes an outcome.",
+                "objective_ids": [
+                  "workspace-references"
+                ]
+              }
+            ],
+            "sources": [],
+            "checks": []
+          }
+        },
         {
           "id": "read",
           "title": "Read and trace the theory",

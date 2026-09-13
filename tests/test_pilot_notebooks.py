@@ -9,6 +9,19 @@ def digest(cell):
     return hashlib.sha256(json.dumps(cell,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 class NotebookTests(unittest.TestCase):
+    def test_all_student_notebooks_select_the_installed_python_kernel(self):
+        expected = {
+            'display_name': 'Python 3',
+            'language': 'python',
+            'name': 'python3',
+        }
+        notebooks = sorted((ROOT / 'notebooks').glob('s*_toy.ipynb'))
+        self.assertEqual(len(notebooks), 12)
+        for notebook in notebooks:
+            metadata = json.loads(notebook.read_text())['metadata']
+            self.assertEqual(metadata.get('kernelspec'), expected, notebook.name)
+            self.assertEqual(metadata.get('language_info', {}).get('name'), 'python', notebook.name)
+
     def test_original_cells_ids_sources_metadata_and_outputs_are_preserved(self):
         receipt=json.loads((ROOT/'tests/fixtures/original-notebook-cells.json').read_text())
         for name,original in receipt.items():

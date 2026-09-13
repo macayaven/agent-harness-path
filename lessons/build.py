@@ -48,6 +48,31 @@ LESSON_ORDER = [
     "S14-ship-and-pilot",
 ]
 
+READ_FRAGMENTS = {
+    slug: 'the-protocol' if slug.startswith(('S13-', 'S14-'))
+    else 'the-theory-in-depth'
+    for slug in LESSON_ORDER
+    if slug.startswith('S')
+}
+LOCAL_LESSON_HREF_RE = re.compile(
+    r'(?P<prefix>href=")(?P<path>(?:\.\.?/)*'
+    r'(?P<slug>S[0-9]{2}-[A-Za-z0-9-]+)\.html)(?P<suffix>")'
+)
+
+
+def canonical_lesson_hrefs(rendered: str) -> str:
+    """Give cross-page lesson links the manifest's canonical read fragment."""
+    def replace(match: re.Match[str]) -> str:
+        fragment = READ_FRAGMENTS.get(match.group('slug'))
+        if fragment is None:
+            return match.group(0)
+        return (
+            f'{match.group("prefix")}{match.group("path")}#{fragment}'
+            f'{match.group("suffix")}'
+        )
+
+    return LOCAL_LESSON_HREF_RE.sub(replace, rendered)
+
 
 def render_body(source: Path) -> tuple[str, str, int]:
     """Convert one source file; return (body HTML, H1 title, mermaid count)."""
@@ -96,12 +121,13 @@ def build_nav(slug: str, order: list[str], titles: dict[str, str]) -> str:
 
 def render(source: Path, nav: str) -> tuple[str, int]:
     body, title, n = render_body(source)
-    return (
+    rendered = (
         TEMPLATE.replace("{{ title }}", title)
         .replace("{{ nav }}", nav)
         .replace("{{ body }}", body)
         .replace("{{ source }}", source.name)
-    ), n
+    )
+    return canonical_lesson_hrefs(rendered), n
 
 
 def main() -> int:

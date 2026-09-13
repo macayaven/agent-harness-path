@@ -122,6 +122,7 @@ def main():
     }
 
     notebook_gate_count = 0
+    notebook_kernel_metadata_count = 0
     for module_id in CORE_MODULE_IDS:
         module = next(module for module in manifest.modules if module.id == module_id)
         assert [phase.id for phase in module.phases if phase.progress == "required"] == [
@@ -131,6 +132,16 @@ def main():
         ]
         notebook = phase_for(manifest, module_id, "notebook")
         assert [surface.type for surface in notebook.surfaces] == ["notebook"]
+        notebook_metadata = json.loads(
+            (root / str(notebook.surfaces[0].path)).read_text()
+        )["metadata"]
+        assert notebook_metadata.get("kernelspec") == {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3",
+        }
+        assert notebook_metadata.get("language_info", {}).get("name") == "python"
+        notebook_kernel_metadata_count += 1
         assert notebook.teacher.access.requires == (f"{module_id}-prediction",)
         assert not effective_teacher_policy(
             manifest, module_id, "notebook", []
@@ -155,6 +166,18 @@ def main():
         )
         assert not notebook_progress.complete
         notebook_gate_count += 1
+
+    orientation = phase_for(manifest, "s01", "orientation")
+    assert orientation.progress == "optional"
+    assert orientation.completion.requirements == ()
+    assert [str(surface.path) for surface in orientation.surfaces] == [
+        "lessons/index.html",
+        "lessons/study-plan.html",
+        "labs/README.md",
+        "study/PROGRESS.template.md",
+    ]
+    assert all(surface.purpose == "reference" for surface in orientation.surfaces)
+    assert all(surface.label.endswith("— S01") for surface in orientation.surfaces)
 
     for module_id in PROTOCOL_MODULE_IDS:
         assert all(
@@ -192,6 +215,7 @@ def main():
         ).provider_callable
 
     coordinates = []
+    html_scope_count = 0
     native_detail_scopes = 0
     for module in manifest.modules:
         coverage = module_coverage[module.id]
@@ -235,17 +259,18 @@ def main():
 
                 if surface.type == "html":
                     page = (root / str(surface.path)).read_text()
-                    assert surface.fragment
-                    assert f'id="{surface.fragment}"' in page
+                    if surface.fragment:
+                        assert f'id="{surface.fragment}"' in page
                     details_text = native_details_text(page)
-                    assert details_text, f"Expected native details in {surface.path}"
                     scope = lesson_scope(
                         root, manifest, resolved, "adapter-check", "scope"
                     )
                     assert scope.omitted_sections
                     for text in details_text:
                         assert text not in scope.excerpt
-                    native_detail_scopes += 1
+                    html_scope_count += 1
+                    if details_text:
+                        native_detail_scopes += 1
                 coordinates.append([module.id, phase.id, surface.id])
 
     digest = curriculum_digest(manifest)
@@ -376,10 +401,12 @@ def main():
                 "required_total": progress.required_total,
                 "required_complete": progress.required_complete,
                 "notebook_prediction_gates": notebook_gate_count,
+                "notebook_kernel_metadata": notebook_kernel_metadata_count,
                 "observer_only_phases": [
                     "/".join(coordinate) for coordinate in sorted(OBSERVER_ONLY_PHASES)
                 ],
                 "review_attestation_gates": REVIEW_GATES,
+                "html_scopes": html_scope_count,
                 "native_detail_scopes": native_detail_scopes,
                 "authored_check_count": authored_check_count,
                 "authored_option_attempts": attempted_options,

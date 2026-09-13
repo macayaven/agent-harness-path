@@ -133,8 +133,15 @@ class CourseWeaveManifestTests(unittest.TestCase):
         self.assertEqual([m["id"] for m in manifest["modules"]], [f"s{n:02d}" for n in range(1,15)])
         for module in manifest["modules"][:12]:
             phases = phase_map(module)
-            self.assertEqual(list(phases), ["read", "notebook", "self-check", "lab"])
-            self.assertEqual([p["progress"] for p in phases.values()], ["required"]*3+["optional"])
+            expected = (["orientation"] if module["id"] == "s01" else []) + [
+                "read", "notebook", "self-check", "lab"
+            ]
+            self.assertEqual(list(phases), expected)
+            self.assertEqual(
+                [p["id"] for p in phases.values() if p["progress"] == "required"],
+                ["read", "notebook", "self-check"],
+            )
+            self.assertEqual(phases["lab"]["progress"], "optional")
             self.assertEqual(phases["read"]["surfaces"][0]["fragment"], "the-theory-in-depth")
             self.assertEqual(phases["self-check"]["surfaces"][0]["fragment"], "self-check")
             self.assertEqual(phases["notebook"]["teacher"]["access"]["requires"], [module["id"]+"-prediction"])
@@ -149,6 +156,21 @@ class CourseWeaveManifestTests(unittest.TestCase):
                 self.assertTrue(learning["hints"])
             for check in phases["self-check"]["learning"]["checks"]:
                 self.assertTrue(all(option["feedback"] for option in check["options"]))
+        orientation = phase_map(manifest["modules"][0])["orientation"]
+        self.assertEqual(orientation["title"], "Course orientation")
+        self.assertEqual(orientation["progress"], "optional")
+        self.assertEqual(orientation["completion"]["requirements"], [])
+        self.assertEqual(
+            [surface["path"] for surface in orientation["surfaces"]],
+            [
+                "lessons/index.html",
+                "lessons/study-plan.html",
+                "labs/README.md",
+                "study/PROGRESS.template.md",
+            ],
+        )
+        self.assertTrue(all("fragment" not in surface for surface in orientation["surfaces"]))
+        self.assertTrue(all(surface["label"].endswith("— S01") for surface in orientation["surfaces"]))
         self.assertNotIn("limited guidance", json.dumps(manifest).lower())
 
     def test_maps_every_course_file_video_and_original_prediction_cell(self):
