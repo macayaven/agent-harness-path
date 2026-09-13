@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S02-golden-evals.html">&larr; Prev: S02-golden-evals — Golden sets &amp; baselines</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S04-structured-generation.html">Next: S04-structured-generation — The schema is the contract &rarr;</a></span></nav>
-<h1>S03-context-engineering — governance decays across compaction</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S02-golden-evals.html#the-theory-in-depth">&larr; Prev: S02-golden-evals — Golden sets &amp; baselines</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S04-structured-generation.html#the-theory-in-depth">Next: S04-structured-generation — The schema is the contract &rarr;</a></span></nav>
+<h1 id="s03-context-engineering-governance-decays-across-compaction">S03-context-engineering — governance decays across compaction</h1>
 <p><strong>What this teaches:</strong> the context window is two budgets, not one — a hard token
 budget and a soft attention budget — and what happens to in-context rules when the
 window fills: compaction deletes them silently. The fix is an invariant (safety
@@ -113,8 +121,8 @@ the stack).
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s03_context.md"><code>labs/s03_context.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S03-context-engineering.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>Two budgets, not one</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="two-budgets-not-one">Two budgets, not one</h3>
 <p>The window has a hard limit: overflow it and the API answers with a 400, not an
 answer. But the operative limit is softer and lower. Anthropic's framing is that
 attention is a <em>finite budget</em> — the smallest set of high-signal tokens wins, and
@@ -128,7 +136,7 @@ of a long context well and the middle badly — <em>lost in the middle</em>
 (<a href="https://arxiv.org/abs/2307.03172">arXiv:2307.03172</a>).</p>
 <p>So: "it fits" is not "it works." A rule sitting 40k tokens into a 128k window is
 present and impaired at the same time, and no error message tells you.</p>
-<h3>Compaction is a rewrite, not a trim</h3>
+<h3 id="compaction-is-a-rewrite-not-a-trim">Compaction is a rewrite, not a trim</h3>
 <p>When the budget runs out, something has to go. The two standard moves:</p>
 <table>
 <thead>
@@ -155,7 +163,7 @@ present and impaired at the same time, and no error message tells you.</p>
 summarizers optimize for. Nothing announces that a constraint stopped existing. If
 your only instrument is reading transcripts, you will not find the decay there; you
 will find it in production, reported by a user.</p>
-<h3>Governance decay is a measured result, not a metaphor</h3>
+<h3 id="governance-decay-is-a-measured-result-not-a-metaphor">Governance decay is a measured result, not a metaphor</h3>
 <p>Chen et al. put numbers on it in <em>Governance Decay</em> (<a href="https://arxiv.org/abs/2606.22528">arXiv:2606.22528</a>):
 across seven models and 1,323 episodes, in-context governance constraints that held
 at <strong>0% violation before compaction</strong> failed at <strong>30–59% after</strong>. Two details make
@@ -165,7 +173,7 @@ Second, the attack: an adversary who can bias what the summarizer keeps can arra
 for a specific constraint to be deleted (their Compaction-Eviction Attack). The
 context-management layer is a safety-critical failure surface, and "the model
 misbehaved" is often "the harness deleted the rule."</p>
-<h3>The pinned-region invariant</h3>
+<h3 id="the-pinned-region-invariant">The pinned-region invariant</h3>
 <p>Hence the design rule: <strong>safety and boundary constraints never live only in
 compactable prose.</strong> Two layers:</p>
 <ol>
@@ -175,23 +183,12 @@ compactable prose.</strong> Two layers:</p>
 <li><strong>Pinned prompt copy.</strong> Whatever constraint text does go into the context sits
    in a region compaction may not touch — re-sent verbatim at every assembly.</li>
 </ol>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TB
-    subgraph ASM[context assembly — every call]
-        P[pinned region&lt;br/&gt;safety rules, verbatim&lt;br/&gt;never compacted]
-        C[compactable region&lt;br/&gt;history, tool output, small talk]
-    end
-    C --&gt; Q{over budget?}
-    Q -- no --&gt; S[send]
-    Q -- yes --&gt; K[truncate or summarize&lt;br/&gt;the compactable region ONLY]
-    K --&gt; S
-    P --&gt; S
-    S --&gt; M[model]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S03-context-engineering.svg" alt="Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model." style="--diagram-width: 555px" /></div>
 <p>Pinning is rent: those tokens ride every request forever, so the pinned region
 stays small and high-signal. And pinning is necessary but not sufficient — it keeps
 the rule <em>present</em>; the attention budget decides whether it gets <em>used</em>. The
 notebook watches both failure modes happen.</p>
-<h3>Just-in-time, and the cache angle</h3>
+<h3 id="just-in-time-and-the-cache-angle">Just-in-time, and the cache angle</h3>
 <p>The complementary skill is deciding what enters the window at all. Pre-loading
 everything is the naive default; the alternative is <em>just-in-time</em> context — the
 agent fetches what it needs with tools, when it needs it (the S01 loop is the
@@ -203,7 +200,7 @@ context-editing docs warn about exactly this interaction
 (<a href="https://docs.claude.com/en/docs/build-with-claude/context-editing">docs.claude.com</a>).
 Log every compaction as a first-class event: what was dropped, what the summary
 kept, what it cost. It is a behavior change and a cache flush at the same time.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <p>Run top-to-bottom; write each prediction before running the cell that settles it.</p>
 <ol>
 <li>Establish why compaction exists at all: run with no policy until the API's hard
@@ -221,7 +218,7 @@ kept, what it cost. It is a behavior change and a cache flush at the same time.<
    probe (the probe itself is not counted).</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s03_context.md">pinned house rules</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -268,7 +265,7 @@ kept, what it cost. It is a behavior change and a cache flush at the same time.<
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a>
   (Sep 2025).</strong> Extract three things: the finite-attention-budget framing; the
@@ -291,7 +288,7 @@ kept, what it cost. It is a behavior change and a cache flush at the same time.<
   adds the maintenance failure — a constraint deleted by your own compaction —
   which the four do not cleanly cover.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"Bigger windows solved this."</strong> Two budgets, not one. Overflow is a 400;
   attention decay is silent, gradual, and starts long before the nominal limit.</li>
@@ -308,7 +305,7 @@ kept, what it cost. It is a behavior change and a cache flush at the same time.<
   on the billing side, silent state change on the behavior side. An unlogged
   compaction is an undebuggable agent.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Name the two budgets and the failure signature of each.</summary>
 The token budget: hard window, overflow returns a 400 — loud and exact. The
 attention budget: effective recall degrades with length and position — silent,
@@ -331,19 +328,15 @@ At the end. Prompt caches key on stable prefixes: one changed early token
 invalidates everything after it. This is also why compaction is a cost event, not
 just a context event — it rewrites the prefix and flushes the cache.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S04 — Structured generation:</strong> you now control what flows <em>into</em> the model; next,
 constrain what flows <em>out</em>. Schemas, validation, and the retry-on-invalid loop —
 because an agent whose outputs you can't parse is an agent you can't govern.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S02-golden-evals.html">&larr; Prev: S02-golden-evals — Golden sets &amp; baselines</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S04-structured-generation.html">Next: S04-structured-generation — The schema is the contract &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S02-golden-evals.html#the-theory-in-depth">&larr; Prev: S02-golden-evals — Golden sets &amp; baselines</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S04-structured-generation.html#the-theory-in-depth">Next: S04-structured-generation — The schema is the contract &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S03-context-engineering.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

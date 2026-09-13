@@ -29,12 +29,16 @@ completion, not a crash.
 
 One refinement to "crossing the budget ends the run": a meter that reads only
 *after* each call is a **soft stop** — the crossing call was already dispatched
-and paid for. A hard budget reads **ahead**: a pre-dispatch estimate or
-reservation (if `spent + estimate` would cross, the call never runs), or
-provider/gateway caps that reject the over-budget call at the account level
-(the LiteLLM row below). The toy implements the pre-dispatch gate: each route
-prices its own call, and a call that would cross the budget is never dispatched
-— the post-call meter stays as the ledger, the estimate is the gate.
+and paid for. A pre-dispatch estimate improves that bound: if `spent + estimate`
+would cross, the call never runs. But an estimate makes a hard ceiling only when
+it is a conservative upper bound. If it underestimates, the allowed call can
+cross the limit; post-call accounting stops subsequent calls but cannot undo
+that spend. A hard ceiling requires a conservative pre-dispatch reservation or
+another upstream limit verified to refuse the crossing call. Gateway budget
+checks may instead account completed usage and reject only subsequent calls, so
+verify their semantics rather than assuming they prevent overshoot. The
+deterministic toy can price each route's call exactly before dispatch, so its
+estimate is the gate and its post-call meter is the ledger.
 
 Two properties matter:
 
@@ -169,7 +173,7 @@ After the notebook, optional hard path: [budgets and a hard route refusal](../la
 | Model families ship in explicit cost/latency tiers ([Anthropic model overview](https://docs.anthropic.com/en/docs/about-claude/models/overview), [OpenAI models](https://platform.openai.com/docs/models)) | **already in this path** | The price/quality spread across tiers is the raw material your route table arbitrages. |
 | FrugalGPT: cascade cheap→strong with a learned accept/escalate scorer; matched GPT-4 at up to 98% lower cost on narrow tasks ([arXiv:2305.05176](https://arxiv.org/abs/2305.05176)) | **recognize** | The academic root of routing. The 98% figure is task-specific and widely over-quoted; the durable idea is paying for the big model only on the fraction that needs it. |
 | RouteLLM: routers trained on preference data choose strong-vs-weak per query; >2× cost cuts at fixed quality ([arXiv:2406.18665](https://arxiv.org/abs/2406.18665), [LMSYS blog](https://lmsys.org/blog/2024-07-01-routellm/)) | **newer than this session** | The learned generalization of your hand-built table. Revisit when phase count or traffic makes hand-tuning the bottleneck — it still starts from a measured quality/cost frontier. |
-| Gateway-enforced budgets: LiteLLM proxy per-key/tag `max_budget` + `budget_duration`, rejects over-budget calls with `budget_exceeded` ([docs](https://docs.litellm.ai/docs/proxy/provider_budget_routing)) | **adopt** | Belt and suspenders: proxy caps protect the account, the in-harness meter protects the run. Even mature proxies ship stale-counter budget bugs ([issue #31292](https://github.com/BerriAI/litellm/issues/31292)) — your own meter is the audit of last resort. |
+| Gateway budget checks: LiteLLM Budget Routing rejects requests after recorded spend is over the configured budget ([docs](https://docs.litellm.ai/docs/proxy/provider_budget_routing)) | **adopt** | This controls subsequent calls; the documented first call updates spend and can overshoot before the next rejection. Verify scope and accounting timing in the deployed gateway; the in-harness ledger remains an independent audit. |
 | Routing by data sensitivity at production scale: Apple Intelligence on-device by default, escalating to stateless, attested Private Cloud Compute ([security guide](https://security.apple.com/documentation/private-cloud-compute), [launch post](https://security.apple.com/blog/private-cloud-compute/)) | **recognize** | Content *does* leave the device on the PCC path — prompt and parameters travel end-to-end encrypted to attested nodes. What the architecture guarantees is narrower and verifiable: stateless constrained processing, deletion after the response, inaccessibility to Apple (admin staff included), non-targetability, verifiable transparency. Your validation-time refusal is the same idea at toy scale. |
 | Voice latency as a product spec: GPT-4o answers audio in ~232 ms (avg 320 ms), "similar to human response time in conversation"; the chained pipeline it replaced ran 2.8–5.4 s ([OpenAI, Hello GPT-4o](https://openai.com/index/hello-gpt-4o/)) | **already in this path** | These numbers anchor Exercise 5; the human base rate underneath is Stivers et al. 2009 ([PNAS](https://doi.org/10.1073/pnas.0903616106)). |
 | Managed auto-routers that pick a model per prompt for you ([OpenRouter Auto Router](https://openrouter.ai/docs/guides/routing/routers/auto-router)) | **ignore** | For now: a learned black box between you and your bill — and per-request model changes are a reproducibility hazard for evals. Build and measure the table by hand first; then you'll know what to audit the service against. |

@@ -8,9 +8,9 @@ can read. An **optional hard path** (`labs/`) grows one toy trivia-host spine
 against a real OpenAI-compatible endpoint *or* committed cassettes. Completing
 S01–S12 never requires a lab.
 
-**Start here:** clone the repo and open
-[`lessons/index.html`](lessons/index.html). Click ▶ to watch a preview (streams
-from a public bucket). A 9-minute
+**Start here:** choose the native route below, then open
+[`lessons/index.html`](lessons/index.html) and begin S01. Click ▶ to watch an
+optional preview (streams from a public bucket). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
 covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
 overviews, formerly NotebookLM; the lesson + notebook are canonical). Then run
@@ -65,12 +65,82 @@ judge calibration → (optional) rebuild from memory → (optional) ship & pilot
 
 ## Quickstart
 
+The native route works on macOS or Linux with Git, Python 3.11+ and
+[uv](https://docs.astral.sh/uv/getting-started/installation/). It reads no API
+credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
+
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-uv sync            # creates .venv/ (Python 3.11+, pinned by uv.lock)
-uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter frontend
+uv sync --frozen
+uv run jupyter lab
 ```
+
+Open `lessons/index.html` in a browser and `notebooks/s01_agent_loop_toy.ipynb`
+in JupyterLab. Read the theory and diagram, write your prediction before running
+the corresponding cell, attempt the exercise, then answer the lesson self-check.
+Repeat that route through S12. Copy edited notebooks, progress notes and
+experiment output outside the Git checkout so they survive a clean clone, branch
+switch or course upgrade.
+
+## Recommended optional CourseWeave experience
+
+CourseWeave is an optional continuous guide for the same course. Use the v0.2.0
+macOS bundle from the [CourseWeave release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
+when it lists `agent-harness-path-courseweave-0.2.0-macos.tar.gz` and `SHA256SUMS`
+and is no longer marked **Pre-release**. Until then, use the native route above;
+staged candidates are still undergoing verification. CourseWeave v0.1.0 uses
+schema v1 and is incompatible with this course.
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/),
+change Terminal to a nonsynced local download folder, and run:
+
+```sh
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/agent-harness-path-courseweave-0.2.0-macos.tar.gz
+curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/SHA256SUMS
+shasum -a 256 --check SHA256SUMS --ignore-missing | grep -F 'agent-harness-path-courseweave-0.2.0-macos.tar.gz: OK'
+tar -xzf agent-harness-path-courseweave-0.2.0-macos.tar.gz
+cd "CourseWeave Student Pilot v0.2.0"
+./"Start Course.command" --no-provider
+```
+
+Continue only when the checksum command reports the named bundle as `OK`. First
+start installs isolated runtimes and creates
+`~/Library/Application Support/CourseWeave/Agent Harness Path v0.2.0`; it does
+not migrate or overwrite an earlier workspace. No source checkout, Node, separate
+Jupyter installation or API key is required. Keep the Terminal open while
+studying, save notebooks and press Ctrl-C there to stop. Run the same Start
+command to resume.
+
+The assistant remains off even if the shell contains provider keys. Reading,
+notebooks, hints and self-checks still work. To opt in for one launch, use hidden
+key input and name the model:
+
+```sh
+./"Start Course.command" --provider openai --model YOUR_OPENAI_MODEL
+./"Start Course.command" --provider anthropic --model YOUR_ANTHROPIC_MODEL
+```
+
+Add `--base-url` only when required. Never put a key in a command argument,
+notebook or issue. Credential-manager users can set `COURSEWEAVE_PROVIDER`, the
+matching model/key variables and optional base URL, then use `--provider-env`.
+The launcher loads no `.env` file and sends no key to the course kernel. The
+supported assistant profile is text-only; provider configuration is checked on
+the first question and does not prove arbitrary live or tool behavior.
+
+Contributors validating a source-built application keep that route separate:
+`scripts/courseweave` requires an explicit `--platform-python` and external
+`--state-dir`, as documented in its help. It does not replace the checksum-bound
+student bundle.
+
+See the [guided installation and contract](study/COURSEWEAVE-PILOT.md),
+[full-course study guide](study/FULL-COURSE.md), and optional
+[first-test protocol](study/FIRST-TEST.md). S01–S12 offer reading → notebook
+prediction/attempt/observation → self-check → optional hard lab.
+S13/S14 remain optional notebook-free protocols, with unaided work separated from
+permitted preparation and review. The original `uv run jupyter lab` route above remains the
+independent zero-network, zero-key core path, apart from deliberately opening a
+public video preview.
 
 ### Two paths
 
@@ -81,8 +151,9 @@ uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter fronte
 | Keys | none | none for `--replay`; `OPENAI_BASE_URL` / `OPENAI_API_KEY` / `OPENAI_MODEL` for `--live` |
 | S13/S14 target | a system you own | `labs/trivia_host/` if you built it |
 
-`--live` is never the default and never runs in CI. Any OpenAI-compatible server
-works (OpenAI, Groq, Together, Ollama, llama.cpp). See `labs/README.md`.
+`--live` is never the default and never runs in CI. It uses an OpenAI-compatible
+chat endpoint; confirm that the selected model supports the lab's requests before
+interpreting live results. See `labs/README.md`.
 
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
 not need Git LFS. The notebooks are Python standard library only — the venv
@@ -104,6 +175,9 @@ lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
   contract, the toy-domain rule
 - `COURSE-MAP.md` — coverage map
 - `CONTRIBUTING.md` — how to propose a change
+- `docs/` — documentation map, release process and versioned release notes
+- `study/` — optional study, pilot and transfer protocols; learner results belong
+  outside the checkout
 
 ## The toy-domain rule
 
@@ -119,8 +193,13 @@ Reports and patches that make the path more accurate, easier to start, or
 honest about its limits are welcome. The bar is the same as the lessons:
 evidence over claims, no paste-ready harness, no secrets in the tree.
 
-1. Open an [issue](https://github.com/macayaven/agent-harness-path/issues) for a
-   broken link, a SOTA source that moved, or a lesson/notebook contradiction.
+1. Use the one-click
+   [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
+   for setup or study friction. Submission is deliberate; the course and
+   CourseWeave send no telemetry or files to GitHub. Include the public
+   session/activity, what you tried, expected and observed, and any recovery.
+   Remove credentials, raw chats, participant content, private project details,
+   local paths and full notebook/work products.
 2. Read [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request (how to edit
    sources, the verify commands, what maintainers will reject).
 3. By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -129,6 +208,15 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 
 Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
+
+The [documentation map](docs/README.md) separates learner, contributor, pilot and
+release material. The [release runbook](docs/RELEASING.md) records the checks and
+publication boundary for `v0.2.0`; the [GitHub release record](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+provides its status, date and public acceptance evidence. The earlier bounded
+local pilot receipt is available as a
+[reader-facing report](docs/verification/student-pilot-2026-09-13.md) and
+[machine-readable record](docs/verification/student-pilot-2026-09-13.json). It is
+evidence about named artifacts and checks, not a general product or learning claim.
 
 ## License
 
@@ -141,3 +229,10 @@ Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated wi
 Google Gemini Notebook; Google's marks in those files are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.
+
+These course licenses permit reuse, including commercial reuse, subject to their
+terms. The optional **CourseWeave application** is licensed separately under
+PolyForm Shield 1.0.0: it is source available, with restrictions on providing
+competing products. Its [licensing guide](https://github.com/macayaven/courseweave/blob/main/docs/LICENSING.md)
+explains study, evaluation and product-use boundaries. That platform license does
+not replace this course's licenses or claim ownership of your work.

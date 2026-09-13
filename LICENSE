@@ -9,11 +9,11 @@ The following are licensed under the Apache License 2.0
 
 - `notebooks/` (toy notebooks)
 - `labs/**/*.py` (optional hard-path client, runner, trivia host, evals)
-- `lessons/build.py`, `lessons/check_links.py`, `lessons/site_urls.py`,
-  `lessons/check_sota_urls.py`, `lessons/template.html`
+- `lessons/*.py` (build, validation and static diagram tooling),
+  `lessons/template.html`, `lessons/diagrams/receipt.json`
 - `pyproject.toml`, `uv.lock`
 - `.github/` (CI, issue and PR templates)
-- `scripts/`
+- `scripts/`, `tests/`, `study/**/*.py` (offline transfer starter)
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -23,13 +23,14 @@ The following are licensed under Creative Commons Attribution 4.0 International
 (`LICENSES/CC-BY-4.0.txt`):
 
 - `lessons/src/` (lesson sources)
-- `lessons/*.html` (generated lessons)
+- `lessons/*.html` (generated lessons), `lessons/diagrams/*.svg` (rendered lesson diagrams)
 - `lessons/videos/` (Video Overviews generated with Google Gemini Notebook,
   formerly NotebookLM — see Third-party below)
 - `labs/**/*.md` (hard-path protocols and lab docs)
-- `study/**/*.md` (post-core study records and evidence templates)
+- `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
+- `courseweave.json` (authored curriculum and learning guidance)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`
+  `CHANGELOG.md`, `docs/**/*.md`, `docs/**/*.json`
 
 SPDX-License-Identifier: CC-BY-4.0
 
@@ -56,4 +57,3 @@ logos, and UI. This project's CC BY 4.0 grant covers the lesson-derived
 narration and structure in those files. It does **not** license Google's marks,
 watermarks, or any Google-owned assets in the picture. Do not remove or obscure
 Google branding in redistributions.
-

@@ -4,30 +4,97 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
-- Calibrated six-week study-route overlay: schedules bounded, authoritative
-  external model-layer work and names the evidence to bank without copying
-  external-course materials or expanding the 14-session core.
-- Optional cumulative hard path: `labs/` cassette client, toy trivia-host spine,
-  and S01–S12 protocols. It remains optional and never becomes a production
-  capstone. Notebooks stay stdlib / zero-key. CI runs
-  `uv run python labs/run.py --all --replay` only (never `--live`).
-- Generated HTML streams Video Overviews from a public GCS bucket (▶ works
-  without Git LFS). `.lfsconfig` skips fetching the mp4s on clone. There is
-  no hosted HTML mirror: the clone is the reader (`lessons/index.html`).
-- Link check covers `<a href>` and `script`/`img`/`link`/`video`/`source` `src`,
-  plus unique http refs (404 fails; 401/403/429 warn; one retry on transport
-  failure).
-- SOTA table lint: every tagged row must carry an http(s) URL.
-- Lesson/notebook honesty pass from review: S09 coverage is identity-based;
-  S13 protocol numbering matches rendered HTML; S02/S03/S11 predict-first
-  prompts; MAST numbers match the linked abstract; S14 decision log assigned
-  at S02.
-- Fix two SOTA 404s (Willison agent-definition slug → Sep 2025 post; RAGAS
-  faithfulness docs path).
-- Hygiene: arXiv abs for 2601.17087; HTTPS for Nielsen LTM.
-- Notebooks link back to their companion lesson.
-- README Contributing section (issues, CONTRIBUTING.md, CoC, SECURITY.md).
-  GitHub Pages workflow removed so a stale HTML mirror cannot republish.
+## [0.2.0](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+
+Versioned changes below are frozen for v0.2.0. Publication status, date and exact
+artifacts are recorded on the linked GitHub release; a Pre-release remains a
+verification candidate. The compatible wheel used by the earlier local pilot is
+distinct from the public CourseWeave v0.2.0 assets.
+
+### Added
+
+- A complete schema-v2 CourseWeave curriculum manifest for all 14 modules: 12
+  required notebook sessions with reading, notebook and self-check activities,
+  plus the optional notebook-free S13 rebuild and S14 pilot protocols. The
+  manifest defines 36 required S01–S12 activities while preserving the native
+  course as the independent default route.
+- Full-course study guidance, observation templates, optional S13/S14 activity
+  cards, and separate immediate/delayed S01/S02 transfer fixtures. Undeclared
+  transfer answers, answer keys and private participant evidence remain outside
+  application grounding and public reports; learner material enters assistant
+  context only through an explicit scope or Share action.
+- An optional cumulative hard path in `labs/`: a cassette client, replay-first
+  toy trivia-host spine, S01–S12 protocols, contract tests and a reference
+  baseline. Live provider use remains explicit, optional and absent from CI.
+- A calibrated six-week post-core overlay that schedules bounded external work
+  and names evidence to bank without copying external course material or
+  expanding the 14-session course.
+- Static SVG assets and meaningful alternatives for every course diagram,
+  including multiple diagrams in S08 and S14. A pinned Playwright/Mermaid
+  renderer records input and output hashes and can compare fresh renders on the
+  recorded renderer/font host.
+- Course adapter, launcher and installed-artifact verification contracts for an
+  explicitly supplied compatible CourseWeave wheel, separate platform/course
+  interpreters and learner state outside the repository.
+- A one-click course-feedback form for native study, optional labs, the guided
+  CourseWeave route and S13/S14, with deliberate submission and explicit
+  redaction of credentials, chats, participant content, private paths and work.
+- Course content, adapter and preservation tests. The current suite covers 24
+  unit tests; CI also executes all 12 notebooks, rebuilds the 16 generated HTML
+  pages, checks SOTA URLs and links, tests lab contracts and replays committed
+  cassettes on Python 3.11 and 3.12.
+
+### Changed
+
+- Clarified the licensing boundary with the optional CourseWeave application,
+  which adopts PolyForm Shield 1.0.0. This course retains Apache-2.0 code and
+  CC BY 4.0 educational content, including their commercial-reuse permissions;
+  learner-created work remains the learner's.
+- Generated lessons now use script-free static diagrams and stream optional
+  Video Overviews from the public GCS replica. `.lfsconfig` skips video smudging
+  on ordinary clones; the local `lessons/index.html` is the only supported
+  reader, with no hosted HTML mirror.
+- S01 and S02 gained explicit learner attempt cells and course guidance; S03–S12
+  gained complete adapter coverage. Missing installed-course kernel metadata was
+  corrected in S09 and S10. Semantic receipts protect all original notebook cell
+  IDs, sources, metadata and output-free state.
+- The optional CourseWeave experience now keeps one assistant session across
+  permitted activities, uses explicit lesson scope and one-answer sharing, gates
+  notebook help on the learner's prediction record, and keeps saved learner state
+  outside the course checkout. These records do not certify correctness or
+  completion.
+- Course navigation, generated native links and notebook kernel selection now
+  cover the full S01–S14 route. Lab command surfaces are copy-only and match the
+  learner replay/live commands in the authored protocols.
+- Link validation now covers relative `href` and resource `src` attributes plus
+  unique HTTP references; 404/5xx fail while 401/403/429 warn. SOTA lint requires
+  an HTTP(S) source in every tagged row.
+- README and contributor guidance now describe the native route, full-course
+  adapter, all-diagram workflow, public/private evidence boundary and separate
+  course/platform releases. GitHub Pages automation was removed to avoid serving
+  stale generated HTML.
+- Learner documentation now gives complete native and post-publication guided
+  macOS setup, verifies the exact CourseWeave-owned bundle against `SHA256SUMS`,
+  starts provider-off in a fresh v0.2.0 study home, and keeps source development
+  as contributor material. The optional observation CSV stays local unless the
+  learner deliberately submits a sanitized summary.
+
+### Fixed
+
+- Corrected native previous/index/next navigation and ensured all 12 notebooks
+  select the installed course kernel without changing their authored behavior.
+- Qualified S11's gateway budget examples so local reservation and reconciliation
+  claims do not imply provider-wide hard spending guarantees.
+- Separated immediate and delayed transfer feedback, preserved unaided attempt
+  boundaries and narrowed fixture observations so they do not imply learning
+  efficacy.
+- Corrected lesson/notebook contradictions: S09 coverage is identity-based; S13
+  protocol numbering matches generated HTML; S02/S03/S11 predict-first prompts
+  match their exercises; MAST figures match the linked abstract; and S14 assigns
+  the decision log at S02.
+- Repaired the Willison agent-definition and RAGAS faithfulness links, normalized
+  the arXiv and Nielsen references, and linked notebooks back to their companion
+  lessons.
 
 ## 0.1.0 — 2026-08-17
 

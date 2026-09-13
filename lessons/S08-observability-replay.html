@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
-<h1>S08-observability-replay — Traces and deterministic replay</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
+<h1 id="s08-observability-replay-traces-and-deterministic-replay">S08-observability-replay — Traces and deterministic replay</h1>
 <p><strong>What this teaches:</strong> how to see what an agent run actually did — the span /
 generation / trace data model, telemetry that fails soft instead of taking the
 product down, and record/replay cassettes that reproduce a run offline,
@@ -111,8 +119,8 @@ content-identical, with zero model calls — plus what replay can never prove.
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s08_replay.md"><code>labs/s08_replay.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>Logs say what happened; traces say what caused what</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="logs-say-what-happened-traces-say-what-caused-what">Logs say what happened; traces say what caused what</h3>
 <p>A finished agent run leaves you with questions that are causal and financial:
 <em>which phase produced the bad output? which phase burned the tokens?</em> Flat logs
 can't answer either without archaeology — a log line knows its own text and
@@ -131,21 +139,11 @@ Langfuse, and the OpenAI Agents SDK all share the shape:</p>
   vendor term (<a href="https://langfuse.com/docs/observability/data-model">data model</a>);
   OTel models the same unit as model/agent spans, not a distinct type.</li>
 </ul>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
-    T[&quot;trace: one run, end to end&quot;] --&gt; S[&quot;session span&quot;]
-    S --&gt; SET[&quot;setup span&quot;]
-    S --&gt; R[&quot;rounds span&quot;]
-    S --&gt; W[&quot;wrap-up span&quot;]
-    SET --&gt; G1[&quot;generation: welcome&lt;br/&gt;input / output / usage&quot;]
-    R --&gt; R1[&quot;round-1 span&quot;]
-    R1 --&gt; G2[&quot;generation: question&lt;br/&gt;input / output / usage&quot;]
-    R1 --&gt; G3[&quot;generation: grade&lt;br/&gt;input / output / usage&quot;]
-    W --&gt; G4[&quot;generation: scorecard&lt;br/&gt;input / output / usage&quot;]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay.svg" alt="One end-to-end trace contains a session span, phase spans for setup, rounds, and wrap-up, and nested generation spans that record each model input, output, and usage." style="--diagram-width: 560px" /></div>
 <p>The payoff is arithmetic: sum <code>usage</code> over the generations under a phase span
 and you have cost per phase — the number every routing and budget decision
 (S11) is made from. No tree, no attribution.</p>
-<h3>A span is a question someone will ask later</h3>
+<h3 id="a-span-is-a-question-someone-will-ask-later">A span is a question someone will ask later</h3>
 <p>Design the tree around the questions, not the code structure. A span per
 pipeline phase because someone will ask <em>which phase failed and what did it
 cost</em>; a generation per model call because someone will ask <em>what exactly did
@@ -156,7 +154,7 @@ the model see, and what did it return</em>. Both directions fail:</p>
   pay storage for a tree too noisy to read. Auto-instrumentation defaults tend
   here.</li>
 </ul>
-<h3>Telemetry is a sidecar, never on the critical path</h3>
+<h3 id="telemetry-is-a-sidecar-never-on-the-critical-path">Telemetry is a sidecar, never on the critical path</h3>
 <p>The tracing backend will go down. The SDK will rename its API between the
 version you pinned and the one that resolved. Both are routine events, which is
 why the rule is absolute: <strong>an exception in telemetry must never fail the
@@ -170,7 +168,7 @@ OpenAI's tracing is unavailable under a Zero Data Retention policy, and its SDK
 ships a <code>trace_include_sensitive_data</code> switch
 (<a href="https://openai.github.io/openai-agents-python/tracing/">docs</a>). What may
 leave the machine is a decision, not a default; S11 makes you take it.</p>
-<h3>Record/replay: the cassette contract</h3>
+<h3 id="recordreplay-the-cassette-contract">Record/replay: the cassette contract</h3>
 <p>Wrap the model function. Recording: forward each call, append
 <code>{request, response}</code> to a JSONL file — the cassette. Replaying: answer each
 call from the cassette, but only when the full request matches a recorded one.
@@ -186,25 +184,13 @@ Three properties buy almost everything:</p>
   would serve the old "CORRECT" verdict to the new wrong answer — wrong, and
   invisible. Strictness turns the cassette into a behavior-drift alarm.</li>
 </ul>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    subgraph rec[&quot;recording&quot;]
-        H1[&quot;host&quot;] --&gt;|&quot;request&quot;| REC[&quot;recorder&quot;]
-        REC --&gt;|&quot;live call&quot;| M[&quot;model API&quot;]
-        M --&gt;|&quot;response&quot;| REC
-        REC --&gt; C[(&quot;cassette.jsonl&quot;)]
-    end
-    subgraph rep[&quot;replaying&quot;]
-        C --&gt; REP[&quot;replayer&quot;]
-        H2[&quot;host, unchanged&quot;] --&gt;|&quot;request&quot;| REP
-        REP --&gt;|&quot;recorded response, content-equal&quot;| H2
-    end
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay-2.svg" alt="During recording, a recorder relays host requests to the live model and stores responses in a cassette; during replay, the unchanged host receives content-equal recorded responses without a live call." style="--diagram-width: 1113px" /></div>
 <p>The lineage is VCR's HTTP cassettes
 (<a href="https://github.com/kevin1024/vcrpy">vcrpy</a>, itself a port of 2012-era Ruby
 VCR); the agent version moves the same contract up one layer, from HTTP to "the
 model function." Note that vcrpy's default matcher is method + URL — weaker
 than full-body matching. Whatever the layer, know your matcher's strength.</p>
-<h3>What replay guarantees — and what it can't</h3>
+<h3 id="what-replay-guarantees-and-what-it-cant">What replay guarantees — and what it can't</h3>
 <p>Replay freezes the <em>model</em>. It does not freeze your code, and it does not
 freeze the world:</p>
 <ul>
@@ -229,7 +215,7 @@ introduce model variance — so if two replays differ, the nondeterminism is
 provably in your code. Then the fix is the fixture fix: inject the clock,
 inject the RNG, fresh seeded instances per run (one shared seeded RNG
 reproduces across processes but drifts across two runs inside one).</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <p>Run top-to-bottom. Write your prediction in the attempt cell before opening the
 solution.</p>
 <ol>
@@ -251,7 +237,7 @@ solution.</p>
    content-identity end to end.</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s08_replay.md">spans + cassette replay</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -298,7 +284,7 @@ solution.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Langfuse, <a href="https://langfuse.com/docs/observability/data-model">Tracing data model</a>.</strong>
   Extract the hierarchy — sessions contain traces, traces contain observations,
@@ -320,7 +306,7 @@ solution.</p>
   under ZDR, and <code>trace_include_sensitive_data</code> existing at all. Telemetry
   inherits the privacy boundary.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"Tracing is structured logging."</strong> A log line has no parent. The tree is
   what makes "which phase burned the tokens" an arithmetic question instead of
@@ -340,7 +326,7 @@ solution.</p>
   change, models drift) and transcripts are usually the most sensitive data you
   hold. Re-record deliberately; keep telemetry inside the privacy boundary.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>What does a generation span carry that a plain span doesn't, and what question does that answer?</summary>
 Input, output, model identity, and token usage. That is what makes "which phase
 burned the tokens / produced the bad output" answerable by summing over a
@@ -365,21 +351,17 @@ propagates, a monitoring outage becomes a product outage — typically after the
 expensive work is done, so you pay for the run and lose the result. Catch at
 the boundary, degrade to no traces, never fail the session.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S09 — Evidence reports:</strong> you can now capture a run completely and replay it
 offline; next is compression. S09 turns one recorded session into a debrief a
 depleted reader can trust in thirty seconds without opening the raw transcript —
 and the trace pointer at the bottom of that report is why this session came
 first.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S08-observability-replay.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

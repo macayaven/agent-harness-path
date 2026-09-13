@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S08-observability-replay.html">&larr; Prev: S08-observability-replay — Traces and deterministic replay</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S10-error-analysis.html">Next: S10-error-analysis — Failures into taxonomy, taxonomy into evals &rarr;</a></span></nav>
-<h1>S09-evidence-reports — The report a depleted reader can trust</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S08-observability-replay.html#the-theory-in-depth">&larr; Prev: S08-observability-replay — Traces and deterministic replay</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S10-error-analysis.html#the-theory-in-depth">Next: S10-error-analysis — Failures into taxonomy, taxonomy into evals &rarr;</a></span></nav>
+<h1 id="s09-evidence-reports-the-report-a-depleted-reader-can-trust">S09-evidence-reports — The report a depleted reader can trust</h1>
 <p><strong>What this teaches:</strong> an evidence report is an <em>interface to what happened</em>, not a
 summary of it — fixed sections that pre-answer a depleted reviewer's questions,
 claims phrased as checkable observations, and two deterministic validators
@@ -112,8 +120,8 @@ fixture invariant); S08 (traces and replay) helps but is not required.
 <strong>Hands-on (hard, optional):</strong> <a href="../labs/s09_debrief.md"><code>labs/s09_debrief.md</code></a> — after the notebook.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S09-evidence-reports.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>The reader is depleted, and the log is write-only</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-reader-is-depleted-and-the-log-is-write-only">The reader is depleted, and the log is write-only</h3>
 <p>Nobody rereads a forty-turn transcript. The raw log is where truth lives, but as a
 reading experience it is write-only: the information is all there, evenly weighted,
 in chronological order, with no signposts. The report exists because the reader who
@@ -136,7 +144,7 @@ reviewer with a fixed question list:</p>
 thirty-second review. A chronological recap — "turn 1 the user said, turn 2 the
 assistant replied" — answers none of them quickly, even when it is perfectly
 faithful. Faithfulness is not the bar; <em>sufficiency at reading time</em> is.</p>
-<h3>Fixed sections are a feature, not a template fetish</h3>
+<h3 id="fixed-sections-are-a-feature-not-a-template-fetish">Fixed sections are a feature, not a template fetish</h3>
 <p>The anatomy that converged across incident postmortems, code-review descriptions,
 and clinical notes is the same handful of slots:</p>
 <table>
@@ -185,7 +193,7 @@ where the safety slot lives, and a non-empty safety slot <em>surprises in the ri
 place</em>. The trace pointer is load-bearing in the other direction — the report never
 replaces the log, it indexes it. A report with no path back to the transcript is
 asking to be trusted on authority it has not earned.</p>
-<h3>Observations, not grades</h3>
+<h3 id="observations-not-grades">Observations, not grades</h3>
 <p>"Good session, 8/10" is a claim about a person: unverifiable, arguable, and it
 invites the reader to negotiate with the report instead of checking what happened.
 "You seated the second bracket without the torque note (turn 11)" is a claim about
@@ -197,7 +205,7 @@ The same rule applies here, and it has a hard edge: <strong>a claim that cannot 
 to a turn does not belong in the report.</strong> Quality judgments that can't be grounded
 that way (was the next step actually <em>good</em>?) are a judged-tier question, and the
 judged tier waits for judge calibration — that is S12's job.</p>
-<h3>Fabrication and omission: the two checkable lies</h3>
+<h3 id="fabrication-and-omission-the-two-checkable-lies">Fabrication and omission: the two checkable lies</h3>
 <p>The report generator is itself a model, and summarization research named its
 failure modes years ago: intrinsic hallucination — the summary contradicts the
 source — and extrinsic hallucination — the summary asserts what the source cannot
@@ -215,19 +223,7 @@ transcripts the practical forms are sharper:</p>
   a subtraction.</li>
 </ul>
 <p>Each lie has exactly one defense, and both are deterministic:</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    T[transcript + run record&lt;br/&gt;the only ground truth] --&gt; G[report generator&lt;br/&gt;itself a model]
-    G --&gt; R[evidence report&lt;br/&gt;fixed slots]
-    T --&gt; C{citation validator&lt;br/&gt;does every quote resolve?}
-    T --&gt; V{coverage validator&lt;br/&gt;did every event surface?}
-    R --&gt; C
-    R --&gt; V
-    C -- violations --&gt; G
-    V -- violations --&gt; G
-    C -- clean --&gt; D[depleted reader&lt;br/&gt;30-second review]
-    V -- clean --&gt; D
-    D -. one hop, when in doubt .-&gt; T
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S09-evidence-reports.svg" alt="A report model turns the transcript and run record into fixed evidence slots; citation and coverage validators compare the report with that ground truth, returning violations for repair before a short human review." style="--diagram-width: 1114px" /></div>
 <ul>
 <li><strong>Citation validator.</strong> Checks exactly three mechanical properties: every quoted
   string appears verbatim in the turn its reference cites (substring presence);
@@ -271,7 +267,7 @@ substring check can see:</p>
 <p>The validators are the floor: they make the two mechanical lies expensive. What
 the citations <em>mean</em> stays where it always was — with the depleted reader and the
 one-hop path, and eventually with S12's calibrated judge.</p>
-<h3>The thirty-second review test</h3>
+<h3 id="the-thirty-second-review-test">The thirty-second review test</h3>
 <p>The acceptance test is behavioral, not textual. Hand the report to the reader cold
 — no transcript — and have them answer the six questions, timed. If they can't, the
 report failed, however accurate it is. <em>Then</em> open the raw log and check the
@@ -279,7 +275,7 @@ report didn't lie. Accuracy is the entry fee; the bar is a depleted reader
 finishing the review in thirty seconds and being right. You will run this test on
 the toy in the notebook, and then again on a real session's report — where the
 depleted reader is you.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <ol>
 <li>Read the raw transcript once. Generate the honest report, then run the
    thirty-second test: answer the six reviewer questions from the report alone,
@@ -303,7 +299,7 @@ depleted reader is you.</p>
    is the omission variant from exercise 4, not this one.)</li>
 </ol>
 <p>After the notebook, optional hard path: <a href="../labs/s09_debrief.md">debrief + one real round</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
-<h2>State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -350,7 +346,7 @@ depleted reader is you.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Google, <a href="https://google.github.io/eng-practices/review/reviewer/looking-for.html">What to look for in a code review</a>.</strong>
   Extract the transferable property, not the code advice: a good description
@@ -369,7 +365,7 @@ depleted reader is you.</p>
   Extract the intrinsic/extrinsic split — then notice what it omits: a summary
   that only subtracts. That gap is your coverage validator.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"Accurate means honest."</strong> A report where every sentence is true can still
   lie by subtraction. Omission is invisible to any check that only reads the
@@ -388,7 +384,7 @@ depleted reader is you.</p>
   fabrication modes; shipping its output unchecked is shipping confidence you
   haven't earned. The validators are cheap, deterministic, and always on.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Who is the report's reader, and what does that impose on the format?</summary>
 The user at their most depleted, thirty seconds after a hard session. That imposes
 fixed slots that pre-answer a known question list, surprises first (safety never
@@ -417,21 +413,17 @@ other fails, so you need both — but the conjunction buys *checkability*, not
 honesty: support, emphasis, unquoted numbers, and leakage still belong to the
 reader. Identity is not accurate narration.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S10 — Error analysis:</strong> a good report lets one depleted reader trust one
 session. But across a suite of runs, the failures themselves are a pile of raw
 evidence no one has read — and reading them, open-coded, is how the eval suite
 grows. Next: failure transcripts into a labeled taxonomy, and the taxonomy into
 new golden tasks.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S08-observability-replay.html">&larr; Prev: S08-observability-replay — Traces and deterministic replay</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S10-error-analysis.html">Next: S10-error-analysis — Failures into taxonomy, taxonomy into evals &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S08-observability-replay.html#the-theory-in-depth">&larr; Prev: S08-observability-replay — Traces and deterministic replay</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S10-error-analysis.html#the-theory-in-depth">Next: S10-error-analysis — Failures into taxonomy, taxonomy into evals &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S09-evidence-reports.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

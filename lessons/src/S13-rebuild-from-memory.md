@@ -10,7 +10,7 @@ project you own, **or** `labs/trivia_host/` if you walked the optional hard path
 **This session is optional.** Completing S01–S12 does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
 defeat it. Hard path: the audit target is `labs/trivia_host/loop.py` against
-`uv run python labs/run.py --all --replay`. Easy path: a project of yours.
+`uv run python labs/run.py --all --impl student --replay`. Easy path: a project of yours.
 The protocol below is the hands-on.
 **Video:** [Gemini Notebook overview](videos/S13-rebuild-from-memory.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
@@ -137,8 +137,11 @@ flowchart LR
 One sitting, no interruptions, roughly 90 minutes end to end.
 
 **Hard path:** you built `labs/trivia_host/`. The core is `trivia_host/loop.py`;
-the suite is `uv run python labs/run.py --all --replay` (or `--live` on your
-endpoint). Do not open `labs/reference/` during the sitting.
+the suite is `uv run python labs/run.py --all --impl student --replay` (or `--live` on your
+endpoint, keeping `--impl student`). Confirm `impl=student` in the report and
+compare its actual task results, not only the process exit status. `--all` alone
+defaults to the reference implementation and would not measure your rebuilt core.
+Do not open `labs/reference/` during the sitting.
 
 **Easy path:** any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that

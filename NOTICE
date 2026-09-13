@@ -9,6 +9,8 @@ Mermaid.js
   Source: https://github.com/mermaid-js/mermaid
   Vendored at: lessons/vendor/mermaid.min.js (UMD build, mermaid 10.x)
   Full license text: lessons/vendor/LICENSE-mermaid.md
+  Pilot static SVG in lessons/diagrams/ is generated from the course-authored
+  Mermaid source using this unchanged vendored renderer; the renderer retains MIT.
 
 Google Gemini Notebook (formerly NotebookLM) Video Overviews
   Generated 14 August 2026 with Google Gemini Notebook

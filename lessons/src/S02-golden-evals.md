@@ -1,9 +1,10 @@
 # S02-golden-evals — Golden sets & baselines
 
-**What this teaches:** an eval suite is a *measurement instrument*, not a test suite —
-scripted users, two-tier checkers, the fixture invariant, and why the naive baseline
-is a product argument rather than a courtesy number.
-**Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop).
+**What this teaches:** an eval suite is a *measurement instrument* that can include
+regression tests — scripted users, two-tier checkers, the fixture invariant, and
+what a naive baseline comparison supports within a declared fixture.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not observed timings; optional lab time is separate. **Prerequisites:** S01 (the loop).
 **Hands-on (easy):** [`notebooks/s02_scripted_user_eval_toy.ipynb`](../notebooks/s02_scripted_user_eval_toy.ipynb)
 **Hands-on (hard, optional):** [`labs/s02_evals.md`](../labs/s02_evals.md) — after the notebook.
 **Video:** [Gemini Notebook overview](videos/S02-golden-evals.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
@@ -12,42 +13,43 @@ is a product argument rather than a courtesy number.
 
 ## The theory in depth
 
-### Tests ask "is it broken?"; instruments ask "would I believe the number?"
+### An eval measures a defined claim
 
-A test suite is binary and self-centered: does *my code* still work? A measurement
-instrument is comparative and skeptic-centered: *how much better is A than B, and what
-would make me wrong?* That second question — defensibility — is the whole game,
-because an eval number that can't survive scrutiny is worse than no number: it gives
-you confidence you haven't earned.
+An eval can function as a regression test and as a measurement instrument. Its
+pass rate has meaning only after you specify what counts, which cases you supplied
+and what comparisons you held fixed. The useful question is: **what conclusion
+can this number support, and what counterexample would expose its blind spot?**
+The fitness-coach toy lets you answer by reading every engine and every checker.
+It makes no medical recommendation: its intentionally unsafe naive response is a
+scope-violation fixture to detect, not advice to follow.
 
-Four moving parts make the number defensible. Each exists to kill a specific
-confound.
+Four moving parts determine what the number means.
 
 ### 1. The scripted user — reproducibility comes from the script
 
 A conversational product can't be exercised by a single prompt; you need a *user*.
 Two options:
 
-- **LLM-simulated user** — a second model plays the user from a persona and
-  instructions. This is what the frontier practice uses for coverage: τ-bench, the
-  reference benchmark for conversational agents, simulates the user with an LLM and
-  grades the *final environment state* rather than the transcript
-  ([arXiv:2406.12045](https://arxiv.org/abs/2406.12045)). Anthropic's agent-eval
-  guidance describes the same pattern
-  ([anthropic.com/engineering/demystifying-evals-for-ai-agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
-  The catch: simulated users are measurably *not* real users — they ask more
-  questions and stay more polite on identical tasks ([arXiv:2601.17087](https://arxiv.org/abs/2601.17087)) —
-  and they inject their own variance into your measurement.
-- **Scripted user** — a fixed list of user turns, replayed verbatim. Zero diversity,
-  zero variance. This is what you use for *regression*: the same probe, every run,
-  so any delta belongs to the system under test.
+- **LLM-simulated user** — a second model produces user turns from a task.
+  [τ-bench](https://arxiv.org/abs/2406.12045) studies this interaction with
+  domain-specific tools and policies and compares final database state to a goal.
+  It also examines reliability across repeated trials. Simulation broadens possible
+  conversations, but the simulator adds behavior of its own.
+  [Lost in Simulation](https://arxiv.org/abs/2601.17087) reports model-dependent
+  discrepancies between simulated and human users in τ-bench retail tasks; that
+  result is limited to the settings studied, not a universal personality claim.
+- **Scripted user** — a fixed list of turns replayed verbatim. It removes user-side
+  variation for that probe; it does **not** remove stochastic model/backend variation.
+  The notebook engines are plain deterministic functions. Its seeded latency values
+  are placeholders, not observed service timings.
 
-The toy uses a scripted user, and that is the right default for a golden set whose
-job is to compare naive vs governed *on the same probe*. Practice converges on:
-scripted for determinism, simulated for coverage — use both, know which number came
-from which.
+A fixed script is useful for regression and comparisons on the same question. It
+also lacks adaptive follow-ups: the next turn arrives even if an earlier response
+would have led a human elsewhere. Write that limitation beside the score. Coverage
+and repeatability are different properties; adding more fixed cases improves the
+former without turning a script into a human user.
 
-### 2. Diverge / rejoin — the delta must have exactly one cause
+### 2. Diverge / rejoin — control the comparison
 
 ```mermaid
 flowchart LR
@@ -60,16 +62,22 @@ flowchart LR
     C --> R[pass/fail + turns,<br/>tokens, cost, latency]
 ```
 
-Naive and governed share the script, the fixture, and the checker; they differ *only*
-in the scaffolding under test. Then — and only then — is the delta attributable to
-the scaffolding. Every shared component you *don't* hold constant is a confound your
-conclusion can't survive. This is also why the naive row matters commercially: naive
-mode *is* the status quo (a chatbot told to role-play), so `governed − naive` is the
-measured answer to "why does this product deserve to exist?" Bank that number, then
-write the call down in a **decision log** (five lines, dated: what you chose, why,
-what would change your mind). S14 assembles that log; it cannot invent it.
+In the toy, naive and governed share the script, fixture, driver and checker and
+only change their deterministic engine. We can inspect the cause of the scope-check
+difference directly. With a real model, hold the prompt variant under test apart
+from the controls: same model route/version, script, tool fixture, checker version
+and sampling settings. Repeat trials and report variability where appropriate.
+One stochastic run does not establish that every observed delta comes from the
+scaffolding, even when you intended to change only that scaffolding.
 
-### 3. Two checker tiers — and why safety never rides on the judged one
+The naive row is a useful baseline for this toy's scope rule. It is not evidence
+that a product deserves to exist or that learners benefit from this course. Those
+questions need their own outcomes. A five-line decision log can preserve a narrower
+choice: date, variant, controlled inputs, observed difference and a remaining
+uncertainty. Do that now instead of reconstructing the rationale after a score
+looks attractive.
+
+### 3. Two checker tiers — make the observable invariant explicit
 
 - **Deterministic tier**: code asserts structure and safety invariants — the refusal
   happened, the ceiling held, the required signpost is present. Cheap, reproducible,
@@ -78,40 +86,81 @@ what would change your mind). S14 assembles that log; it cannot invent it.
   Expressive, expensive, and *itself a model*: it inherits every bias and failure
   mode of the models it grades.
 
-The judge literature is unambiguous that the judged tier needs its own validation.
-Zheng et al. documented position bias, verbosity bias, and self-preference in 2023
-([arXiv:2306.05685](https://arxiv.org/abs/2306.05685)); "Who Validates the Validators?"
-showed judge criteria drift as you grade — the rubric is never fully fixed a priori
-([arXiv:2404.12272](https://arxiv.org/abs/2404.12272)); and judges measurably favor
-their own model family ([arXiv:2404.13076](https://arxiv.org/abs/2404.13076)).
-Current practitioner consensus: binary pass/fail beats 1–5 scales, calibrate against
-~30 human-labeled examples, and report judge agreement as its own number
-([hamel.dev/blog/posts/llm-judge](https://hamel.dev/blog/posts/llm-judge/)).
+Code can check a precisely defined property of a trace; it cannot certify all
+aspects of safety by finding a refusal word. A model grader can discuss open-ended
+quality, but its verdict is also an observation to validate. Keep these results
+separate so a high style score cannot cancel a failed observable constraint.
 
-Hence the rule: **safety asserts live in the deterministic tier, always.** The judged
-column is reported separately and labeled *uncalibrated* until you've measured the
-judge against human labels (that's S12's job).
+[Zheng et al.](https://arxiv.org/abs/2306.05685) studied position, verbosity and
+self-enhancement biases in LLM judges. [EvalGen](https://arxiv.org/abs/2404.12272)
+describes human alignment feedback and people revising criteria while reviewing
+examples. [Self-preference research](https://arxiv.org/abs/2404.13076) found studied
+models recognizing and preferring their own outputs; this does not establish that
+every model favors its entire family. These motivate checking agreement with
+human judgments on relevant examples, not treating a judge's numeric answer as
+independent ground truth. S12 develops calibration; label an uncalibrated column.
 
 ### 4. The fixture invariant — validate the checker before trusting it
 
 Before any number means anything, prove the checker can fail and can pass:
 
-- Bare fixture (no system output) must **FAIL** — a checker that passes on nothing
-  asserts nothing.
+- For this task, a bare fixture (no system output) must **FAIL**: the task
+  explicitly requires a response, refusal and signpost. Passing an empty trace
+  would miss that requirement.
 - Fixture + known-good reference output must **PASS** — a checker that fails the
   reference measures the wrong thing.
 
-This is the eval-suite version of watching a test fail before making it pass, and
-it's skipped constantly in practice. The notebook runs both halves against the toy.
+The notebook runs both halves. Add known-bad and boundary examples as well: one
+positive and one negative case do not prove checker adequacy. An absence-only
+constraint can legitimately pass an empty trace, so bare-FAIL is a property of
+this authored task, not a universal law for every safety checker.
 
-### Error analysis is the actual skill
+### A worked reading of the fitness instrument
 
-Hamel's data, across many teams: unsuccessful AI products almost always fail at
-*evaluation*, not modeling — and the fix is a loop of reading traces, classifying
-failures, and converting each failure class into a check
-([hamel.dev/blog/posts/evals](https://hamel.dev/blog/posts/evals/)). The number is
-the prompt that gets you to read transcripts; the reading is where the number's
-meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
+Read `script` before the engines. It asks for an exercise routine, crosses the
+coach's scope, then returns to the routine. A system could do well on the middle
+turn and still mishandle the first or last. Make a three-row ledger: user intent,
+expected kind of response, and the part of `check_scope` that observes that row.
+Do not invent a medical correctness metric; the exercise concerns the toy's
+assigned scope and a useful routine answer.
+
+Next inspect `drive`. It appends a user message, calls the engine, records a reply
+and then advances to the next fixed line. A context-aware engine could inspect
+all earlier messages; these engine functions mostly branch on the last user text.
+That simplification makes the causal path readable. It also means the toy does
+not test long-term memory, recovery from misunderstanding or real dialogue timing.
+Name which of those would need a new case instead of increasing this case's score.
+
+Now separate the **checker implementation** from the **desired behavior**.
+`check_scope` gathers engine text and looks for refusal and signpost markers while
+counting forbidden words. A marker's presence is observable, but it does not prove
+that the right turn was answered usefully. A substring checker can also reject
+valid paraphrases or accept copied boilerplate. The correct response to a
+counterexample is to say which criterion was missing, then add a check with known
+positive and negative examples. Merely moving a weak criterion to an LLM judge
+would not specify the desired behavior any better.
+
+Use `reference_transcript` as a known example, not an exhaustive answer universe.
+The fixture includes routine content and a scope-boundary response. If a proposed
+checker rejects it, inspect the reason before weakening the check. Conversely, a
+checker that accepts one reference might still accept an empty reply in another
+position. This is why the notebook extension asks for a **fixture-specific** useful
+routine check, with a short test set and a written limitation. It should be clear
+from its name and cases what it is trying to detect.
+
+Finally, read the table's labels as carefully as its numbers. `len(script)` is a
+count of scripted user turns. The p50 is the median of seeded random placeholders.
+Identical placeholders are useful for showing how a table is assembled, but they
+say nothing about relative engine speed. For this deterministic toy, the measured
+comparison is which scope assertions pass on each transcript. For a real service,
+record actual elapsed times and available usage separately, including missing
+values. A missing cost field is not a free request.
+
+Spend active reading time drawing this ledger and drafting one counterexample.
+Then try to explain to another person what the scope-check can establish **without**
+using the words "good product". If that explanation is difficult, revisit the
+checker before running the table. The notebook attempt is where you turn the
+counterexample into an additional observable criterion.
 
 ## Exercises (in the notebook, predict first)
 
@@ -122,89 +171,97 @@ meaning lives. Aggregate pass rate alone hides *which* failures you're buying.
    past the pass/fail column. Turns are a real count; the latency column in this
    toy is a **seeded stub** (plumbing demo, identical by construction across
    engines) — the *measured* delta is the scope-check. In a real suite, p50
-   latency is a product number you actually time. The naive row is the status
-   quo; the scope-check delta is the measured reason the harness deserves to
-   exist.
-3. The engine that refuses everything: predict whether it passes `check_scope`,
-   and whether it is a good product. It passes — and it is useless. Answer in a
-   comment: which tier catches "useless" here? Keep the answer honest: the toy's
-   checker is weak, not the tier. Deterministic checks *can* encode task-specific
-   usefulness — expected facts in the reply, refusal *selectivity* (in-scope turns
-   still answered), task completion. What genuinely escapes the deterministic tier
-   is open-ended quality: tone, persona.
-
+   latency is a quantity you actually time. The naive row supplies a comparison
+   under the same fixture; the scope-check delta is an observation about that
+   rule. It motivates a hypothesis to test with usefulness checks and broader
+   fixtures, and supplies no product-value or learner-outcome proof.
+3. The engine that refuses everything: predict whether it passes `check_scope`
+   and whether its replies meet each scripted user intent. Run only after writing
+   your reasoning. Distinguish a weakness of this checker from a limitation of all
+   deterministic checks.
+4. Attempt the added `useful_routine` function and give it at least one positive
+   and one negative fixture case. Use the native foldable reference only after the
+   attempt. Compare the governed and refuses-all transcripts with your criterion.
+   Record what your check still misses; the goal is a scoped argument, not a
+   production medical-safety checker.
+5. Write a five-line decision note naming the changed engine, the shared inputs,
+   observed results and one claim the toy cannot support.
 
 After the notebook, optional hard path: [naïve vs engine on the trivia host](../labs/s02_evals.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
-## State of the art (as of August 2026)
+## State of the art (as of September 9, 2026)
+
+Primary sources below were reviewed on this date. They illustrate concepts rather
+than establish a universal tool ranking or an installation recommendation.
 
 | Development | Status | Take |
 |---|---|---|
-| **Inspect AI** (UK AISI) is the reference open-source agent-eval framework: evals as dataset + solver + scorer, both code and model scorers ([inspect.aisi.org.uk](https://inspect.aisi.org.uk/)) | **recognize** | Its scorer/solver split is the same two-tier idea you're learning, industrialized. |
-| OpenAI Evals repo effectively dormant (banner steers to Dashboard); `simple-evals` no longer updated ([github.com/openai/evals](https://github.com/openai/evals)) | **recognize** | The energy moved to Inspect, promptfoo, DeepEval, and the tracing platforms. |
-| **promptfoo / DeepEval** for CI-first assertion evals; **Braintrust / LangSmith / Langfuse** add tracing + datasets + human annotation ([comparison](https://qaskills.sh/blog/llm-observability-vs-evaluation-2026)) | **recognize** | The 2026 stack is usually two tools: an eval runner + a tracing platform. |
-| Capability-vs-regression split: capability evals climb from a low baseline; regression evals sit near 100% and block merges; tasks *graduate* from the former to the latter ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | This is the mature form of "bank the naive baseline": today's hill-climb number is tomorrow's regression floor. |
-| Golden set in git, CI run on PR, threshold gate, metrics tracked outside CI ([pattern catalog](https://github.com/benchflow-ai/awesome-evals/blob/main/PATTERNS.md), [worked example](https://www.metacto.com/blogs/llm-evals-regression-suite-production)) | **adopt** | Cross-source consensus (vendor blogs, but they all agree with Hamel and Anthropic). |
-| τ²-bench dual-control simulation; LLM-simulated users for coverage ([arXiv:2506.07982](https://arxiv.org/pdf/2506.07982)) | **newer than this session** | The scripted user is your regression instrument; simulated users are a coverage tool with a known realism gap. |
-| Position-swap testing and Cohen's κ against human labels as standard judge hygiene ([writeup](https://mbrenndoerfer.com/writing/position-bias-in-llm-judges)) | **adopt** | At S12: you'll calibrate your judge then; until then the judged column stays labeled uncalibrated. |
-| Fully synthetic eval pipelines with no human reading of traces | **ignore** | Every credible source puts *reading transcripts* at the center ([Hamel, Evals](https://hamel.dev/blog/posts/evals/)). Tools that promise otherwise are selling the absence of the one activity that works. |
+| [Inspect AI](https://inspect.aisi.org.uk/), credited to the UK AI Security Institute and Meridian Labs, separates dataset, solver and scorer | **recognize** | One framework illustrating the same separation of inputs, system behavior and measurement. |
+| [OpenAI Evals](https://github.com/openai/evals) points readers to Dashboard evals; [simple-evals](https://github.com/openai/simple-evals) has a July 2025 notice that new model/benchmark updates stopped | **recognize** | The latter retains named reference implementations. A repository notice is not evidence of industry-wide migration to another stack. |
+| Capability tasks can become regression tasks as performance matures ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | Separate a difficult capability target from a regression expectation. Report which question a score answers. |
+| Human calibration and combining grader types ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | Inspect trace examples and validate grader judgments. One uncalibrated model score should not silently replace an observable constraint. |
+| Simulated-versus-human user discrepancies in studied retail tasks ([Lost in Simulation](https://arxiv.org/abs/2601.17087)) | **recognize** | Simulation behavior is part of the experiment; results are model- and setting-dependent. Do not claim equivalent human outcomes from a simulator alone. |
 
 ## Annotated readings
 
-- **Hamel Husain, [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/).**
-  Extract four things on reread: (1) eval failure is the root cause of product
-  failure; (2) the three levels — cheap deterministic checks on every change,
-  human+model eval on a cadence, A/B only after big changes; (3) tests are scoped by
-  feature×scenario and *grown from observed failures*; (4) "your pass rate is a
-  product decision" — 100% green is not the goal.
-- **Hamel, [LLM judges](https://hamel.dev/blog/posts/llm-judge/).** The judge
-  playbook: binary verdicts, critique-shadowing against the domain expert, iterate
-  the judge prompt to convergence on ~30 examples.
-- **Zheng et al., [Judging LLM-as-a-Judge](https://arxiv.org/abs/2306.05685).** The
-  bias catalog your judged tier inherits. Skim for the four biases and the
-  mitigations table.
-- **Anthropic, [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).**
-  The 2026 consolidation: two-tier grading, simulated users, capability/regression
-  split — plus the τ² cautionary tale of a model "failing" a task by finding a
-  *better* solution than the rigid spec allowed.
+- **[Inspect documentation](https://inspect.aisi.org.uk/).** Identify dataset,
+  solver and scorer, then map them to `script`, `drive`/engine and `check_scope`.
+- **[Anthropic, Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).**
+  Extract the capability/regression distinction and why different grader types need
+  calibration and examples. Keep the task's definition of success visible.
+- **[Zheng et al., Judging LLM-as-a-Judge](https://arxiv.org/abs/2306.05685).**
+  Read the studied bias categories and evaluation settings before generalizing a
+  result to a different model or domain.
+- **[EvalGen, Who Validates the Validators?](https://arxiv.org/abs/2404.12272).**
+  Look for the human feedback loop and criteria revisions; compare that with
+  treating a rubric as permanently settled before seeing any examples.
 
 ## Misconceptions and failure modes
 
-- **Pass rate as progress.** A suite can go green by the checker weakening, the
-  fixture leaking the answer, or the model gaming the check. The number is a
-  pointer to transcripts, not a result.
-- **One tier doing both jobs.** Deterministic checks can't see tone; judges can't be
-  trusted with safety invariants. Merge them and you get the weaknesses of both.
-- **The unvalidated checker.** Skipping the fixture invariant because "the check is
-  obviously right." The obviously-right check that passes on an empty fixture is a
-  classic.
-- **Synthetic-everything.** Generating model *outputs* to eval against (rather than
-  user *inputs*) bakes the generator's blind spots into your golden set. Hamel's
-  rule: synthetic inputs, real system outputs, human-read traces.
-- **A baseline with stale infrastructure.** A number recorded against a cold or
-  degraded backend measures the backend. Warm the route; sanity-check for empty
-  generations before you bank anything.
+- **Pass rate as learning or product evidence.** A narrow checker can pass while
+  useful behavior fails. Inspect traces and keep course progress separate from
+  exploratory learning scores.
+- **A fixed script makes a real model deterministic.** It fixes the user inputs.
+  Model/backend variation and the limited probe remain.
+- **A deterministic tier cannot check usefulness.** Concrete expected facts,
+  response presence and task completion can be checked in code. Open-ended tone
+  is a different target; the toy does not settle all quality judgments.
+- **A seeded latency stub measures performance.** It demonstrates table plumbing.
+  Only real timed calls support a latency comparison.
 
 ## Self-check
 
-<details><summary>What makes a naive-vs-governed comparison defensible?</summary>
-Shared everything except the scaffolding under test: same script, same fixture, same
-checker, same model route. Any other difference is a confound the delta can't
-survive.</details>
+Attempt the question before opening its disclosure. The reference supports
+self-correction; its presence and a saved reflection are not certification.
 
-<details><summary>Why must the judged tier never carry a safety assertion?</summary>
-Because the judge is itself a model, with documented biases (position, verbosity,
-self-preference) and criteria drift. Safety invariants must be asserted by
-deterministic code whose failure modes you can audit.</details>
+<details><summary>What makes a naive-versus-governed comparison interpretable?</summary>
+Keep script, fixture, driver, checker and model configuration fixed or explicitly
+report differences. This toy changes deterministic engine code, so the scope delta
+can be traced directly. A stochastic model still needs repeated-trial/variance
+consideration; one run cannot prove a general improvement.</details>
 
-<details><summary>State the fixture invariant and what each half detects.</summary>
-Bare fixture must FAIL (detects a checker that asserts nothing); fixture + reference
-must PASS (detects a checker that measures the wrong thing).</details>
+<details><summary>What do bare-FAIL and reference-PASS establish here?</summary>
+The task requires actual responses, a refusal and a signpost. Empty input should
+fail that requirement and the known-good reference should pass. The pair catches
+some broken checkers, but additional negative/boundary cases are needed. An
+absence-only constraint can legitimately pass an empty trace.</details>
 
-<details><summary>Why is the naive baseline a product argument?</summary>
-Naive mode is the status quo — the thing you'd ship without the platform. The delta
-governed − naive, measured on shared inputs, is the quantified reason the product
-deserves to exist.</details>
+<details><summary>Does refusing every turn pass check_scope? How can code detect its blind spot?</summary>
+It passes the current scope markers but does not supply the requested exercise
+routine. A fixture-specific check can require useful routine content on the
+in-scope turns. That is a missing deterministic criterion, not proof that usefulness
+always requires an LLM judge.</details>
+
+<details><summary>Useful-routine notebook attempt: compare after writing your own function</summary>
+<pre><code>def useful_routine(reply):
+    text = reply.lower()
+    return "caminata" in text and "fuerza" in text
+</code></pre>
+For the supplied toy replies this accepts the governed routine and rejects the
+refuses-all reply. Apply it to the first and third engine replies, alongside the
+scope check. It can reject valid paraphrases and accept irrelevant text containing
+both words. It is a deliberately narrow fixture criterion, not a complete quality
+or medical-safety judgment. Test those boundaries before trusting a broader claim.</details>
 
 ## What's next
 

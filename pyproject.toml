@@ -1,6 +1,6 @@
 [project]
 name = "agent-harness-path"
-version = "0.1.0"
+version = "0.2.0"
 description = "The Agent Harness Path: a self-contained course on building, evaluating, and governing LLM agents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,3 +20,8 @@ Changelog = "https://github.com/macayaven/agent-harness-path/blob/main/CHANGELOG
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+diagrams = [
+    "playwright==1.58.0",
+]
