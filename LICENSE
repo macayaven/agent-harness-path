@@ -30,7 +30,7 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
 - `courseweave.json` (authored curriculum and learning guidance)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`
+  `CHANGELOG.md`, `docs/**/*.md`, `docs/**/*.json`
 
 SPDX-License-Identifier: CC-BY-4.0
 
@@ -57,4 +57,3 @@ logos, and UI. This project's CC BY 4.0 grant covers the lesson-derived
 narration and structure in those files. It does **not** license Google's marks,
 watermarks, or any Google-owned assets in the picture. Do not remove or obscure
 Google branding in redistributions.
-

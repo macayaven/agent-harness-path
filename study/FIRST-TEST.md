@@ -1,4 +1,4 @@
-# First exploratory test — Carlos can start alone
+# First self-guided exploratory test
 
 This is an authored protocol, not a completed user study or evidence of efficacy.
 Use the native course immediately, or the explicit pilot installation described in
@@ -36,9 +36,10 @@ library/museum assessment. Write an attempt before any hint:
 | Weather failure | Explain where the fragile weather error appears. Static hint: follow dispatch's return value into the messages list; distinguish continuation from successful retrieval. | Explain your attempted trace to the Course assistant and ask for one next question about your uncertainty. |
 | Fitness evidence | Explain whether the table's equal p50 values show equal speed. Static hint: find where drive creates each latency value and read the column label. | Give your attempted interpretation to the same assistant and ask for a targeted hint, not the final explanation. |
 
-First tester: static weather, adapted fitness. If you repeat with another tester,
-reverse which practice gets which help (adapted weather, static fitness). If only
-Carlos repeats, report prior exposure. Within-person practice, different concepts,
+For a first self-guided run, use static weather and adapted fitness. If another
+tester repeats the protocol, reverse which practice gets which help (adapted
+weather, static fitness). If the same learner repeats it, report prior exposure.
+Within-person practice, different concepts,
 order and tester knowledge confound the comparison: it can expose friction and
 errors, not isolate a causal learning effect. Static means the ordinary course and
 authored hints; adapted means optional help using the learner's supplied evidence.
@@ -84,7 +85,7 @@ Predeclared continuation criteria: no known authority/privacy failure, no unreso
 material answer leakage, completion of the basic interaction route, and an accurate
 explanation that adaptation and labs are optional. Pause expansion and fix any
 failure in those areas. Use unaided reasoning, delay and friction to choose the
-next improvement. After seeing actual calls, Carlos should record an acceptable
+next improvement. After seeing actual calls, the learner should record an acceptable
 latency threshold before deciding whether to repeat. No statistical efficacy,
 market demand, mastery or causal advantage follows from one tester. Missing delayed
 results and known prior knowledge must remain visible in any report.

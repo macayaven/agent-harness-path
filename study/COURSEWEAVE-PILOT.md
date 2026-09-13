@@ -6,13 +6,24 @@ network, zero keys and zero cost. Public videos are optional streamed supporting
 resources. The pilot adds a persistent Course assistant and explicit learner
 records; it does not certify completion or replace the native lessons.
 
+## Public availability
+
+The course and CourseWeave are separate releases. The course's existing public
+tag is `v0.1.0`; the recommended next course version is `v0.2.0`, which has not
+been tagged. CourseWeave's public `v0.1.0` wheel cannot load this schema-v2
+manifest. A compatible wheel has passed the bounded local checks recorded in the
+[pilot report](../docs/verification/student-pilot-2026-09-13.md), but it has not
+been published and has no public download URL. Public users should use the native
+route unless they have received the compatible pilot asset explicitly.
+
 ## Install the explicit local pilot artifact
 
 This schema-v2 branch requires the coherent pilot wheel with `launch
 --kernel-python` support. The earlier v0.1.0 release/source sibling is not a
-compatible fallback. Obtain the verified wheel from the platform pilot build and
-substitute its **absolute path** below. These are installation examples, not a
-claim that a final wheel has already been built by this course commit.
+compatible fallback. If you are an evaluator who has been given the tested pilot
+wheel, substitute its **absolute path** below. These are local evaluation examples,
+not public installation instructions or a claim that the course repository
+contains an application asset.
 
 ```bash
 uv venv --python 3.11 /absolute/path/courseweave-pilot-env
@@ -41,13 +52,20 @@ reads lab commands or installs software on launch. Final installed-artifact
 acceptance must verify the **actual** kernel executable and credential stripping;
 printing a path alone is not isolation proof.
 
+Use a fresh external state directory for the full-course manifest. Do not point it
+at an earlier S01/S02 workspace and do not delete that workspace after the new
+pilot opens. There is no automatic state migration. Learner-edited notebooks,
+progress notes and experiment output remain learner-owned files outside the Git
+checkout; returning to the native course or an older CourseWeave environment does
+not rewrite them.
+
 No provider credential is read by this course adapter. Configure an optional
 provider through the platform's documented custody path. CourseWeave's session-only
 raw conversation policy concerns its own storage; an upstream gateway/provider
 can log prompts and responses. Review its retention settings before using Share.
-For the prepared local gateway, controller checks on 2026-09-09 reported request/
-response logging; verify that mutable setup at final acceptance. Use only public
-toy material in exploratory probes. The lesson text and optional one-answer Share
+Gateway/provider logging is mutable external configuration; verify it at final
+acceptance rather than relying on this document. Use only public toy material in
+exploratory probes. The lesson text and optional one-answer Share
 have different scopes; inspect and clear lesson scope when appropriate.
 
 ## Guided route and actual contract
@@ -142,3 +160,7 @@ Start the exploratory interaction/learning protocol at
 [FIRST-TEST.md](FIRST-TEST.md). Its independent immediate and delayed transfer
 fixtures and separate rubric work without CourseWeave. No learning efficacy has
 been measured by authoring these materials.
+
+For course publication, asset creation, migration and rollback boundaries, see
+[the release runbook](../docs/RELEASING.md). A CourseWeave wheel belongs to the
+application release and is never a course release asset.

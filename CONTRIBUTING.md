@@ -14,6 +14,9 @@ not a solution to someone else's take-home.
 Use GitHub Issues for defects a learner can hit (broken links, lesson/notebook
 mismatch, build or CI failures). One problem per issue, with the file path and
 what you expected. Security reports go to `SECURITY.md`, not the public tracker.
+Use the course-feedback form for study friction, but submit only a short,
+non-sensitive account. Do not attach credentials, raw chats, private participant
+material, local filesystem paths or a learner's full work product.
 
 ## Setup
 
@@ -37,7 +40,7 @@ uv sync
    links and workload honesty, then rebuild `lessons/study-plan.html`.
 2. Rebuild: `uv run python lessons/build.py`
 3. Check links: `uv run python lessons/check_links.py`
-   After a lesson-HTML change, also:
+   After a lesson or SOTA change, also:
 
    ```bash
    uv run python lessons/check_links.py --http
@@ -74,15 +77,17 @@ refactor). Maintainers will reject:
 `CODE_OF_CONDUCT.md`. Report CoC issues via GitHub issues (maintainers will
 convert to private if needed) or email macayaven@gmail.com.
 
-## Pilot adapter and static diagrams
+## Course adapter and static diagrams
 
 Run `uv run python -m unittest discover -s tests -v` for native adapter/content
 checks (also run in CI). Original notebook cells are protected by a checked-in
 semantic hash receipt; add learner attempt cells without changing original IDs,
 sources, metadata or outputs. Execute notebooks after edits as above.
 
-S01/S02 use committed SVG, so offline clone-and-read and ordinary HTML builds need
-no browser or Node. To change a Mermaid source, renderer, options or Python lock:
+Every lesson diagram is a committed SVG, so offline clone-and-read and ordinary
+HTML builds need no browser or Node. S08 and S14 each contain two diagrams. To
+change any Mermaid source, diagram alternative, renderer, options, vendored
+Mermaid asset or Python lock:
 
 ```bash
 uv sync --frozen --group diagrams
@@ -101,8 +106,8 @@ vendor, renderer, config, lock and SVG hashes. Ordinary builds fail on stale has
 renderer/font host; cross-OS/font determinism is **not** claimed. CI performs the
 portable source/asset freshness checks, not a false cross-host byte equivalence
 claim. Inspect regenerated diagrams visually and retain their meaningful text
-alternatives. Other lessons keep the original native browser Mermaid path; never
-relax CourseWeave's scripts-disabled reader to accommodate them.
+alternatives. CourseWeave's reader uses those committed assets; never relax its
+scripts-disabled boundary to render Mermaid in the browser.
 
 Real compatibility is a separate mandatory installed-artifact check, with no
 conditional sibling skip:
@@ -114,3 +119,22 @@ conditional sibling skip:
 Use the final wheel, not an editable install. See study/COURSEWEAVE-PILOT.md for the
 explicit launcher/kernel/state interface and the platform-owned installed browser,
 provider and kernel isolation acceptance beyond this read-only contract check.
+
+This check is required only when evaluating a supplied compatible CourseWeave
+asset. The public CourseWeave `v0.1.0` wheel cannot read this schema-v2 course, and
+there is currently no public URL for the compatible pilot wheel. Do not make a
+course pull request depend on a private machine path or an unpublished asset.
+
+## Documentation and releases
+
+[docs/README.md](docs/README.md) maps the public documentation and names its
+authoritative sources. Keep setup commands in this file and link to them instead
+of duplicating variants. Use [docs/RELEASING.md](docs/RELEASING.md) for the course
+release process. Course tags and CourseWeave package versions are independent;
+never label a local platform artifact as a public dependency.
+
+Documentation-only changes still require the unit suite, clean lesson rebuild,
+relative-link check and SOTA source check. Execute notebooks or replay labs when
+their source or contract changed. Run the HTTP check when lesson/SOTA URLs changed.
+Do not convert a locally observed pilot into a general accessibility, learning,
+provider, teacher-workflow or production-readiness claim.

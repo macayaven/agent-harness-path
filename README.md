@@ -72,14 +72,25 @@ uv sync            # creates .venv/ (Python 3.11+, pinned by uv.lock)
 uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter frontend
 ```
 
-## Recommended optional CourseWeave experience
+This native route is the supported public starting point. It needs no CourseWeave
+installation and keeps learner work in files you choose. Copy edited notebooks,
+progress notes and experiment output outside the Git checkout if you want them to
+survive a clean clone, branch switch or course upgrade.
 
-For the packaged S01–S14 student pilot, use its **Start Course.command** and README;
-first launch prepares a separate full-course study folder without replacing the
-earlier S01/S02 workspace. The [full-course study guide](study/FULL-COURSE.md)
-explains the route and student feedback. For a source-based setup, install the
-explicitly supplied compatible schema-v2 pilot wheel in a separate platform venv,
-then launch with its absolute interpreter path:
+## Recommended optional CourseWeave experience — current status
+
+CourseWeave is an optional application for the same S01–S14 course. The public
+CourseWeave `v0.1.0` wheel is incompatible with this repository's schema-v2
+manifest. A compatible wheel has passed the bounded local pilot checks, but it has
+not been published and has no public download URL yet. Until a compatible platform
+release exists, outside learners should use the native quickstart above.
+
+If you have been given the compatible pilot asset explicitly, use its **Start
+Course.command** and README. First launch creates a fresh full-course study folder;
+it does not migrate or overwrite an earlier S01/S02 workspace. The
+[full-course study guide](study/FULL-COURSE.md) explains the route and feedback
+boundary. For a source-based local evaluation, install that supplied wheel in a
+separate platform venv and launch with its absolute interpreter path:
 
 ```bash
 ./scripts/courseweave --platform-python /absolute/path/courseweave-pilot-env/bin/python --state-dir /absolute/path/pilot-learner-state
@@ -88,9 +99,10 @@ then launch with its absolute interpreter path:
 See [pilot installation and contract](study/COURSEWEAVE-PILOT.md) and the
 [first-test protocol](study/FIRST-TEST.md). The launcher requires a compatible
 pilot artifact with explicit separate course-kernel support; it does not discover
-a sibling checkout or execute copied lab commands. The earlier v0.1.0 release is
-not this schema-v2 pilot. S01–S12 offer reading → notebook predictions, attempts and
-observations → self-check → optional hard lab, with lesson-specific guidance.
+a sibling checkout or execute copied lab commands. The earlier CourseWeave
+`v0.1.0` release is not this schema-v2 pilot. S01–S12 offer reading → notebook
+predictions, attempts and observations → self-check → optional hard lab, with
+lesson-specific guidance.
 S13/S14 remain optional notebook-free protocols, with unaided work separated from
 permitted preparation and review. The original `uv run jupyter lab` route above remains the
 independent zero-network, zero-key core path, apart from deliberately opening a
@@ -105,8 +117,9 @@ public video preview.
 | Keys | none | none for `--replay`; `OPENAI_BASE_URL` / `OPENAI_API_KEY` / `OPENAI_MODEL` for `--live` |
 | S13/S14 target | a system you own | `labs/trivia_host/` if you built it |
 
-`--live` is never the default and never runs in CI. Any OpenAI-compatible server
-works (OpenAI, Groq, Together, Ollama, llama.cpp). See `labs/README.md`.
+`--live` is never the default and never runs in CI. It uses an OpenAI-compatible
+chat endpoint; confirm that the selected model supports the lab's requests before
+interpreting live results. See `labs/README.md`.
 
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
 not need Git LFS. The notebooks are Python standard library only — the venv
@@ -128,6 +141,9 @@ lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
   contract, the toy-domain rule
 - `COURSE-MAP.md` — coverage map
 - `CONTRIBUTING.md` — how to propose a change
+- `docs/` — documentation map, release process and draft release notes
+- `study/` — optional study, pilot and transfer protocols; learner results belong
+  outside the checkout
 
 ## The toy-domain rule
 
@@ -153,6 +169,14 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 
 Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
+
+The [documentation map](docs/README.md) separates learner, contributor, pilot and
+release material. The [release runbook](docs/RELEASING.md) records the checks and
+publication boundary for the recommended next course release, `v0.2.0`; no tag or
+release has been made for it. The bounded local pilot receipt is available as a
+[reader-facing report](docs/verification/student-pilot-2026-09-13.md) and
+[machine-readable record](docs/verification/student-pilot-2026-09-13.json). It is
+evidence about named artifacts and checks, not a general product or learning claim.
 
 ## License
 

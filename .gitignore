@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 _site/
+/dist/
 .DS_Store
 .ipynb_checkpoints/
 .jupyter/
@@ -9,3 +10,7 @@ _site/
 labs/PROGRESS.md
 labs/work/
 labs/reports/last.md
+study/work/
+study/evidence/*
+!study/evidence/.gitkeep
+study/PILOT-OBSERVATIONS.csv
