@@ -85,14 +85,14 @@ switch or course upgrade.
 
 ## Recommended optional CourseWeave experience
 
-CourseWeave is an optional continuous guide for the same course. Its v0.2.0
-macOS bundle is prepared but **not published yet**. Do not run the commands below
-until the [CourseWeave v0.2.0 release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
-lists both `agent-harness-path-courseweave-0.2.0-macos.tar.gz` and
-`SHA256SUMS`. Public CourseWeave v0.1.0 uses schema v1 and is incompatible with
-this course.
+CourseWeave is an optional continuous guide for the same course. Use the v0.2.0
+macOS bundle from the [CourseWeave release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
+when it lists `agent-harness-path-courseweave-0.2.0-macos.tar.gz` and `SHA256SUMS`
+and is no longer marked **Pre-release**. Until then, use the native route above;
+staged candidates are still undergoing verification. CourseWeave v0.1.0 uses
+schema v1 and is incompatible with this course.
 
-After publication, install [uv](https://docs.astral.sh/uv/getting-started/installation/),
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/),
 change Terminal to a nonsynced local download folder, and run:
 
 ```sh
@@ -175,7 +175,7 @@ lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
   contract, the toy-domain rule
 - `COURSE-MAP.md` — coverage map
 - `CONTRIBUTING.md` — how to propose a change
-- `docs/` — documentation map, release process and draft release notes
+- `docs/` — documentation map, release process and versioned release notes
 - `study/` — optional study, pilot and transfer protocols; learner results belong
   outside the checkout
 
@@ -211,8 +211,9 @@ linked abstract, or a predict-first prompt that leaks the answer.
 
 The [documentation map](docs/README.md) separates learner, contributor, pilot and
 release material. The [release runbook](docs/RELEASING.md) records the checks and
-publication boundary for the recommended next course release, `v0.2.0`; no tag or
-release has been made for it. The bounded local pilot receipt is available as a
+publication boundary for `v0.2.0`; the [GitHub release record](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+provides its status, date and public acceptance evidence. The earlier bounded
+local pilot receipt is available as a
 [reader-facing report](docs/verification/student-pilot-2026-09-13.md) and
 [machine-readable record](docs/verification/student-pilot-2026-09-13.json). It is
 evidence about named artifacts and checks, not a general product or learning claim.

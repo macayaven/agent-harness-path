@@ -4,9 +4,12 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
-The recommended next course release is `v0.2.0`. It remains unreleased: this
-section has no publication date, and the compatible CourseWeave schema-v2 wheel
-used by the local pilot is not a public release asset.
+## [0.2.0](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+
+Versioned changes below are frozen for v0.2.0. Publication status, date and exact
+artifacts are recorded on the linked GitHub release; a Pre-release remains a
+verification candidate. The compatible wheel used by the earlier local pilot is
+distinct from the public CourseWeave v0.2.0 assets.
 
 ### Added
 

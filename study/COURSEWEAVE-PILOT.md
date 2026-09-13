@@ -8,11 +8,11 @@ records; it does not certify completion or replace the native lessons.
 
 ## Public availability
 
-The course and CourseWeave are separate releases. Their v0.2.0 candidates and
-the CourseWeave-owned macOS student bundle are prepared but **not published
-yet**. Public CourseWeave v0.1.0 cannot load this schema-v2 manifest. Until the
+The course and CourseWeave are separate releases. CourseWeave v0.1.0 cannot load
+this schema-v2 manifest. Use the v0.2.0 macOS student bundle when the
 [CourseWeave v0.2.0 release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
-lists and verifies the named bundle and checksum file, use the native route.
+lists the named bundle and checksum file and is no longer marked Pre-release.
+Until then, use the native route; staged candidates are still being verified.
 
 ## Install the macOS bundle after publication
 
@@ -31,11 +31,16 @@ cd "CourseWeave Student Pilot v0.2.0"
 
 Continue only when the checksum command reports the named archive as `OK`. The
 archive expands to one top-level `CourseWeave Student Pilot v0.2.0` folder. Its
-seven files contain the exact application wheel, course archive and runtime
+eight files contain the exact application wheel, course archive, platform license and runtime
 constraints selected for the release. The launcher builds separate application
 and course interpreters, and the notebook interpreter receives no provider key.
 It does not discover a sibling checkout, another CourseWeave installation or a
 private receipt.
+
+The bundle's `LICENSE` covers CourseWeave under PolyForm Shield 1.0.0. The
+included course archive, and `course/LICENSE` after setup, retain this course's
+Apache-2.0 / CC BY 4.0 split. Platform restrictions do not apply to your own work
+or replace course reuse permissions.
 
 First start creates the versioned study home
 `~/Library/Application Support/CourseWeave/Agent Harness Path v0.2.0`. Do not

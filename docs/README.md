@@ -28,24 +28,23 @@ repository, package version and release process.
   and transfer protocol.
 
 The public CourseWeave `v0.1.0` wheel is not compatible with this course's
-schema-v2 manifest. The v0.2.0 macOS bundle and its public URL are documented as
-a release candidate, but they are not available while the linked release notes
-remain Draft. Outside learners can use the native route without CourseWeave.
-After publication, verify the named bundle against the CourseWeave-owned
+schema-v2 manifest. Use the v0.2.0 macOS bundle only when its GitHub release lists
+the named assets and is no longer marked Pre-release. Outside learners can use
+the native route without CourseWeave. Verify the named bundle against the CourseWeave-owned
 `SHA256SUMS` before extraction; the course tag does not version the application.
 
 ## Release evidence
 
 - [Release runbook](RELEASING.md) — promotion gates, assets, migration and
   rollback for the course repository.
-- [Draft v0.2.0 notes](releases/v0.2.0.md) — proposed next course release; no tag
-  or publication is implied.
+- [v0.2.0 notes](releases/v0.2.0.md) — versioned changes and the authoritative
+  GitHub release-status link.
 - [Bounded student-pilot report](verification/student-pilot-2026-09-13.md) and
   [JSON receipt](verification/student-pilot-2026-09-13.json) — exact local
   artifacts and observed checks, with private paths and raw logs excluded.
 
-`CHANGELOG.md` is the complete reader-facing history. Draft release notes summarize
-one proposed release and link back to it; they do not replace the changelog.
+`CHANGELOG.md` is the complete reader-facing history. Versioned release notes
+summarize one release and link back to it; they do not replace the changelog.
 
 ## Ownership and privacy
 

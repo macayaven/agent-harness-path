@@ -34,8 +34,11 @@ receipts, course licenses/notices, learner documentation, feedback template and
 public evidence are present. Search public text for credentials, raw chats/logs,
 participant content, private hostnames and machine paths.
 
-Keep the changelog under `Unreleased` and the v0.2.0 notes marked Draft during
-candidate review. CourseWeave uses PolyForm Shield 1.0.0 for its first-party
+Keep new changes under `Unreleased` during candidate review. At the freeze, move
+them to a versioned heading and link the GitHub release record for publication
+status and date. Source notes must remain accurate before and after promotion;
+an absent release or Pre-release status does not imply availability to learners.
+CourseWeave uses PolyForm Shield 1.0.0 for its first-party
 application; the course retains its Apache-2.0 / CC BY 4.0 split. Verify both
 license sets in the combined bundle. Do not describe the platform as open source
 or apply its restrictions to the course or independently authored learner work.
@@ -134,10 +137,12 @@ git status --short
 
 After local gates and review pass:
 
-1. Move the complete entries from `Unreleased` to
-   `0.2.0 — YYYY-MM-DD`, leaving a new empty `Unreleased` heading.
-2. Remove the Draft warning from `docs/releases/v0.2.0.md`, add the same date,
-   and replace candidate/public-availability wording only with observed facts.
+1. Move the complete entries from `Unreleased` to the linked `0.2.0` heading,
+   leaving a new empty `Unreleased` heading. Record the actual publication date
+   in the GitHub release record when that release is published.
+2. Freeze `docs/releases/v0.2.0.md` around the final contents. Link the release
+   record for live publication status and require promotion before recommending
+   the guided download; do not claim that an unpublished asset is available.
 3. Re-run the documentation, generated HTML/link and version checks affected by
    that edit.
 4. Commit the freeze, confirm a clean tree, push through a reviewed pull request,
