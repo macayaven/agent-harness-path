@@ -35,8 +35,10 @@ public evidence are present. Search public text for credentials, raw chats/logs,
 participant content, private hostnames and machine paths.
 
 Keep the changelog under `Unreleased` and the v0.2.0 notes marked Draft during
-candidate review. The platform license decision is separate and must not be
-inferred from this course's split license.
+candidate review. CourseWeave uses PolyForm Shield 1.0.0 for its first-party
+application; the course retains its Apache-2.0 / CC BY 4.0 split. Verify both
+license sets in the combined bundle. Do not describe the platform as open source
+or apply its restrictions to the course or independently authored learner work.
 
 ## 2. Run the course gates
 

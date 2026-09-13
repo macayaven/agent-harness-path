@@ -10,6 +10,9 @@ repository, package version and release process.
 - [Course map](../COURSE-MAP.md) — the S01–S14 curriculum contract.
 - [Contributor guide](../CONTRIBUTING.md) — authoritative environment, edit and
   validation commands.
+- [Course licenses](../LICENSE) — Apache-2.0 code and CC BY 4.0 educational
+  content; the separately licensed CourseWeave application does not change these
+  permissions.
 - [Engineering and content rules](../AGENTS.md) — toy-domain, lesson, notebook,
   diagram and public-documentation conventions.
 - [Design rationale](../WHY-THIS-DESIGN.md) — deliberate difficulty and the fix

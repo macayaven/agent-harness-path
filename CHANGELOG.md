@@ -43,6 +43,10 @@ used by the local pilot is not a public release asset.
 
 ### Changed
 
+- Clarified the licensing boundary with the optional CourseWeave application,
+  which adopts PolyForm Shield 1.0.0. This course retains Apache-2.0 code and
+  CC BY 4.0 educational content, including their commercial-reuse permissions;
+  learner-created work remains the learner's.
 - Generated lessons now use script-free static diagrams and stream optional
   Video Overviews from the public GCS replica. `.lfsconfig` skips video smudging
   on ordinary clones; the local `lessons/index.html` is the only supported

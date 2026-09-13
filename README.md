@@ -228,3 +228,10 @@ Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated wi
 Google Gemini Notebook; Google's marks in those files are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.
+
+These course licenses permit reuse, including commercial reuse, subject to their
+terms. The optional **CourseWeave application** is licensed separately under
+PolyForm Shield 1.0.0: it is source available, with restrictions on providing
+competing products. Its [licensing guide](https://github.com/macayaven/courseweave/blob/main/docs/LICENSING.md)
+explains study, evaluation and product-use boundaries. That platform license does
+not replace this course's licenses or claim ownership of your work.
