@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -155,14 +161,7 @@ sets.</p>
 </table>
 <p>Choose the learning emphasis before ordering the evidence narrative. The same
 evidence set supports both emphases; only the leading evidence changes.</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    E{Learning emphasis} --&gt; H[Harness / evals / inference systems]
-    E --&gt; M[Model-layer fundamentals]
-    H --&gt; HR[Lead with harness gates and inference receipts]
-    M --&gt; MR[Lead with learner-owned A1 evidence]
-    HR --&gt; C[State supported and unsupported claims]
-    MR --&gt; C
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/study-plan.svg" alt="A learner chooses between harness and evaluation work or model-layer fundamentals, leads with the corresponding evidence, and then states clearly which claims that evidence does and does not support." style="--diagram-width: 1269px" /></div>
 <h2 id="evidence-over-claims">Evidence over claims</h2>
 <ol>
 <li><strong>Bank before claiming.</strong> "Completed" means the named receipt exists, can be
@@ -359,9 +358,5 @@ artifact; it does not buy the full CS336 core.</p>
   <code>lessons/src/study-plan.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

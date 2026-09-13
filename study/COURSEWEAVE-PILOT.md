@@ -1,4 +1,4 @@
-# Optional S01/S02 CourseWeave pilot
+# Full-course CourseWeave student pilot
 
 The native course is independently usable: `uv sync --frozen`, open
 `lessons/index.html`, and `uv run jupyter lab`. Notebooks are stdlib-only, zero
@@ -50,7 +50,7 @@ response logging; verify that mutable setup at final acceptance. Use only public
 toy material in exploratory probes. The lesson text and optional one-answer Share
 have different scopes; inspect and clear lesson scope when appropriate.
 
-## First route and actual contract
+## Guided route and actual contract
 
 Start `s01/read` and open `lesson` at
 `lessons/S01-agent-loop.html#the-theory-in-depth`. The optional `video` is in that
@@ -66,6 +66,15 @@ reading activity, with its Google Gemini Notebook attribution retained.
 | s02/notebook | notebook | s02-prediction, s02-attempt, s02-observation | none |
 | s02/self-check | self-check | s02-reflection | refusal-only, stub-vs-measurement, controlled-comparison |
 | s02/lab (optional) | lab-guide | s02-lab-evidence | none |
+
+S03–S12 use the same three required activities plus optional hard lab. Their
+reading, prediction/attempt/observation and reflection prompts, objectives,
+progressive hints and checks are specific to each lesson. The canonical manifest
+defines **36 required activities** and all original twelve notebooks. Notebook
+selection includes actual learner attempts and omits answer-bearing S10 guard
+code and the S12 `TRUTH` key. All original cells remain in the full native notebooks.
+The notebook source remains output-free; saved student answers belong in the
+separate study copy. See [the full-course study guide](FULL-COURSE.md).
 
 Only the same-activity prediction record gates optional notebook teacher help.
 An experience label grants no authority. Saved text records show the learner's
@@ -87,9 +96,25 @@ bullets without rewriting their original cells.
 
 Self-check reopens the same module's HTML at `#self-check`. Native references use
 keyboard-accessible details disclosures, excluded from explicit lesson grounding.
-No independent transfer rubric is in the manifest. S03–S14 remain available as
-optional native activities with limited guidance; their dated material has not
-been newly reviewed by this pilot. S13/S14 use observer-only teacher access in the limited-guidance adapter.
+No independent transfer rubric is in the manifest. All lesson diagrams are static
+SVG, including multiple diagrams in S08/S14. The dated readings stay in their
+authored context; adding student guidance does not refresh their research claims.
+
+S13 remains optional and notebook-free: preparation → unaided audit → review and
+delayed-repeat planning. S14 remains optional and notebook-free: preparation →
+cold acceptance/holdout → the learner's pilot page with optional critique → unaided
+human pilot → evidence assembly/review. The unaided phases are observer-only,
+with no provider calls, sharing, proposals or authored hints. Review requires an
+explicit same-activity attestation that no unaided sitting is in progress.
+Preparation does not authorize solving the audited core; S14 critique does not
+authorize writing the learner's final words or inventing a participant.
+
+Prerequisites remain in the lesson and activity overview. External project state,
+consent, elapsed delay and actual human work are not automatically verified by a
+course record. The packaged study copy is not a Git repository; a learner auditing
+their completed lab first prepares a separate local versioned target as described
+in [the audit card](S13-AUDIT.md). Neither audit nor shipping commands run on the
+learner's behalf. S01–S12 is complete without either practical session.
 
 ## Optional hard lab commands
 

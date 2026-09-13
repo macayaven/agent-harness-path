@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -171,18 +177,7 @@ number precisely: 100% <em>schema adherence</em>, not 100% correct.</p>
 local models whose <code>response_format</code> support is partial or absent. The first row
 is not a strategy; it's the naive baseline you measure the other two against.</p>
 <h3 id="the-retry-loop-is-s01s-loop-with-the-validator-as-the-tool">The retry loop is S01's loop with the validator as the tool</h3>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    B[brief + schema in prompt] --&gt; C[call model]
-    C --&gt; P{json.loads&lt;br/&gt;parses?}
-    P -- no --&gt; F1[append PARSE ERROR&lt;br/&gt;as a user message]
-    P -- yes --&gt; V{validator&lt;br/&gt;errors?}
-    V -- yes --&gt; F2[append error list&lt;br/&gt;as a user message]
-    V -- no --&gt; D[validated spec&lt;br/&gt;loop exits]
-    F1 --&gt; R{attempts left?}
-    F2 --&gt; R
-    R -- yes --&gt; C
-    R -- no --&gt; X[escalate: suspect the schema,&lt;br/&gt;not only the model]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S04-structured-generation.svg" alt="A structured-generation loop parses model output, validates parsed JSON, and returns specific errors for another bounded attempt; validated output exits, while exhausted attempts escalate the schema." style="--diagram-width: 1484px" /></div>
 <p>Two things to notice. First, there are <strong>two failure classes</strong> — output that
 doesn't parse (fences, prose, truncated) and output that parses but violates the
 schema (missing field, wrong type, out-of-enum value). They share a loop but not a
@@ -369,9 +364,5 @@ you the plan should run.</p>
   <code>lessons/src/S04-structured-generation.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

@@ -33,10 +33,10 @@ EXPECTED_PREDICT_CELL_IDS = {
     "s06": ["e6e094bc", "db8764ff", "6fd1e028", "17fc4b40", "eb3312f1"],
     "s07": ["0dfeb0fb", "17144688", "860d1ba8", "87ade9f5", "e78b53c8"],
     "s08": ["a0bcdfb0", "5e7deaae", "a46de06c", "c7bbf262", "4d8877aa"],
-    "s09": ["9be8b060", "a555e356", "6216d055", "c082f091", "f3687a78"],
-    "s10": ["e29ddac3", "de444d72", "1ed050d0", "06f30ddd"],
+    "s09": ["9be8b060", "a555e356", "6216d055", "c082f091", "f3687a78", "1e9aff30", "fc8aee1d", "3b5d8f4f"],
+    "s10": ["e29ddac3", "de444d72", "1ed050d0"],
     "s11": ["2c72bb15", "c05d5679", "8d2df87f", "3b20842f", "bb698748"],
-    "s12": ["b894417f", "59b0dc59", "acdca975", "a6cbf006", "35f8b325", "0f450635"],
+    "s12": ["b894417f", "acdca975", "a6cbf006", "35f8b325", "0f450635"],
 }
 
 EXPECTED_EXPERIMENT_CELL_IDS = {
@@ -49,9 +49,9 @@ EXPECTED_EXPERIMENT_CELL_IDS = {
     "s07": ["51a7a2df", "ac7c3f22", "378ed1dc", "e87d2e76", "3333d37f"],
     "s08": ["36cb568f", "84af535b", "861de2de", "41138c1d", "6ebe4cbf", "c31c250b"],
     "s09": ["c676a909", "fdc6245d", "f7d9581f", "b399e7d0", "2a5279ba"],
-    "s10": ["69244ac3", "c3ba0e2b", "03d0a7b8"],
+    "s10": ["69244ac3", "c3ba0e2b", "03d0a7b8", "06f30ddd"],
     "s11": ["e2126f69", "64044c9e", "3ac65de6", "17c6235c", "6d57264e"],
-    "s12": ["64fcf43f", "32fe1e01", "a2358ced", "323068e0", "9da60997"],
+    "s12": ["59b0dc59", "64fcf43f", "32fe1e01", "a2358ced", "323068e0", "9da60997"],
 }
 
 EXPECTED_SOURCE_PATHS = {
@@ -91,11 +91,47 @@ def all_surfaces(manifest):
     return [s for m in manifest["modules"] for p in m["phases"] for s in p["surfaces"]]
 
 class CourseWeaveManifestTests(unittest.TestCase):
+    def test_practical_suite_commands_select_the_student_implementation(self):
+        import importlib.util
+        import re
+        import shlex
+        import sys
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location("pilot_lab_runner", ROOT/"labs/run.py")
+        runner = importlib.util.module_from_spec(spec)
+        with patch.object(sys, "path", [str(ROOT/"labs"), *sys.path]):
+            spec.loader.exec_module(runner)
+        commands = [shlex.split(command)[4:] for command in re.findall(
+            r"`(uv run python labs/run.py[^`]+)`",
+            (ROOT/"lessons/src/S13-rebuild-from-memory.md").read_text(),
+        )]
+        review = phase_map(load_manifest_data()["modules"][13])["review"]
+        commands.extend(surface["command"][4:] for surface in review["surfaces"]
+                        if surface["id"] == "replay-command")
+        self.assertGreaterEqual(len(commands), 3)
+        # Stop before any execution: prove the real CLI selects the learner's
+        # implementation, even though --all defaults to the reference.
+        for args in commands:
+            with patch.object(runner, "load_impl", side_effect=RuntimeError("selection observed")) as selected:
+                with self.assertRaisesRegex(RuntimeError, "selection observed"):
+                    runner.main(args)
+            selected.assert_called_once_with("student")
+
+    def test_lesson_scope_labels_identify_the_session_after_navigation(self):
+        labels = []
+        for module in load_manifest_data()["modules"]:
+            for phase in module["phases"]:
+                for surface in phase["surfaces"]:
+                    if surface["type"] in {"html", "markdown"}:
+                        self.assertIn(module["id"].upper(), surface["label"])
+                        labels.append(surface["label"])
+        self.assertEqual(len(labels), len(set(labels)))
+
     def test_v2_read_notebook_self_check_optional_lab_route(self):
         manifest = load_manifest_data()
         self.assertEqual(manifest["schema_version"], 2)
         self.assertEqual([m["id"] for m in manifest["modules"]], [f"s{n:02d}" for n in range(1,15)])
-        for module in manifest["modules"][:2]:
+        for module in manifest["modules"][:12]:
             phases = phase_map(module)
             self.assertEqual(list(phases), ["read", "notebook", "self-check", "lab"])
             self.assertEqual([p["progress"] for p in phases.values()], ["required"]*3+["optional"])
@@ -106,8 +142,14 @@ class CourseWeaveManifestTests(unittest.TestCase):
             self.assertEqual(phases["notebook"]["surfaces"][0]["id"], "notebook")
             self.assertEqual(phases["notebook"]["surfaces"][0]["purpose"], "primary")
             self.assertTrue(phases["self-check"]["learning"]["checks"])
-        for module in manifest["modules"][2:]:
-            self.assertIn("limited guidance", module["description"].lower())
+            for phase in phases.values():
+                learning = phase["learning"]
+                self.assertTrue(learning["objectives"])
+                self.assertTrue(learning["overview"])
+                self.assertTrue(learning["hints"])
+            for check in phases["self-check"]["learning"]["checks"]:
+                self.assertTrue(all(option["feedback"] for option in check["options"]))
+        self.assertNotIn("limited guidance", json.dumps(manifest).lower())
 
     def test_maps_every_course_file_video_and_original_prediction_cell(self):
         modules = {m["id"]:m for m in load_manifest_data()["modules"]}
@@ -125,24 +167,33 @@ class CourseWeaveManifestTests(unittest.TestCase):
                     self.assertTrue(ids <= cells.keys())
                     selected |= ids
             self.assertTrue(set(EXPECTED_PREDICT_CELL_IDS[mid]) <= selected)
-            if mid not in {"s01","s02"}:
-                phases = phase_map(modules[mid])
-                predicted = phases["predict"]["surfaces"][0]["selector"]["values"]
-                experimented = phases["experiment"]["surfaces"][0]["selector"]["values"]
-                self.assertEqual(predicted, EXPECTED_PREDICT_CELL_IDS[mid])
-                self.assertEqual(experimented, EXPECTED_EXPERIMENT_CELL_IDS[mid])
-                self.assertTrue(set(predicted).isdisjoint(experimented))
-            else:
-                # Pre-attempt grounding selects questions/attempts, never code demonstrations/answers.
-                self.assertTrue(selected.isdisjoint(EXPECTED_EXPERIMENT_CELL_IDS[mid]))
-                self.assertFalse(any("SOLUTION" in "".join(cells[c]["source"]) for c in selected))
+            # The complete notebook remains runnable, while pre-attempt grounding
+            # selects the original prediction/attempt cells rather than answers.
+            self.assertTrue(selected.isdisjoint(EXPECTED_EXPERIMENT_CELL_IDS[mid]))
+            self.assertTrue(set(EXPECTED_EXPERIMENT_CELL_IDS[mid]) <= cells.keys())
+            self.assertFalse(any("# SOLUTION" in "".join(cells[c]["source"]) for c in selected))
         for mid, expected in EXPECTED_SOURCE_PATHS.items():
             self.assertEqual({s["path"] for s in all_surfaces({"modules":[modules[mid]]}) if s["type"]=="source"}, expected)
         for mid, slug in {"s13":"S13-rebuild-from-memory","s14":"S14-ship-and-pilot"}.items():
             surfaces = all_surfaces({"modules":[modules[mid]]})
             self.assertIn(f"lessons/{slug}.html", {s.get("path") for s in surfaces})
             self.assertTrue(next(s for s in surfaces if s["type"]=="video")["src"].endswith(slug+".mp4"))
-            self.assertEqual(modules[mid]["phases"][0]["teacher"]["access"]["mode"], "observer_only")
+            self.assertFalse(any(s["type"] == "notebook" for s in surfaces))
+            self.assertTrue(all(p["progress"] == "optional" for p in modules[mid]["phases"]))
+
+    def test_practical_protocols_separate_unaided_work_from_permitted_review(self):
+        modules = {m["id"]: phase_map(m) for m in load_manifest_data()["modules"]}
+        for mid, pid in [("s13", "audit"), ("s14", "acceptance"), ("s14", "pilot")]:
+            phase = modules[mid][pid]
+            self.assertEqual(phase["teacher"]["access"], {"mode": "observer_only", "requires": []})
+            self.assertEqual(phase["teacher"]["sharing"]["allow"], [])
+            self.assertEqual(phase["teacher"]["proposals"]["allow"], [])
+            self.assertEqual(phase["learning"]["hints"], [])
+            self.assertFalse(any(s["type"] in {"source", "notebook"} for s in phase["surfaces"]))
+        for mid in ["s13", "s14"]:
+            review = modules[mid]["review"]
+            self.assertEqual(review["teacher"]["access"], {"mode": "available", "requires": [mid+"-closed"]})
+            self.assertTrue(review["learning"]["checks"])
 
     def test_unique_coordinates_local_jail_and_learner_authority(self):
         manifest = load_manifest_data()

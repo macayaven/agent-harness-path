@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -161,18 +167,7 @@ half is what justifies it:</p>
   the <strong>cheapest one that holds the number</strong> on your suite. The deliverable of a
   routing exercise is not the table — it's the measurement the table cites.</li>
 </ul>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    P[pipeline run&lt;br/&gt;phase sequence] --&gt; V{validate route table&lt;br/&gt;against policy}
-    V -- misconfigured --&gt; X[REFUSE&lt;br/&gt;zero model calls made]
-    V -- valid --&gt; RT[route table&lt;br/&gt;policy-as-data]
-    RT -- categorize&lt;br/&gt;content --&gt; S[local-small&lt;br/&gt;cheap + fast]
-    RT -- summarize&lt;br/&gt;content --&gt; L[local-large&lt;br/&gt;slow + strong]
-    RT -- format&lt;br/&gt;metadata only --&gt; C[cloud-frontier&lt;br/&gt;allowed, not required]
-    S --&gt; M[meter: tokens x price,&lt;br/&gt;latency, wall time]
-    L --&gt; M
-    C --&gt; M
-    M --&gt;|&quot;would breach&quot;| B[stop_reason=budget_exceeded]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S11-budgets-routing.svg" alt="A pipeline validates its policy route table before any model call, routes allowed content among local and cloud models, meters cost and latency, and stops before a run would breach its budget." style="--diagram-width: 1639px" /></div>
 <h3 id="the-privacy-boundary-is-a-routing-invariant-enforced-as-refusal">The privacy boundary is a routing invariant, enforced as refusal</h3>
 <p>Routing has a second axis besides cost and quality: <strong>where the data goes</strong>.
 Give every phase a data classification (raw <em>content</em> vs derived <em>metadata</em>) and
@@ -364,9 +359,5 @@ unmeasured judge is decoration.</p>
   <code>lessons/src/S11-budgets-routing.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

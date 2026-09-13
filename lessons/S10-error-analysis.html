@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -122,16 +128,7 @@ aggregate is a smoke detector: it tells you there is a fire and roughly where,
 but it never tells you what is burning. Treating the pass rate as the result —
 tuning whatever moves it — is how teams ship a green suite over a red product.</p>
 <p>Error analysis is the discipline that converts the number into work. The loop:</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    T[failure traces&lt;br/&gt;the raw material] --&gt; O[open coding&lt;br/&gt;one free-form note per trace]
-    O --&gt; A[axial coding&lt;br/&gt;group notes, name categories]
-    A --&gt; Q[count × severity&lt;br/&gt;priority ranking]
-    Q --&gt; F[fix the top categories]
-    Q --&gt; E[new eval tasks&lt;br/&gt;one per recurrent category]
-    F --&gt; R[new traces]
-    R --&gt; T
-    E --&gt; S[the suite grows&lt;br/&gt;denominator changes]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S10-error-analysis.svg" alt="Failure traces move through open coding, axial grouping, and count-by-severity ranking; top categories drive focused fixes and recurrent categories add eval tasks whose results produce new traces." style="--diagram-width: 1336px" /></div>
 <p>Hamel's field data is blunt about the ordering: the most common mistake in
 applied AI is <em>skipping</em> this loop and going straight from "the number moved"
 to a fix (<a href="https://hamel.dev/blog/posts/field-guide/">hamel.dev/blog/posts/field-guide</a>).
@@ -374,9 +371,5 @@ the number, and a privacy boundary enforced as code rather than intention.</p>
   <code>lessons/src/S10-error-analysis.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

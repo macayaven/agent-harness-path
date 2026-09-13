@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -217,19 +223,7 @@ transcripts the practical forms are sharper:</p>
   a subtraction.</li>
 </ul>
 <p>Each lie has exactly one defense, and both are deterministic:</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    T[transcript + run record&lt;br/&gt;the only ground truth] --&gt; G[report generator&lt;br/&gt;itself a model]
-    G --&gt; R[evidence report&lt;br/&gt;fixed slots]
-    T --&gt; C{citation validator&lt;br/&gt;does every quote resolve?}
-    T --&gt; V{coverage validator&lt;br/&gt;did every event surface?}
-    R --&gt; C
-    R --&gt; V
-    C -- violations --&gt; G
-    V -- violations --&gt; G
-    C -- clean --&gt; D[depleted reader&lt;br/&gt;30-second review]
-    V -- clean --&gt; D
-    D -. one hop, when in doubt .-&gt; T
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S09-evidence-reports.svg" alt="A report model turns the transcript and run record into fixed evidence slots; citation and coverage validators compare the report with that ground truth, returning violations for repair before a short human review." style="--diagram-width: 1114px" /></div>
 <ul>
 <li><strong>Citation validator.</strong> Checks exactly three mechanical properties: every quoted
   string appears verbatim in the turn its reference cites (substring presence);
@@ -431,9 +425,5 @@ new golden tasks.</p>
   <code>lessons/src/S09-evidence-reports.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

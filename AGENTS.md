@@ -55,8 +55,9 @@ solutions to someone else's production deliverable.
 │   │                              (injects the prev/index/next nav bars)
 │   ├── check_links.py         — relative href/src + optional http-link checker
 │   ├── site_urls.py           — GCS base for Video Overview hrefs
-│   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
-│   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
+│   ├── template.html          — page shell (dark CSS, script-free static diagrams)
+│   ├── diagrams/              — rendered SVGs and input/asset freshness receipt
+│   ├── vendor/                — mermaid@10 UMD build used by diagram regeneration
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
 │   └── videos/SNN-*.mp4       — Gemini Notebook Video Overviews, one per lesson, plus
@@ -69,8 +70,9 @@ solutions to someone else's production deliverable.
 Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
 `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `scripts/publish_videos.sh`. `.lfsconfig` skips fetching the
 mp4s on clone (`git lfs pull` to get the archive). `uv.lock`, the generated
-`lessons/*.html`, and the vendored mermaid build in `lessons/vendor/` are checked
-in so lessons and diagrams read offline; preview videos stream.
+`lessons/*.html`, static SVGs and the vendored Mermaid build in `lessons/vendor/`
+are checked in. Ordinary readers need no scripts; the vendor is used only when
+regenerating diagrams. Lessons and diagrams read offline; preview videos stream.
 
 ## Build and run
 
@@ -78,6 +80,12 @@ in so lessons and diagrams read offline; preview videos stream.
   from `lessons/src/*.md`. Re-run after editing any lesson source. Video hrefs
   `videos/*.mp4` are rewritten to the public GCS replica. The build warns if
   a non-index lesson has no mermaid diagram.
+- **Diagram changes:** after editing a Mermaid block, run
+  `uv run --group diagrams python lessons/render_diagrams.py`, then rebuild HTML.
+  The pinned optional Playwright/Chromium renderer records all input and SVG
+  hashes; ordinary builds reject stale assets. `--check` compares fresh bytes on
+  the recorded renderer/font host. Multiple blocks have separate SVGs and useful
+  text alternatives; wide diagrams scroll instead of shrinking labels.
 - **Link check:** `uv run python lessons/check_links.py` (after a build).
   Unique http hrefs (GCS videos, SOTA sources):
   `uv run python lessons/check_links.py --http`.

@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -195,18 +201,7 @@ credentials, tool authorization, egress control, and careful output handling
 Detection routes traffic and buys time; the boundary is what the system
 structurally cannot do.</p>
 <h3 id="the-mechanism-ordered-layers-union-for-the-catastrophic-class">The mechanism: ordered layers, union for the catastrophic class</h3>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
-    U[untrusted message&lt;br/&gt;user turn, file, tool result] --&gt; S{injection screen&lt;br/&gt;deterministic}
-    S -- hit --&gt; B[blocked:&lt;br/&gt;the model never sees it]
-    S -- clean --&gt; F{keyword floor&lt;br/&gt;cheap regex}
-    F -- hit --&gt; H[handoff]
-    F -- miss --&gt; C{classifier&lt;br/&gt;confidence &gt;= threshold?}
-    C -- yes --&gt; H
-    C -- no --&gt; G{scope governor}
-    G -- out of scope --&gt; R[refuse + signpost]
-    G -- in scope --&gt; M[model generates a reply]
-    H --&gt; T[break character&lt;br/&gt;contacts as data&lt;br/&gt;terminal state]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S06-layered-detection.svg" alt="Untrusted text passes through an injection screen, keyword floor, classifier, and scope governor in order; dangerous input is blocked or handed off before any in-scope reply reaches the model." style="--diagram-width: 634px" /></div>
 <p>The invariants live in the ordering and the exit:</p>
 <ul>
 <li><strong>Deterministic screens run first.</strong> Nothing model-shaped touches the text
@@ -395,9 +390,5 @@ honest stop reasons for when it runs out.</p>
   <code>lessons/src/S06-layered-detection.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

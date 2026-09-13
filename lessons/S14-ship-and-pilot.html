@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -171,17 +177,7 @@ result — a handful of users finds most problems — is a statement about
 Your n=1 pilot is a smoke detector, not a sample. A quiet detector reports one
 fact: the house was not on fire during the test. It certifies nothing about the
 house — not the wiring, not the market, not the next occupant.</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
-    A[freeze two fixtures, criteria first&lt;br/&gt;acceptance + untouched holdout] --&gt; B[cold acceptance run&lt;br/&gt;you, unseen input, traces on]
-    B -- pass --&gt; K[cold final gate&lt;br/&gt;the untouched holdout]
-    B -- fail --&gt; D[diagnose from the trace&lt;br/&gt;amend the system,&lt;br/&gt;never the fixture —&lt;br/&gt;it is a tuning case now]
-    D --&gt; B
-    K --&gt; C[pilot run&lt;br/&gt;protocol page first,&lt;br/&gt;then one second human]
-    C --&gt; E[assemble the docs&lt;br/&gt;from artifacts, not memory]
-    E --&gt; F[public artifact&lt;br/&gt;one fixture run + numbers]
-    F --&gt; G[adversarial review&lt;br/&gt;fix what is real,&lt;br/&gt;rebut the rest in writing]
-    G --&gt; H[tag v1.0.0&lt;br/&gt;evidence covers the claims]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S14-ship-and-pilot.svg" alt="Shipping begins with frozen acceptance and holdout fixtures, loops failed acceptance runs through trace-led repair, then uses the untouched holdout before a human pilot, artifact-based documentation, adversarial review, and the release tag." style="--diagram-width: 440px" /></div>
 <h3 id="assembly-not-composition">Assembly, not composition</h3>
 <p>Documentation written at ship time, from memory, describes the system you
 <em>meant</em> to build. The decisions have faded; what remains is intent, and intent
@@ -196,15 +192,7 @@ That is the payoff of the decision log S02 told you to keep — five lines per
 call, written at decision time — the architecture-decision-record pattern in its
 original minimal form
 (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>).</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    D[decision log&lt;br/&gt;written at decision time] --&gt; A[architecture doc]
-    N[banked eval numbers&lt;br/&gt;naive vs governed] --&gt; A
-    T[traces and replays] --&gt; A
-    F[failure taxonomy&lt;br/&gt;with counts] --&gt; X[failures doc]
-    N --&gt; X
-    A --&gt; P[public artifact&lt;br/&gt;fixture run + numbers]
-    X --&gt; P
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S14-ship-and-pilot-2.svg" alt="Decision logs, banked eval numbers, traces, and failure counts assemble into architecture and failure documents; those two evidence-backed documents feed the public fixture-run artifact." style="--diagram-width: 590px" /></div>
 <p>The architecture doc gets one section most docs lack: the honest two columns.</p>
 <table>
 <thead>
@@ -451,9 +439,5 @@ and it starts from the tag, not before it.</p>
   <code>lessons/src/S14-ship-and-pilot.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

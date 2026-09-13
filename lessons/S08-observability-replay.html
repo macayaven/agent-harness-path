@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -133,17 +139,7 @@ Langfuse, and the OpenAI Agents SDK all share the shape:</p>
   vendor term (<a href="https://langfuse.com/docs/observability/data-model">data model</a>);
   OTel models the same unit as model/agent spans, not a distinct type.</li>
 </ul>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
-    T[&quot;trace: one run, end to end&quot;] --&gt; S[&quot;session span&quot;]
-    S --&gt; SET[&quot;setup span&quot;]
-    S --&gt; R[&quot;rounds span&quot;]
-    S --&gt; W[&quot;wrap-up span&quot;]
-    SET --&gt; G1[&quot;generation: welcome&lt;br/&gt;input / output / usage&quot;]
-    R --&gt; R1[&quot;round-1 span&quot;]
-    R1 --&gt; G2[&quot;generation: question&lt;br/&gt;input / output / usage&quot;]
-    R1 --&gt; G3[&quot;generation: grade&lt;br/&gt;input / output / usage&quot;]
-    W --&gt; G4[&quot;generation: scorecard&lt;br/&gt;input / output / usage&quot;]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay.svg" alt="One end-to-end trace contains a session span, phase spans for setup, rounds, and wrap-up, and nested generation spans that record each model input, output, and usage." style="--diagram-width: 560px" /></div>
 <p>The payoff is arithmetic: sum <code>usage</code> over the generations under a phase span
 and you have cost per phase — the number every routing and budget decision
 (S11) is made from. No tree, no attribution.</p>
@@ -188,19 +184,7 @@ Three properties buy almost everything:</p>
   would serve the old "CORRECT" verdict to the new wrong answer — wrong, and
   invisible. Strictness turns the cassette into a behavior-drift alarm.</li>
 </ul>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    subgraph rec[&quot;recording&quot;]
-        H1[&quot;host&quot;] --&gt;|&quot;request&quot;| REC[&quot;recorder&quot;]
-        REC --&gt;|&quot;live call&quot;| M[&quot;model API&quot;]
-        M --&gt;|&quot;response&quot;| REC
-        REC --&gt; C[(&quot;cassette.jsonl&quot;)]
-    end
-    subgraph rep[&quot;replaying&quot;]
-        C --&gt; REP[&quot;replayer&quot;]
-        H2[&quot;host, unchanged&quot;] --&gt;|&quot;request&quot;| REP
-        REP --&gt;|&quot;recorded response, content-equal&quot;| H2
-    end
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay-2.svg" alt="During recording, a recorder relays host requests to the live model and stores responses in a cassette; during replay, the unchanged host receives content-equal recorded responses without a live call." style="--diagram-width: 1113px" /></div>
 <p>The lineage is VCR's HTTP cassettes
 (<a href="https://github.com/kevin1024/vcrpy">vcrpy</a>, itself a port of 2012-era Ruby
 VCR); the agent version moves the same contract up one layer, from HTTP to "the
@@ -379,9 +363,5 @@ first.</p>
   <code>lessons/src/S08-observability-replay.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

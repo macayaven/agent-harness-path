@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -125,7 +131,7 @@ deliberate: it makes the bookkeeping inspectable. Stateful alternatives can mana
 history for you, but tool execution, failure policy and stopping still need owners.</p>
 <p>An <em>agent</em> is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:</p>
-<img class="static-diagram" src="diagrams/S01-agent-loop.svg" alt="Client-owned weather loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call." />
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S01-agent-loop.svg" alt="Client-owned weather loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call." style="--diagram-width: 973px" /></div>
 <p>This diagram is the notebook's complete control-flow skeleton. The model proposes
 an action or a final answer; Python owns whether to execute, how to record the
 result, and when to stop. The arrow back to the model carries <strong>history</strong>, not an
@@ -333,9 +339,5 @@ is that the eval suite — not the agent — is where most of the engineering li
   <code>lessons/src/S01-agent-loop.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

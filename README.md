@@ -74,8 +74,12 @@ uv run jupyter lab # run the notebooks; or open notebooks/ in any Jupyter fronte
 
 ## Recommended optional CourseWeave experience
 
-For the schema-v2 S01/S02 pilot, install the explicitly supplied pilot wheel in a
-separate platform venv, then launch with its absolute interpreter path:
+For the packaged S01–S14 student pilot, use its **Start Course.command** and README;
+first launch prepares a separate full-course study folder without replacing the
+earlier S01/S02 workspace. The [full-course study guide](study/FULL-COURSE.md)
+explains the route and student feedback. For a source-based setup, install the
+explicitly supplied compatible schema-v2 pilot wheel in a separate platform venv,
+then launch with its absolute interpreter path:
 
 ```bash
 ./scripts/courseweave --platform-python /absolute/path/courseweave-pilot-env/bin/python --state-dir /absolute/path/pilot-learner-state
@@ -85,9 +89,10 @@ See [pilot installation and contract](study/COURSEWEAVE-PILOT.md) and the
 [first-test protocol](study/FIRST-TEST.md). The launcher requires a compatible
 pilot artifact with explicit separate course-kernel support; it does not discover
 a sibling checkout or execute copied lab commands. The earlier v0.1.0 release is
-not this schema-v2 pilot. S01/S02 offer reading → notebook predictions, attempt and
-observations → self-check → optional hard lab. Later modules remain accessible with
-limited guidance. The original `uv run jupyter lab` route above remains the
+not this schema-v2 pilot. S01–S12 offer reading → notebook predictions, attempts and
+observations → self-check → optional hard lab, with lesson-specific guidance.
+S13/S14 remain optional notebook-free protocols, with unaided work separated from
+permitted preparation and review. The original `uv run jupyter lab` route above remains the
 independent zero-network, zero-key core path, apart from deliberately opening a
 public video preview.
 

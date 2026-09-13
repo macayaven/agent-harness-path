@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -177,18 +183,7 @@ compactable prose.</strong> Two layers:</p>
 <li><strong>Pinned prompt copy.</strong> Whatever constraint text does go into the context sits
    in a region compaction may not touch — re-sent verbatim at every assembly.</li>
 </ol>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TB
-    subgraph ASM[context assembly — every call]
-        P[pinned region&lt;br/&gt;safety rules, verbatim&lt;br/&gt;never compacted]
-        C[compactable region&lt;br/&gt;history, tool output, small talk]
-    end
-    C --&gt; Q{over budget?}
-    Q -- no --&gt; S[send]
-    Q -- yes --&gt; K[truncate or summarize&lt;br/&gt;the compactable region ONLY]
-    K --&gt; S
-    P --&gt; S
-    S --&gt; M[model]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S03-context-engineering.svg" alt="Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model." style="--diagram-width: 555px" /></div>
 <p>Pinning is rent: those tokens ride every request forever, so the pinned region
 stays small and high-signal. And pinning is necessary but not sufficient — it keeps
 the rule <em>present</em>; the attention budget decides whether it gets <em>used</em>. The
@@ -343,9 +338,5 @@ because an agent whose outputs you can't parse is an agent you can't govern.</p>
   <code>lessons/src/S03-context-engineering.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

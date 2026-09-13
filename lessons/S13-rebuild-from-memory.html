@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,7 +94,14 @@
       color: var(--muted);
       font-size: .82rem;
     }
-    .static-diagram { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
@@ -113,7 +119,7 @@ project you own, <strong>or</strong> <code>labs/trivia_host/</code> if you walke
 <strong>This session is optional.</strong> Completing S01–S12 does not require S13.
 <strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
 defeat it. Hard path: the audit target is <code>labs/trivia_host/loop.py</code> against
-<code>uv run python labs/run.py --all --replay</code>. Easy path: a project of yours.
+<code>uv run python labs/run.py --all --impl student --replay</code>. Easy path: a project of yours.
 The protocol below is the hands-on.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
@@ -225,23 +231,15 @@ rule that would have saved it.</p>
 </ol>
 <p>Run twice, a week apart, the audit is the whole learning loop: measure, diagnose,
 repair, verify the repair.</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    A[original safe in HEAD&lt;br/&gt;rebuild on a branch] --&gt; B[blank file, 60 min&lt;br/&gt;no assistant, no browser]
-    B --&gt; C[rebuild from memory&lt;br/&gt;mark UNSURE lines]
-    C --&gt; D[diff every hunk:&lt;br/&gt;cosmetic / equivalent / gap]
-    D --&gt; E[run the suite]
-    E --&gt; F{within tolerance of&lt;br/&gt;banked number?}
-    F -- yes --&gt; G[forgot-list from gaps]
-    F -- no --&gt; G
-    G --&gt; H[restore original&lt;br/&gt;checkout from HEAD]
-    H --&gt; I[re-study exactly those items]
-    I --&gt; J[re-audit cold, ~1 week]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S13-rebuild-from-memory.svg" alt="A closed-book audit rebuilds one core file on a branch, classifies every diff, runs the suite against a banked number, restores the original, and turns behavioral gaps into a focused forgot-list for a later re-audit." style="--diagram-width: 2215px" /></div>
 <h2 id="the-protocol">The protocol</h2>
 <p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
 <p><strong>Hard path:</strong> you built <code>labs/trivia_host/</code>. The core is <code>trivia_host/loop.py</code>;
-the suite is <code>uv run python labs/run.py --all --replay</code> (or <code>--live</code> on your
-endpoint). Do not open <code>labs/reference/</code> during the sitting.</p>
+the suite is <code>uv run python labs/run.py --all --impl student --replay</code> (or <code>--live</code> on your
+endpoint, keeping <code>--impl student</code>). Confirm <code>impl=student</code> in the report and
+compare its actual task results, not only the process exit status. <code>--all</code> alone
+defaults to the reference implementation and would not measure your rebuilt core.
+Do not open <code>labs/reference/</code> during the sitting.</p>
 <p><strong>Easy path:</strong> any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that
 project's own.</p>
@@ -402,9 +400,5 @@ the rebuild says you can defend the machine, S14 makes you defend it in public.<
   <code>lessons/src/S13-rebuild-from-memory.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>
