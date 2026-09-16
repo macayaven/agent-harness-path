@@ -8,7 +8,7 @@ The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
 - `notebooks/` (toy notebooks)
-- `labs/**/*.py` (optional hard-path client, runner, trivia host, evals)
+- `labs/**/*.py` (optional hard-path client, runner, trivia host, evals, reference)
 - `lessons/*.py` (build, validation and static diagram tooling),
   `lessons/template.html`, `lessons/diagrams/receipt.json`
 - `pyproject.toml`, `uv.lock`
@@ -23,14 +23,15 @@ The following are licensed under Creative Commons Attribution 4.0 International
 (`LICENSES/CC-BY-4.0.txt`):
 
 - `lessons/src/` (lesson sources)
+- `lessons/README.md`
 - `lessons/*.html` (generated lessons), `lessons/diagrams/*.svg` (rendered lesson diagrams)
 - `lessons/videos/` (Video Overviews generated with Google Gemini Notebook,
   formerly NotebookLM — see Third-party below)
 - `labs/**/*.md` (hard-path protocols and lab docs)
+- `bridges/` (Cursor companion rungs)
 - `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
-- `courseweave.json` (authored curriculum and learning guidance)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `docs/**/*.md`, `docs/**/*.json`
+  `CHANGELOG.md`, `review/`, `docs/**/*.md`, `docs/**/*.json`
 
 SPDX-License-Identifier: CC-BY-4.0
 

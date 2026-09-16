@@ -1,13 +1,33 @@
-"""S01: implement the client-owned loop. See labs/s01_loop.md.
-
-Signatures must stay stable: course cassettes match this call shape. Non-string
-tool results use client.canonicalize(result); see the public wire contract in
-labs/README.md.
-"""
+"""Shipped trivia-host loop (companion cut). Same contract as labs/reference/loop.py."""
 
 from __future__ import annotations
 
 from typing import Any, Callable
+
+from client import canonicalize
+
+
+def _assistant_message(raw: dict) -> dict:
+    """Keep the protocol fields; drop vendor extras (reasoning, index, …)."""
+    msg = raw["choices"][0]["message"]
+    clean: dict[str, Any] = {
+        "role": "assistant",
+        "content": msg.get("content") if msg.get("content") else None,
+    }
+    calls = msg.get("tool_calls") or []
+    if calls:
+        clean["tool_calls"] = [
+            {
+                "id": c["id"],
+                "type": c.get("type", "function"),
+                "function": {
+                    "name": c["function"]["name"],
+                    "arguments": c["function"].get("arguments") or "{}",
+                },
+            }
+            for c in calls
+        ]
+    return clean
 
 
 def run_loop(
@@ -18,4 +38,22 @@ def run_loop(
     *,
     max_turns: int = 8,
 ) -> tuple[list[dict], str]:
-    raise NotImplementedError("labs/s01_loop.md — implement run_loop")
+    for _ in range(max_turns):
+        raw = client.chat(messages, tools=tools, temperature=0.0)
+        assistant = _assistant_message(raw)
+        messages.append(assistant)
+        calls = assistant.get("tool_calls") or []
+        if not calls:
+            return messages, "completed"
+        for call in calls:
+            result = dispatch(call)
+            if not isinstance(result, str):
+                result = canonicalize(result)
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": call["id"],
+                    "content": result,
+                }
+            )
+    return messages, "turn_cap"

@@ -1,12 +1,8 @@
 """Check the actual reader output and stale-source failure, without a browser dependency."""
-import importlib.util
-import json
 from pathlib import Path
-import posixpath
 import re
 import sys
 import tempfile
-from urllib.parse import unquote, urlsplit
 import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -38,46 +34,6 @@ DIAGRAMS = {
 }
 
 class StaticReaderTests(unittest.TestCase):
-    def test_generated_native_links_resolve_to_one_allowlisted_surface(self):
-        manifest = json.loads((ROOT / 'courseweave.json').read_text())
-        surfaces = [
-            surface
-            for module in manifest['modules']
-            for phase in module['phases']
-            for surface in phase['surfaces']
-            if surface.get('path')
-        ]
-        failures = []
-        for page in sorted((ROOT / 'lessons').glob('*.html')):
-            document = page.read_text()
-            ids = set(re.findall(r'\bid="([A-Za-z][A-Za-z0-9_.:-]*)"', document))
-            for href in re.findall(r'<a\b[^>]*\bhref="([^"]+)"', document):
-                target = urlsplit(href)
-                if target.scheme:
-                    self.assertEqual(target.scheme, 'https', href)
-                    continue
-                self.assertFalse(target.netloc, href)
-                self.assertFalse(target.query, href)
-                path = posixpath.normpath(
-                    posixpath.join('lessons', page.name, '..', unquote(target.path))
-                )
-                fragment = unquote(target.fragment)
-                matches = [
-                    surface
-                    for surface in surfaces
-                    if surface['path'] == path
-                    and (
-                        surface['type'] != 'html'
-                        or surface.get('fragment', '') == fragment
-                    )
-                ]
-                same_document = (
-                    path == f'lessons/{page.name}' and fragment in ids
-                )
-                if len(matches) != 1 and not (len(matches) == 0 and same_document):
-                    failures.append((page.name, href, len(matches)))
-        self.assertEqual(failures, [])
-
     def test_every_lesson_diagram_is_static_with_a_specific_alternative(self):
         alternatives = []
         for name, expected_assets in DIAGRAMS.items():

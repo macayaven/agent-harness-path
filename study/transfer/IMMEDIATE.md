@@ -2,7 +2,7 @@
 
 Do this after S01/S02. Save the complete attempt before opening any scoring
 dimensions or answer key. This is a new toy domain, not a real library service.
-Plan 8–12 minutes, but record actual time. Use paper or a local copy of `attempt.py` and `fixtures.json`. No CourseWeave or model
+Plan 8–12 minutes, but record actual time. Use paper or a local copy of `attempt.py` and `fixtures.json`. No assistant or model
 is needed. Leave the assistant closed and don't read the delayed variant yet.
 
 Open `fixtures.json` at `immediate`, or run:

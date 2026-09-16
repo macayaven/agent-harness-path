@@ -1,18 +1,11 @@
 # Studying and giving feedback on S01–S14
 
-The public starting point is the native course: follow the root README, run
-`uv sync --frozen`, open [the course index](../lessons/index.html), and use
-`uv run jupyter lab`. After the CourseWeave v0.2.0 release page publishes the
-bundle and checksum named in the README, the optional macOS guided route starts
-with its **Start Course.command**. First start creates a fresh versioned
-full-course study copy and isolated runtimes; it does not migrate or replace an
-earlier S01/S02 workspace. Public CourseWeave v0.1.0 is incompatible with this
-schema-v2 guide.
+The public starting point is this clone: follow the root README, run
+`uv sync --frozen`, open [the course index](../lessons/index.html) in Cursor,
+and run notebooks there or with `uv run jupyter lab`.
 
 Keep learner work on nonsynced local storage outside the Git checkout. Copy an
-edited notebook before a clean clone, branch switch or version change. Keep an old
-CourseWeave workspace until you have confirmed the new study copy and records;
-returning to the native route does not require deleting it.
+edited notebook before a clean clone, branch switch or version change.
 
 ## The twelve-session route
 
@@ -85,7 +78,7 @@ notes folder outside the repository. Use the session/activity as `task_id`; the
 template is optional. It remains local unless you choose to copy a short,
 sanitized observation into the one-click
 [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml).
-CourseWeave does not send the CSV, notebooks, chat or telemetry to GitHub. Review
+The course does not send the CSV, notebooks, chat or telemetry to GitHub. Review
 the issue preview and submit only when you intend to make it public.
 For each friction point, record what you tried, expected and observed, how you
 recovered, and whether the assistant/hint was grounded or exposed a solution too

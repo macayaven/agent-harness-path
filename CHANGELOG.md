@@ -2,7 +2,21 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
-## Unreleased
+## 0.3.0 — 2026-09-16
+
+Supersedes **v0.2.0**. Take the course in Cursor, with authored session bridges
+and a complete trivia host. CourseWeave packaging from v0.2.0 is removed.
+
+- Keep v0.2.0 lessons, notebooks, labs contracts, study overlay, and CI.
+- Remove `courseweave.json`, the adapter launcher, and CourseWeave study/pilot
+  docs. This cut is a clone plus Cursor, not an application host.
+- Ship a **complete** `labs/trivia_host/` (same spine as `labs/reference/`), so
+  `--replay` runs without filling stubs.
+- Add `bridges/s01.md`–`s14.md`, `.cursor/rules/ahp-companion.mdc`, and
+  `docs/COMPANION.md` (local OpenAI-compatible tutor = override base URL + key;
+  lab `--live` uses separate shell `OPENAI_*`).
+- Spell out that `lessons/*.html` is the reader and `lessons/src/` is authoring
+  source (`lessons/README.md`). S13/S14 remain unaided.
 
 ## [0.2.0](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
 

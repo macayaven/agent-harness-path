@@ -2,24 +2,28 @@
 
 A self-contained course on **building, evaluating, and governing LLM agents** —
 twelve notebook sessions plus two optional apply-to-your-system protocols (S13
-rebuild audit, S14 ship & pilot). The default core notebook path is zero network, zero API
-keys, zero cost: every "model" in the notebooks is a plain Python function you
-can read. An **optional hard path** (`labs/`) grows one toy trivia-host spine
-against a real OpenAI-compatible endpoint *or* committed cassettes. Completing
-S01–S12 never requires a lab.
+rebuild audit, S14 ship & pilot). **v0.3.0 supersedes v0.2.0.** Take it in
+**Cursor**: this clone, session bridges, and a complete trivia host.
 
-**Start here:** choose the native route below, then open
-[`lessons/index.html`](lessons/index.html) and begin S01. Click ▶ to watch an
-optional preview (streams from a public bucket). A 9-minute
+The default core notebook path is zero network, zero API keys, zero cost: every
+"model" in the notebooks is a plain Python function you can read. An **optional
+hard path** (`labs/`) grows one toy trivia-host spine against committed
+cassettes (`--replay`) or a live OpenAI-compatible endpoint (`--live`).
+Completing S01–S12 never requires a lab.
+
+**Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md)
+(local OpenAI-compatible models = override base URL + key), then start
+`lessons/S01-agent-loop.html` with `@bridges/s01.md` in chat.
+
+**Start here (HTML):** [`lessons/index.html`](lessons/index.html). Click ▶ to
+watch an optional preview (streams from a public bucket). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
 covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
-overviews, formerly NotebookLM; the lesson + notebook are canonical). Then run
-the notebooks.
+overviews; the lesson + notebook are canonical).
 
-S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
-a system you already own — or, if you walked the hard path, against
-`labs/trivia_host/`. The notebooks do not accumulate a capstone; the optional
-spine does.
+S01–S12 are the self-contained path. S13 and S14 are optional unaided protocols.
+Easy path: a system you own. Hard path: `labs/trivia_host/`. The notebooks do
+not accumulate a capstone; the optional spine does.
 
 ## Core route and post-core overlay
 
@@ -30,12 +34,7 @@ spine does.
   [study-plan overlay](lessons/study-plan.html) to schedule authoritative external
   work from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional
   Anthropic API course, with explicit evidence to bank. The overlay is not part of
-  the 14-session core and contains no copied external-course materials. It requires
-  either completed core/hard-path work or equivalent harness experience, plus an
-  inspectable agent/eval artifact with a green, banked baseline.
-
-The overlay supports two complementary learning emphases:
-harness/evals/inference-systems depth and model-layer fundamentals depth.
+  the 14-session core and contains no copied external-course materials.
 
 ## Who it's for
 
@@ -55,8 +54,10 @@ product.
 3. **Self-check** — foldable quiz questions at the end of the lesson.
 4. **(Optional) hard path** — after the notebook, `labs/sNN_*.md` against
    cassettes (`--replay`) or your OpenAI-compatible endpoint (`--live`).
-5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a ship/pilot
-   protocol. Easy path: a system you own. Hard path: `labs/trivia_host/`.
+   `@bridges/sNN.md` is what the Cursor companion should read first.
+5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a
+   ship/pilot protocol. Easy path: a system you own. Hard path:
+   `labs/trivia_host/`. The assistant must not do these for you.
 
 The curriculum: agent loop → golden sets & baselines → context engineering →
 structured generation → consent gate → layered detection → repair loop →
@@ -72,88 +73,25 @@ credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-uv sync --frozen
+uv sync --frozen   # creates .venv/ (Python 3.11+, pinned by uv.lock)
+# Open this folder in Cursor (companion rule in .cursor/rules/).
+# Notebooks: Cursor's notebook UI, or:
 uv run jupyter lab
 ```
 
-Open `lessons/index.html` in a browser and `notebooks/s01_agent_loop_toy.ipynb`
-in JupyterLab. Read the theory and diagram, write your prediction before running
-the corresponding cell, attempt the exercise, then answer the lesson self-check.
-Repeat that route through S12. Copy edited notebooks, progress notes and
-experiment output outside the Git checkout so they survive a clean clone, branch
-switch or course upgrade.
+Optional hard path (complete host already in `labs/trivia_host/`):
 
-## Recommended optional CourseWeave experience
-
-CourseWeave is an optional continuous guide for the same course. Use the v0.2.0
-macOS bundle from the [CourseWeave release page](https://github.com/macayaven/courseweave/releases/tag/v0.2.0)
-when it lists `agent-harness-path-courseweave-0.2.0-macos.tar.gz` and `SHA256SUMS`
-and is no longer marked **Pre-release**. Until then, use the native route above;
-staged candidates are still undergoing verification. CourseWeave v0.1.0 uses
-schema v1 and is incompatible with this course.
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/),
-change Terminal to a nonsynced local download folder, and run:
-
-```sh
-curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/agent-harness-path-courseweave-0.2.0-macos.tar.gz
-curl -fLO https://github.com/macayaven/courseweave/releases/download/v0.2.0/SHA256SUMS
-shasum -a 256 --check SHA256SUMS --ignore-missing | grep -F 'agent-harness-path-courseweave-0.2.0-macos.tar.gz: OK'
-tar -xzf agent-harness-path-courseweave-0.2.0-macos.tar.gz
-cd "CourseWeave Student Pilot v0.2.0"
-./"Start Course.command" --no-provider
+```bash
+uv run python labs/run.py --session s01 --replay
+uv run python labs/run.py --session s02 --replay
 ```
 
-Continue only when the checksum command reports the named bundle as `OK`. First
-start installs isolated runtimes and creates
-`~/Library/Application Support/CourseWeave/Agent Harness Path v0.2.0`; it does
-not migrate or overwrite an earlier workspace. No source checkout, Node, separate
-Jupyter installation or API key is required. Keep the Terminal open while
-studying, save notebooks and press Ctrl-C there to stop. Run the same Start
-command to resume.
+Copy edited notebooks, progress notes and experiment output outside the Git
+checkout so they survive a clean clone, branch switch or course upgrade.
 
-The assistant remains off even if the shell contains provider keys. Reading,
-notebooks, hints and self-checks still work. To opt in for one launch, use hidden
-key input and name the model:
-
-```sh
-./"Start Course.command" --provider openai --model YOUR_OPENAI_MODEL
-./"Start Course.command" --provider anthropic --model YOUR_ANTHROPIC_MODEL
-```
-
-Add `--base-url` only when required. Never put a key in a command argument,
-notebook or issue. Credential-manager users can set `COURSEWEAVE_PROVIDER`, the
-matching model/key variables and optional base URL, then use `--provider-env`.
-The launcher loads no `.env` file and sends no key to the course kernel. The
-supported assistant profile is text-only; provider configuration is checked on
-the first question and does not prove arbitrary live or tool behavior.
-
-Contributors validating a source-built application keep that route separate:
-`scripts/courseweave` requires an explicit `--platform-python` and external
-`--state-dir`, as documented in its help. It does not replace the checksum-bound
-student bundle.
-
-See the [guided installation and contract](study/COURSEWEAVE-PILOT.md),
-[full-course study guide](study/FULL-COURSE.md), and optional
-[first-test protocol](study/FIRST-TEST.md). S01–S12 offer reading → notebook
-prediction/attempt/observation → self-check → optional hard lab.
-S13/S14 remain optional notebook-free protocols, with unaided work separated from
-permitted preparation and review. The original `uv run jupyter lab` route above remains the
-independent zero-network, zero-key core path, apart from deliberately opening a
-public video preview.
-
-### Two paths
-
-| | Easy (default) | Hard (optional) |
-|---|---|---|
-| Work | lesson → notebook → self-check | same, then `labs/sNN_*.md` |
-| Command | `uv run jupyter lab` | `uv run python labs/run.py --session s02 --replay` |
-| Keys | none | none for `--replay`; `OPENAI_BASE_URL` / `OPENAI_API_KEY` / `OPENAI_MODEL` for `--live` |
-| S13/S14 target | a system you own | `labs/trivia_host/` if you built it |
-
-`--live` is never the default and never runs in CI. It uses an OpenAI-compatible
-chat endpoint; confirm that the selected model supports the lab's requests before
-interpreting live results. See `labs/README.md`.
+`--live` is never the default and never runs in CI. Tutor credentials are
+Cursor's; lab `--live` uses separate shell `OPENAI_*`. See
+[docs/COMPANION.md](docs/COMPANION.md) and `labs/README.md`.
 
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
 not need Git LFS. The notebooks are Python standard library only — the venv
@@ -162,22 +100,21 @@ lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
 
 ## Repository layout
 
-- `lessons/index.html` — the course entry point (generated from `lessons/src/`;
-  rebuild with `uv run python lessons/build.py`)
-- `lessons/S01…S14-*.html` — the lessons; `lessons/videos/` — one Video Overview per
-  session, generated with Google Gemini Notebook (formerly NotebookLM) on 14 Aug 2026
-  (maintainer archive via Git LFS; generated HTML streams the public copy).
-  Previews/reviews, not substitutes for the work. Google branding in the files is
-  Google's; see `NOTICE`.
-- `notebooks/` — twelve runnable toys (S1–S12), committed output-free
-- `labs/` — optional hard path: cassette client, trivia-host spine, session protocols
-- `AGENTS.md` — contributor/agent conventions: the lesson format, the notebook
-  contract, the toy-domain rule
-- `COURSE-MAP.md` — coverage map
-- `CONTRIBUTING.md` — how to propose a change
-- `docs/` — documentation map, release process and versioned release notes
-- `study/` — optional study, pilot and transfer protocols; learner results belong
-  outside the checkout
+There is **one** lesson book. `lessons/*.html` is what you read;
+`lessons/src/*.md` is what authors edit (`uv run python lessons/build.py`).
+See [lessons/README.md](lessons/README.md).
+
+| Path | Role |
+| --- | --- |
+| `lessons/SNN-*.html` | Learner lesson (plus `videos/`) |
+| `lessons/src/SNN-*.md` | Authoring source — not a second course |
+| `notebooks/sNN_*.ipynb` | Stdlib toy (S01–S12) |
+| `labs/sNN_*.md` | Optional hard-path protocol, not lesson text |
+| `bridges/sNN.md` | Cursor companion rung |
+| `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
+| `docs/COMPANION.md` | Local OpenAI-compatible tutor wiring |
+| `study/` | Optional study, pilot and transfer protocols |
+| `AGENTS.md` / `COURSE-MAP.md` / `CONTRIBUTING.md` | Contributor map |
 
 ## The toy-domain rule
 
@@ -195,8 +132,8 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 
 1. Use the one-click
    [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
-   for setup or study friction. Submission is deliberate; the course and
-   CourseWeave send no telemetry or files to GitHub. Include the public
+   for setup or study friction. Submission is deliberate; the course sends no
+   telemetry or files to GitHub. Include the public
    session/activity, what you tried, expected and observed, and any recovery.
    Remove credentials, raw chats, participant content, private project details,
    local paths and full notebook/work products.
@@ -210,29 +147,19 @@ Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
 
 The [documentation map](docs/README.md) separates learner, contributor, pilot and
-release material. The [release runbook](docs/RELEASING.md) records the checks and
-publication boundary for `v0.2.0`; the [GitHub release record](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
-provides its status, date and public acceptance evidence. The earlier bounded
-local pilot receipt is available as a
-[reader-facing report](docs/verification/student-pilot-2026-09-13.md) and
-[machine-readable record](docs/verification/student-pilot-2026-09-13.json). It is
-evidence about named artifacts and checks, not a general product or learning claim.
+release material. The [release runbook](docs/RELEASING.md) records publication
+gates. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+and [pilot receipt](docs/verification/student-pilot-2026-09-13.md) remain
+historical evidence about named artifacts.
 
 ## License
 
 Split license, 2026 Carlos Crespo Macaya:
 
 - **Apache-2.0** — notebooks, labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
-- **CC BY 4.0** — lessons, videos, documentation, and lab protocols (`labs/**/*.md`) (`LICENSES/CC-BY-4.0.txt`)
+- **CC BY 4.0** — lessons, videos, documentation, lab protocols (`labs/**/*.md`), and `bridges/` (`LICENSES/CC-BY-4.0.txt`)
 
 Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated with
 Google Gemini Notebook; Google's marks in those files are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.
-
-These course licenses permit reuse, including commercial reuse, subject to their
-terms. The optional **CourseWeave application** is licensed separately under
-PolyForm Shield 1.0.0: it is source available, with restrictions on providing
-competing products. Its [licensing guide](https://github.com/macayaven/courseweave/blob/main/docs/LICENSING.md)
-explains study, evaluation and product-use boundaries. That platform license does
-not replace this course's licenses or claim ownership of your work.

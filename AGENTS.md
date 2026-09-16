@@ -1,6 +1,20 @@
 # AGENTS.md — The Agent Harness Path
 
-Read this before doing anything in this repo. It assumes you know nothing about the project.
+## If you are taking the course (Cursor companion)
+
+You are a **tutor**, not a maintainer and not an impl-for-hire.
+
+1. Read `.cursor/rules/ahp-companion.mdc`.
+2. For the current session, read `bridges/sNN.md` before explaining a lab.
+3. Easy path: lesson HTML + toy notebook + self-check. Labs are optional.
+4. `labs/trivia_host/` is a **complete** host in this cut. Explain it; do not
+   silently rewrite it; do not fill predict-first work.
+5. Never open `labs/reference/` unless the learner is stuck (same spine).
+6. S13/S14: process only. Do not write the audit or ship report.
+7. No secrets in git or recap blocks.
+
+If the human is **editing course content** (lessons, CI, licenses), skip this
+block and follow the contributor rules below.
 
 ## What this project is
 
@@ -54,6 +68,7 @@ solutions to someone else's production deliverable.
 │   ├── index.html             — course entry point (generated; src/index.md)
 │   ├── build.py               — renders src/*.md → *.html via template.html
 │   │                              (injects the prev/index/next nav bars)
+│   ├── README.md              — HTML is the reader; src/ is authoring source
 │   ├── check_links.py         — relative href/src + optional http-link checker
 │   ├── site_urls.py           — GCS base for Video Overview hrefs
 │   ├── template.html          — page shell (dark CSS, script-free static diagrams)
@@ -65,20 +80,22 @@ solutions to someone else's production deliverable.
 │                                S00-course-overview.mp4; canonical name = lesson slug
 │                                (Git LFS archive; build.py points ▶ at the GCS replica)
 ├── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
-└── labs/                      — optional hard path (cassettes, trivia_host, protocols)
+├── labs/                      — optional hard path (sNN_*.md protocols, not lessons)
+├── bridges/                   — Cursor companion rungs (sNN.md)
+└── docs/COMPANION.md          — local OpenAI-compatible tutor wiring
 ```
 
 Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
-`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `scripts/publish_videos.sh`. `.lfsconfig` skips fetching the
-mp4s on clone (`git lfs pull` to get the archive). `uv.lock`, the generated
-`lessons/*.html`, static SVGs and the vendored Mermaid build in `lessons/vendor/`
-are checked in. Ordinary readers need no scripts; the vendor is used only when
-regenerating diagrams. Lessons and diagrams read offline; preview videos stream.
+`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, `.cursor/`, `study/`, `scripts/`,
+and `review/`. `.lfsconfig` skips fetching the mp4s on clone (`git lfs pull` to
+get the archive). `uv.lock`, the generated `lessons/*.html`, static SVGs and the
+vendored Mermaid build in `lessons/vendor/` are checked in. Lessons and diagrams
+read offline; preview videos stream. The `SNN` / `sNN` filenames in `lessons/`,
+`labs/`, and `bridges/` are **different artifacts**, not duplicated lesson text.
 
 `README.md` is the learner entry point, `CONTRIBUTING.md` is the authoritative
-contributor setup/validation guide, and `docs/RELEASING.md` is the authoritative
-publication checklist. Keep detailed CourseWeave compatibility in
-`study/COURSEWEAVE-PILOT.md`; summarize and link rather than duplicating it.
+contributor setup/validation guide, and `docs/RELEASING.md` is the publication
+checklist. v0.3.0 is a Cursor clone.
 
 ## Build and run
 
@@ -100,8 +117,9 @@ publication checklist. Keep detailed CourseWeave compatibility in
   the HTML regenerates cleanly, relative hrefs and script/img src resolve, and
   CI GETs unique http refs in the generated lessons (404 fails; 401/403/429 warn).
   SOTA table rows must carry a source URL (`lessons/check_sota_urls.py`).
-  Labs: `uv run python labs/run.py --all --replay` (reference + committed
-  cassettes; never `--live`). The contract runs on Python 3.11 and 3.12.
+  Labs: `uv run python -m unittest labs/test_contracts.py` and
+  `uv run python labs/run.py --all --replay` (reference + committed cassettes;
+  never `--live`). The contract runs on Python 3.11 and 3.12.
 - **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
 - **Notebooks run on Python 3.11+, standard library only** (e.g., `itertools`,
   `json`, `random`, `statistics`, `pathlib`, `tempfile`). Zero network, zero API
@@ -149,9 +167,6 @@ repository.
 
 ### Public documentation conventions
 
-- Treat course releases and CourseWeave application releases as independent.
-  The public CourseWeave `v0.1.0` wheel is not compatible with this schema-v2
-  manifest; do not invent an asset URL or describe a local pilot wheel as public.
 - Keep `CHANGELOG.md` reader-focused and preserve released history. Draft release
   notes may name the recommended next version, but `Unreleased` receives no date
   until the release exists.

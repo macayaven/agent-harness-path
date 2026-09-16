@@ -1,5 +1,9 @@
 # Labs — optional hard path
 
+`sNN_*.md` here are **lab protocols**, not a second copy of `lessons/src/`.
+Read the HTML lesson first; open a lab file only if you take the hard path.
+
+
 Two signed routes. Completing S01–S12 **never** requires a lab.
 
 | Route | What you do | Keys |
@@ -31,8 +35,9 @@ One toy-domain spine: a **trivia host**. Tools stay in-domain
 drifts toward a paste-ready generic harness (files, shell, a workspace), that
 is a defect — rewrite it back into pub quiz.
 
-You type the meat in `trivia_host/`. `reference/` is the **spotter**: open only
-if stuck. Peeking makes S13 a recognition test.
+This cut **ships a complete host** in `trivia_host/` so `--replay` runs without
+filling stubs. `reference/` is the same spine for CI `--impl reference`. Open
+it only if stuck; peeking makes S13 a recognition test.
 
 Two bars, do not conflate:
 
@@ -83,7 +88,7 @@ Copy `PROGRESS.template.md` to `labs/PROGRESS.md` (gitignored).
 ## Layout
 
 - `s01_loop.md` … `s12_judge.md` — protocols (Build / Verify / Record / Done-when)
-- `trivia_host/` — your implementation
+- `trivia_host/` — complete host (study with bridges; you may still rewrite it)
 - `client.py` — stdlib OpenAI-compatible POST + cassettes
 - `run.py` — naïve vs engine, markdown report
 - `cassettes/` — committed traces, one file per `(task, naïve|engine)` plus `s01-round.jsonl`

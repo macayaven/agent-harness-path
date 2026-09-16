@@ -18,3 +18,4 @@ raw chats, participant material, private paths or unpublished asset locations. -
 - [ ] If lab code/contracts changed: lab contract tests and `uv run python labs/run.py --all --replay` pass (never `--live` in CI)
 - [ ] Generated diagrams were visually inspected if Mermaid or diagram inputs changed
 - [ ] Public text contains no learner data, credentials, raw logs or private machine paths
+- [ ] Toys remain a different domain (not a paste-ready production harness)

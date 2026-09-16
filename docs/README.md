@@ -1,18 +1,14 @@
 # Documentation map
 
-The course has one public repository and two ways to read it. The native route is
-available from a clone today. CourseWeave is an optional application with its own
-repository, package version and release process.
+The course has one public repository. **v0.3.0** supersedes v0.2.0: take it from
+a clone in Cursor ([companion guide](COMPANION.md)).
 
 ## Start and contribute
 
-- [README](../README.md) — course scope, native quickstart and route comparison.
+- [README](../README.md) — course scope and Cursor quickstart.
 - [Course map](../COURSE-MAP.md) — the S01–S14 curriculum contract.
-- [Contributor guide](../CONTRIBUTING.md) — authoritative environment, edit and
-  validation commands.
-- [Course licenses](../LICENSE) — Apache-2.0 code and CC BY 4.0 educational
-  content; the separately licensed CourseWeave application does not change these
-  permissions.
+- [Contributor guide](../CONTRIBUTING.md) — environment, edit and validation commands.
+- [Course licenses](../LICENSE) — Apache-2.0 code and CC BY 4.0 educational content.
 - [Engineering and content rules](../AGENTS.md) — toy-domain, lesson, notebook,
   diagram and public-documentation conventions.
 - [Design rationale](../WHY-THIS-DESIGN.md) — deliberate difficulty and the fix
@@ -22,23 +18,14 @@ repository, package version and release process.
 
 - [Full-course study guide](../study/FULL-COURSE.md) — the 12 required notebook
   sessions and two optional protocols.
-- [CourseWeave pilot contract](../study/COURSEWEAVE-PILOT.md) — schema-v2 manifest,
-  installation boundary and adapter behavior.
 - [First exploratory test](../study/FIRST-TEST.md) — reusable S01/S02 interaction
   and transfer protocol.
-
-The public CourseWeave `v0.1.0` wheel is not compatible with this course's
-schema-v2 manifest. Use the v0.2.0 macOS bundle only when its GitHub release lists
-the named assets and is no longer marked Pre-release. Outside learners can use
-the native route without CourseWeave. Verify the named bundle against the CourseWeave-owned
-`SHA256SUMS` before extraction; the course tag does not version the application.
 
 ## Release evidence
 
 - [Release runbook](RELEASING.md) — promotion gates, assets, migration and
   rollback for the course repository.
-- [v0.2.0 notes](releases/v0.2.0.md) — versioned changes and the authoritative
-  GitHub release-status link.
+- [v0.2.0 notes](releases/v0.2.0.md) — previous cut (historical).
 - [Bounded student-pilot report](verification/student-pilot-2026-09-13.md) and
   [JSON receipt](verification/student-pilot-2026-09-13.json) — exact local
   artifacts and observed checks, with private paths and raw logs excluded.
@@ -50,9 +37,8 @@ summarize one release and link back to it; they do not replace the changelog.
 
 Course source, blank templates and generated lesson artifacts belong in Git.
 Learner-edited notebooks, progress, observations and work outputs belong in a
-separate local folder chosen by the learner. A clean clone or fresh CourseWeave
-state directory is the migration boundary; no release script rewrites an old
-workspace.
+separate local folder chosen by the learner. A clean clone is the migration
+boundary; no release script rewrites an old workspace.
 
 Public feedback should contain the smallest useful reproduction. Exclude
 credentials, raw chats, participant content, private project names, machine paths
@@ -63,6 +49,6 @@ production readiness.
 
 The one-click
 [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
-covers native study, optional labs, the CourseWeave route and S13/S14. Submission
-is learner-controlled; neither course route sends telemetry, notebooks, chats or
-the optional observation CSV to GitHub automatically.
+covers native study, optional labs, and S13/S14. Submission is learner-controlled;
+the course sends no telemetry, notebooks, chats or the optional observation CSV
+to GitHub automatically.
