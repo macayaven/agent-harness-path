@@ -17,6 +17,9 @@ CourseWeave packaging).
   `docs/COMPANION.md` (local OpenAI-compatible tutor = override base URL + key;
   lab `--live` uses separate shell `OPENAI_*`).
 - S13/S14 remain unaided.
+- Spell out that `lessons/*.html` is the reader and `lessons/src/` is
+  authoring source (`lessons/README.md`); CI now also runs lab contracts and
+  cassette replay.
 
 ## 0.1.0 — 2026-08-17
 

@@ -34,7 +34,14 @@ uv sync
 
 5. Commit notebooks **without outputs** (`execution_count` null, empty
    `outputs`). If Jupyter wrote outputs, clear them before the commit.
-6. If you changed a SOTA row, open the source URL and confirm it still says what
+6. If you touched `labs/`:
+
+   ```bash
+   uv run python -m unittest labs/test_contracts.py
+   uv run python labs/run.py --all --replay
+   ```
+
+7. If you changed a SOTA row, open the source URL and confirm it still says what
    the Take column claims. Re-date the section header if you refresh the table.
 
 ## Pull requests

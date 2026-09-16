@@ -64,18 +64,23 @@ solutions to someone else's production deliverable.
 │   ├── check_links.py         — relative-link checker for generated HTML
 │   ├── template.html          — page shell (dark CSS, mermaid.js vendored locally)
 │   ├── vendor/                — mermaid@10 UMD build, single file (offline diagrams)
+│   ├── README.md              — HTML is the reader; src/ is authoring source
 │   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
 │   ├── SNN-*.html             — generated lessons, checked in for offline reading
 │   └── videos/SNN-*.mp4       — NotebookLM video overviews, one per lesson, plus
 │                                S00-course-overview.mp4; canonical name = lesson slug
-└── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
+├── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
+├── labs/                      — optional hard path (sNN_*.md protocols, not lessons)
+├── bridges/                   — Cursor companion rungs (sNN.md)
+└── docs/COMPANION.md          — local OpenAI-compatible tutor wiring
 ```
 
 Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
-`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, and `review/` (the
+`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, `.cursor/`, and `review/` (the
 adversarial-review workspace). `uv.lock`, the generated `lessons/*.html`, and
 the vendored mermaid build in `lessons/vendor/` are checked in so everything
-reads offline.
+reads offline. The `SNN` / `sNN` filenames in `lessons/`, `labs/`, and
+`bridges/` are **different artifacts**, not duplicated lesson text.
 
 ## Build and run
 
@@ -85,8 +90,9 @@ reads offline.
 - **Link check:** `uv run python lessons/check_links.py` (after a build).
 - **No product test suite.** Verification is: every notebook runs top-to-bottom
   (`uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb > /dev/null`),
-  the HTML regenerates cleanly, and relative links resolve. CI runs that contract
-  on Python 3.11 and 3.12.
+  the HTML regenerates cleanly, relative links resolve, `labs/test_contracts.py`
+  passes, and `uv run python labs/run.py --all --replay` is green. CI runs that
+  contract on Python 3.11 and 3.12.
 - **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
 - **Notebooks run on Python 3.11+, standard library only** — `itertools`, `json`,
   `random`, `statistics`. Zero network, zero API keys, zero cost. This is a hard

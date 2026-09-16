@@ -83,18 +83,20 @@ Lab `--live` uses shell `OPENAI_*` and is a different credential than Cursor cha
 
 ## Repository layout
 
-- `lessons/index.html` — the course entry point (generated from `lessons/src/`;
-  rebuild with `uv run python lessons/build.py`)
-- `lessons/S01…S14-*.html` — the lessons; `lessons/videos/` — one video overview per
-  session (NotebookLM-generated; previews/reviews, not substitutes for the work)
-- `notebooks/` — twelve runnable toys (S1–S12), committed output-free
-- `labs/` — optional hard path: complete trivia host, cassettes, `run.py`
-- `bridges/` — one authored rung per session for the Cursor companion
-- `.cursor/rules/ahp-companion.mdc` — learner tutor rule (do not take the course for them)
-- `docs/COMPANION.md` — wire Cursor (or Continue) to a local OpenAI-compatible model
-- `AGENTS.md` — contributor conventions; learners follow the companion rule first
-- `COURSE-MAP.md` — coverage map
-- `CONTRIBUTING.md` — how to propose a change
+There is **one** lesson book. `lessons/*.html` is what you read;
+`lessons/src/*.md` is what authors edit (`uv run python lessons/build.py`).
+See [lessons/README.md](lessons/README.md).
+
+| Path | Role |
+| --- | --- |
+| `lessons/SNN-*.html` | Learner lesson (plus `videos/`) |
+| `lessons/src/SNN-*.md` | Authoring source — not a second course |
+| `notebooks/sNN_*.ipynb` | Stdlib toy (S01–S12) |
+| `labs/sNN_*.md` | Optional hard-path protocol, not lesson text |
+| `bridges/sNN.md` | Cursor companion rung |
+| `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
+| `docs/COMPANION.md` | Local OpenAI-compatible tutor wiring |
+| `AGENTS.md` / `COURSE-MAP.md` / `CONTRIBUTING.md` | Contributor map |
 
 ## The toy-domain rule
 

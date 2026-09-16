@@ -1,5 +1,8 @@
 # Labs — optional hard path
 
+`sNN_*.md` here are **lab protocols**, not a second copy of `lessons/src/`.
+Read the HTML lesson first; open a lab file only if you take the hard path.
+
 Two signed routes. Completing S01–S12 **never** requires a lab.
 
 | Route | What you do | Keys |

@@ -22,6 +22,7 @@ The following are licensed under Creative Commons Attribution 4.0 International
 (`LICENSES/CC-BY-4.0.txt`):
 
 - `lessons/src/` (lesson sources)
+- `lessons/README.md`
 - `lessons/*.html` (generated lessons)
 - `lessons/videos/` (NotebookLM-generated overviews of the lessons)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
