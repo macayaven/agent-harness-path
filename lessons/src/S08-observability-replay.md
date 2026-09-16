@@ -6,8 +6,9 @@ product down, and record/replay cassettes that reproduce a run offline,
 content-identical, with zero model calls — plus what replay can never prove.
 **Time:** ~90 min with the notebook.
 **Prerequisites:** S01 (the loop); S02 (scripted users, fixtures) recommended.
-**Hands-on:** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S08-observability-replay.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s08_observability_replay_toy.ipynb`](../notebooks/s08_observability_replay_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s08_replay.md`](../labs/s08_replay.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S08-observability-replay.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -156,14 +157,19 @@ solution.
 2. **The dead exporter.** Point the tracer at a backend that raises. Predict
    whether the quiz still completes; compare against the unguarded variant.
 3. **Record, then replay.** Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls and a content-identical transcript.
+   Prove zero live model calls, a content-identical transcript, and
+   `assert_exhausted()` — every recorded pair was served, nothing left over.
 4. **Replay as tripwire.** Change one scripted answer, replay the old cassette.
    Predict where it breaks — and what a non-strict replayer would have done
-   instead.
+   instead. A second predict-first in the notebook asks whether strict matching
+   fires on a call that never happens.
 5. **The hunt.** A teammate's "harmless" PR adds a dated header and livelier
    praise. Two live runs now differ; so do two replays of one cassette.
    Localize the nondeterminism from the diff, fix it by injection, and prove
    content-identity end to end.
+
+
+After the notebook, optional hard path: [spans + cassette replay](../labs/s08_replay.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 

@@ -1,6 +1,6 @@
 [project]
 name = "agent-harness-path"
-version = "0.1.1"
+version = "0.3.0"
 description = "The Agent Harness Path: a self-contained course on building, evaluating, and governing LLM agents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,8 +14,14 @@ dependencies = ["jupyterlab>=4.0", "markdown>=3.5"]
 
 [project.urls]
 Homepage = "https://github.com/macayaven/agent-harness-path"
-Documentation = "https://macayaven.github.io/agent-harness-path/"
+Documentation = "https://github.com/macayaven/agent-harness-path"
 Issues = "https://github.com/macayaven/agent-harness-path/issues"
+Changelog = "https://github.com/macayaven/agent-harness-path/blob/main/CHANGELOG.md"
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+diagrams = [
+    "playwright==1.58.0",
+]

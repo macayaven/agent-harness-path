@@ -7,8 +7,9 @@ and why schema-valid is never the same as correct.
 **Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop — the retry
 you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
 score is the same instrument thinking).
-**Hands-on:** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S04-structured-generation.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s04_schema.md`](../labs/s04_schema.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S04-structured-generation.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -130,6 +131,9 @@ to — which is the thing you actually needed to know.
    and `priority` for all five briefs *before* running. Then score agreement
    n/5 and identify which failures the validator structurally cannot see.
 
+
+After the notebook, optional hard path: [round spec + validate-and-retry](../labs/s04_schema.md) — same session, live or cassette. Skip it and the easy path is still complete.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
@@ -137,7 +141,7 @@ to — which is the thing you actually needed to know.
 | Constrained decoding is default on hosted APIs: OpenAI Structured Outputs (`strict: true` + `json_schema` response format; vendor-reported schema adherence ~100% vs <40% unconstrained) ([announcement](https://openai.com/index/introducing-structured-outputs-in-the-api/), [docs](https://platform.openai.com/docs/guides/structured-outputs)) | **adopt** | On routes that support it: buys syntax, never semantics. Note the supported-schema subset (no `allOf`/`if`/`then`, root must be an object) and the refusal/truncation edge cases. |
 | Prompt → validate → retry, industrialized: Instructor wraps pydantic schemas and re-prompts with the validation error, capped by `max_retries` ([github.com/567-labs/instructor](https://github.com/567-labs/instructor)) | **already in this path** | The notebook's loop with plumbing. Build it by hand once — which you just did — and the library becomes legible instead of magical. |
 | Same mechanism in open runtimes: vLLM structured outputs (xgrammar/guidance backends; the `guided_*` params were retired for `structured_outputs` in v0.12) ([docs](https://docs.vllm.ai/en/latest/features/structured_outputs.html)) | **adopt** | When self-hosting: local backends honor JSON-Schema features unevenly. Test your exact schema, and keep the retry loop as the net underneath. |
-| Anthropic Structured Outputs, GA across the Claude API: grammar-constrained `output_config.format` with `type: "json_schema"` plus strict tool use; SDK helpers `client.messages.parse()`/`output_format`; documented on Opus 4.5–5, Sonnet 4.5–5, Haiku 4.5 (also a Bedrock subset and Foundry) ([docs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)) | **newer than this session** | Constrained decoding is now table stakes on every major API. Documented holes: refusals and max_tokens can break schema compliance, and enum casing is not guaranteed. The portable validate-retry fallback still earns its place — for those edges, and for the semantic layer no sampler can fix. |
+| Anthropic Structured Outputs, GA across the Claude API: grammar-constrained `output_config.format` with `type: "json_schema"` plus strict tool use; SDK helpers `client.messages.parse()`/`output_format`; documented on the model list in the compatibility table (it grows — check the docs, don't snapshot names here) ([docs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)) | **newer than this session** | Constrained decoding is now table stakes on every major API. Documented holes: refusals and max_tokens can break schema compliance, and enum casing is not guaranteed. The portable validate-retry fallback still earns its place — for those edges, and for the semantic layer no sampler can fix. |
 | Format restrictions can degrade reasoning: "Let Me Speak Freely?" ([arXiv:2408.02442](https://arxiv.org/abs/2408.02442)) | **recognize** | Think in free text, structure the extraction. If a task's quality drops under a schema, split the call: reason first, emit JSON second. |
 | JSON mode without a schema (`{"type": "json_object"}`) ([docs](https://platform.openai.com/docs/guides/structured-outputs)) | **ignore** | As a reliability strategy: guarantees parseable, not valid — the vendor's own comparison table says schema adherence: "No". Prompt-and-pray with a parser attached. |
 | Schemas became the agent-to-agent contract: MCP tools declare `inputSchema`/`outputSchema` in JSON Schema ([spec 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)) | **recognize** | Your validator skills transfer verbatim. A tool schema is the same contract, one hop further downstream. The spec has moved two revisions since 2025-06-18 (2025-11-25, then 2026-07-28) — pin the version you code against. |

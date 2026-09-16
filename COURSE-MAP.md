@@ -4,8 +4,23 @@ The Agent Harness Path: self-contained HTML lessons and stdlib-only toys,
 entry point `lessons/index.html`. SOTA tables are dated August 2026; re-date a
 lesson's SOTA section when you refresh it.
 
-S01–S12 are the self-contained path (lesson + notebook). S13 and S14 are
-optional protocols the learner applies to a system they already own.
+S01–S12 are the self-contained path (lesson + notebook). Labs in `labs/` are
+optional. S13 and S14 are optional protocols: easy path = a system they already
+own; hard path = `labs/trivia_host/` if they built it.
+
+## Model-layer boundary
+
+The 14-session core teaches the harness around the model call: loops, evals,
+context, boundaries, repair, replay, evidence, budgets, routing, and judge
+calibration. It does not attempt to reproduce model-building or inference courses.
+The optional [six-week study route](lessons/study-plan.html) is an overlay that
+points to authoritative external work from CS336, DeepLearning.AI RLHF,
+DeepLearning.AI vLLM, and the optional Anthropic API course, then defines the
+evidence to bank. It is not a fifteenth session and copies none of those courses'
+materials.
+
+The overlay supports two complementary learning emphases:
+harness/evals/inference-systems depth and model-layer fundamentals depth.
 
 Each entry: the **concept gap** the material fills (what prose-only readings
 don't teach), and the **toy** (runnable, a different domain from a production
@@ -13,7 +28,7 @@ harness).
 
 | S | Lesson + toy | Concept gap | Toy |
 |---|---|---|---|
-| 1 | `lessons/src/S01-agent-loop.md` + `s01_agent_loop_toy.ipynb` | the loop is a `while` around a stateless API | weather-bot loop on a mock model |
+| 1 | `lessons/src/S01-agent-loop.md` + `s01_agent_loop_toy.ipynb` | the loop is a `while` around a stateless API | weather-bot loop on a mock model; optional `labs/s01_loop.md` |
 | 2 | `lessons/src/S02-golden-evals.md` + `s02_scripted_user_eval_toy.ipynb` | eval suite as measurement instrument | scripted user + naive/governed engines + checks |
 | 3 | `lessons/src/S03-context-engineering.md` + `s03_context_engineering_toy.ipynb` | compaction & cache are invisible in prose | growing-conversation simulator: truncation vs summary vs pinning; watch a buried rule die |
 | 4 | `lessons/src/S04-structured-generation.md` + `s04_structured_generation_toy.ipynb` | schema-constrained generation | JSON-schema validator over mock outputs + retry-on-invalid loop |
@@ -32,6 +47,8 @@ harness).
 
 1. Concept must fit in ~20–40 minutes of reading and one diagram.
 2. Toy must be runnable with zero network, zero keys, zero cost, and come from a
-   different domain than a production harness.
+   different domain than a production harness. **This rule binds `notebooks/`.**
+   `labs/` is the documented exception: optional, replay-first, keys never in git,
+   `--live` never in CI. Trivia-domain tools only.
 3. Nothing in it may be paste-ready into a production agent.
 4. SOTA rows use exactly the five status tags in AGENTS.md and link a source.

@@ -1,8 +1,9 @@
 # Take The Agent Harness Path in Cursor
 
-This tree is v0.1.0 lessons and notebooks, plus the optional v0.2.0 hard-path
-`labs/`, plus **session bridges** so a Cursor (or other OpenAI-compatible)
-assistant can stand in the gap between a tiny toy and the trivia-host lab.
+This tree is **v0.3.0**, which supersedes v0.2.0. Lessons and notebooks are the
+v0.2.0 course; `labs/` ships a complete trivia host; **session bridges** let a
+Cursor (or other OpenAI-compatible) assistant stand in the gap between a tiny
+toy and the lab.
 
 You still clone the course. You do not install CourseWeave or JupyterLab as
 the product. Cursor is the window; the companion is chat with a project rule.
@@ -12,8 +13,7 @@ the product. Cursor is the window; the companion is chat with a project rule.
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-git checkout v0.1.1-companion   # this companion cut; or main once published
-GIT_LFS_SKIP_SMUDGE=1           # optional: skip preview videos
+GIT_LFS_SKIP_SMUDGE=1           # optional: skip archived preview videos
 uv sync --frozen                # notebooks + lesson build tooling
 ```
 

@@ -7,12 +7,12 @@ memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
 **Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
-a non-trivial project of your own to ship. **This session is optional.** The
-path's toys are independent; there is no cumulative build waiting to be shipped,
-so "your system" means one you own. Completing S01–S12 does not require S14.
-**Hands-on:** no notebook — the hands-on is your own system, run through the
-protocol below.
-**Video:** [NotebookLM overview](videos/S14-ship-and-pilot.mp4) — auto-generated summary; preview or review, never a substitute for the protocol.
+a non-trivial project of your own to ship — or, if you walked the hard path,
+`labs/trivia_host/`. **This session is optional.** Completing S01–S12 does not
+require S14.
+**Hands-on:** no notebook — the hands-on is your own system (easy) or the trivia
+host (hard), run through the protocol below.
+**Video:** [Gemini Notebook overview](videos/S14-ship-and-pilot.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
 
@@ -42,14 +42,14 @@ against is no longer unseen — it is a tuning case now, and a green rerun on it
 is regression evidence, not acceptance evidence. So the final gate runs on a
 second fixture, a holdout frozen at the same time and never opened during
 fixing. The one move that is actually fatal is editing the fixture to fit — that is
-S02's suite-gaming move at ship scale, with no checker left above you to
+S02's "gaming the check" move at ship scale, with no checker left above you to
 catch it.
 
 ### The second human changes the instrument
 
 You are the least representative user your system will ever have. You know
 what it is for, what it can't do, and — worst of all — what you meant by every
-label on the screen. The second acceptance run is therefore done by someone
+label on the screen. The **pilot** is therefore done by someone
 else: one consenting, trusted adult, under a written protocol.
 
 The protocol page comes first, and it is short on purpose. Four statements:
@@ -103,8 +103,9 @@ eval number, a trace. Procedural and explanatory prose needs no pointer; a
 behavioral or architectural claim with no citation is invention.
 
 Assembly is only possible because the records were written at decision time.
-That is the payoff of the decision log you have kept since the early sessions
-— the architecture-decision-record pattern in its original minimal form
+That is the payoff of the decision log S02 told you to keep — five lines per
+call, written at decision time — the architecture-decision-record pattern in its
+original minimal form
 ([Nygard 2011](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)).
 
 ```mermaid
@@ -156,8 +157,8 @@ run, end to end, with the naive-vs-governed numbers. Two invariants:
 Then, before the tag, one adversarial pass: hand the write-up and the repo to
 the strongest critic available — a frontier model in adversarial mode, or a
 hostile friend — with one instruction: find the unsupported claims. Fix what
-is real; rebut what is not, in writing, next to the claim. This is the S12
-cross-examination muscle pointed at your own evidence.
+is real; rebut what is not, in writing, next to the claim. This is S12's
+label-before-you-see-the-judge discipline pointed at your own evidence.
 
 The tag — v1.0.0 — carries two promises from two different authorities. In
 [semver](https://semver.org) terms, v1.0.0 asserts exactly one thing: a defined
@@ -170,9 +171,14 @@ meaningful against a frozen baseline.
 
 ## The protocol
 
-Run this against your own system, in order. Each step has an artifact and a
-"done when" line. Reorder them and the later steps inherit the earlier steps'
-contamination.
+**Hard path:** the system is `labs/trivia_host/`. The public artifact is a
+**fixture** run (naïve vs engine numbers from `labs/run.py`), never a real-round
+transcript. The pilot is one consenting adult playing trivia.
+
+**Easy path:** run this against your own system, in order.
+
+Each step has an artifact and a "done when" line. Reorder them and the later
+steps inherit the earlier steps' contamination.
 
 1. **Freeze the fixtures and the criteria.** Choose end-to-end scenarios the
    system has never processed — not golden-set tasks you tuned against: one
@@ -222,14 +228,14 @@ contamination.
 
 | Development | Status | Take |
 |---|---|---|
-| Architecture decision records are the standard lightweight form for keeping rationale ([Nygard 2011](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions); [Fowler](https://martinfowler.com/bliki/ArchitectureDecisionRecord.html)) | **already in this path** | Your decision log is an ADR log. Assembly works because the records exist — this session is the payoff. |
+| Architecture decision records are the standard lightweight form for keeping rationale ([Nygard 2011](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions); [Fowler](https://martinfowler.com/bliki/ArchitectureDecisionRecord.html)) | **already in this path** | S02 assigned the log; this session assembles it. Your decision log is an ADR log. |
 | Blameless postmortem culture ([Google SRE book, ch. 15](https://sre.google/sre-book/postmortem-culture/); [SRE workbook](https://sre.google/workbook/postmortem-culture/)) | **adopt** | The failures doc is a postmortem anthology. Steal the structure: what happened, contributing factors, what fixed it, what remains. |
 | Discount usability testing: a handful of users surfaces most showstoppers ([Nielsen](https://www.nngroup.com/articles/why-you-only-need-to-test-with-5-users/)) | **recognize** | Legitimizes n=1 as a smoke detector — and states its limit. Do not let it talk you into calling a pilot a study. |
 | "Do things that don't scale" ([Graham](https://paulgraham.com/ds.html)) | **recognize** | The pilot is deliberately concierge-scale. Unscalable honesty now beats scalable theater later. |
 | System cards as the lab-scale public evidence artifact ([OpenAI o1 system card](https://arxiv.org/abs/2412.16720)) | **recognize** | Labs publish measured behavior, failures included, as the artifact of record. Your fixture-run write-up is the solo-scale version. |
 | Semantic versioning as the public contract behind a v1.0.0 tag ([semver.org, spec 2.0.0](https://semver.org/spec/v2.0.0.html)) | **adopt** | SemVer 1.0.0 asserts exactly one thing: a defined public API exists. The tag's second promise — the evidence covers the claims — is this path's own release policy, not SemVer's. Cheap to type, expensive to mean. |
 | EU AI Act staged application, as amended by the Digital Omnibus ([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj), in force 27 Jul 2026): Art 5 prohibitions and GPAI obligations already apply; Art 50 transparency from 2 Aug 2026 — with a transition carve-out: for certain pre-existing systems under Art 50(2) as amended, the transparency obligations apply from **2 Dec 2026**; Annex III high-risk obligations postponed to **2 Dec 2027**, Annex I product-embedded to **2 Aug 2028** | **newer than this session** | A one-trusted-adult pilot is etiquette; a scaled pilot is a compliance question with dates that keep moving — check them at ship time. Your protocol page is the seed of that file — parked, deliberately. |
-| Simulated "users" as a stand-in for the pilot ([arXiv:2601.17087](https://www.arxiv.org/pdf/2601.17087), cited at S02) | **ignore** | S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation. |
+| Simulated "users" as a stand-in for the pilot ([arXiv:2601.17087](https://arxiv.org/abs/2601.17087), cited at S02) | **ignore** | S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation. |
 
 ## Annotated readings
 

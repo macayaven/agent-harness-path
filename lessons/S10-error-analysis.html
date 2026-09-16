@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S09-evidence-reports.html">&larr; Prev: S09-evidence-reports — The report a depleted reader can trust</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S11-budgets-routing.html">Next: S11-budgets-routing — Budgets, routing, and the privacy boundary &rarr;</a></span></nav>
-<h1>S10-error-analysis — Failures into taxonomy, taxonomy into evals</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S09-evidence-reports.html#the-theory-in-depth">&larr; Prev: S09-evidence-reports — The report a depleted reader can trust</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S11-budgets-routing.html#the-theory-in-depth">Next: S11-budgets-routing — Budgets, routing, and the privacy boundary &rarr;</a></span></nav>
+<h1 id="s10-error-analysis-failures-into-taxonomy-taxonomy-into-evals">S10-error-analysis — Failures into taxonomy, taxonomy into evals</h1>
 <p><strong>What this teaches:</strong> open-coded error analysis — reading failure traces into
 free-form notes, grouping the notes into a labeled taxonomy, prioritizing by
 frequency × severity, and converting each recurrent category into a new eval
@@ -108,33 +116,25 @@ task. The eval suite grows from observed failures, not from imagination.
 <strong>Time:</strong> ~90 min with the notebook.
 <strong>Prerequisites:</strong> S02 (eval suites as measurement instruments); S08 (you need
 traces you can actually pull).
-<strong>Hands-on:</strong> <a href="../notebooks/s10_error_analysis_toy.ipynb"><code>notebooks/s10_error_analysis_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S10-error-analysis.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<strong>Hands-on (easy):</strong> <a href="../notebooks/s10_error_analysis_toy.ipynb"><code>notebooks/s10_error_analysis_toy.ipynb</code></a>
+<strong>Hands-on (hard, optional):</strong> <a href="../labs/s10_errors.md"><code>labs/s10_errors.md</code></a> — after the notebook.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S10-error-analysis.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>The number says something is wrong; reading says what</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-number-says-something-is-wrong-reading-says-what">The number says something is wrong; reading says what</h3>
 <p>Your suite says 6/9. Two different systems can both score 6/9 — one failing on
 safety, one failing on formatting — and the number cannot tell them apart. The
 aggregate is a smoke detector: it tells you there is a fire and roughly where,
 but it never tells you what is burning. Treating the pass rate as the result —
 tuning whatever moves it — is how teams ship a green suite over a red product.</p>
 <p>Error analysis is the discipline that converts the number into work. The loop:</p>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    T[failure traces&lt;br/&gt;the raw material] --&gt; O[open coding&lt;br/&gt;one free-form note per trace]
-    O --&gt; A[axial coding&lt;br/&gt;group notes, name categories]
-    A --&gt; Q[count × severity&lt;br/&gt;priority ranking]
-    Q --&gt; F[fix the top categories]
-    Q --&gt; E[new eval tasks&lt;br/&gt;one per recurrent category]
-    F --&gt; R[new traces]
-    R --&gt; T
-    E --&gt; S[the suite grows&lt;br/&gt;denominator changes]
-</pre>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S10-error-analysis.svg" alt="Failure traces move through open coding, axial grouping, and count-by-severity ranking; top categories drive focused fixes and recurrent categories add eval tasks whose results produce new traces." style="--diagram-width: 1336px" /></div>
 <p>Hamel's field data is blunt about the ordering: the most common mistake in
 applied AI is <em>skipping</em> this loop and going straight from "the number moved"
 to a fix (<a href="https://hamel.dev/blog/posts/field-guide/">hamel.dev/blog/posts/field-guide</a>).
 A fix chosen before the failures are classified fixes the loudest bug, not the
 most frequent one.</p>
-<h3>Open coding: let the data name the categories</h3>
+<h3 id="open-coding-let-the-data-name-the-categories">Open coding: let the data name the categories</h3>
 <p>The method is borrowed, not invented. Qualitative researchers have done
 "categories from data" since Glaser &amp; Strauss's grounded theory (1967):
 <strong>open coding</strong> means reading each artifact and writing a free-form note about
@@ -161,7 +161,7 @@ a novel failure gets misfiled or dumped in "other." The diagnostic: <strong>if
 will guess the categories before reading, then watch the data grade your
 guess. Most people's guesses miss at least one bucket that turns out to be
 real.</p>
-<h3>Axial coding: a taxonomy that earns its rows</h3>
+<h3 id="axial-coding-a-taxonomy-that-earns-its-rows">Axial coding: a taxonomy that earns its rows</h3>
 <p><strong>Axial coding</strong> is the grouping pass: lay the notes side by side, cluster the
 ones describing the same underlying cause, and name each cluster. The output
 is a taxonomy — a table whose every row has to earn its place:</p>
@@ -201,9 +201,9 @@ is a taxonomy — a table whose every row has to earn its place:</p>
 </ul>
 <p>Then quantify. Count traces per category, and weight by severity, because raw
 frequency lies about priority: a safety-miss at n=2 can outrank a formatting
-annoyance at n=8 — but you need both columns to <em>argue</em> that, and the argument
+annoyance at n=5 — but you need both columns to <em>argue</em> that, and the argument
 is what a reviewer or teammate will demand.</p>
-<h3>From taxonomy to eval growth</h3>
+<h3 id="from-taxonomy-to-eval-growth">From taxonomy to eval growth</h3>
 <p>A prioritized taxonomy is a to-do list with two kinds of items:</p>
 <ul>
 <li><strong>Fixes</strong>, for the top categories — prompt changes, guardrails, tool changes.</li>
@@ -230,7 +230,7 @@ substitute they file confidently and wrong, and the notebook will show you the
 ugliest version of that: the auto-filer undercounting the safety bucket
 exactly where it has no keywords. The failure you have not imagined has no
 keyword and no cluster centroid yet.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <p>Run top-to-bottom. Write predictions as comments <em>before</em> running each
 experiment — including your guessed categories, which the data will grade.</p>
 <ol>
@@ -249,7 +249,8 @@ experiment — including your guessed categories, which the data will grade.</p>
    fails the task, the patched engine passes it, the bare fixture fails the
    check.</li>
 </ol>
-<h2>State of the art (as of August 2026)</h2>
+<p>After the notebook, optional hard path: <a href="../labs/s10_errors.md">taxonomy and +3 tasks</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -270,7 +271,7 @@ experiment — including your guessed categories, which the data will grade.</p>
 <td>Applied AI rediscovered a social-science method. Categories emerge from data; "constant comparison" is your axial pass.</td>
 </tr>
 <tr>
-<td>MAST: a research-grade failure taxonomy for multi-agent systems — 14 failure modes in 3 categories, open-coded from 200+ annotated traces (<a href="https://arxiv.org/abs/2503.13657">arXiv:2503.13657</a>)</td>
+<td>MAST: a research-grade failure taxonomy for multi-agent systems — 14 failure modes in 3 categories, built from analysis of 150 traces; MAST-Data is the 1600+-trace annotated dataset (<a href="https://arxiv.org/abs/2503.13657">arXiv:2503.13657</a>)</td>
 <td><strong>recognize</strong></td>
 <td>A published top-down taxonomy to sanity-check your bottom-up one against. Note they built it with the same process you just practiced, at annotation-team scale.</td>
 </tr>
@@ -280,18 +281,18 @@ experiment — including your guessed categories, which the data will grade.</p>
 <td>Where your new tasks land. The denominator change is the mechanism working, not scope creep.</td>
 </tr>
 <tr>
-<td>Platforms productize the loop: LangSmith auto-clusters traces for analysis (<a href="https://www.langchain.com/langsmith/observability">langchain.com/langsmith/observability</a>); Langfuse's academy teaches the manual version (<a href="https://langfuse.com/academy/monitoring/error-analysis">langfuse.com/academy/monitoring/error-analysis</a>)</td>
+<td>Platforms productize the loop: LangSmith auto-clusters traces for analysis (<a href="https://docs.smith.langchain.com/observability">LangSmith observability docs</a>); Langfuse's academy teaches the manual version (<a href="https://langfuse.com/academy/monitoring/error-analysis">langfuse.com/academy/monitoring/error-analysis</a>)</td>
 <td><strong>recognize</strong></td>
 <td>Clustering is triage for the reading queue — ordering, not replacement. The vendors' own teaching material still starts with "read the traces."</td>
 </tr>
 <tr>
 <td>Fully automated failure discovery: pipelines promising taxonomies and fresh evals with zero human trace-reading</td>
 <td><strong>ignore</strong></td>
-<td>The failure you haven't imagined has no keyword and no cluster centroid. Skipping the reading skips the product.</td>
+<td>The failure you haven't imagined has no keyword and no cluster centroid (<a href="https://hamel.dev/blog/posts/field-guide/">Hamel, Field Guide</a>). Skipping the reading skips the product.</td>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/field-guide/">A Field Guide to Rapidly Improving AI Products</a>
   (Mar 2025).</strong> The primary source. Extract: the open/axial two-phase loop,
@@ -304,7 +305,8 @@ experiment — including your guessed categories, which the data will grade.</p>
   abstraction over it. Extract the interception technique — and the attitude.</li>
 <li><strong>Cemri et al., <a href="https://arxiv.org/abs/2503.13657">Why Do Multi-Agent LLM Systems Fail?</a>
   (2025).</strong> Skim the 14-mode taxonomy table, then read how they built it:
-  200+ traces, six expert annotators, open coding. Extract the category
+  analysis of 150 traces, then MAST-Data (1600+ annotated traces). Extract the
+  category
   boundaries — where do they split what you'd merge? — as calibration for
   your own taxonomy's grain size.</li>
 <li><strong><a href="https://en.wikipedia.org/wiki/Grounded_theory">Grounded theory</a> (overview).</strong>
@@ -313,7 +315,7 @@ experiment — including your guessed categories, which the data will grade.</p>
   themselves get revised. That is why your taxonomy is a draft until the last
   trace is read.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>Fix first, classify later.</strong> You read one ugly trace and patch it
   immediately. That is whack-a-mole: you fixed the loudest bug, and the
@@ -333,7 +335,7 @@ experiment — including your guessed categories, which the data will grade.</p>
   toy demonstrates, they undercount exactly the bucket where being wrong
   hurts most. Use them to order the queue, never to close it.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why must category names come from the data instead of a pre-made list?</summary>
 A list written before reading encodes what you already believe. Failures you
 haven't imagined — the ones the exercise exists to find — get forced into
@@ -356,22 +358,18 @@ regression guard. The suite growing bottom-up from failures *is* the
 mechanism — today's failure-grown task is tomorrow's merge gate, and the
 denominator is the ledger of failure modes you now provably watch.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S11 — Budgets, routing, and the privacy boundary:</strong> your suite now grows
 every time the product fails in a new way, which means you will run it often —
 and every run costs tokens, latency, and a decision about which model serves
 which phase. Next session makes those costs policy: budgets that stop a
 meandering run, routing that sends each phase to the cheapest model that holds
 the number, and a privacy boundary enforced as code rather than intention.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S09-evidence-reports.html">&larr; Prev: S09-evidence-reports — The report a depleted reader can trust</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S11-budgets-routing.html">Next: S11-budgets-routing — Budgets, routing, and the privacy boundary &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S09-evidence-reports.html#the-theory-in-depth">&larr; Prev: S09-evidence-reports — The report a depleted reader can trust</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S11-budgets-routing.html#the-theory-in-depth">Next: S11-budgets-routing — Budgets, routing, and the privacy boundary &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S10-error-analysis.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

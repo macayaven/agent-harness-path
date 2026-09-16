@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
-<h1>S06-layered-detection — Safety detection in layers, policy as data</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html#the-theory-in-depth">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html#the-theory-in-depth">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
+<h1 id="s06-layered-detection-safety-detection-in-layers-policy-as-data">S06-layered-detection — Safety detection in layers, policy as data</h1>
 <p><strong>What this teaches:</strong> why a safety rule in the prompt is advice rather than
 enforcement, how a layered detection pipeline (deterministic floor + classifier
 pass) routes untrusted input, why the policy belongs in data rather than code,
@@ -108,11 +116,12 @@ and why the false-trigger count is a product metric you record, not noise you
 tolerate.
 <strong>Time:</strong> ~75 min with the notebook.
 <strong>Prerequisites:</strong> S01 (the loop), S02 (golden sets, the fixture invariant).
-<strong>Hands-on:</strong> <a href="../notebooks/s06_layered_detection_toy.ipynb"><code>notebooks/s06_layered_detection_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S06-layered-detection.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<strong>Hands-on (easy):</strong> <a href="../notebooks/s06_layered_detection_toy.ipynb"><code>notebooks/s06_layered_detection_toy.ipynb</code></a>
+<strong>Hands-on (hard, optional):</strong> <a href="../labs/s06_policy.md"><code>labs/s06_policy.md</code></a> — after the notebook.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S06-layered-detection.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>The threat model: untrusted text meets a system that can act</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-threat-model-untrusted-text-meets-a-system-that-can-act">The threat model: untrusted text meets a system that can act</h3>
 <p>Your agent reads text you don't control — user turns, files, retrieved
 documents, tool results — and it can act: reply, call tools, store data. Simon
 Willison's <em>lethal trifecta</em> names the dangerous combination: access to private
@@ -131,7 +140,7 @@ though nobody attacked it.</p>
 <p>Both cases share a shape: some inputs must never reach the model unscreened,
 and some inputs must change what the system does next — deterministically, in
 code, not at the model's discretion.</p>
-<h3>Why one detector is never enough</h3>
+<h3 id="why-one-detector-is-never-enough">Why one detector is never enough</h3>
 <p>Each detection mechanism sits at a different point in cost, recall, and
 auditability:</p>
 <table>
@@ -191,19 +200,8 @@ credentials, tool authorization, egress control, and careful output handling
 (the model's output stays untrusted text for everything that consumes it).
 Detection routes traffic and buys time; the boundary is what the system
 structurally cannot do.</p>
-<h3>The mechanism: ordered layers, union for the catastrophic class</h3>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart TD
-    U[untrusted message&lt;br/&gt;user turn, file, tool result] --&gt; S{injection screen&lt;br/&gt;deterministic}
-    S -- hit --&gt; B[blocked:&lt;br/&gt;the model never sees it]
-    S -- clean --&gt; F{keyword floor&lt;br/&gt;cheap regex}
-    F -- hit --&gt; H[handoff]
-    F -- miss --&gt; C{classifier&lt;br/&gt;confidence &gt;= threshold?}
-    C -- yes --&gt; H
-    C -- no --&gt; G{scope governor}
-    G -- out of scope --&gt; R[refuse + signpost]
-    G -- in scope --&gt; M[model generates a reply]
-    H --&gt; T[break character&lt;br/&gt;contacts as data&lt;br/&gt;terminal state]
-</pre>
+<h3 id="the-mechanism-ordered-layers-union-for-the-catastrophic-class">The mechanism: ordered layers, union for the catastrophic class</h3>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S06-layered-detection.svg" alt="Untrusted text passes through an injection screen, keyword floor, classifier, and scope governor in order; dangerous input is blocked or handed off before any in-scope reply reaches the model." style="--diagram-width: 634px" /></div>
 <p>The invariants live in the ordering and the exit:</p>
 <ul>
 <li><strong>Deterministic screens run first.</strong> Nothing model-shaped touches the text
@@ -218,7 +216,7 @@ structurally cannot do.</p>
   interaction in a distinct, honest stop state. A detector that fires and lets
   the conversation continue is telemetry, not safety.</li>
 </ul>
-<h3>Policy as data</h3>
+<h3 id="policy-as-data">Policy as data</h3>
 <p>Everything the pipeline uses — the keyword list, the threshold, the handoff
 text, the emergency contacts, the scope markers — lives in configuration, not
 code. Three reasons. First, the policy changes faster than the code: new
@@ -230,7 +228,7 @@ liability wearing a safety costume. Third, an explicit config forces the honesty
 question: what is <em>enforced in code</em>, and what is merely <em>documented as a
 limitation</em>? Both belong in the record. Pretending the second category is the
 first is how safety claims rot.</p>
-<h3>The false-trigger counter is a product metric</h3>
+<h3 id="the-false-trigger-counter-is-a-product-metric">The false-trigger counter is a product metric</h3>
 <p>Over-triggering is a real defect: a tool that routes "the previous guests smoked
 indoors, we want a refund" to an emergency handoff is unusable, and it trains
 users to dismiss the real handoffs. So the benign half of the fixture bank
@@ -241,7 +239,7 @@ adversarially: you write the red-team list <em>before</em> you trust the policy,
 every attack you think of becomes a permanent regression row (S02's fixture
 invariant applies here unchanged — a pipeline that flags nothing asserts
 nothing).</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <p>Run the notebook top-to-bottom. Write each prediction down before running the
 cell — a prediction you didn't write is a prediction you'll retroactively fix.</p>
 <ol>
@@ -261,7 +259,8 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
    solution cell. Whatever escapes becomes a permanent bank row and a documented
    limitation.</li>
 </ol>
-<h2>State of the art (as of August 2026)</h2>
+<p>After the notebook, optional hard path: <a href="../labs/s06_policy.md">toy quiz policy (no clinical protocol)</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -282,7 +281,7 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <td>The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering).</td>
 </tr>
 <tr>
-<td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/">OWASP GenAI Security Project</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
+<td>OWASP Top 10 for Agentic Applications (Dec 2025, <a href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/">OWASP Top 10 for Agentic Applications for 2026</a>) — goal hijack, tool misuse, identity &amp; privilege abuse, agentic supply chain, unexpected code execution, memory &amp; context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10)</td>
 <td><strong>recognize</strong></td>
 <td>The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them.</td>
 </tr>
@@ -309,11 +308,11 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <tr>
 <td>"Safety system prompt" products — one mega-instruction that forbids everything</td>
 <td><strong>ignore</strong></td>
-<td>Prompt-level prohibition is advice to the model, not enforcement. If the whole story is a prompt, there is no detection.</td>
+<td>Prompt-level prohibition is advice to the model, not enforcement (<a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">Willison, lethal trifecta</a>). If the whole story is a prompt, there is no detection.</td>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Willison, <a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/">The lethal trifecta</a>.</strong>
   Extract: the three legs stated precisely (private data, untrusted content,
@@ -325,13 +324,14 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 <li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/how-we-contain-claude">How we contain Claude across products</a>
   (May 2026).</strong> Extract: which layers are environmental versus model-level, why
   battle-tested primitives beat custom controls, and the approval-fatigue data —
-  a ~93% approval rate is a detection layer failing quietly.</li>
+  a ~93% approval rate is humans rubber-stamping permission prompts, not a
+  detection layer failing quietly.</li>
 <li><strong>Sharma et al., <a href="https://arxiv.org/abs/2501.18837">Constitutional Classifiers</a>.</strong>
   Extract: the input/output classifier split, and the evaluation protocol — they
   define "universal jailbreak" up front and measure in red-team hours survived.
   That is what a defensible detection claim looks like.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"The system prompt says never to..."</strong> Instructions are text the model
   weighs against other text, including the attacker's. Enforcement lives in code
@@ -353,7 +353,7 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
   policy is written measures your implementation; the attack list written first
   measures your imagination. You need both, in that order.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why can't the system prompt carry the safety rule?</summary>
 The model reads instructions and untrusted content as one token stream and
 cannot reliably privilege yours — that is why prompt injection is OWASP LLM01.
@@ -378,21 +378,17 @@ verified against official sources and dated), end in a distinct terminal state.
 Must not: continue the interaction, soften the trigger into a log line, or let
 the model improvise the handoff text.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S07-repair-loop:</strong> detection handles the catastrophic tail, but most
 turn-level defects aren't catastrophic — a character break, a generic reply, a
 register slip. Those don't deserve a terminal state; they deserve a bounded
 retry with a curated failure view. Next session builds that loop, plus the
 honest stop reasons for when it runs out.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S05-consent-gate.html#the-theory-in-depth">&larr; Prev: S05-consent-gate — Approval that actually constrains execution</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S07-repair-loop.html#the-theory-in-depth">Next: S07-repair-loop — Bounded self-repair &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S06-layered-detection.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

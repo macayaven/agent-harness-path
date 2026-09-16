@@ -20,6 +20,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install tooling
         run: uv sync --frozen
+      - name: Native adapter, content and static freshness contracts
+        run: uv run python -m unittest discover -s tests -v
       - name: Execute notebooks
         run: |
           set -euo pipefail
@@ -31,9 +33,18 @@ jobs:
         run: |
           uv run python lessons/build.py
           git diff --exit-code -- lessons/*.html lessons/index.html
+          if git status --porcelain -- lessons/ | grep -E '^\?\? lessons/.*\.html'; then
+            echo "untracked generated HTML under lessons/" >&2
+            exit 1
+          fi
+      - name: Check SOTA rows have source URLs
+        run: uv run python lessons/check_sota_urls.py
       - name: Check relative links
         run: uv run python lessons/check_links.py
       - name: Test lab contracts
         run: uv run python -m unittest labs/test_contracts.py
       - name: Replay labs against committed cassettes
         run: uv run python labs/run.py --all --replay
+      - name: Check http links
+        if: matrix.python-version == '3.11'
+        run: uv run python lessons/check_links.py --http

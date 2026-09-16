@@ -6,8 +6,9 @@ outcome, route tables as policy-as-data justified by a measured number, and a
 privacy boundary that *refuses to run* when misconfigured.
 **Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (defensible comparisons — the routing argument *is* a delta table).
-**Hands-on:** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S11-budgets-routing.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s11_budgets.md`](../labs/s11_budgets.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S11-budgets-routing.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -28,12 +29,16 @@ completion, not a crash.
 
 One refinement to "crossing the budget ends the run": a meter that reads only
 *after* each call is a **soft stop** — the crossing call was already dispatched
-and paid for. A hard budget reads **ahead**: a pre-dispatch estimate or
-reservation (if `spent + estimate` would cross, the call never runs), or
-provider/gateway caps that reject the over-budget call at the account level
-(the LiteLLM row below). The toy implements the pre-dispatch gate: each route
-prices its own call, and a call that would cross the budget is never dispatched
-— the post-call meter stays as the ledger, the estimate is the gate.
+and paid for. A pre-dispatch estimate improves that bound: if `spent + estimate`
+would cross, the call never runs. But an estimate makes a hard ceiling only when
+it is a conservative upper bound. If it underestimates, the allowed call can
+cross the limit; post-call accounting stops subsequent calls but cannot undo
+that spend. A hard ceiling requires a conservative pre-dispatch reservation or
+another upstream limit verified to refuse the crossing call. Gateway budget
+checks may instead account completed usage and reject only subsequent calls, so
+verify their semantics rather than assuming they prevent overshoot. The
+deterministic toy can price each route's call exactly before dispatch, so its
+estimate is the gate and its post-call meter is the ledger.
 
 Two properties matter:
 
@@ -77,7 +82,7 @@ flowchart LR
     S --> M[meter: tokens x price,<br/>latency, wall time]
     L --> M
     C --> M
-    M -- breach --> B[stop_reason=budget_exceeded]
+    M -->|"would breach"| B[stop_reason=budget_exceeded]
 ```
 
 ### The privacy boundary is a routing invariant, enforced as refusal
@@ -138,9 +143,9 @@ variance the toy deliberately does not have.
 ## Exercises (in the notebook, predict first)
 
 1. **The meandering run.** A summarize phase with no convergence criterion on
-   all-large routes. First run it with no budget and watch it price itself into
-   the pass cap. Then set `budget_usd = 0.25`: predict the exact pass it dies
-   on, and the `stop_reason`.
+   all-large routes, `max_passes=12`. Predict: with no budget, what `stop_reason`
+   ends the run and what does it cost? With `budget_usd = 0.25`, after *exactly
+   which* summarize pass does the run die, and with what `stop_reason`?
 2. **Measure the tiers.** Run the 3-month suite under `all-small` and
    `all-large`. Predict, per phase, where small holds its number — then read the
    pass/cost table.
@@ -153,10 +158,13 @@ variance the toy deliberately does not have.
    subtle case: `format` (metadata) on cloud runs fine — and costs more than
    local. Allowed ≠ wise.
 5. **The voice budget.** From the latency models in the suite logs, compute the
-   median per-turn latency across the three fixtures for all-large vs routed
-   against a 1000 ms budget. Predict
-   which fits before running; then name the phase that dominates the losing
-   config and the fix the boundary still permits.
+   three-fixture median per-turn latency for all-large vs routed against a
+   1000 ms budget. Predict which configs fit before running; name the phase
+   that dominates the loser; and what the *forbidden* fix (frontier cloud for
+   content) would have cost in latency.
+
+
+After the notebook, optional hard path: [budgets and a hard route refusal](../labs/s11_budgets.md) — same session, live or cassette. Skip it and the easy path is still complete.
 
 ## State of the art (as of August 2026)
 
@@ -165,7 +173,7 @@ variance the toy deliberately does not have.
 | Model families ship in explicit cost/latency tiers ([Anthropic model overview](https://docs.anthropic.com/en/docs/about-claude/models/overview), [OpenAI models](https://platform.openai.com/docs/models)) | **already in this path** | The price/quality spread across tiers is the raw material your route table arbitrages. |
 | FrugalGPT: cascade cheap→strong with a learned accept/escalate scorer; matched GPT-4 at up to 98% lower cost on narrow tasks ([arXiv:2305.05176](https://arxiv.org/abs/2305.05176)) | **recognize** | The academic root of routing. The 98% figure is task-specific and widely over-quoted; the durable idea is paying for the big model only on the fraction that needs it. |
 | RouteLLM: routers trained on preference data choose strong-vs-weak per query; >2× cost cuts at fixed quality ([arXiv:2406.18665](https://arxiv.org/abs/2406.18665), [LMSYS blog](https://lmsys.org/blog/2024-07-01-routellm/)) | **newer than this session** | The learned generalization of your hand-built table. Revisit when phase count or traffic makes hand-tuning the bottleneck — it still starts from a measured quality/cost frontier. |
-| Gateway-enforced budgets: LiteLLM proxy per-key/tag `max_budget` + `budget_duration`, rejects over-budget calls with `budget_exceeded` ([docs](https://docs.litellm.ai/docs/proxy/provider_budget_routing)) | **adopt** | Belt and suspenders: proxy caps protect the account, the in-harness meter protects the run. Even mature proxies ship stale-counter budget bugs ([issue #31292](https://github.com/BerriAI/litellm/issues/31292)) — your own meter is the audit of last resort. |
+| Gateway budget checks: LiteLLM Budget Routing rejects requests after recorded spend is over the configured budget ([docs](https://docs.litellm.ai/docs/proxy/provider_budget_routing)) | **adopt** | This controls subsequent calls; the documented first call updates spend and can overshoot before the next rejection. Verify scope and accounting timing in the deployed gateway; the in-harness ledger remains an independent audit. |
 | Routing by data sensitivity at production scale: Apple Intelligence on-device by default, escalating to stateless, attested Private Cloud Compute ([security guide](https://security.apple.com/documentation/private-cloud-compute), [launch post](https://security.apple.com/blog/private-cloud-compute/)) | **recognize** | Content *does* leave the device on the PCC path — prompt and parameters travel end-to-end encrypted to attested nodes. What the architecture guarantees is narrower and verifiable: stateless constrained processing, deletion after the response, inaccessibility to Apple (admin staff included), non-targetability, verifiable transparency. Your validation-time refusal is the same idea at toy scale. |
 | Voice latency as a product spec: GPT-4o answers audio in ~232 ms (avg 320 ms), "similar to human response time in conversation"; the chained pipeline it replaced ran 2.8–5.4 s ([OpenAI, Hello GPT-4o](https://openai.com/index/hello-gpt-4o/)) | **already in this path** | These numbers anchor Exercise 5; the human base rate underneath is Stivers et al. 2009 ([PNAS](https://doi.org/10.1073/pnas.0903616106)). |
 | Managed auto-routers that pick a model per prompt for you ([OpenRouter Auto Router](https://openrouter.ai/docs/guides/routing/routers/auto-router)) | **ignore** | For now: a learned black box between you and your bill — and per-request model changes are a reproducibility hazard for evals. Build and measure the table by hand first; then you'll know what to audit the service against. |
@@ -235,7 +243,7 @@ latency gets engineered (streaming, precompute) rather than bought.</details>
 
 ## What's next
 
-**S12 — Adversarial review and judge calibration:** the routed pipeline still
+**S12 — Judge calibration:** the routed pipeline still
 leans on model judgment — a critic reading transcripts, a judge scoring quality.
 Next session measures the judges themselves: seeded-defect detection rates,
 false positives, and agreement against your own hand labels, because an

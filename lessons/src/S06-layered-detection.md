@@ -7,8 +7,9 @@ and why the false-trigger count is a product metric you record, not noise you
 tolerate.
 **Time:** ~75 min with the notebook.
 **Prerequisites:** S01 (the loop), S02 (golden sets, the fixture invariant).
-**Hands-on:** [`notebooks/s06_layered_detection_toy.ipynb`](../notebooks/s06_layered_detection_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S06-layered-detection.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s06_layered_detection_toy.ipynb`](../notebooks/s06_layered_detection_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s06_policy.md`](../labs/s06_policy.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S06-layered-detection.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -145,18 +146,21 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
    solution cell. Whatever escapes becomes a permanent bank row and a documented
    limitation.
 
+
+After the notebook, optional hard path: [toy quiz policy (no clinical protocol)](../labs/s06_policy.md) — same session, live or cassette. Skip it and the easy path is still complete.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
 | Lethal-trifecta framing ([Willison, Jun 2025](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)) | **already in this path** | The threat model this session sits in. Remove a leg; don't ask the model to be careful. |
 | OWASP Top 10 for LLM Applications, 2026 list (the current release) — prompt injection still first, excessive agency up from sixth to third ([OWASP GenAI LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)) | **already in this path** | The shared vocabulary. The injection screen and the scope governor map to those two entries (LLM01 and LLM06 in the 2025 numbering). |
-| OWASP Top 10 for Agentic Applications (Dec 2025, [OWASP GenAI Security Project](https://genai.owasp.org/)) — goal hijack, tool misuse, identity & privilege abuse, agentic supply chain, unexpected code execution, memory & context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10) | **recognize** | The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them. |
+| OWASP Top 10 for Agentic Applications (Dec 2025, [OWASP Top 10 for Agentic Applications for 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/)) — goal hijack, tool misuse, identity & privilege abuse, agentic supply chain, unexpected code execution, memory & context poisoning, insecure inter-agent communication, cascading failures, human-agent trust exploitation, rogue agents (ASI01–ASI10) | **recognize** | The agent-era successor vocabulary: the LLM list names the input problems, this one names what autonomous systems do with them. |
 | Anthropic's production containment write-up, [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude) (May 2026) | **recognize** | The industrial version of this session: environment isolation first, model-level controls second — and the admission that the software you build yourself is often the weakest layer. |
 | Constitutional classifiers — input *and* output classifier shells, stress-tested with 3,000+ hours of human red-teaming ([arXiv:2501.18837](https://arxiv.org/abs/2501.18837)) | **recognize** | The research-grade union-of-layers design. Note the metric: red-team hours survived, not a benchmark score. |
 | Small open injection classifiers — [Llama Prompt Guard 2](https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M) (86M/22M, benign/malicious), [ProtectAI's DeBERTa injection model](https://huggingface.co/protectai/deberta-v3-base-prompt-injection) | **adopt** | When you leave the toy, this is what replaces the notebook's readable-rules classifier: a real, local, free layer 2. You still tune its threshold on *your* bank. |
 | Guardrail toolkits and managed layers — [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails), OpenAI's [moderation endpoint](https://platform.openai.com/docs/guides/moderation) | **recognize** | The same layered pattern, packaged. A vendor default is not your operating point — validate the layer against your own fixture bank. |
-| "Safety system prompt" products — one mega-instruction that forbids everything | **ignore** | Prompt-level prohibition is advice to the model, not enforcement. If the whole story is a prompt, there is no detection. |
+| "Safety system prompt" products — one mega-instruction that forbids everything | **ignore** | Prompt-level prohibition is advice to the model, not enforcement ([Willison, lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)). If the whole story is a prompt, there is no detection. |
 
 ## Annotated readings
 
@@ -170,7 +174,8 @@ cell — a prediction you didn't write is a prediction you'll retroactively fix.
 - **Anthropic, [How we contain Claude across products](https://www.anthropic.com/engineering/how-we-contain-claude)
   (May 2026).** Extract: which layers are environmental versus model-level, why
   battle-tested primitives beat custom controls, and the approval-fatigue data —
-  a ~93% approval rate is a detection layer failing quietly.
+  a ~93% approval rate is humans rubber-stamping permission prompts, not a
+  detection layer failing quietly.
 - **Sharma et al., [Constitutional Classifiers](https://arxiv.org/abs/2501.18837).**
   Extract: the input/output classifier split, and the evaluation protocol — they
   define "universal jailbreak" up front and measure in red-team hours survived.

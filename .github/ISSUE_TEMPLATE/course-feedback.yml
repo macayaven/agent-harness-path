@@ -1,0 +1,49 @@
+name: Course feedback
+description: Report friction in the course route, guidance, or optional CourseWeave experience
+title: "[feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share a short, non-sensitive observation. Do not include credentials, raw chats, participant content, private repository names, local filesystem paths, or your full notebook/work product. Use SECURITY.md for security reports.
+  - type: dropdown
+    id: route
+    attributes:
+      label: Route
+      options:
+        - Native lesson and notebook
+        - Optional hard lab replay
+        - Optional hard lab live mode
+        - Optional CourseWeave experience
+        - S13 or S14 protocol
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Course location
+      description: Give a public session/activity or repository-relative path, such as S06 self-check or notebooks/s06_layered_detection_toy.ipynb.
+    validations:
+      required: true
+  - type: textarea
+    id: observation
+    attributes:
+      label: What you tried, expected, and observed
+      description: Paraphrase the minimum needed to reproduce the friction; mark unavailable evidence as unavailable.
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Recovery or suggested change
+      description: Say how you recovered, or what would have made the next step clearer.
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Public-report check
+      options:
+        - label: I removed credentials, raw chats, participant content, private paths, and private project details.
+          required: true

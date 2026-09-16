@@ -1,13 +1,16 @@
 # Security policy
 
-This repository is educational material: static HTML lessons and Python-stdlib
-notebooks that do not talk to a network and do not handle secrets. There is no
-production service, no authentication, and no user data.
+This repository is educational material: static HTML lessons, Python-stdlib
+notebooks that do not talk to a network, and an optional `labs/` hard path
+whose CI job is cassette `--replay` only. There is no production service and
+no authentication.
 
 ## What to report
 
 - A notebook that, as committed, performs network I/O, reads credentials, or
   executes something beyond the labeled teaching examples.
+- A committed `labs/` cassette, report, or source file that contains a live
+  API key or a real-round transcript.
 - A lesson that includes a real secret, a live credential, or instructions that
   would cause a reader to disable a real safety control in production without
   saying so.

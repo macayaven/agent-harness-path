@@ -6,8 +6,9 @@ loop is capped, and the run always ends with an honest stop reason. Same-context
 retry is not repair; it is resampling.
 **Time:** ~60 min with the notebook. **Prerequisites:** S01 (the loop), S02
 (deterministic checks).
-**Hands-on:** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S07-repair-loop.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s07_repair.md`](../labs/s07_repair.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S07-repair-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -145,6 +146,9 @@ running the solution cell.
 5. The contradictory spec: predict the stop reason. Confirm nothing ships. Then
    answer: which failure classes must never enter the loop at all?
 
+
+After the notebook, optional hard path: [bounded regeneration](../labs/s07_repair.md) — same session, live or cassette. Skip it and the easy path is still complete.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
@@ -157,7 +161,7 @@ running the solution cell.
 | Productized reask loops: validators with `on_fail=REASK`, failure message re-prompted verbatim, `num_reasks` cap ([Guardrails AI docs](https://guardrailsai.com/guardrails/docs/concepts/validator_on_fail_actions)) | **adopt** | If already using the framework: exactly this loop, off the shelf — including the cap. Read the failure-pattern reports before chaining validators; reask costs multiply. |
 | Make format defects unrepresentable instead of repairing them (`strict: true` schemas, constrained decoding — [OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | S04's point, restated as triage: construction beats repair for structure. Reserve the repair loop for semantic defects construction can't reach. |
 | Calibrated LLM judge as the scorer for semantic defects ([judge playbook](https://hamel.dev/blog/posts/llm-judge/)) | **newer than this session** | S12 calibrates judges against human labels. Until then: deterministic checks carry pass/fail; a judge's verdict is uncalibrated input, not a stop condition. |
-| "Reflect on your answer" prompt-only retries | **ignore** | Intrinsic self-correction with zero new signal — measured to degrade. The failure view exists precisely because this doesn't work. |
+| "Reflect on your answer" prompt-only retries | **ignore** | Intrinsic self-correction with zero new signal — measured to degrade ([Huang et al.](https://arxiv.org/abs/2310.01798)). The failure view exists precisely because this doesn't work. |
 
 ## Annotated readings
 

@@ -47,7 +47,6 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
-    pre.mermaid { background: var(--surface); text-align: center; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -95,12 +94,21 @@
       color: var(--muted);
       font-size: .82rem;
     }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   </style>
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S03-context-engineering.html">&larr; Prev: S03-context-engineering — governance decays across compaction</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S05-consent-gate.html">Next: S05-consent-gate — Approval that actually constrains execution &rarr;</a></span></nav>
-<h1>S04-structured-generation — The schema is the contract</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S03-context-engineering.html#the-theory-in-depth">&larr; Prev: S03-context-engineering — governance decays across compaction</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S05-consent-gate.html#the-theory-in-depth">Next: S05-consent-gate — Approval that actually constrains execution &rarr;</a></span></nav>
+<h1 id="s04-structured-generation-the-schema-is-the-contract">S04-structured-generation — The schema is the contract</h1>
 <p><strong>What this teaches:</strong> getting data instead of prose out of a model is a contract
 problem, not a prompting problem — the three ways to get structure (prompt-and-pray,
 validate-and-retry, constrained decoding), why the validator is the real interface,
@@ -108,11 +116,12 @@ and why schema-valid is never the same as correct.
 <strong>Time:</strong> ~75 min with the notebook. <strong>Prerequisites:</strong> S01 (the loop — the retry
 you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
 score is the same instrument thinking).
-<strong>Hands-on:</strong> <a href="../notebooks/s04_structured_generation_toy.ipynb"><code>notebooks/s04_structured_generation_toy.ipynb</code></a>
-<strong>Video:</strong> <a href="videos/S04-structured-generation.mp4">NotebookLM overview</a> — auto-generated summary; preview or review, never a substitute for the notebook.</p>
+<strong>Hands-on (easy):</strong> <a href="../notebooks/s04_structured_generation_toy.ipynb"><code>notebooks/s04_structured_generation_toy.ipynb</code></a>
+<strong>Hands-on (hard, optional):</strong> <a href="../labs/s04_schema.md"><code>labs/s04_schema.md</code></a> — after the notebook.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S04-structured-generation.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
 <hr />
-<h2>The theory in depth</h2>
-<h3>Free text is a liability at a system boundary</h3>
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="free-text-is-a-liability-at-a-system-boundary">Free text is a liability at a system boundary</h3>
 <p>An agent that only talks to humans can afford prose. The moment its output feeds
 <em>code</em> — a scheduler, a database, a gate, another agent — prose becomes a parsing
 problem, and parsing prose with regex and hope is where reliability goes to die.
@@ -123,7 +132,7 @@ plan out, with a machine check between the model and everything downstream.</p>
 it; a model's JSON deserves exactly the same suspicion. The validator is not a
 nicety bolted on after generation — it <em>is</em> the interface. The prompt is a request;
 the schema is the contract; the validator is the enforcement.</p>
-<h3>Three ways to get structure — one of them is a guarantee</h3>
+<h3 id="three-ways-to-get-structure-one-of-them-is-a-guarantee">Three ways to get structure — one of them is a guarantee</h3>
 <table>
 <thead>
 <tr>
@@ -167,19 +176,8 @@ number precisely: 100% <em>schema adherence</em>, not 100% correct.</p>
 <p>The second row is the portable fallback — it works on every backend, including
 local models whose <code>response_format</code> support is partial or absent. The first row
 is not a strategy; it's the naive baseline you measure the other two against.</p>
-<h3>The retry loop is S01's loop with the validator as the tool</h3>
-<pre class="mermaid" role="img" aria-label="Architecture diagram — described in surrounding prose">flowchart LR
-    B[brief + schema in prompt] --&gt; C[call model]
-    C --&gt; P{json.loads&lt;br/&gt;parses?}
-    P -- no --&gt; F1[append PARSE ERROR&lt;br/&gt;as a user message]
-    P -- yes --&gt; V{validator&lt;br/&gt;errors?}
-    V -- yes --&gt; F2[append error list&lt;br/&gt;as a user message]
-    V -- no --&gt; D[validated spec&lt;br/&gt;loop exits]
-    F1 --&gt; R{attempts left?}
-    F2 --&gt; R
-    R -- yes --&gt; C
-    R -- no --&gt; X[escalate: suspect the schema,&lt;br/&gt;not only the model]
-</pre>
+<h3 id="the-retry-loop-is-s01s-loop-with-the-validator-as-the-tool">The retry loop is S01's loop with the validator as the tool</h3>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S04-structured-generation.svg" alt="A structured-generation loop parses model output, validates parsed JSON, and returns specific errors for another bounded attempt; validated output exits, while exhausted attempts escalate the schema." style="--diagram-width: 1484px" /></div>
 <p>Two things to notice. First, there are <strong>two failure classes</strong> — output that
 doesn't parse (fences, prose, truncated) and output that parses but violates the
 schema (missing field, wrong type, out-of-enum value). They share a loop but not a
@@ -187,7 +185,7 @@ fix, and the feedback text should say which class fired. Second, this is S01's
 machinery verbatim: the error goes <em>into the messages</em> (errors are messages, not
 exceptions), and the attempt cap is a harness property, exactly like <code>max_turns</code>.
 An uncapped retry loop is a non-terminating agent wearing a trench coat.</p>
-<h3>The schema is a product document, not a DTO</h3>
+<h3 id="the-schema-is-a-product-document-not-a-dto">The schema is a product document, not a DTO</h3>
 <p>A schema for LLM output is not a data-transfer object you derive from a struct.
 Every keyword is a decision with a failure mode attached:</p>
 <ul>
@@ -212,7 +210,7 @@ Every keyword is a decision with a failure mode attached:</p>
 (<a href="https://json-schema.org/learn/getting-started-step-by-step">json-schema.org</a>) —
 worth knowing exists, and worth reaching for via the real library once your subset
 starts growing its tenth keyword.</p>
-<h3>Valid ≠ correct</h3>
+<h3 id="valid-correct">Valid ≠ correct</h3>
 <p>Conformance is checkable by code. Correctness is checkable only against the world.
 Two failure classes sail through any validator:</p>
 <ul>
@@ -226,7 +224,7 @@ blinded human labels on <em>n</em> briefs, recorded <em>before</em> generation, 
 score, n/5. Until you've run it, "it validates" is a claim about syntax. After
 you've run it, you know which semantic errors your schema is structurally blind
 to — which is the thing you actually needed to know.</p>
-<h2>Exercises (in the notebook, predict first)</h2>
+<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
 <ol>
 <li>Run the naive extractor over the five briefs. <strong>Predict first:</strong> for each
    brief, does the raw output fail to parse, parse but fail validation, or pass?
@@ -242,7 +240,8 @@ to — which is the thing you actually needed to know.</p>
    and <code>priority</code> for all five briefs <em>before</em> running. Then score agreement
    n/5 and identify which failures the validator structurally cannot see.</li>
 </ol>
-<h2>State of the art (as of August 2026)</h2>
+<p>After the notebook, optional hard path: <a href="../labs/s04_schema.md">round spec + validate-and-retry</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -268,7 +267,7 @@ to — which is the thing you actually needed to know.</p>
 <td>When self-hosting: local backends honor JSON-Schema features unevenly. Test your exact schema, and keep the retry loop as the net underneath.</td>
 </tr>
 <tr>
-<td>Anthropic Structured Outputs, GA across the Claude API: grammar-constrained <code>output_config.format</code> with <code>type: "json_schema"</code> plus strict tool use; SDK helpers <code>client.messages.parse()</code>/<code>output_format</code>; documented on Opus 4.5–5, Sonnet 4.5–5, Haiku 4.5 (also a Bedrock subset and Foundry) (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">docs</a>)</td>
+<td>Anthropic Structured Outputs, GA across the Claude API: grammar-constrained <code>output_config.format</code> with <code>type: "json_schema"</code> plus strict tool use; SDK helpers <code>client.messages.parse()</code>/<code>output_format</code>; documented on the model list in the compatibility table (it grows — check the docs, don't snapshot names here) (<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">docs</a>)</td>
 <td><strong>newer than this session</strong></td>
 <td>Constrained decoding is now table stakes on every major API. Documented holes: refusals and max_tokens can break schema compliance, and enum casing is not guaranteed. The portable validate-retry fallback still earns its place — for those edges, and for the semantic layer no sampler can fix.</td>
 </tr>
@@ -289,7 +288,7 @@ to — which is the thing you actually needed to know.</p>
 </tr>
 </tbody>
 </table>
-<h2>Annotated readings</h2>
+<h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>OpenAI, <a href="https://platform.openai.com/docs/guides/structured-outputs">Structured Outputs guide</a>.</strong>
   Extract three things: the supported-schema subset (so you know which JSON-Schema
@@ -310,7 +309,7 @@ to — which is the thing you actually needed to know.</p>
   are capped, and pydantic is the validator. It's the loop you built, with
   production plumbing — read it to recognize your own machinery, not to copy it.</li>
 </ul>
-<h2>Misconceptions and failure modes</h2>
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><strong>"JSON mode means structured output."</strong> Parseable is not schema-valid. JSON
   mode guarantees the braces balance; it says nothing about your fields. The
@@ -328,7 +327,7 @@ to — which is the thing you actually needed to know.</p>
   channel in the system: re-prompt content for the model, schema-quality telemetry
   for you. Log them; don't swallow them.</li>
 </ul>
-<h2>Self-check</h2>
+<h2 id="self-check">Self-check</h2>
 <details><summary>Why does "please reply in JSON" fail even with a perfect prompt?</summary>
 Because a prompt constrains nothing at sampling time — it's a request, and the model
 can always drift into fences, preamble prose, or a dropped field. Only constrained
@@ -352,22 +351,18 @@ Valid ≠ correct: wrong in-enum values and hallucinated unconstrained fields
 validate fine. Semantic agreement needs blinded human labels and an n/5 score —
 and before any spec *executes*, a human gate, which is S05.</details>
 
-<h2>What's next</h2>
+<h2 id="whats-next">What's next</h2>
 <p><strong>S05-consent-gate:</strong> you can now produce a validated, machine-readable plan — and
 a schema minimal enough that a human can actually read it. S05 puts that human in
 the loop: a gate that renders the spec for explicit approval before anything
 executes, where "every field earns its place" becomes "every field earns its render
 in under 60 seconds." Validation told you the plan is well-formed; it cannot tell
 you the plan should run.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S03-context-engineering.html">&larr; Prev: S03-context-engineering — governance decays across compaction</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S05-consent-gate.html">Next: S05-consent-gate — Approval that actually constrains execution &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S03-context-engineering.html#the-theory-in-depth">&larr; Prev: S03-context-engineering — governance decays across compaction</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S05-consent-gate.html#the-theory-in-depth">Next: S05-consent-gate — Approval that actually constrains execution &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S04-structured-generation.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<script src="./vendor/mermaid.min.js"></script>
-<script>
-  mermaid.initialize({ startOnLoad: true, theme: "dark" });
-</script>
 </body>
 </html>

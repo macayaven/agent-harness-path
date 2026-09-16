@@ -9,8 +9,9 @@ dashboard.
 **Time:** ~90 min with the notebook. **Prerequisites:** S02 (two-tier checks —
 the judged column was labeled *uncalibrated* there; this session removes the
 label, with a rate attached).
-**Hands-on:** [`notebooks/s12_judge_calibration_toy.ipynb`](../notebooks/s12_judge_calibration_toy.ipynb)
-**Video:** [NotebookLM overview](videos/S12-judge-calibration.mp4) — auto-generated summary; preview or review, never a substitute for the notebook.
+**Hands-on (easy):** [`notebooks/s12_judge_calibration_toy.ipynb`](../notebooks/s12_judge_calibration_toy.ipynb)
+**Hands-on (hard, optional):** [`labs/s12_judge.md`](../labs/s12_judge.md) — after the notebook.
+**Video:** [Gemini Notebook overview](videos/S12-judge-calibration.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
 
 ---
 
@@ -156,17 +157,20 @@ a property of the pair, not of either alone.
    reaches 10/10 — then inspect the one residual disagreement and explain why
    that class defeats any judge without ground truth.
 
+
+After the notebook, optional hard path: [critic calibration](../labs/s12_judge.md) — same session, live or cassette. Skip it and the easy path is still complete.
+
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
 | Binary verdicts, ~30-example calibration, critique-shadowing the domain expert, judge agreement as its own reported number ([Hamel, Creating an LLM Judge](https://hamel.dev/blog/posts/llm-judge/)) | **already in this path** | The notebook is exactly this loop, shrunk to 10 items so you can see every cell of the confusion table. |
 | The bias catalog your judge inherits — position, verbosity, self-preference ([Zheng et al., arXiv:2306.05685](https://arxiv.org/abs/2306.05685)); criteria drift while grading ([Shankar et al., arXiv:2404.12272](https://arxiv.org/abs/2404.12272)) | **already in this path** | The toy's judge v1 ships with the verbosity bias built in; criteria drift is why the rubric gets frozen between calibration rounds, not during. |
-| Reviewer routes with their own context: critics read, they never write to the user ([Anthropic, How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)) | **adopt** | A reviewer that shares the writer's context shares the writer's blind spots. Separation is what makes the critic's findings evidence. |
+| Separate-context reviewers: subagents that don't share the writer's window ([Anthropic, How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)) | **adopt** | The paper supports isolated reviewer context, not a separate "reviewer route" as a product primitive — that framing is this path's. A critic that shares the writer's window shares the writer's blind spots. |
 | G-Eval: chain-of-thought, form-filling rubric scoring ([Liu et al., arXiv:2303.16634](https://arxiv.org/abs/2303.16634)) | **recognize** | The influential ancestor of every rubric judge; its own authors flagged bias toward LLM-generated text. Practice has since moved from 1–5 scales to binary verdicts — scales hide disagreement in the middle. |
 | Open-weight specialized judge models ([Prometheus 2, arXiv:2405.01535](https://arxiv.org/abs/2405.01535)) | **recognize** | A judge you can version, diff, and run offline. Specialization is still not agreement with *your* rubric — calibrate it like anything else. |
 | Meta-evaluation benchmarks for judges ([JudgeBench, arXiv:2410.12784](https://arxiv.org/abs/2410.12784)) | **newer than this session** | Useful when shopping among judge models. Your own hand-labeled transcripts remain the final word — a benchmark measures judges in general, not on your data. |
-| "A frontier model is judge enough, no calibration needed" | **ignore** | Model strength is not agreement with your rubric. The measurement exists precisely to replace that assumption. |
+| "A frontier model is judge enough, no calibration needed" | **ignore** | Model strength is not agreement with your rubric ([Hamel, Creating an LLM Judge](https://hamel.dev/blog/posts/llm-judge/)). The measurement exists precisely to replace that assumption. |
 
 ## Annotated readings
 
@@ -233,7 +237,6 @@ The aggregate hides the failure; the strata name it.</details>
 ## What's next
 
 **S13-rebuild-from-memory (optional lab):** S01–S12 is the self-contained path.
-If you own a non-trivial system and want the closed-book audit, S13 turns the
-instrument on you: rebuild the core from memory, no assistant, then diff against
-the original. The forgot-list you write afterward is the honest inventory of
-what you actually own. Skip it if you do not yet have a system to audit.
+If you walked the hard path, the audit target is `labs/trivia_host/loop.py`
+against this suite. Otherwise: a non-trivial system you own. Skip it if you do
+not yet have a system to audit.
