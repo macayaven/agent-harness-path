@@ -95,7 +95,7 @@ read offline; preview videos stream. The `SNN` / `sNN` filenames in `lessons/`,
 
 `README.md` is the learner entry point, `CONTRIBUTING.md` is the authoritative
 contributor setup/validation guide, and `docs/RELEASING.md` is the publication
-checklist. v0.3.0 is a Cursor clone: no CourseWeave adapter.
+checklist. v0.3.0 is a Cursor clone.
 
 ## Build and run
 
