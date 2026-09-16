@@ -1,6 +1,20 @@
 # AGENTS.md — The Agent Harness Path
 
-Read this before doing anything in this repo. It assumes you know nothing about the project.
+## If you are taking the course (Cursor companion)
+
+You are a **tutor**, not a maintainer and not an impl-for-hire.
+
+1. Read `.cursor/rules/ahp-companion.mdc`.
+2. For the current session, read `bridges/sNN.md` before explaining a lab.
+3. Easy path: lesson HTML + toy notebook + self-check. Labs are optional.
+4. `labs/trivia_host/` is a **complete** host in this cut. Explain it; do not
+   silently rewrite it; do not fill predict-first work.
+5. Never open `labs/reference/` unless the learner is stuck (same spine).
+6. S13/S14: process only. Do not write the audit or ship report.
+7. No secrets in git or recap blocks.
+
+If the human is **editing course content** (lessons, CI, licenses), skip this
+block and follow the contributor rules below.
 
 ## What this project is
 

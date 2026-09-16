@@ -8,6 +8,7 @@ The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
 - `notebooks/` (toy notebooks)
+- `labs/**/*.py` (hard-path client, runner, trivia host, evals, reference)
 - `lessons/build.py`, `lessons/check_links.py`, `lessons/template.html`
 - `pyproject.toml`, `uv.lock`
 - `.github/` (CI, issue and PR templates)
@@ -24,7 +25,8 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `lessons/*.html` (generated lessons)
 - `lessons/videos/` (NotebookLM-generated overviews of the lessons)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `review/`
+  `CHANGELOG.md`, `review/`, `docs/`, `bridges/`
+- `labs/**/*.md` (hard-path protocols and lab docs)
 
 SPDX-License-Identifier: CC-BY-4.0
 

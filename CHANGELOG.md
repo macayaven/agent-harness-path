@@ -2,6 +2,22 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## 0.1.1-companion — 2026-09-16
+
+Companion learning cut on top of **v0.1.0** (not a replacement of v0.2.0's
+CourseWeave packaging).
+
+- Keep v0.1.0 lessons and stdlib notebooks.
+- Add the v0.2.0 optional hard path (`labs/`) with a **complete**
+  `trivia_host/` (same spine as `labs/reference/`), so `--replay` runs without
+  filling stubs.
+- Add `bridges/s01.md`–`s14.md`: authored toy→lab context, wire envelopes,
+  predict-first, and assistant do/don't.
+- Add Cursor learner rule `.cursor/rules/ahp-companion.mdc` and
+  `docs/COMPANION.md` (local OpenAI-compatible tutor = override base URL + key;
+  lab `--live` uses separate shell `OPENAI_*`).
+- S13/S14 remain unaided.
+
 ## 0.1.0 — 2026-08-17
 
 Public release.
