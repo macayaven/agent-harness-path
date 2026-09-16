@@ -95,8 +95,7 @@ read offline; preview videos stream. The `SNN` / `sNN` filenames in `lessons/`,
 
 `README.md` is the learner entry point, `CONTRIBUTING.md` is the authoritative
 contributor setup/validation guide, and `docs/RELEASING.md` is the publication
-checklist. v0.3.0 supersedes the v0.2.0 CourseWeave taking path; keep adapter
-detail in `study/COURSEWEAVE-PILOT.md` rather than duplicating it.
+checklist. v0.3.0 is a Cursor clone: no CourseWeave adapter.
 
 ## Build and run
 
@@ -168,9 +167,6 @@ repository.
 
 ### Public documentation conventions
 
-- Treat course releases and CourseWeave application releases as independent.
-  The public CourseWeave `v0.1.0` wheel is not compatible with this schema-v2
-  manifest; do not invent an asset URL or describe a local pilot wheel as public.
 - Keep `CHANGELOG.md` reader-focused and preserve released history. Draft release
   notes may name the recommended next version, but `Unreleased` receives no date
   until the release exists.

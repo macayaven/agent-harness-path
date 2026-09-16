@@ -1,5 +1,5 @@
 name: Course feedback
-description: Report friction in the course route, guidance, or optional CourseWeave experience
+description: Report friction in the course route or guidance
 title: "[feedback] "
 labels: ["feedback"]
 body:
@@ -15,7 +15,6 @@ body:
         - Native lesson and notebook
         - Optional hard lab replay
         - Optional hard lab live mode
-        - Optional CourseWeave experience
         - S13 or S14 protocol
     validations:
       required: true

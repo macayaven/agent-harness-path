@@ -2,10 +2,8 @@
 
 A self-contained course on **building, evaluating, and governing LLM agents** —
 twelve notebook sessions plus two optional apply-to-your-system protocols (S13
-rebuild audit, S14 ship & pilot). **v0.3.0 supersedes v0.2.0.** The supported
-way to take the course is this clone in **Cursor**, with session bridges and a
-complete trivia host. The v0.2.0 CourseWeave bundle remains an optional adapter;
-it is not the learner product.
+rebuild audit, S14 ship & pilot). **v0.3.0 supersedes v0.2.0.** Take it in
+**Cursor**: this clone, session bridges, and a complete trivia host.
 
 The default core notebook path is zero network, zero API keys, zero cost: every
 "model" in the notebooks is a plain Python function you can read. An **optional
@@ -100,11 +98,6 @@ not need Git LFS. The notebooks are Python standard library only — the venv
 supplies just the tooling (`jupyterlab` to run them, `markdown` to render the
 lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
 
-v0.2.0 shipped an optional CourseWeave macOS bundle for the same curriculum
-manifest. That route is superseded here; keep
-[study/COURSEWEAVE-PILOT.md](study/COURSEWEAVE-PILOT.md) only if you still need
-the adapter contract.
-
 ## Repository layout
 
 There is **one** lesson book. `lessons/*.html` is what you read;
@@ -139,8 +132,8 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 
 1. Use the one-click
    [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
-   for setup or study friction. Submission is deliberate; the course and
-   CourseWeave send no telemetry or files to GitHub. Include the public
+   for setup or study friction. Submission is deliberate; the course sends no
+   telemetry or files to GitHub. Include the public
    session/activity, what you tried, expected and observed, and any recovery.
    Remove credentials, raw chats, participant content, private project details,
    local paths and full notebook/work products.
@@ -157,8 +150,7 @@ The [documentation map](docs/README.md) separates learner, contributor, pilot an
 release material. The [release runbook](docs/RELEASING.md) records publication
 gates. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
 and [pilot receipt](docs/verification/student-pilot-2026-09-13.md) remain
-historical evidence about named artifacts, not a claim that CourseWeave is the
-current taking path.
+historical evidence about named artifacts.
 
 ## License
 
@@ -171,10 +163,3 @@ Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated wi
 Google Gemini Notebook; Google's marks in those files are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.
-
-These course licenses permit reuse, including commercial reuse, subject to their
-terms. The optional **CourseWeave application** is licensed separately under
-PolyForm Shield 1.0.0: it is source available, with restrictions on providing
-competing products. Its [licensing guide](https://github.com/macayaven/courseweave/blob/main/docs/LICENSING.md)
-explains study, evaluation and product-use boundaries. That platform license does
-not replace this course's licenses or claim ownership of your work.

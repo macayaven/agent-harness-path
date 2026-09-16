@@ -20,7 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install tooling
         run: uv sync --frozen
-      - name: Native adapter, content and static freshness contracts
+      - name: Content and static freshness contracts
         run: uv run python -m unittest discover -s tests -v
       - name: Execute notebooks
         run: |

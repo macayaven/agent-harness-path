@@ -5,8 +5,8 @@ v0.2.0 course; `labs/` ships a complete trivia host; **session bridges** let a
 Cursor (or other OpenAI-compatible) assistant stand in the gap between a tiny
 toy and the lab.
 
-You still clone the course. You do not install CourseWeave or JupyterLab as
-the product. Cursor is the window; the companion is chat with a project rule.
+You still clone the course. Cursor is the window; the companion is chat with a
+project rule. JupyterLab is optional notebook tooling, not the product.
 
 ## 1. Open the course
 

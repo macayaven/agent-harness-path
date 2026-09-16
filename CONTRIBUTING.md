@@ -84,10 +84,10 @@ refactor). Maintainers will reject:
 `CODE_OF_CONDUCT.md`. Report CoC issues via GitHub issues (maintainers will
 convert to private if needed) or email macayaven@gmail.com.
 
-## Course adapter and static diagrams
+## Static diagrams
 
-Run `uv run python -m unittest discover -s tests -v` for native adapter/content
-checks (also run in CI). Original notebook cells are protected by a checked-in
+Run `uv run python -m unittest discover -s tests -v` for content and static
+freshness checks (also run in CI). Original notebook cells are protected by a checked-in
 semantic hash receipt; add learner attempt cells without changing original IDs,
 sources, metadata or outputs. Execute notebooks after edits as above.
 
@@ -113,32 +113,14 @@ vendor, renderer, config, lock and SVG hashes. Ordinary builds fail on stale has
 renderer/font host; cross-OS/font determinism is **not** claimed. CI performs the
 portable source/asset freshness checks, not a false cross-host byte equivalence
 claim. Inspect regenerated diagrams visually and retain their meaningful text
-alternatives. CourseWeave's reader uses those committed assets; never relax its
-scripts-disabled boundary to render Mermaid in the browser.
-
-Real compatibility is a separate mandatory installed-artifact check, with no
-conditional sibling skip:
-
-```bash
-/absolute/path/courseweave-pilot-env/bin/python -I scripts/verify_courseweave.py
-```
-
-Use the final wheel, not an editable install. See study/COURSEWEAVE-PILOT.md for the
-explicit launcher/kernel/state interface and the platform-owned installed browser,
-provider and kernel isolation acceptance beyond this read-only contract check.
-
-This check is required only when evaluating a supplied compatible CourseWeave
-asset. The public CourseWeave `v0.1.0` wheel cannot read this schema-v2 course, and
-there is currently no public URL for the compatible pilot wheel. Do not make a
-course pull request depend on a private machine path or an unpublished asset.
+alternatives. Generated HTML stays script-free; do not add in-browser Mermaid.
 
 ## Documentation and releases
 
 [docs/README.md](docs/README.md) maps the public documentation and names its
 authoritative sources. Keep setup commands in this file and link to them instead
 of duplicating variants. Use [docs/RELEASING.md](docs/RELEASING.md) for the course
-release process. Course tags and CourseWeave package versions are independent;
-never label a local platform artifact as a public dependency.
+release process.
 
 Documentation-only changes still require the unit suite, clean lesson rebuild,
 relative-link check and SOTA source check. Execute notebooks or replay labs when

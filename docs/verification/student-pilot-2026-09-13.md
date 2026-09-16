@@ -12,7 +12,8 @@ This is a maintainer-recorded acceptance of the exact local pilot listed below. 
 | Platform wheel SHA256 | `1bd186b07af5d3a89b6c77dbce1cccfb3cef1fe76f91aa40dec8e2c4f361e923` |
 | Verification source | `46b2b45e6f60c3e6a0121343836e4d849886cba2` |
 
-The tested wheel still carries metadata version `0.1.0`; the publicly released CourseWeave `v0.1.0` wheel is a different, incompatible artifact. A distinct public version and an exact-artifact release check are required before distributing this integration. See [release preparation](../RELEASING.md) and [the CourseWeave setup boundary](../../study/COURSEWEAVE-PILOT.md).
+The tested wheel still carries metadata version `0.1.0`. This record is
+historical v0.2.0-era evidence. See [release preparation](../RELEASING.md).
 
 ## Per-module evidence
 

@@ -2,7 +2,7 @@
 """Offline learner starter. Edit the two functions after writing your prediction.
 
 Reports attempted outputs, never a learning grade; no network, imports from the
-course or CourseWeave, rubric access, execution of model text, or file writes.
+course runtime, rubric access, execution of model text, or file writes.
 """
 import argparse
 import json

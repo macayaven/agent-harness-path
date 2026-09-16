@@ -4,12 +4,12 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## 0.3.0 — 2026-09-16
 
-Supersedes **v0.2.0**. The supported taking path is this clone in Cursor, with
-authored session bridges and a complete trivia host. The v0.2.0 CourseWeave
-bundle is no longer the learner product; the schema-v2 manifest and adapter
-files remain for compatibility.
+Supersedes **v0.2.0**. Take the course in Cursor, with authored session bridges
+and a complete trivia host. CourseWeave packaging from v0.2.0 is removed.
 
 - Keep v0.2.0 lessons, notebooks, labs contracts, study overlay, and CI.
+- Remove `courseweave.json`, the adapter launcher, and CourseWeave study/pilot
+  docs. This cut is a clone plus Cursor, not an application host.
 - Ship a **complete** `labs/trivia_host/` (same spine as `labs/reference/`), so
   `--replay` runs without filling stubs.
 - Add `bridges/s01.md`–`s14.md`, `.cursor/rules/ahp-companion.mdc`, and

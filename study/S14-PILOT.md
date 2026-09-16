@@ -12,8 +12,8 @@ Let them use the system end-to-end while you stay quiet. Do not steer them past 
 
 ## After the pilot
 
-Keep the actual reaction, in their words and with permission, in your private local evidence. A compliment alone is not evidence of usability; preserve hesitations and failures too. In CourseWeave, record only a non-sensitive summary and the location of private evidence. Do not paste real-session content into assistant chats or publish it in the repository.
+Keep the actual reaction, in their words and with permission, in your private local evidence. A compliment alone is not evidence of usability; preserve hesitations and failures too. Record only a non-sensitive summary and the location of private evidence. Do not paste real-session content into assistant chats or publish it in the repository.
 
-Return to **Assemble evidence and review the claim** after the sitting ends. Assemble architecture and failure documents from existing artifacts, retain the worst number and remaining limitations, and use **only fixtures** for the public write-up or recording. Resolve adversarial objections before any tag or public claim. Those are deliberate actions in your own project, not automatic CourseWeave operations.
+Return to **Assemble evidence and review the claim** after the sitting ends. Assemble architecture and failure documents from existing artifacts, retain the worst number and remaining limitations, and use **only fixtures** for the public write-up or recording. Resolve adversarial objections before any tag or public claim. Those are deliberate actions in your own project.
 
 One human pilot can expose showstoppers. It does not establish their absence, general readiness, compliance or learning gains. Leave missing results missing. A planned session, synthetic acceptance record or assistant response must never be described as a completed human pilot.

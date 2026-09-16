@@ -30,7 +30,6 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `labs/**/*.md` (hard-path protocols and lab docs)
 - `bridges/` (Cursor companion rungs)
 - `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
-- `courseweave.json` (authored curriculum and learning guidance)
 - `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
   `CHANGELOG.md`, `review/`, `docs/**/*.md`, `docs/**/*.json`
 

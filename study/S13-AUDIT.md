@@ -20,9 +20,7 @@ your rebuild. Keep reference smoke results separate from your own baseline.
 
 ## During the sitting
 
-Use a visible **60-minute** timer. Rebuild the core at the same path in the scratch project from a blank file. Mark uncertainty with `# UNSURE`. Record actual start/end times and any interruption or accidental exposure. A peek changes the evidence; it must not disappear from your account.
-
-CourseWeave’s **Unaided rebuild sitting** activity disables provider calls, sharing and proposals. It does not lock your computer or certify that you avoided other help. The authored closed-book discipline remains yours.
+Use a visible **60-minute** timer. Rebuild the core at the same path in the scratch project from a blank file. Mark uncertainty with `# UNSURE`. Record actual start/end times and any interruption or accidental exposure. A peek changes the evidence; it must not disappear from your account. The authored closed-book discipline remains yours; no tool can certify that you avoided other help.
 
 ## Return after closing the sitting
 

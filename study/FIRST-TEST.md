@@ -1,8 +1,8 @@
 # First self-guided exploratory test
 
 This is an authored protocol, not a completed user study or evidence of efficacy.
-Use the native course immediately, or the explicit pilot installation described in
-[COURSEWEAVE-PILOT.md](COURSEWEAVE-PILOT.md). No participants need recruiting.
+Use this clone immediately. See [docs/COMPANION.md](../docs/COMPANION.md). No
+participants need recruiting.
 Keep observations outside the course checkout; copy the CSV template there.
 
 ## 1. Ten to fifteen minutes: interaction route, not a learning score
@@ -70,7 +70,7 @@ Delayed observations include possible immediate-feedback effects as well as cour
 and practice exposure; they do not isolate retention from the course alone.
 Missing results stay missing. The fixtures and starter use only Python's standard
 library with no course runtime or model. General scoring dimensions and the two
-separate references remain outside the CourseWeave manifest and UI progress.
+separate references remain outside lesson progress UI.
 
 ## 4. What to record and when to continue
 
