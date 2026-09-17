@@ -1,0 +1,40 @@
+"""One live call, so a learner can prove their endpoint works before S01.
+
+    uv run python -m cafe.doctor
+"""
+
+from __future__ import annotations
+
+import sys
+
+from cafe.model import ModelError, get_client
+
+
+def main() -> int:
+    try:
+        client = get_client()
+    except ModelError as exc:
+        print(f"configuration problem:\n{exc}", file=sys.stderr)
+        return 1
+    print(f"mode  : {client.mode}")
+    print(f"model : {getattr(client, 'model', 'stub')}")
+    print(f"url   : {getattr(client, 'base_url', 'n/a')}")
+    try:
+        body = client.chat(
+            [{"role": "user", "content": "Responde solo con: listo"}],
+            temperature=0.0,
+        )
+    except ModelError as exc:
+        print(f"call failed: {exc}", file=sys.stderr)
+        return 1
+    reply = body["choices"][0]["message"].get("content")
+    latency = getattr(client, "last_latency_ms", None)
+    print(f"reply : {reply!r}")
+    if latency:
+        print(f"latency: {latency:.0f} ms")
+    print("\nendpoint works. Start at lessons/S01-agent-loop.html")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
