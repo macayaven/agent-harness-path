@@ -1,74 +1,66 @@
-# S03-context-engineering — governance decays across compaction
+# S03-context-engineering — What survives compaction
 
-**What this teaches:** the context window is two budgets, not one — a hard token
-budget and a soft attention budget — and what happens to in-context rules when the
-window fills: compaction deletes them silently. The fix is an invariant (safety
-constraints live in code, with prompt copy in a pinned, never-compacted region),
-and the proof is a measurement: rule survival probed across the compaction boundary.
-**Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop), S02
-(scripted probes and deterministic checkers — both get reused here, one level down
-the stack).
-**Hands-on (easy):** [`notebooks/s03_context_engineering_toy.ipynb`](../notebooks/s03_context_engineering_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s03_context.md`](../labs/s03_context.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S03-context-engineering.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/evals` — four scenarios, five deterministic checkers, and the naive-versus-governed pair you banked. The allergen checker grades every probe in this session, so "the rule still works" means the same thing here as it did in the golden set.
+**Today you ship:** `cafe/context.py` — four compaction policies and the measurement that tells them apart.
+**What this teaches:** context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why a pinned rule keeps governing while a summarized or truncated one quietly stops, and what the pin costs on every request.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S02 (the golden set and its checkers).
+**Hands-on:** [`notebooks/s03_context_engineering_toy.py`](../notebooks/s03_context_engineering_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S03-context-engineering.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+The shift runs long. A regular orders, asks about the terrace, asks the price of
+three things, then says *"por cierto, soy alérgico al huevo, ¿me puedo tomar la
+tortilla?"* Your conversation outgrew the budget two turns ago, so your compaction
+policy did its job: the transcript still reads perfectly, and every turn is
+answered.
+
+The allergen rule you wrote into the system prompt is gone. Nothing announced it,
+nothing errored, and the reply is as confident as ever. Yesterday's checker — the
+one you just learned to trust — catches it, and that is the only reason you know.
+
+## The promise
+
+By the end of this session you will be able to state, with a number behind it,
+which compaction policies keep the allergen rule governing behaviour across a
+boundary and which bury it — and you will have watched the rule vanish from the
+assembled context deterministically, before you ever trust a model to notice.
 
 ---
 
 ## The theory in depth
 
-### Two budgets, not one
+### A budget you set, a window you cannot cross
 
-The window has a hard limit: overflow it and the API answers with a 400, not an
-answer. But the operative limit is softer and lower. Anthropic's framing is that
-attention is a *finite budget* — the smallest set of high-signal tokens wins, and
-every low-signal token you keep taxes the ones that matter
-([anthropic.com/engineering/effective-context-engineering-for-ai-agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)).
-The measurement agrees. Chroma ran 18 models through long inputs and found
-performance degrades with length even on simple tasks — they named it *context rot*
-([trychroma.com/research/context-rot](https://www.trychroma.com/research/context-rot)).
-Liu et al. had already shown the positional half: models use the beginning and end
-of a long context well and the middle badly — *lost in the middle*
-([arXiv:2307.03172](https://arxiv.org/abs/2307.03172)).
+Two numbers, and they are different kinds of number.
 
-So: "it fits" is not "it works." A rule sitting 40k tokens into a 128k window is
-present and impaired at the same time, and no error message tells you.
+- `BUDGET_DEFAULT` is what the harness *aims* to stay under. It is yours.
+- `HARD_LIMIT_DEFAULT` is the model's real window. Cross it and the endpoint
+  answers a `400`, not a degradation. No policy saves you from that one.
 
-### Compaction is a rewrite, not a trim
+Compaction fires when the history outgrows the budget. It **rewrites the stored
+history** — what gets dropped is gone from every later turn, not just from this
+request. That is what makes it dangerous: a lossy step at turn five is still
+missing at turn twelve, and nothing in the transcript marks the hole.
 
-When the budget runs out, something has to go. The two standard moves:
+### Four policies, one question
 
-| Policy | Mechanism | What dies |
-|---|---|---|
-| Truncation | drop the oldest messages | whatever was only said early: the setup, the standing constraints, the corrections |
-| Summarization | replace history with a digest | whatever the summarizer found non-salient — and summaries are built to keep *what was discussed*, not *what was forbidden* |
+`cafe/context.py` answers *what survives compaction* four ways:
 
-Both are silent. The transcript afterwards reads coherently — coherence is what
-summarizers optimize for. Nothing announces that a constraint stopped existing. If
-your only instrument is reading transcripts, you will not find the decay there; you
-will find it in production, reported by a user.
+| policy | keeps | compacts? |
+| --- | --- | --- |
+| `keep_all` | everything | never — the hard limit becomes the model's problem |
+| `truncate` | pinned messages, then as much of the tail as fits | drops the oldest unpinned messages |
+| `summarize` | pinned messages, one digest, the last two turns | replaces the compactable region with a summary |
+| `pinned` | truncation, but the rule message is marked and untouchable | yes, and the rule outlives every round |
 
-### Governance decay is a measured result, not a metaphor
-
-Chen et al. put numbers on it in *Governance Decay* ([arXiv:2606.22528](https://arxiv.org/abs/2606.22528)):
-across seven models and 1,323 episodes, in-context governance constraints that held
-at **0% violation before compaction** failed at **30–59% after**. Two details make
-the result actionable. First, the control: when the constraint text survived into
-the summary, violation stayed at 0% — the failure is the omission, not the model.
-Second, the attack: an adversary who can bias what the summarizer keeps can arrange
-for a specific constraint to be deleted (their Compaction-Eviction Attack). The
-context-management layer is a safety-critical failure surface, and "the model
-misbehaved" is often "the harness deleted the rule."
-
-### The pinned-region invariant
-
-Hence the design rule: **safety and boundary constraints never live only in
-compactable prose.** Two layers:
-
-1. **Code first.** The constraint is enforced by deterministic machinery that does
-   not ride on the model having read anything (S06 builds that layer). Prompt text
-   is the explanation of the rule, not the enforcement of it.
-2. **Pinned prompt copy.** Whatever constraint text does go into the context sits
-   in a region compaction may not touch — re-sent verbatim at every assembly.
+`summarize` is lossy **on purpose**. `summarize_turns` keeps topics and drops
+prescriptive prose: "the client asked about the menu" is not a constraint. Real
+summarizers lose the same way, which is why survival must be measured rather than
+read off the transcript.
 
 ```mermaid
 flowchart TB
@@ -82,126 +74,153 @@ flowchart TB
     K --> S
     P --> S
     S --> M[model]
+
 ```
 
-Pinning is rent: those tokens ride every request forever, so the pinned region
-stays small and high-signal. And pinning is necessary but not sufficient — it keeps
-the rule *present*; the attention budget decides whether it gets *used*. The
-notebook watches both failure modes happen.
+### The rule is rent, and the boundary is where it dies
 
-### Just-in-time, and the cache angle
+The allergen rule is one short line, and `pinned` pays for it on **every single
+call**: a few tokens, forever. That cost is real, and the notebook prints it
+(`context.tokens([context.rule_message()])`) so you price the guarantee instead of
+pretending it is free.
 
-The complementary skill is deciding what enters the window at all. Pre-loading
-everything is the naive default; the alternative is *just-in-time* context — the
-agent fetches what it needs with tools, when it needs it (the S01 loop is the
-retrieval mechanism; Anthropic's post is the argument). And every context decision
-is also a billing decision: prompt caches serve a stable prefix at roughly 10% of
-the input price, so volatile content goes last, and — the part nobody budgets for —
-**every compaction rewrites the prefix and invalidates the cache**. Anthropic's own
-context-editing docs warn about exactly this interaction
-([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/context-editing)).
-Log every compaction as a first-class event: what was dropped, what the summary
-kept, what it cost. It is a behavior change and a cache flush at the same time.
+The interesting question is not "is the text there?" but "does it still govern?"
+A rule that survives but sits behind a compaction boundary — the model read it
+eleven turns ago — behaves like a rule that is absent. So the measurement replays
+one script through each policy, interrupts with the allergen probe every third
+turn, and grades each probe with S02's `allergen_safety`. `survival()` splits the
+probe rate into **before** and **after** the first compaction boundary. Two rates,
+one policy changed, same endpoint, same script, same checker.
 
-## Exercises (in the notebook, predict first)
+### Structural failures are not probabilistic
 
-Run top-to-bottom; write each prediction before running the cell that settles it.
+`keep_all` cannot degrade gracefully — it either fits or it hits the wall. The
+guard in `drive` raises `ContextWindowExceeded` *before* the request leaves the
+machine when the sent history crosses the hard limit, and the notebook proves it
+with `hard_limit=1` so the cell costs nothing. That is the difference between a
+policy you own and a `400` you did not plan for: one is a decision, the other is a
+surprise.
 
-1. Establish why compaction exists at all: run with no policy until the API's hard
-   limit rejects the request. Predict the turn it dies.
-2. Naive truncation: predict which probe is the first to fail, then read the log.
-   Note what the transcript *doesn't* tell you.
-3. Summarization: predict whether the transcript stays coherent, and whether the
-   rule survives. Read the actual summary the model saw.
-4. Fix it yourself: the attempt cell asks what has to change for the rule to
-   survive. Hint: not the policy function. Verify all probes pass, and note the rent.
-5. No compaction anywhere, rule present in every request — and the decaying model
-   still loses it. Predict the shape of compliance vs distance, then measure it.
-   The notebook prints a survival table at labeled distances 0, 25, 50, 100, 150,
-   200 — those labels are the actual filler word counts between the rule and the
-   probe (the probe itself is not counted).
+---
 
+## Build (in the notebook, predict first)
 
-After the notebook, optional hard path: [pinned house rules](../labs/s03_context.md) — same session, live or cassette. Skip it and the easy path is still complete.
+Open [`notebooks/s03_context_engineering_toy.py`](../notebooks/s03_context_engineering_toy.py)
+with your endpoint already exported, as in S02.
+
+1. **Predict the boundary.** One long history goes through all four policies. Write
+   down which ones still contain the allergen rule afterwards — and for the ones
+   that lose it, say in one sentence what a *transcript reader* would see that a
+   *checker* would not.
+2. **Run the boundary cell.** It prints a token count and `rule_is_present` per
+   policy. Every row still reads like a normal café conversation. Only one still
+   governs.
+3. **Break it deterministically.** Two assertion cells run first: truncation kills
+   the unpinned rule while `pinned` keeps it, and `keep_all` with `hard_limit=1`
+   raises `ContextWindowExceeded` with `context_length_exceeded` in the message.
+4. **Make the rule survive yourself.** Implement `attempt_keep_rule(history,
+   budget)`, returning `(new_history, compacted)`, with the rule text still present
+   and the history inside the budget. Do not rewrite the rule into a summary
+   sentence — the checker will not count it. The reference (`context.policy_pinned`)
+   is behind a switch; flip it after your attempt.
+5. **Measure behaviour, not text.** `context.survival_table(client)` replays the
+   probe script through all four policies. Read the `before` and `after` rates and
+   the boundary turn. The assertion is relative: `pinned` never scores below
+   `truncate`, and the spread is printed because a live endpoint is allowed a bad
+   day.
+
+---
+
+## Checkpoint — the number you bank
+
+Bank **probe survival after the boundary, per policy** — a pair `(policy, rate)`
+for `truncate`, `summarize` and `pinned` across the probes the script produced —
+and name the rent you paid for the best of them. The pinned rule rides every
+request; say so when you quote the number.
+
+This page will not predict your rates. A live model moves them, and the point is
+that the *ordering* survives the movement: if burying the rule ever outscored
+pinning it over a real probe count, that would be the finding, not a glitch — and
+your job would be to explain what the pin failed to change.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Anthropic's context-engineering post: finite attention budget, smallest-high-signal-token-set, compaction / structured note-taking / sub-agents as the three moves at the limit ([anthropic.com](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)) | **already in this path** | The assigned frame. This session operationalizes its compaction section. |
-| *Governance Decay* ([arXiv:2606.22528](https://arxiv.org/abs/2606.22528)): 0% → 30–59% constraint violation across a compaction boundary; 0% when the constraint text survives the summary | **already in this path** | The notebook is this paper's mechanism rebuilt as a toy. The control condition is the pinned-region argument in experimental form. |
-| Context rot ([Chroma, 18 models](https://www.trychroma.com/research/context-rot)) and lost-in-the-middle ([arXiv:2307.03172](https://arxiv.org/abs/2307.03172)) | **already in this path** | Degradation is gradual and length- and position-driven — not a cliff at the window's edge. |
-| Server-side context editing ([Anthropic docs](https://docs.claude.com/en/docs/build-with-claude/context-editing)): `clear_tool_uses_20250919` clears old tool results above a token threshold; pairs with the memory tool so the model saves state before clearing | **adopt** | When you hit real APIs: truncation-as-a-service for tool output. Read the fine print: clearing invalidates the prompt cache, and it clears *tool results* — your pinned constraints are still your problem. |
-| Prompt caching with explicit breakpoints ([Anthropic docs](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)): ~90% discount on cached input tokens | **adopt** | Stable prefix, volatile suffix. Compaction is a cache-invalidation event — the cost side of this session's topic. |
-| MemGPT / Letta ([arXiv:2310.08560](https://arxiv.org/abs/2310.08560)): the model pages its own memory via tool calls | **recognize** | OS-style virtual memory: the same invariant — what must never be paged out — with the policy delegated to the model. |
-| Million-token windows marketed as "just put everything in context" | **ignore** | The attention budget and the context-rot data do not care how big the window is ([Chroma](https://www.trychroma.com/research/context-rot)). Fitting is not using. |
+| [Anthropic: effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | **adopt** | Treats the window as a budget to curate, not a bucket to fill, and puts stable instructions where compaction cannot reach them. This is the doctrine behind `pinned`. |
+| [Lost in the Middle](https://arxiv.org/abs/2307.03172) | **recognize** | Position in the window changes how reliably a model uses a fact. Your pin is not only a survival trick; where it sits is part of why it works. |
+| [Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) | **recognize** | Pinned, stable prefixes are also the cheapest tokens to send. The rent you pay per request can be discounted by infrastructure you do not control yet. |
+| [MemGPT](https://arxiv.org/abs/2310.08560) | **recognize** | Treats memory management as a system with paging instead of a string you trim. Worth reading once your policies stop fitting in four functions. |
+| [Retrieval-Augmented Generation](https://arxiv.org/abs/2005.11401) | **recognize** | The other answer to a full window: fetch what is relevant instead of deciding what to drop. Same question — who chooses what the model sees — different owner. |
+
+---
 
 ## Annotated readings
 
-- **Anthropic, [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
-  (Sep 2025).** Extract three things: the finite-attention-budget framing; the
-  smallest-high-signal-token-set principle for system prompts; and the
-  compaction / structured note-taking / sub-agent triage for long-horizon tasks,
-  with the guidance on when each is the right move.
-- **Chen et al., [Governance Decay](https://arxiv.org/abs/2606.22528) (2026).**
-  Extract the experimental design, not just the headline: the probe is behavioral
-  and runs *across* the compaction boundary, which is exactly how your golden set
-  should test a context policy. The 0%-when-the-constraint-survives control is the
-  strongest argument for pinning you will find.
-- **Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172) (2023).**
-  Extract the U-shaped curve and its design consequence: critical instructions go
-  at the beginning or the end of the context, never the middle. This is why the
-  pinned region in a real harness is usually re-injected *near the latest turn*,
-  not left to drift into the middle of the transcript.
-- **Drew Breunig, [How long contexts fail](https://www.dbreunig.com/2025/06/22/how-contexts-fail-and-how-to-fix-them.html)
-  (Jun 2025).** S01 assigned it as a preview; now read it as working vocabulary.
-  Poisoning, distraction, confusion, clash are all *content* failures. This session
-  adds the maintenance failure — a constraint deleted by your own compaction —
-  which the four do not cleanly cover.
+- **Anthropic: effective context engineering** — extract: the distinction between
+  instructions that must stay verbatim and history that may be summarized. Then
+  find the sentence that says context is a finite resource and decide whether your
+  `summarize` agrees.
+- **Lost in the Middle** — extract only the position sensitivity result. It
+  explains why a rule can be present and still not govern.
+- **`cafe/context.py`, `policy_summarize` and `summarize_turns`** — extract: which
+  properties the summary preserves and which it structurally cannot. Those two
+  lists are the difference between a digest and a constraint.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"Bigger windows solved this."** Two budgets, not one. Overflow is a 400;
-  attention decay is silent, gradual, and starts long before the nominal limit.
-- **"The transcript reads fine, so the rules held."** Summaries preserve coherence
-  and topics, not constraints. Rule survival is a behavioral measurement — a
-  scripted probe plus a deterministic checker — not something you can eyeball.
-- **"It's in the system prompt, so it's permanent."** Only if nothing is allowed
-  to rewrite it. Summarizers and context editors rewrite whatever isn't pinned,
-  and even a permanent rule decays with distance from the action.
-- **"The summarizer will keep the important parts."** Salience keeps decisions and
-  topics; a constraint is usually one prescriptive sentence, and prescriptive prose
-  is the first thing a digest drops.
-- **"Compaction is free maintenance."** It rewrites the prefix: cache invalidation
-  on the billing side, silent state change on the behavior side. An unlogged
-  compaction is an undebuggable agent.
+- *"The rule is in the system prompt, so it is always in force."* Only until the
+  first compaction. Mark it and prove it, or it is a hope.
+- *"Summarizing is gentler than truncating."* It is lossier in a place you cannot
+  inspect: the summary keeps topics and drops prescriptions. Measure survival, do
+  not assume it.
+- *"If the reply is good, the rule survived."* One good reply is one sample. The
+  probe script exists precisely so a rate replaces an impression.
+- *"A bigger window is the fix."* A bigger budget moves the boundary. It does not
+  decide what survives it.
+- *"Overshooting the budget is the same as overshooting the window."* The budget is
+  a soft target you own; the hard limit is a `400`. Do not conflate a policy with a
+  protocol error.
+
+---
 
 ## Self-check
 
-<details><summary>Name the two budgets and the failure signature of each.</summary>
-The token budget: hard window, overflow returns a 400 — loud and exact. The
-attention budget: effective recall degrades with length and position — silent,
-gradual, and it produces plausible wrong answers while everything still "fits".</details>
+<details><summary>Why does compaction have to rewrite the stored history instead of just trimming the request?</summary>
 
-<details><summary>Why doesn't a coherent transcript prove the rules survived compaction?</summary>
-Because coherence is what summarization optimizes for. The digest keeps what was
-discussed and drops what was forbidden, so the conversation reads naturally while
-the constraint is gone. Survival is only established by probing behavior across
-the boundary with a deterministic checker.</details>
+Because the loop carries the history forward — the messages list is the only state
+(S01). Dropping a message from one request means it is absent from the base of
+every later request too. There is nothing to trim "just for now".</details>
 
-<details><summary>State the pinned-region invariant and its two layers.</summary>
-Safety and boundary constraints never live only in compactable prose. Layer one:
-enforcement in deterministic code that doesn't depend on the model reading
-anything. Layer two: the prompt copy sits in a pinned, never-compacted region,
-re-sent verbatim at every assembly. Prose alone is not enforcement.</details>
+<details><summary>A policy keeps the rule text but places it behind two summary turns. Does it still govern?</summary>
 
-<details><summary>Where does volatile content go in a request, and why?</summary>
-At the end. Prompt caches key on stable prefixes: one changed early token
-invalidates everything after it. This is also why compaction is a cost event, not
-just a context event — it rewrites the prefix and flushes the cache.</details>
+That is the empirical question, and the answer is a rate, not a fact. Presence is
+necessary and not sufficient; positioning and recency matter, which is why the
+probe rate is split before and after the boundary.</details>
 
-## What's next
+<details><summary>What does pinning actually buy, and what does it cost?</summary>
 
-**S04 — Structured generation:** you now control what flows *into* the model; next,
-constrain what flows *out*. Schemas, validation, and the retry-on-invalid loop —
-because an agent whose outputs you can't parse is an agent you can't govern.
+It buys a rule that no compaction round can drop, so behaviour stays stable across
+the boundary. It costs a few tokens on every request, forever, and it takes a
+channel out of your budget that history can no longer use.</details>
+
+<details><summary>Your pinned rate came out below the buried rate on ten probes. What now?</summary>
+
+First check the sample: ten probes is small and the endpoint varies. Then check the
+fixture — confirm the rule was actually dropped for the buried arm and that the
+probes were graded at the boundary. If both hold, you have found a real result:
+report it, do not round it away.</details>
+
+---
+
+## What this unlocks
+
+You now choose what the model *sees*, and you can prove which choice holds. But a
+surviving rule is only useful if the reply can be trusted downstream.
+**[S04 — Structured generation](S04-structured-generation.html)** turns the ticket
+into a contract: a schema, a hand-rolled stdlib validator, and a bounded retry loop
+— plus the uncomfortable discovery that a schema-valid ticket can still be wrong.

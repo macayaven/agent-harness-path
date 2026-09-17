@@ -1,15 +1,32 @@
-# S10-error-analysis — Failures into taxonomy, taxonomy into evals
+# S10-error-analysis — From a pile of failures to a permanent eval task
 
-**What this teaches:** open-coded error analysis — reading failure traces into
-free-form notes, grouping the notes into a labeled taxonomy, prioritizing by
-frequency × severity, and converting each recurrent category into a new eval
-task. The eval suite grows from observed failures, not from imagination.
-**Time:** ~90 min with the notebook.
-**Prerequisites:** S02 (eval suites as measurement instruments); S08 (you need
-traces you can actually pull).
-**Hands-on (easy):** [`notebooks/s10_error_analysis_toy.ipynb`](../notebooks/s10_error_analysis_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s10_errors.md`](../labs/s10_errors.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S10-error-analysis.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/report.py` — S09's citation-checked debrief, and the recorded shifts it can describe. You can now tell one shift's story honestly; tonight you find out which failures keep happening.
+**Today you ship:** `cafe/taxonomy.py` — the pipeline that turns a pile of real failures into a ranked taxonomy and a new eval task.
+**What this teaches:** error analysis as a method — open coding a pile of real traces into free-form notes, axial coding those notes into categories narrow enough to be wrong, ranking by frequency × severity, and promoting the top category into a permanent eval task that fails on the engine that produced the pile and passes on the fix.
+**Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (checker tiers and the fixture invariant); S08 (traces you can pull); S09 (the event log that already flags what the harness noticed).
+**Hands-on:** [`notebooks/s10_error_analysis_toy.py`](../notebooks/s10_error_analysis_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S10-error-analysis.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+Three shifts, three transcripts, and a suite that says everything is fine. Then you read
+the traces. One shift never checked an allergy the customer declared by name. Another
+fired a ticket before the customer confirmed it. A third ran out of turns with the
+customer still waiting for an answer.
+
+The aggregate said 6/9. It could not say *which* six, or why. A number tells you there is
+a fire; it does not tell you what is burning.
+
+## The promise
+
+By the end of this session you will have pulled real failures out of several live shifts,
+labeled them by close reading, ranked them by frequency × severity, and turned the top
+category into a permanent eval task — one you can watch fail on the engine that produced
+the pile and pass on the fix. You will finish with a ranked taxonomy with trace
+references, one new regression guard, and a number that says how often reading and
+keyword-filing agree.
 
 ---
 
@@ -17,13 +34,14 @@ traces you can actually pull).
 
 ### The number says something is wrong; reading says what
 
-Your suite says 6/9. Two different systems can both score 6/9 — one failing on
-safety, one failing on formatting — and the number cannot tell them apart. The
-aggregate is a smoke detector: it tells you there is a fire and roughly where,
-but it never tells you what is burning. Treating the pass rate as the result —
-tuning whatever moves it — is how teams ship a green suite over a red product.
+Your eval suite returns a pass rate. Two different systems can score identically — one
+failing on safety, the other on formatting — and the rate cannot tell them apart. Treat
+it as a smoke detector: it tells you there is a problem and roughly where, never what is
+burning. Tuning whatever moves the number is how teams ship a green suite over a red
+shift.
 
-Error analysis is the discipline that converts the number into work. The loop:
+Error analysis is the discipline that converts the number into work: read the failures,
+name them, group them, rank them, fix the top, and grow the suite from what you found.
 
 ```mermaid
 flowchart LR
@@ -37,202 +55,172 @@ flowchart LR
     E --> S[the suite grows<br/>denominator changes]
 ```
 
-Hamel's field data is blunt about the ordering: the most common mistake in
-applied AI is *skipping* this loop and going straight from "the number moved"
-to a fix ([hamel.dev/blog/posts/field-guide](https://hamel.dev/blog/posts/field-guide/)).
-A fix chosen before the failures are classified fixes the loudest bug, not the
-most frequent one.
+The loop does not end. After a fix ships, read the new failures: categories die, new ones
+appear, the taxonomy is a living document. What you may not do is automate the reading
+away.
 
 ### Open coding: let the data name the categories
 
-The method is borrowed, not invented. Qualitative researchers have done
-"categories from data" since Glaser & Strauss's grounded theory (1967):
-**open coding** means reading each artifact and writing a free-form note about
-what happened, with no fixed list of allowed answers
-([overview](https://en.wikipedia.org/wiki/Grounded_theory)). The applied-AI
-version, per Hamel:
+Open coding is the first pass: read one trace and write, in your own words, what went
+wrong. No fixed list of allowed answers. The method is borrowed from grounded theory
+([overview](https://en.wikipedia.org/wiki/Grounded_theory)) and applied to agents by
+Hamel Husain's field guide
+([hamel.dev](https://hamel.dev/blog/posts/field-guide/)). Two habits make it work:
 
-1. Pull a pile of failure traces — from your suite's failures, from dogfooding,
-   from user complaints. This is why S08's trace capture matters: you cannot
-   read what you did not record.
-2. Read the *whole* trace, not the final turn. Write one note per failure in
-   plain language: what went wrong, for the user, in this conversation.
-3. Label the **most upstream** error. Failures cascade: a misread user intent
-   in turn 1 produces a wrong tool call in turn 3 and a confident nonsense
-   answer in turn 4. If you label the turn-4 symptom you will "fix" the answer
-   text and leave the cause. The earliest error is the tractable one; the rest
-   are usually symptoms of it.
-
-Why not write the category list first? Because a list written before reading
-encodes what you already believe — and the failures you haven't imagined are
-precisely the ones the exercise exists to find. Forced into a priori buckets,
-a novel failure gets misfiled or dumped in "other." The diagnostic: **if
-"other" is your biggest bucket, your taxonomy is wrong.** In the notebook you
-will guess the categories before reading, then watch the data grade your
-guess. Most people's guesses miss at least one bucket that turns out to be
-real.
+- **Label the most upstream error.** Failures cascade — a misread request in turn 1
+  produces a wrong tool call in turn 3 and a confident non-answer in turn 4. If you label
+  the symptom you will patch the last line and leave the cause.
+- **Write the category list after reading, never before.** A list written first encodes
+  what you already believe, and the failure you have not imagined is exactly what the
+  exercise exists to find. The diagnostic: if your `other` bucket is the biggest one, your
+  taxonomy is wrong.
 
 ### Axial coding: a taxonomy that earns its rows
 
-**Axial coding** is the grouping pass: lay the notes side by side, cluster the
-ones describing the same underlying cause, and name each cluster. The output
-is a taxonomy — a table whose every row has to earn its place:
+Axial coding is the grouping pass: lay the notes side by side, cluster the ones with the
+same underlying cause, name each cluster. Every row has to earn its place — cite at least
+one real trace id, stay narrow enough to be wrong, and name its fix. "The model was
+wrong" fits every trace and suggests nothing; it is a label, not an analysis.
 
-| Taxonomy row | Verdict | Why |
-|---|---|---|
-| "the model was wrong" | **category collapse** | Fits every failure, suggests no fix. A category too broad to disagree with is a label, not an analysis. |
-| "bot said 250 g for a stick of butter in f11" | **over-shattered** | That is a *note*, not a category — one trace, no pattern. Everything at n=1 gives you no prioritization signal. |
-| "unit-mismatch (n=3: f01, f07, f11)" | **earns its row** | Narrow enough to be wrong, broad enough to rank, and it names its fix: honor requested units. |
+Then rank by **frequency × severity**, not frequency alone. A safety failure at n=2 can
+outrank an annoyance at n=5 — but you need both columns to argue it. `cafe/taxonomy.py`
+weights severity (`high` 3, `medium` 2, `low` 1) and sorts on weight, then count, then
+name, and every row keeps the trace ids that put it there.
 
-Two invariants make the table trustworthy:
+### The auto-filer orders the queue; it never closes it
 
-- **Every row cites ≥1 trace reference.** A category you cannot point to in a
-  real trace is astrology. The references are also how a skeptic (or future
-  you) audits the taxonomy without redoing the reading.
-- **The "other" bucket is a sensor, not a landfill.** It should stay near
-  empty; when it grows, the taxonomy needs a new row, not more force.
+The tempting shortcut is to file the pile with keyword rules instead of reading it.
+`classify_naive` does exactly that: two keywords, and everything else falls into `other`.
+This is not useless — it is triage. It is fatal only as a *substitute*, because the failure
+it has no keyword for is invisible to it, and that is usually the bucket where being wrong
+hurts most. The notebook makes you score the shortcut against your own reading, so you can
+see which records it misfiled.
 
-Then quantify. Count traces per category, and weight by severity, because raw
-frequency lies about priority: a safety-miss at n=2 can outrank a formatting
-annoyance at n=5 — but you need both columns to *argue* that, and the argument
-is what a reviewer or teammate will demand.
+### Promotion: the top category earns a permanent eval task
 
-### From taxonomy to eval growth
+A prioritized taxonomy is a to-do list in two halves: fixes for the top categories, and
+**new eval tasks**, one per recurrent category. A promoted task carries the script that
+reproduced the failure, the tool calls its trace must show, and a deterministic check. Two
+invariants make it worth a slot:
 
-A prioritized taxonomy is a to-do list with two kinds of items:
+1. it **fails on the engine that produced the pile** — the failure is provably present,
+   not imagined;
+2. it **passes on the fix**, and its check still passes the S02 fixture invariant (bare
+   fixture fails, reference passes).
 
-- **Fixes**, for the top categories — prompt changes, guardrails, tool changes.
-- **New eval tasks**, one per recurrent category, each *isolating* the failure
-  class: a scripted input that reproduces it on demand. The task must fail on
-  the old system (that is what "isolates" means — the failure is provably
-  present), pass on the fixed system, and its check must still pass the S02
-  fixture invariant (bare fixture FAILs, reference PASSes). Mechanically
-  assertable categories get deterministic checks; taste-level categories get
-  judged criteria — which stay labeled *uncalibrated* until S12.
+That delta is what makes it a regression guard instead of a wish. `promote` builds the
+task; `naive_engine` and `guarded_engine` stand in for the two engines so the
+discrimination is provable without another model call.
 
-This is the eval-growth half of the session: the suite you built top-down in
-S02 now grows bottom-up from observed failures. The denominator changes —
-your /6 becomes /9 — and that is the point, not a bookkeeping nuisance. Each
-new task converts a real, observed failure mode into a permanent regression
-guard. Anthropic's capability/regression split is the same motion viewed from
-the other end: today's failure-grown task is tomorrow's merge gate
-([anthropic.com/engineering/demystifying-evals-for-ai-agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
+---
 
-And the loop does not end. After the fixes ship, read the new failures:
-categories die, new ones appear, the taxonomy is a living document. The one
-thing you may not do is automate the reading away. Keyword rules and embedding
-clusters are legitimate *triage* — they order the reading queue — but as a
-substitute they file confidently and wrong, and the notebook will show you the
-ugliest version of that: the auto-filer undercounting the safety bucket
-exactly where it has no keywords. The failure you have not imagined has no
-keyword and no cluster centroid yet.
+## Build (in the notebook, predict first)
 
-## Exercises (in the notebook, predict first)
+Open [`notebooks/s10_error_analysis_toy.py`](../notebooks/s10_error_analysis_toy.py).
+Configure your endpoint first:
 
-Run top-to-bottom. Write predictions as comments *before* running each
-experiment — including your guessed categories, which the data will grade.
+```bash
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+export CAFE_API_KEY=ollama
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor
+uv run marimo edit notebooks/s10_error_analysis_toy.py
+```
 
-1. **Open coding.** Read three traces closely; write one free-form note each.
-   Before that: write down the 2–3 category names you *guess* the pile
-   contains. Keep the guess — experiment 2 scores it.
-2. **Axial coding.** Label all twelve traces with categories of your choosing;
-   count them; rank by frequency × severity. Check your "other" bucket. How
-   many of your guessed categories survived?
-3. **The auto-filer.** Write a keyword-only classifier — no re-reading the
-   traces — and score it against your hand labels. Predict the agreement rate
-   and which bucket gets undercounted. Then explain why the undercounted
-   bucket is the worst one to get wrong.
-4. **Category → guard.** Convert the top-ranked category into a deterministic
-   check plus one isolating eval task. Predict, then verify: the old engine
-   fails the task, the patched engine passes it, the bare fixture fails the
-   check.
+1. **Drive the pile.** Three live shifts run through `run_shift` under a deliberately tight
+   turn cap (`max_turns=3`). Each script declares what the customer asked for and which
+   tool the shift must call. The cap is a harness choice, not a model-quality score: a
+   shift that runs out of turns before the customer is answered is a real failure.
+2. **Harvest only what the trace shows.** `harvest` reads each recorded run against its
+   script and returns one record per failure — a missing expected tool, a ticket fired
+   with no prior `propose_order`, an 86'd item sent to the kitchen, a turn cap — each with
+   an id, a severity, and a verbatim quote from the conversation. If the trace does not
+   show it, it is not in the pile. A well-behaved model can produce an empty pile; the
+   notebook then adds one deliberately capped shift and says so rather than hiding it.
+3. **Predict first: the categories.** Before you read closely, write down the two or three
+   category names you expect this pile to contain. Then fill `attempt_open_code` — one
+   category per record — and flip the reveal switch only after your attempt. The reference
+   solution names four; yours may differ, and that is fine as long as each name is narrow
+   enough to be wrong.
+4. **Rank and file.** `rank` turns your labels into a frequency × severity table with trace
+   references; `agreed` scores your reading against `classify_naive`. Predict the agreement
+   count before you run it, then look at *which* records the auto-filer misfiled.
+5. **Predict the promotion.** The top category is about to become an eval task. Will it
+   fail on `naive_engine`, pass on `guarded_engine`, or fail on both? Write your answer,
+   then run `promote` and `check_task` and watch the delta.
 
+The notebook's closing cells are protocol invariants, not decoration: every harvested
+record gets exactly one non-empty label, and the promoted task fails the naive engine and
+passes the guarded one.
 
-After the notebook, optional hard path: [taxonomy and +3 tasks](../labs/s10_errors.md) — same session, live or cassette. Skip it and the easy path is still complete.
+---
+
+## Checkpoint — the number you bank
+
+Record three things from this run, with your model name beside them:
+
+- the agreement count between your hand labels and the auto-filer, over the pile size —
+  and, more usefully, which records the shortcut missed;
+- the ranked top category with its `n` and `freq × sev`;
+- confirmation that the promoted task fails the naive engine and passes the guarded one.
+
+The counts are facts about *this* pile on *your* endpoint, not a model-quality score. The
+promoted task discriminates deterministically whatever the model did.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Error analysis as open coding + axial coding on traces, then failure-grown evals (Hamel, [A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/), 2025) | **already in this path** | The assigned reading and the exact loop this session rehearses: notes first, categories second, evals third. |
-| The method itself is 60 years old — open/axial coding from grounded theory (Glaser & Strauss, 1967; [overview](https://en.wikipedia.org/wiki/Grounded_theory)) | **already in this path** | Applied AI rediscovered a social-science method. Categories emerge from data; "constant comparison" is your axial pass. |
-| MAST: a research-grade failure taxonomy for multi-agent systems — 14 failure modes in 3 categories, built from analysis of 150 traces; MAST-Data is the 1600+-trace annotated dataset ([arXiv:2503.13657](https://arxiv.org/abs/2503.13657)) | **recognize** | A published top-down taxonomy to sanity-check your bottom-up one against. Note they built it with the same process you just practiced, at annotation-team scale. |
-| Eval tasks grown from observed failures; capability evals graduate into the regression floor ([Anthropic](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)) | **adopt** | Where your new tasks land. The denominator change is the mechanism working, not scope creep. |
-| Platforms productize the loop: LangSmith auto-clusters traces for analysis ([LangSmith observability docs](https://docs.smith.langchain.com/observability)); Langfuse's academy teaches the manual version ([langfuse.com/academy/monitoring/error-analysis](https://langfuse.com/academy/monitoring/error-analysis)) | **recognize** | Clustering is triage for the reading queue — ordering, not replacement. The vendors' own teaching material still starts with "read the traces." |
-| Fully automated failure discovery: pipelines promising taxonomies and fresh evals with zero human trace-reading | **ignore** | The failure you haven't imagined has no keyword and no cluster centroid ([Hamel, Field Guide](https://hamel.dev/blog/posts/field-guide/)). Skipping the reading skips the product. |
+| [Hamel Husain — A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/) | **already in this path** | The assigned method: notes first, categories second, evals third — the exact loop this session rehearses. |
+| [Grounded theory (open and axial coding)](https://en.wikipedia.org/wiki/Grounded_theory) | **already in this path** | Applied agent work rediscovered a sixty-year-old social-science method. Constant comparison is your axial pass. |
+| [Cemri et al. — Why Do Multi-Agent LLM Systems Fail? (MAST)](https://arxiv.org/abs/2503.13657) | **recognize** | A published top-down taxonomy built from 150 annotated traces. Compare its category grain size with yours. |
+| [Anthropic — Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) | **adopt** | Where your new task lands: capability evals graduate into the regression floor. The denominator change is the mechanism working. |
+| [LangSmith observability docs](https://docs.smith.langchain.com/observability) | **recognize** | Clustering and auto-grouping traces order the reading queue. Ordering, not replacement. |
+| [Langfuse academy — error analysis](https://langfuse.com/academy/monitoring/error-analysis) | **recognize** | A vendor teaching the manual version still starts with "read the traces." The reading is the product. |
+
+---
 
 ## Annotated readings
 
-- **Hamel Husain, [A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/)
-  (Mar 2025).** The primary source. Extract: the open/axial two-phase loop,
-  the most-upstream-error labeling heuristic, and the framing of error
-  analysis as the highest-ROI activity in applied AI — "the most common
-  mistake" is skipping it.
-- **Hamel, [Fuck You, Show Me The Prompt](https://hamel.dev/blog/posts/prompt/)
-  (Feb 2024).** Written about frameworks, but the muscle is the same one error
-  analysis trains: read the raw payload end to end instead of trusting the
-  abstraction over it. Extract the interception technique — and the attitude.
-- **Cemri et al., [Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657)
-  (2025).** Skim the 14-mode taxonomy table, then read how they built it:
-  analysis of 150 traces, then MAST-Data (1600+ annotated traces). Extract the
-  category
-  boundaries — where do they split what you'd merge? — as calibration for
-  your own taxonomy's grain size.
-- **[Grounded theory](https://en.wikipedia.org/wiki/Grounded_theory) (overview).**
-  Thirty minutes of methods background. Extract: *constant comparison* — each
-  new trace is coded against the categories formed so far, and the categories
-  themselves get revised. That is why your taxonomy is a draft until the last
-  trace is read.
+- **Hamel Husain, [A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/).** Extract the open/axial two-phase loop and the most-upstream-error heuristic — and the claim that skipping error analysis is the most common mistake in applied AI.
+- **[Grounded theory](https://en.wikipedia.org/wiki/Grounded_theory), overview.** Extract *constant comparison*: each new trace is coded against the categories so far, and the categories get revised. That is why your taxonomy is a draft until the last trace is read.
+- **Cemri et al., [Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657).** Extract the category boundaries — where do they split what you would merge? — as calibration for your own taxonomy's grain size.
+- **Anthropic, [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents).** Extract the capability/regression split: today's failure-grown task is tomorrow's merge gate.
+
+---
 
 ## Misconceptions and failure modes
 
-- **Fix first, classify later.** You read one ugly trace and patch it
-  immediately. That is whack-a-mole: you fixed the loudest bug, and the
-  frequency data that would have ranked it never got collected. Classify the
-  pile, then fix the top of the ranking.
-- **The a priori taxonomy.** Categories written from imagination before
-  reading. Novel failures get forced into wrong buckets or land in "other" —
-  and when "other" is the biggest bucket, the taxonomy is measuring your
-  blind spots.
-- **Category collapse.** "The model was wrong" fits every trace and suggests
-  no fix. A category too broad to disagree with is a label, not an analysis.
-- **Taxonomy rows without trace references.** If you cannot point the row at
-  a real trace, it is unverifiable — astrology with extra steps. The
-  reference is also the audit trail for anyone reviewing your counts.
-- **Automating the reading away.** Keyword rules and embedding clusters as a
-  *substitute* for reading file failures confidently and wrong — and, as the
-  toy demonstrates, they undercount exactly the bucket where being wrong
-  hurts most. Use them to order the queue, never to close it.
+- *"Fix first, classify later."* You read one ugly trace and patch it immediately. That is whack-a-mole: you fixed the loudest bug, and the frequency data that would have ranked it never got collected.
+- *"The a priori taxonomy."* Categories written before reading encode your assumptions; novel failures get forced into wrong buckets or dumped in `other`. A big `other` bucket means the taxonomy is measuring your blind spots.
+- *"Category collapse."* "The model was wrong" fits every trace and suggests no fix. A category too broad to disagree with is a label, not an analysis.
+- *"Rows without trace references."* If you cannot point a row at a real trace id, it is unverifiable — and the references are how a skeptic audits your counts without redoing the reading.
+- *"The auto-filer is the answer."* Keyword rules are triage for the reading queue. As a substitute they file confidently and wrong, and they undercount exactly the bucket where being wrong hurts most.
+
+---
 
 ## Self-check
 
 <details><summary>Why must category names come from the data instead of a pre-made list?</summary>
-A list written before reading encodes what you already believe. Failures you
-haven't imagined — the ones the exercise exists to find — get forced into
-wrong buckets or dumped in "other." Open coding lets the data correct your
-guesses; the size of the "other" bucket tells you whether it worked.</details>
+A list written before reading encodes what you already believe. The failures you have not imagined — the ones the exercise exists to find — get forced into wrong buckets or dumped in "other." Open coding lets the data correct your guesses, and the size of the "other" bucket tells you whether it worked.</details>
 
 <details><summary>What makes a taxonomy row trustworthy?</summary>
-Three things: it cites at least one real trace reference (auditable), it is
-narrow enough to be wrong (disagreeable), and it suggests a fix (actionable).
-"The model was wrong" fails all three.</details>
+Three things: it cites at least one real trace id (auditable), it is narrow enough to be wrong (disagreeable), and it names a fix (actionable). "The model was wrong" fails all three.</details>
 
-<details><summary>Your counts: unit-mismatch n=5 (low severity), allergen-miss n=2 (high). Which gets the first new eval task, and why?</summary>
-The allergen-miss. Priority is frequency × severity, not frequency alone —
-an n=2 safety failure outranks an n=5 annoyance. Recording both columns is
-what makes that argument explicit instead of a vibe.</details>
+<details><summary>Your counts show one category at n=5 (low severity) and another at n=2 (high). Which gets the first new eval task, and why?</summary>
+The high-severity one at n=2. Priority is frequency × severity, not frequency alone — a safety failure that happens twice outranks an annoyance that happens five times. Recording both columns is what makes that argument explicit instead of a vibe.</details>
 
-<details><summary>You added three failure-grown tasks and the suite went from /6 to /9. Why is the denominator change the point?</summary>
-Each new task converts a real, observed failure mode into a permanent
-regression guard. The suite growing bottom-up from failures *is* the
-mechanism — today's failure-grown task is tomorrow's merge gate, and the
-denominator is the ledger of failure modes you now provably watch.</details>
+<details><summary>Why does the promoted task have to fail on the engine that produced the pile?</summary>
+Because that is what "isolates the failure" means: the failure is provably present on the old engine and provably gone on the fix. A task that passes on both proves nothing, and a task that fails on both is a broken check, not a regression guard.</details>
 
-## What's next
+---
 
-**S11 — Budgets, routing, and the privacy boundary:** your suite now grows
-every time the product fails in a new way, which means you will run it often —
-and every run costs tokens, latency, and a decision about which model serves
-which phase. Next session makes those costs policy: budgets that stop a
-meandering run, routing that sends each phase to the cheapest model that holds
-the number, and a privacy boundary enforced as code rather than intention.
+## What this unlocks
+
+You can now say which failures recur and you have a task that proves the fix. What you do
+not yet have is any control over what a check is allowed to cost. **[S11 — Budgets &
+routing](S11-budgets-routing.html)** turns your taxonomy into runtime spending limits and a
+route table: a call whose projected cost would cross the budget is refused before it is
+dispatched, and a content phase pointed off-local raises instead of leaking.
