@@ -90,9 +90,9 @@ review — the learning happens in the notebook (S01–S12) or the protocol
 
 ## The pedagogical commitments
 
-- **Toys from real domains, never the artifact.** Every notebook is a small complete
-  system — a hotel concierge, a repair shop, a mopbot, a trivia host — chosen so the
-  mechanics are identical to production and the stakes are not.
+- **One toy domain, never the artifact.** Every notebook grows the same
+  neighbourhood-café counter assistant — orders, tickets, allergens, the till —
+  chosen so the mechanics are identical to production and the stakes are not.
 - **Predict first, always.** Written predictions before every run; the suite of
   habits this builds is the actual curriculum.
 - **Failure is on the syllabus.** Each toy contains deliberately broken variants

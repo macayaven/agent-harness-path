@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Ready to execute |
+| **Status** | Landing: WP0–WP6 + WP8 done, WP7 shell done (re-theme scoped out: labs stay trivia), §12.1 unification paid. Lock regenerated. §11 live gate: GO, 12/12 notebooks live-green (receipt `docs/verification/live-gate-2026-09-17.md`; one real S09 bug found and fixed). One human step remains: diagram re-render (sandboxed browsers segfault) |
 | **Created** | 2026-09-17 |
 | **Base** | `feat/course-rebuild-v2` off `plan/marimo-migration` (`678f614`) |
 | **Supersedes** | Plan 0001 is **absorbed**, not discarded: its marimo findings (P1–P27) and canonical-serialization rules are reused verbatim as §6 here |
@@ -363,10 +363,13 @@ than twelve.
 
 ## 12. Known debt, stated rather than hidden
 
-1. `cafe/model.py` duplicates the live half of `labs/client.py`. Unify after this
-   lands, once CI has proven both paths.
+1. ~~`cafe/model.py` duplicates the live half of `labs/client.py`.~~ **Paid on
+   this branch:** both clients share `_post_chat_completions` in `cafe/model.py`;
+   each keeps its own serialization, redaction, and error strings (parity-probed,
+   `--replay` output byte-identical).
 2. Live sessions are non-deterministic by design; the SOTA tables and the
    "expected output" prose must describe *shapes*, not exact strings.
 3. Small local models will underperform on S04/S12 (§3.5).
 4. Preview videos (`lessons/videos/`) still show trivia. They are explicitly
-   labelled as lagging previews; re-recording is out of scope.
+   labelled as lagging previews; the re-record procedure is `docs/RELEASING.md`
+   §4 (interactive generation + LFS + bucket publish, one PR).

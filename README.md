@@ -66,8 +66,8 @@ product.
 
 1. **Read the lesson** (20–40 min) — theory in depth, a diagram, and a dated
    state-of-the-art table (what the industry currently does about it, with sources).
-2. **Run the notebook** (30–60 min) — a small complete system from a real domain
-   (a hotel concierge, a repair shop, a trivia host), with **predict-first**
+2. **Run the notebook** (30–60 min) — the session's slice of the café-counter
+   agent in `cafe/`, against your live endpoint, with **predict-first**
    experiments and attempt-before-solution exercises.
 3. **Self-check** — foldable quiz questions at the end of the lesson.
 4. **(Optional) hard path** — after the notebook, `labs/sNN_*.md` against
@@ -93,8 +93,12 @@ git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
 uv sync --frozen   # creates .venv/ (Python 3.11+, pinned by uv.lock)
 # Open this folder in Cursor (companion rule in .cursor/rules/).
-# Notebooks: Cursor's notebook UI, or:
-uv run jupyter lab
+# Point the course at your OpenAI-compatible endpoint, prove it, open S01:
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+export CAFE_API_KEY=ollama                       # any non-empty string for a local server
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor
+uv run marimo edit notebooks/s01_agent_loop_toy.py
 ```
 
 Optional hard path (complete host already in `labs/trivia_host/`):
@@ -112,9 +116,9 @@ Cursor's; lab `--live` uses separate shell `OPENAI_*`. See
 [docs/COMPANION.md](docs/COMPANION.md) and `labs/README.md`.
 
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
-not need Git LFS. The notebooks are Python standard library only — the venv
-supplies just the tooling (`jupyterlab` to run them, `markdown` to render the
-lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
+not need Git LFS. Course logic is Python standard library only — the venv
+supplies just the tooling (`marimo` to run the notebooks, `markdown` to render
+the lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
 
 ## Repository layout
 
@@ -126,7 +130,7 @@ See [lessons/README.md](lessons/README.md).
 | --- | --- |
 | `lessons/SNN-*.html` | Learner lesson (plus `videos/`) |
 | `lessons/src/SNN-*.md` | Authoring source — not a second course |
-| `notebooks/sNN_*.ipynb` | Stdlib toy (S01–S12) |
+| `notebooks/sNN_*_toy.py` | Marimo toy driving `cafe/` (S01–S12) |
 | `labs/sNN_*.md` | Optional hard-path protocol, not lesson text |
 | `bridges/sNN.md` | Cursor companion rung |
 | `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
@@ -136,11 +140,12 @@ See [lessons/README.md](lessons/README.md).
 
 ## The toy-domain rule
 
-Everything here is a **toy from a real domain** (a weather bot, a mopbot, a trivia
-host) — never a paste-ready production harness. Toy code is for reading, running,
+Everything in the core path is **one toy from one familiar domain** — a
+neighbourhood-café counter assistant (orders, tickets, allergens, the till) —
+never a paste-ready production harness. Toy code is for reading, running,
 and breaking. The numbers you print in a notebook do not substitute for a banked
-eval baseline on a system you own. The optional labs accumulate **one** trivia-host
-spine — still a toy domain. If that spine grows file/shell tools, rewrite it back.
+eval baseline on a system you own. The optional labs are a **separate** trivia-host
+spine — still a toy domain. If either spine grows file/shell tools, rewrite it back.
 
 ## Contributing
 

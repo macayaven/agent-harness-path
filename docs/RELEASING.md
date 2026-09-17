@@ -16,13 +16,13 @@ participant content, private hostnames and machine paths.
 
 ```sh
 uv sync --frozen
-uv run --frozen python -m unittest discover -s tests -v
-for nb in notebooks/s*.py; do
+COURSE_MODE=stub uv run --frozen python -m unittest discover -s tests -v
+for nb in notebooks/s*_toy.py; do
   COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run --frozen python "$nb" > /dev/null
 done
-uv run --frozen marimo check --strict --ignore MF004 notebooks
-uv run --frozen marimo check --fix --ignore MF004 notebooks
-git diff --exit-code -- notebooks
+uv run --frozen marimo check --strict --ignore MF004 notebooks labs/app.py
+uv run --frozen marimo check --fix --ignore MF004 notebooks labs/app.py
+git diff --exit-code -- notebooks labs/app.py
 uv run --frozen python lessons/build.py
 git diff --exit-code -- lessons/*.html lessons/index.html
 test -z "$(git status --porcelain --untracked-files=all -- lessons/)"
@@ -50,6 +50,31 @@ git archive --format=tar.gz --prefix=agent-harness-path-v0.3.0/ \
 ```
 
 Attach only the course archive. Do not attach a third-party application bundle.
+
+## 4. Re-record the video previews (human step, after the cut lands)
+
+The `▶` previews are Google Gemini Notebook Video Overviews, archived in Git
+LFS under `lessons/videos/` and served from the GCS bucket in
+`scripts/publish_videos.sh` (`lessons/site_urls.py` rewrites the hrefs at
+build time). Generation is interactive and cannot run in CI; the lessons carry
+an explicit lag label until this is done.
+
+```sh
+# 1. In Gemini Notebook, one Video Overview per lesson from the matching
+#    lessons/src/SNN-*.md (English), plus S00 from lessons/src/index.md.
+#    Download each as SNN-<slug>.mp4 (S00-course-overview.mp4).
+# 2. Replace the LFS files (needs smudge: git lfs pull first on a fresh clone).
+cp ~/Downloads/'S'*.mp4 lessons/videos/
+# 3. Publish to the bucket (needs gcloud auth).
+BUCKET=macayaven-agent-harness-path-videos PROJECT=<id> scripts/publish_videos.sh
+# 4. Drop the lag label in lessons/src/S01..S12 (keep the rest of the line):
+#    "**Video:** [Gemini Notebook overview](videos/SNN-slug.mp4) — generated
+#    with Google Gemini Notebook; preview or review, never a substitute for
+#    the notebook." Then rebuild the HTML and re-run section 2.
+```
+
+Do not commit a half-published set: LFS files, bucket objects, and the
+Video lines move together, in one reviewed PR.
 
 ## Migration
 
