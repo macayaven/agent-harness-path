@@ -2,6 +2,12 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## Unreleased
+
+- Rewrite leftover CourseWeave application wording in `study/` (Use this lesson,
+  Continue, Course assistant, guide records) so study protocols match the Cursor
+  companion path.
+
 ## 0.3.0 — 2026-09-16
 
 Supersedes **v0.2.0**. Take the course in Cursor, with authored session bridges

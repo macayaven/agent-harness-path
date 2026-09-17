@@ -9,6 +9,6 @@ Write this after the cold acceptance/holdout stage and before involving a partic
 
 Keep it to one page that a non-engineer can read in about two minutes. Test this with your own reading before claiming it is understandable to someone else.
 
-The Course assistant is available in **Write your pilot page; invite critique**. Share only the draft you deliberately choose to send. A useful request is: “Identify one unclear data-handling promise or unsupported claim in my draft; ask me to resolve it.” Revise the final wording yourself. Keep real-session transcripts and participant data out of the conversation.
+The Cursor companion can critique a draft you paste on purpose. A useful request is: “Identify one unclear data-handling promise or unsupported claim in my draft; ask me to resolve it.” Revise the final wording yourself. Keep real-session transcripts and participant data out of the conversation.
 
-Save the final page in your local project and reference it in the guide. That records a page; it does not assert that the human pilot has happened. Then move to **Unaided human pilot**.
+Save the final page in your local project. That records a page; it does not assert that the human pilot has happened. Then run the unaided human pilot ([S14-PILOT.md](S14-PILOT.md)).
