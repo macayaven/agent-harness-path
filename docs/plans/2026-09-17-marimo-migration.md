@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| **Status** | Ready to execute — revision 2 independently audited on 2026-09-17 |
+| **Status** | Ready to execute — revision 3, serialization-verified on 2026-09-17 |
 | **Created** | 2026-09-17 |
 | **Target repo** | `agent-harness-path` @ `main` (`ee43b13`) |
 | **Execution branch** | `feat/marimo-migration` |
@@ -53,6 +53,12 @@ pre-authorised decision rule.
 10. **Do not execute the migration from `main`.** The plan and its governing
     `AGENTS.md` are carried by `origin/plan/marimo-migration`; WP0 creates the
     execution branch from that exact remote branch.
+11. **Never pass `--unsafe-fixes` to `marimo check`.** It deletes comment-only
+    cells, which in this repository are the predict-first and attempt
+    skeletons (probe P25). Using it destroys course pedagogy silently and is an
+    immediate stop-and-escalate condition.
+12. **Every committed notebook must be marimo-canonical** (§6.11). Hand-authored
+    shape is not authoritative; marimo's serializer is.
 
 ### 0.3 The single source of truth for "is it done"
 
@@ -235,9 +241,17 @@ Re-run P1–P3 on the macOS host before WP1 (§WP0 step 4).
 | P19 | Security floor | marimo advisories | `< 0.23.15` affected by CVE-2026-75149 / CVE-2026-67618; `0.24.2` is above the floor |
 | P20 | The plan's own static detector is exact | `bound_names`/`loaded_names` from §9.1 run over all 12 converted files | reports precisely the 5 files execution proves broken, 10 symbols, **zero false positives** |
 | P21 | `edit`/`run` performs an update check unless disabled | inspected marimo 0.24.2 `_cli/cli.py` and launched a local editor | every learner-facing server command sets `MARIMO_SKIP_UPDATE_CHECK=1`; notebook script execution also runs behind the no-network site hook |
+| P22 | **marimo rewrites hand-authored files into a canonical form** | round-tripped the §6.5 template through marimo's own serializer | authored bytes ≠ canonical bytes; the canonical form is a **fixed point** (normalising twice equals normalising once) |
+| P23 | **A pure single-function cell is hoisted to `@app.function`** | four-case probe | hoisted **iff** the cell body is exactly one function definition whose free variables resolve only to setup-block globals, other `@app.function`s or builtins. A closure over another cell's output, or any extra statement, prevents hoisting |
+| P24 | Setup-block globals are stripped from cell signatures | same round trip | `def s01_reveal_source_x(mo, inspect, solution_x)` normalises to `def s01_reveal_source_x(mo)`; only other cells' outputs remain parameters |
+| P25 | **`--fix --unsafe-fixes` deletes predict/attempt cells** | two comment-only cells through both fix modes | plain `--fix`: both survive. `--unsafe-fixes`: **both deleted**. Never use `--unsafe-fixes` |
+| P26 | `marimo check --strict` cannot enforce canonical form alone | `--strict` on an un-hoisted file | exit `0` despite the file being non-canonical. Canonicalisation needs the explicit `--fix` + `git diff --exit-code` gate in §6.11 |
+| P27 | `marimo check --fix` **is** the supported normaliser | compared `--fix` output with the serializer's output | byte-identical, and a no-op on an already-canonical file. No private API is required |
 
-**Two facts drive the whole plan**: P5/P6 (conversion is a refactor, not a
-transcode) and P18 (only execution proves correctness).
+**Three facts drive the whole plan**: P5/P6 (conversion is a refactor, not a
+transcode), P18 (only execution proves correctness), and P22/P23 (marimo owns the
+file's final shape, so the authored form must be normalised to marimo's fixed
+point or the repository will churn on the first editor save).
 
 ---
 
@@ -275,7 +289,7 @@ change is wrong — not the invariant.
 | I5 | No network-capable module is imported by any toy | `test_no_network_modules` |
 | I6 | Every cell is uniquely named and follows the naming scheme | `test_cells_are_named_and_unique` |
 | I7 | No cross-cell dependency on a `_`-private name | `test_no_cross_cell_private_dependencies` |
-| I8 | Attempt cells remain unanswered and contain no solution | `test_attempt_cells_are_unanswered` |
+| I8 | Attempt skeletons remain unanswered and contain no solution | `test_attempt_functions_are_unanswered` |
 | I9 | Every original cell ID is accounted for in order, and all final executable units (setup, app functions and cells, including decorators) match receipts | `test_original_cell_ids_are_accounted_for`, `test_executable_unit_receipts_match` |
 | I10 | Every notebook executes headless, exit 0, under 120 s | `test_every_notebook_executes` |
 | I11 | The lab app never references a credential and defaults to replay | `test_app_shell_is_replay_first`, `test_app_shell_has_no_credential_strings` |
@@ -284,6 +298,8 @@ change is wrong — not the invariant.
 | I14 | Only `MF004` is suppressed in `marimo check`, and only on predict/attempt cells | `test_comment_only_cells_are_intentional`, `test_ci_has_exactly_one_marimo_ignore` |
 | I15 | Headless execution attempts no outbound network connection | `tests/no_network_site/sitecustomize.py` + `test_every_notebook_executes` |
 | I16 | Migration does not alter the lesson concepts, lab runner, host, reference implementation or cassettes | original-cell mapping + unchanged-path diff gates in WP7/WP11 |
+| I17 | Every committed notebook and `labs/app.py` is marimo-canonical: `marimo check --fix` is a no-op on it | `test_notebooks_are_canonically_serialized` + the §6.11 CI gate |
+| I18 | Attempt skeletons and reference solutions survive normalisation as named `@app.function` units | `test_attempt_functions_are_unanswered`, `test_each_solution_has_a_matching_gated_renderer` |
 
 ---
 
@@ -322,7 +338,7 @@ A `_name` defined in cell A and read in cell B must become one of:
 
 | Situation | Fix |
 |---|---|
-| Shared helper function used by 2+ cells | Move to `@app.function` (top-level, no underscore) |
+| Any pure function with no cross-cell free variables | Move to `@app.function` (top-level, no underscore). This is not a preference: marimo hoists it automatically on normalisation (P23), so authoring it anywhere else just creates a diff |
 | Shared constant / import used by 2+ cells | Move into the `with app.setup:` block |
 | Genuinely cell-local scratch value | Keep the `_` prefix, keep it inside its own cell |
 | Demo value the next cell inspects | Rename to a public `sNN_`-free descriptive name and return it |
@@ -355,7 +371,7 @@ with app.setup:
     import json
 
 @app.function
-def shared_helper(x):          # only if 2+ cells need it
+def shared_helper(x):          # any pure function; marimo hoists it anyway (P23)
     ...
 
 @app.cell
@@ -374,6 +390,10 @@ pinned marimo version. The `mo` import lives in its own cell named `sNN_imports`
 Functions decorated with `@app.function` are module globals: cells call them
 directly and do **not** list them as cell parameters. Only values returned by an
 `@app.cell` appear as parameters of dependent cells.
+Setup-block names are module globals too, and are likewise **never** cell
+parameters (P24). Every notebook has exactly one `with app.setup:` block; because
+an empty `with` body is a syntax error, and because §6.5 needs it, the block
+always contains at least `import inspect`.
 
 ### 6.3 Cell naming scheme (enforced by I6)
 
@@ -385,13 +405,25 @@ Regex: `^(test_)?s(0[1-9]|1[0-2])_[a-z0-9]+(_[a-z0-9]+)*$`
 | Narrative markdown | `sNN_md_<topic>` | `@app.cell(hide_code=True)` |
 | Predict-first prompt | `sNN_predict_<topic>` | `@app.cell(hide_code=True)` |
 | Demonstration / experiment | `sNN_demo_<topic>` | `@app.cell` |
-| Learner attempt skeleton | `sNN_attempt_<topic>` | `@app.cell` |
 | Reveal switch | `sNN_reveal_<topic>` | `@app.cell(hide_code=True)` |
-| Reference solution definition | `sNN_solution_<topic>` | `@app.cell(hide_code=True)` |
 | Gated solution rendering | `sNN_reveal_source_<topic>` | `@app.cell(hide_code=True)` |
 | In-notebook assertion | `test_sNN_<claim>` | `@app.cell` |
 
 `def _(` is **forbidden** anywhere in `notebooks/`. Names are unique per file.
+
+Top-level units are **not** `sNN_`-prefixed, because they are module globals and
+marimo produces them by hoisting (P23):
+
+| Top-level purpose | Name form | Decorator |
+|---|---|---|
+| Learner attempt skeleton | `attempt_<topic>` | `@app.function` |
+| Reference solution | `solution_<topic>` | `@app.function(hide_code=True)` |
+| Shared pure helper | `<verb>_<noun>` | `@app.function` |
+
+`<topic>` is identical across the `attempt_`, `solution_`, `sNN_reveal_` and
+`sNN_reveal_source_` units of one exercise; the pairing test relies on it.
+A comment-only attempt skeleton stays a cell named `sNN_attempt_<topic>`
+(it defines no function, so it is not hoisted and `MF004` covers it).
 
 ### 6.4 The underscore rule
 
@@ -404,6 +436,12 @@ This replaces the Jupyter "attempt cell then `# SOLUTION` cell" pattern, and is
 strictly stronger: the solution is not visible until the learner asks for it,
 while still being defined for the comparison harness.
 
+The listing below is **marimo-canonical**: it was round-tripped through
+`marimo check --fix` and is a fixed point, passes `marimo check --strict`, and
+executes headless printing `Attempt pending`. Copy its shape exactly. In
+particular the attempt and the solution are `@app.function` units, not cells —
+marimo hoists them regardless of how they are authored (P23).
+
 ```python
 @app.cell(hide_code=True)
 def s01_predict_tool_results(mo):
@@ -415,12 +453,10 @@ def s01_predict_tool_results(mo):
     return
 
 
-@app.cell
-def s01_attempt_tool_results():
-    def attempt_tool_results(weather_calls):
-        proposed_results = []  # Your attempt; do not change weather_calls to hide a missing result.
-        return proposed_results
-    return (attempt_tool_results,)
+@app.function
+def attempt_tool_results(weather_calls):
+    proposed_results = []  # Your attempt; do not change weather_calls to hide a missing result.
+    return proposed_results
 
 
 @app.cell(hide_code=True)
@@ -432,18 +468,16 @@ def s01_reveal_tool_results(mo):
     return (reveal_tool_results,)
 
 
-@app.cell(hide_code=True)
-def s01_solution_tool_results():
-    def solution_tool_results(weather_calls):
-        return [
-            {"role": "tool", "tool_call_id": call["id"], "content": "..."}
-            for call in weather_calls
-        ]
-    return (solution_tool_results,)
+@app.function(hide_code=True)
+def solution_tool_results(weather_calls):
+    return [
+        {"role": "tool", "tool_call_id": call["id"], "content": "..."}
+        for call in weather_calls
+    ]
 
 
 @app.cell(hide_code=True)
-def s01_reveal_source_tool_results(mo, inspect, reveal_tool_results, solution_tool_results):
+def s01_reveal_source_tool_results(mo, reveal_tool_results):
     mo.stop(
         not reveal_tool_results.value,
         mo.md("*Solution hidden. Flip the switch once you have run your attempt.*"),
@@ -453,11 +487,13 @@ def s01_reveal_source_tool_results(mo, inspect, reveal_tool_results, solution_to
 
 
 @app.cell
-def s01_demo_compare(attempt_tool_results, solution_tool_results, weather_calls):
+def s01_demo_compare(weather_calls):
     supplied = attempt_tool_results(weather_calls)
     if not supplied:
-        print("Attempt pending: supply result records and explain your reasoning "
-              "before comparing the reference.")
+        print(
+            "Attempt pending: supply result records and explain your reasoning "
+            "before comparing the reference."
+        )
     else:
         requested = {call["id"] for call in weather_calls}
         print("Covered IDs:", sorted({r["tool_call_id"] for r in supplied}))
@@ -474,7 +510,12 @@ Load-bearing details, all verified:
 - The literal strings `proposed_results = []`, `Attempt pending` and (for S02)
   `return None` **must survive** — `tests/test_marimo_notebooks.py` asserts them,
   inherited from the retired `tests/test_pilot_notebooks.py`.
-- `inspect` is imported in the `app.setup` block.
+- `inspect` and `attempt_*`/`solution_*` are module globals: they are **called
+  directly** and never appear in a cell signature (P23, P24). Only `weather_calls`
+  — a real cell output — remains a parameter.
+- `@app.function(hide_code=True)` is the canonical decorator marimo emits for a
+  hoisted solution; keep the `hide_code` flag so the reference body is collapsed
+  in the editor as well as gated in the output.
 
 ### 6.6 In-notebook assertions
 
@@ -502,6 +543,10 @@ predict-first pedagogy, not dead code (probe P17). The loophole is closed by
 `test_comment_only_cells_are_intentional`, which requires every comment-only cell
 to be named `sNN_predict_*` or `sNN_attempt_*`. No other `--ignore` may be added
 without amending this section.
+
+`--unsafe-fixes` is **forbidden** (hard rule 11). Measured: it deletes every
+comment-only cell, i.e. exactly the predict-first and attempt skeletons this
+course is built on (P25).
 
 ### 6.9 Side effects and mutable state
 
@@ -567,6 +612,53 @@ Rules:
 - Source maps are written by the worker that owns the corresponding notebook;
   their write scopes are disjoint. The final receipt test separately hashes the
   complete executable source, including decorators.
+- Attempt skeletons and reference solutions normalise to top-level units, so
+  their `targets` entries are `function:attempt_<topic>` and
+  `function:solution_<topic>`, not `cell:` names. Write the source map **after**
+  canonicalising the notebook (§6.11), never before.
+
+### 6.11 Canonical serialization — the fixed point
+
+This section exists because marimo, not the author, owns a notebook's final
+bytes. Hand-authored shape is rewritten the first time anyone edits the file in
+the editor, which with autosave enabled would silently break receipts (I9) and
+produce unreviewable diffs.
+
+**The rule.** A notebook is committed only in the form that
+`marimo check --fix` produces. Normalisation is idempotent (P22), so this form is
+unique and reproducible on any host.
+
+**Normalise (during authoring):**
+
+```bash
+uv run marimo check --fix --ignore MF004 notebooks labs/app.py
+```
+
+**Gate (must be part of every notebook, batch, CI and release check):**
+
+```bash
+uv run marimo check --fix --ignore MF004 notebooks labs/app.py
+git diff --exit-code -- notebooks labs/app.py
+```
+
+If the second command fails, the committed file was not canonical. Commit the
+normalisation, do not suppress the gate.
+
+**Why `--strict` is not enough.** `marimo check --strict` returns `0` on a file
+whose pure-function cells have not been hoisted (P26). It catches formatting, not
+structure. Both gates are required, and they are different gates.
+
+**What normalisation changes, exactly** (all measured, P22–P24):
+
+1. A cell whose body is exactly one function definition, with no free variable
+   from another cell, becomes `@app.function` and its cell name disappears.
+2. Setup-block globals and `@app.function` names are removed from cell
+   signatures; only other cells' outputs survive as parameters.
+3. Markdown bodies are re-indented and blank lines are normalised.
+
+Consequence for authors: never invent a cell name for something marimo will
+hoist, and never list a module global as a cell parameter. §6.3 and §6.5 already
+encode the resulting shapes.
 
 ---
 
@@ -945,7 +1037,7 @@ Their three contracts are carried forward by, respectively,
 `test_each_file_declares_a_marimo_app` (kernel/format),
 `test_executable_unit_receipts_match` (final receipts),
 `test_original_cell_ids_are_accounted_for` (migration identity)
-and `test_attempt_cells_are_unanswered` (attempt purity).
+and `test_attempt_functions_are_unanswered` (attempt purity).
 **No contract is dropped.**
 
 **Step 4.** Run the unaffected suite explicitly:
@@ -1043,6 +1135,8 @@ in `try/except` and print the failure.
 ```bash
 uv run python notebooks/s01_agent_loop_toy.py            # exit 0
 uv run marimo check --strict --ignore MF004 notebooks/s01_agent_loop_toy.py
+uv run marimo check --fix --ignore MF004 notebooks/s01_agent_loop_toy.py
+git diff --exit-code -- notebooks/s01_agent_loop_toy.py   # canonical (§6.11)
 uv run python -m unittest \
   tests.test_marimo_notebooks.SourceIdentity.test_remaining_ipynb_sources_match_the_frozen_index -v
 git rm notebooks/s01_agent_loop_toy.ipynb
@@ -1182,6 +1276,8 @@ Then apply, in this order:
 ```bash
 uv run python notebooks/$NB.py                                  # exit 0
 uv run marimo check --strict --ignore MF004 notebooks/$NB.py    # exit 0
+uv run marimo check --fix --ignore MF004 notebooks/$NB.py
+git diff --exit-code -- notebooks/$NB.py                        # canonical (§6.11)
 uv run python -m unittest \
   tests.test_marimo_notebooks.SourceIdentity.test_remaining_ipynb_sources_match_the_frozen_index -v
 git rm notebooks/$NB.ipynb
@@ -1441,6 +1537,8 @@ Two ways to drive the same runner — identical code path, identical results:
 ```bash
 uv run python -m unittest labs/test_contracts.py
 uv run marimo check --strict --ignore MF004 labs/app.py
+uv run marimo check --fix --ignore MF004 labs/app.py
+git diff --exit-code -- labs/app.py                             # canonical (§6.11)
 uv run python labs/run.py --all --replay        # unchanged, still green (I12)
 git diff --exit-code -- labs/run.py labs/client.py labs/trivia_host labs/reference labs/cassettes
 ```
@@ -1531,6 +1629,8 @@ for notebook in notebooks/s*_toy.py; do
   MARIMO_SKIP_UPDATE_CHECK=1 uv run --frozen python "$notebook" > /dev/null
 done
 uv run --frozen marimo check --strict --ignore MF004 notebooks labs/app.py
+uv run --frozen marimo check --fix --ignore MF004 notebooks labs/app.py
+git diff --exit-code -- notebooks labs/app.py
 uv run --frozen python scripts/gen_marimo_receipts.py --check
 ```
 
@@ -1716,6 +1816,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -2062,7 +2163,7 @@ class Safety(unittest.TestCase):
 
 
 class Pedagogy(unittest.TestCase):
-    def test_attempt_cells_are_unanswered(self):
+    def test_attempt_functions_are_unanswered(self):
         expectations = {
             "s01_agent_loop_toy.py": "proposed_results = []",
             "s02_scripted_user_eval_toy.py": "return None",
@@ -2072,13 +2173,21 @@ class Pedagogy(unittest.TestCase):
             if not path.exists():
                 continue
             text = source_of(path)
-            attempts = [cell for cell in cell_defs(ast.parse(text)) if "_attempt_" in cell.name]
+            tree = ast.parse(text)
+            # After canonicalisation an attempt skeleton is a top-level
+            # @app.function; a comment-only skeleton stays a cell (§6.3).
+            units = [fn for fn in app_function_defs(tree) if fn.name.startswith("attempt_")]
+            units += [cell for cell in cell_defs(tree) if "_attempt_" in cell.name]
             with self.subTest(notebook=name):
-                self.assertTrue(attempts, "no attempt cell found")
-                joined = "\n".join(source_segment_with_decorators(text, cell) for cell in attempts)
+                self.assertTrue(units, "no attempt unit found")
+                joined = "\n".join(
+                    source_segment_with_decorators(text, unit) for unit in units
+                )
                 self.assertIn(skeleton, joined)
                 self.assertIn("Attempt pending", text)
                 self.assertNotIn("# SOLUTION", joined)
+                for unit in units:
+                    self.assertNotIn("solution", unit.name)
 
     def test_every_notebook_has_two_assertion_cells(self):
         for path in existing_notebook_paths():
@@ -2089,18 +2198,50 @@ class Pedagogy(unittest.TestCase):
     def test_each_solution_has_a_matching_gated_renderer(self):
         for path in existing_notebook_paths():
             text = source_of(path)
-            cells = {cell.name: cell for cell in cell_defs(ast.parse(text))}
-            for name, cell in cells.items():
-                if "_solution_" not in name or "_reveal_source_" in name:
+            tree = ast.parse(text)
+            cells = {cell.name: cell for cell in cell_defs(tree)}
+            prefix = path.name[:3]
+            for fn in app_function_defs(tree):
+                if not fn.name.startswith("solution_"):
                     continue
-                topic = name.split("_solution_", 1)[1]
-                expected = f"{path.name[:3]}_reveal_source_{topic}"
-                with self.subTest(notebook=path.name, solution=name):
-                    self.assertIn("hide_code=True", source_segment_with_decorators(text, cell))
-                    self.assertIn(expected, cells)
-                    renderer = source_segment_with_decorators(text, cells[expected])
-                    self.assertIn("hide_code=True", renderer)
-                    self.assertIn("mo.stop(", renderer)
+                topic = fn.name[len("solution_"):]
+                switch = f"{prefix}_reveal_{topic}"
+                renderer = f"{prefix}_reveal_source_{topic}"
+                with self.subTest(notebook=path.name, solution=fn.name):
+                    self.assertIn("hide_code=True", source_segment_with_decorators(text, fn))
+                    self.assertIn(switch, cells, "missing reveal switch")
+                    self.assertIn(renderer, cells, "missing gated renderer")
+                    body = source_segment_with_decorators(text, cells[renderer])
+                    self.assertIn("hide_code=True", body)
+                    self.assertIn("mo.stop(", body)
+                    self.assertIn(f"inspect.getsource({fn.name})", body)
+
+
+class Canonical(unittest.TestCase):
+    def test_notebooks_are_canonically_serialized(self):
+        targets = [*existing_notebook_paths(), ROOT / "labs" / "app.py"]
+        with tempfile.TemporaryDirectory() as tmp:
+            for path in targets:
+                if not path.exists():
+                    continue
+                original = source_of(path)
+                copy = Path(tmp) / path.name
+                copy.write_text(original, encoding="utf-8")
+                done = subprocess.run(
+                    [
+                        sys.executable, "-m", "marimo", "check", "--fix",
+                        "--ignore", "MF004", str(copy),
+                    ],
+                    capture_output=True, text=True, timeout=120,
+                )
+                with self.subTest(notebook=path.name):
+                    self.assertEqual(done.returncode, 0, done.stderr[-2000:])
+                    self.assertEqual(
+                        copy.read_text(encoding="utf-8"),
+                        original,
+                        f"{path.name} is not marimo-canonical; run "
+                        "`uv run marimo check --fix --ignore MF004 notebooks labs/app.py`",
+                    )
 
 
 class Receipts(unittest.TestCase):
@@ -2137,8 +2278,16 @@ class DocumentationReferences(unittest.TestCase):
 
     def test_ci_has_exactly_one_marimo_ignore(self):
         workflow = source_of(ROOT / ".github" / "workflows" / "verify.yml")
-        self.assertEqual(re.findall(r"--ignore\s+(\S+)", workflow), ["MF004"])
+        # Two invocations by design: --strict lints, --fix proves the fixed point.
+        self.assertEqual(re.findall(r"--ignore\s+(\S+)", workflow), ["MF004", "MF004"])
         self.assertEqual(workflow.count("marimo check --strict --ignore MF004"), 1)
+        self.assertEqual(workflow.count("marimo check --fix --ignore MF004"), 1)
+
+    def test_no_workflow_or_doc_enables_unsafe_fixes(self):
+        paths = [ROOT / ".github" / "workflows" / "verify.yml", *current_surface_paths()]
+        for path in paths:
+            with self.subTest(path=path.name):
+                self.assertNotIn("--unsafe-fixes", source_of(path))
 
 
 if __name__ == "__main__":
@@ -2362,6 +2511,12 @@ else in that file stays byte-identical.
       - name: Lint marimo notebooks and the lab shell
         run: uv run marimo check --strict --ignore MF004 notebooks labs/app.py
 
+      - name: Verify notebooks are marimo-canonical
+        run: |
+          set -euo pipefail
+          uv run marimo check --fix --ignore MF004 notebooks labs/app.py
+          git diff --exit-code -- notebooks labs/app.py
+
       - name: Verify marimo executable receipts
         run: uv run python scripts/gen_marimo_receipts.py --check
 
@@ -2379,6 +2534,9 @@ Notes, binding:
   `labs/run.py --all --replay` are **unchanged**.
 - Notebook execution injects `tests/no_network_site/sitecustomize.py`; an
   outbound socket attempt fails the job rather than relying on policy text.
+- The canonicalisation step runs `--fix` and then fails on any resulting diff, so
+  CI proves the committed bytes are marimo's fixed point (§6.11). `--strict`
+  alone cannot do this (P26). `--unsafe-fixes` must never appear (P25).
 - No step gains network access beyond what `uv sync` already needed.
 - `--live` appears nowhere.
 
@@ -2417,6 +2575,11 @@ explicit rather than leaving an executor to interpret it.
 > - Reference solutions are defined unconditionally and revealed with
 >   `mo.ui.switch` + `mo.stop`, never pasted below the attempt in plain sight.
 > - Each notebook carries at least two `test_sNN_*` assertion cells.
+> - Notebooks are committed **only** in marimo-canonical form: run
+>   `uv run marimo check --fix --ignore MF004 notebooks labs/app.py` and commit the
+>   result. Never pass `--unsafe-fixes`; it deletes predict-first and attempt
+>   cells. Attempt skeletons and reference solutions are top-level
+>   `attempt_<topic>` / `solution_<topic>` `@app.function` units, never cells.
 > - Every migrated notebook has a sidecar under
 >   `tests/fixtures/marimo-source-maps/` accounting for all pre-migration cell
 >   IDs in order and every final executable unit.
@@ -2443,6 +2606,7 @@ with the exit code and, for row 2, stdout.
 | 3 | `uv run python -m unittest discover -s tests -v` | 0 | |
 | 4 | `set -e; for nb in notebooks/s*_toy.py; do PYTHONPATH="$PWD/tests/no_network_site${PYTHONPATH:+:$PYTHONPATH}" MARIMO_SKIP_UPDATE_CHECK=1 uv run python "$nb" > /dev/null; done` | 0 | |
 | 5 | `uv run marimo check --strict --ignore MF004 notebooks labs/app.py` | 0 | |
+| 5b | `uv run marimo check --fix --ignore MF004 notebooks labs/app.py && git diff --exit-code -- notebooks labs/app.py` | 0 (already canonical, §6.11) | |
 | 6 | `uv run python scripts/gen_marimo_receipts.py --check` | 0 | |
 | 7 | `uv run python lessons/build.py` | 0 | |
 | 8 | `git diff --exit-code -- lessons` | 0 (no drift) | |
@@ -2593,11 +2757,32 @@ c285dfd docs: rewrite AGENTS.md as a contributor charter for the course redesign
 ab9eee9 docs: add the empirically verified marimo migration execution plan
 ```
 
-Revision 2 closes the independent-audit gaps: execution-branch ancestry,
+Revision 2 closed the independent-audit gaps: execution-branch ancestry,
 worktree integration, intermediate RED semantics, original-cell accounting,
 network blocking, exact assertion cells, stale-document scope, receipt coverage,
 lab-output reactivity, GitHub Actions trigger timing, clean-clone verification,
 and branch/PR handoff.
+
+Revision 3 fixes a **blocking** defect found by serialization testing. marimo
+normalises a notebook on save: a pure single-function cell is hoisted to
+`@app.function` and setup globals are dropped from cell signatures (P22–P24,
+P27). Consequences, all now corrected:
+
+- Revision 2's attempt test searched for a **cell** named `*_attempt_*`. Against
+  a canonical notebook it finds none, so WP3's own gate could never go green and
+  the pilot would have dead-ended under hard rule 8. Measured: `0` attempt cells.
+- The §6.5 template was not the form marimo produces, so every worker would have
+  authored files that the first editor save rewrote — churning receipts (I9)
+  under the autosave setting revision 2 had just enabled.
+- `--unsafe-fixes` deletes every comment-only cell, i.e. the whole predict-first
+  and attempt apparatus (P25). It is now forbidden by hard rule 11 and guarded by
+  a test.
+- `marimo check --strict` returns `0` on a non-canonical file (P26), so a new
+  `--fix` + `git diff --exit-code` gate enforces the fixed point (§6.11).
+
+The corrected tests were executed against a real canonical notebook: the three
+rewritten checks pass, and the canonical guard correctly fails a hand-authored
+file with an actionable message.
 
 Before publishing any plan revision, run:
 
