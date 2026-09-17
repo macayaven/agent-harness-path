@@ -1,42 +1,42 @@
-# S07-repair-loop — Bounded self-repair
+# S07-repair-loop — A bounded re-ask with real feedback
 
-**What this teaches:** a detected defect can be *repaired* while the run is still
-alive — but only if the retry carries new information (a curated failure view), the
-loop is capped, and the run always ends with an honest stop reason. Same-context
-retry is not repair; it is resampling.
-**Time:** ~60 min with the notebook. **Prerequisites:** S01 (the loop), S02
-(deterministic checks).
-**Hands-on (easy):** [`notebooks/s07_repair_loop_toy.ipynb`](../notebooks/s07_repair_loop_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s07_repair.md`](../labs/s07_repair.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S07-repair-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/detect.py` from S06 — you can now spot an unsafe, off-menu or out-of-scope
+ticket before it reaches the pass.
+**Today you ship:** `cafe/repair.py` — bounded regeneration when the model gets the ticket wrong.
+**What this teaches:** why a same-context retry is a resample and not a repair, why the failure view
+is an interface you design, why the cap is what turns a contradiction into an honest stop, and why
+every run must end on a named `stop_reason`.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop),
+S02 (deterministic checks and the fixture invariant), S06 (the detection layers you now feed).
+**Hands-on:** [`notebooks/s07_repair_loop_toy.py`](../notebooks/s07_repair_loop_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S07-repair-loop.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+S06 taught you to *reject* a bad ticket. So your shift now refuses a lot and serves nothing.
+Detection without repair is just a more articulate failure.
+
+The obvious fix is "ask again". That is where people quietly ship an infinite loop, or a loop that
+keeps retrying a request no draft can ever satisfy — and it looks like work being done.
+
+## The promise
+
+By the end of this session your agent re-asks with a **curated view of what failed**, stops at a cap
+you chose, and never ends in a state you cannot name. You will watch a scripted generator burn all
+three attempts on a spec it cannot satisfy, and end honestly with no ticket.
 
 ---
 
 ## The theory in depth
 
-### Detection without repair is half a mechanism
+### A retry is not a resample
 
-S02 and S04 gave you cheap, deterministic defect detection: string checks, schema
-validation, scope rules. Left alone, a check can only do one thing — fail the run.
-That is a strange place to stop. The draft failed one named check; the model can
-usually fix a named defect in one more pass; the check costs nothing to re-run.
-The repair loop closes that circuit: score the draft, and if it fails, regenerate
-with the failure as input — then score again.
-
-This is Anthropic's *evaluator-optimizer* workflow made concrete
-([anthropic.com/engineering/building-effective-agents](https://www.anthropic.com/engineering/building-effective-agents)):
-one component generates, another evaluates and returns feedback, the loop repeats.
-Their two fit criteria are worth memorizing, because they tell you when *not* to
-build this: you need (1) clear evaluation criteria, and (2) evidence that refinement
-measurably improves the output. A repair loop over a vague rubric is a random walk
-with a budget.
-
-### Naive retry is resampling, not repair
-
-The tempting implementation is `for attempt in range(3): draft = generate(prompt)`
-— same context, fresh sample. What does that buy you? If each draft passes
-independently with probability *p*, then *n* attempts pass with probability
-1 − (1 − *p*)ⁿ. You have converted your defect rate into a lottery ticket:
+The tempting implementation is `for attempt in range(3): draft = generate(prompt)` — same context,
+fresh sample. If each draft passes independently with probability *p*, *n* attempts pass with
+probability 1 − (1 − *p*)ⁿ, which is a lottery ticket, not a repair:
 
 | per-draft pass rate *p* | naive attempts | pass within cap |
 |---|---|---|
@@ -45,60 +45,46 @@ independently with probability *p*, then *n* attempts pass with probability
 | 0.05 | 3 | 0.143 |
 | 0.05 | 10 | 0.401 |
 
-Three problems. First, the independence assumption is false: failures correlate,
-because a prompt that confused the model once usually confuses it the same way
-twice — real gains sit below the table. Second, for the defects that matter
-(rare, systematic), the lottery is a bad deal: at *p* = 0.05 even ten attempts
-fail more than half the time. Third — and this is the measured result, not a
-hunch — asking a model to "check your answer" with no external signal makes
-reasoning output *worse*, not better (Huang et al., ICLR 2024,
-[arXiv:2310.01798](https://arxiv.org/abs/2310.01798)). Intrinsic self-correction
-degrades; correction works when the feedback adds information the first attempt
-lacked. A retry is worth exactly the new information it carries.
+Three problems. Independence is false — failures correlate, because a prompt that confused the model
+once usually confuses it the same way twice — so real gains sit below the table. For rare, systematic
+defects the lottery is a bad deal at any cap. And the measured result: asking a model to "check your
+answer" with no external signal makes reasoning output *worse*, not better (Huang et al., ICLR 2024,
+[arXiv:2310.01798](https://arxiv.org/abs/2310.01798)). Correction works when the feedback adds
+information the first attempt lacked — which is why `retry_messages` appends a failure view instead
+of re-sending the brief.
 
 ### The failure view is an interface, so design it
 
-If the retry is only worth its new information, the failure view *is* the repair
-loop. The SWE-agent paper makes the general version of this point: its
-agent-computer interface work showed that feedback *design* — concise, localized,
-actionable — moved outcomes more than swapping the underlying model
-([arXiv:2405.15793](https://arxiv.org/abs/2405.15793), §2). Your scorer's output
-is prompt content (S01's lesson): you are designing a message, and the design
-rules are the ACI rules:
+If the retry is worth exactly the new information it carries, the failure view *is* the repair loop.
+The SWE-agent work made the general version of this point: feedback design — concise, localized,
+actionable — moved outcomes more than swapping the model ([arXiv:2405.15793](https://arxiv.org/abs/2405.15793), §2).
+Your scorer's failures become prompt content, so they follow the same rules:
 
 - **Name the check that failed.** One line per failure, not the whole rubric.
-- **Quote the offending span.** "banned word: 'amazing'" beats "tone issues."
-- **State the constraint.** "max 10 words" — the fix target, not just the crime.
-- **Change-nothing-else framing.** Without it, models fix the named defect and
-  introduce a fresh one in the untouched half of the draft.
+- **Quote the offending span.** `'cortado' contiene milk` beats "allergen problem".
+- **State the constraint as a fix target.** What a correct draft would say, not just the crime.
+- **Change-nothing-else framing.** Without it, the model fixes the named defect and introduces a
+  fresh one elsewhere. `failure_view` opens with exactly that.
 
-What stays out: the full rubric (a wall of text buries the signal — S03's
-distraction failure), the run's history, and any prose about how disappointed
-the harness is. The failure view is a diff request, not a performance review.
+What stays out: the full rubric, the run's history, and any prose about how disappointed the harness
+is. The failure view is a diff request, not a performance review.
 
-### What context does a retry get?
+### What the retry is allowed to see
 
-The one real design decision — and the one the course makes you record. Three
-options, in increasing context:
+One real design decision, and the course makes you record it. `retry_messages(brief, failures,
+attempt, mode)` implements two modes and refuses anything else:
 
-| Retry context | What the model sees | Failure mode |
+| mode | the retry sees | risk |
 |---|---|---|
-| nothing (naive) | the original brief, again | resampling lottery; no targeting |
-| everything (full history) | brief + every failed draft + feedback | anchoring: visible failures are salient, models imitate their own rejected drafts; context grows per attempt |
-| curated | brief + failure view (failed drafts dropped) | loses the draft as a starting point for edits; the view must carry everything actionable |
+| `naive` | the identical brief again | resampling: burns attempts on the same mistake |
+| `curated` | the brief plus the failure view, failed drafts dropped | the failed draft is no longer a starting point for edits |
 
-The toy demonstrates the middle row: with failed drafts visible, the mock orbits
-its own failures — fixes the length, keeps the banned phrase it can see. This is
-why reflection-style systems store *distilled* lessons rather than full failed
-trajectories (Reflexion, [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)).
-There is no universal right answer — heavy edits favor keeping the last draft,
-fresh starts favor dropping it — which is precisely why it is a recorded decision
-and not a default. One invariant holds regardless of choice: **regeneration never
-grows the approved scope.** The retry rewrites the draft, not the task. If fixing
-the failure requires changing what was asked, that is not a retry — it is a new
-request, and it goes through the front door.
+`curated` is the default the loop calls. Dropping the failed drafts matters for a specific reason:
+text in context is salient, and a model imitates what it can see, so a visible rejected draft tends
+to return with the named detail fixed and the original defect intact. Anything that requires changing
+what was *asked* is not a repair — it is a new request, and it goes through the front door.
 
-### The cap is the epistemics; the stop reason is the contract
+### The cap is the epistemics
 
 ```mermaid
 flowchart TD
@@ -112,134 +98,146 @@ flowchart TD
     B -. policy class .-> PV[stop_reason = policy_violation<br/>never enters the loop]
 ```
 
-Why a small cap (three, in the course build): because failures correlate, the
-marginal attempt collapses fast. If attempt 2 fails the *same check* as attempt 1,
-attempt 4 is not going to save you — it is going to cost you. The cap is not a
-compromise with quality; it is the mechanism that converts "unfixable within
-budget" into an explicit, inspectable outcome instead of an infinite loop or —
-worst of all — a silently shipped failing draft.
+`repair_ticket` loops `for number in range(1, cap + 1)` with `CAP_DEFAULT = 3`: generate, score with
+`score_ticket` (S04's ticket contract, S06's menu data for allergens and sold-out items), and stop on
+the first clean draft. Because failures correlate, the marginal attempt collapses fast: if attempt 2
+fails the *same* check as attempt 1, attempt 4 will not save you — it will bill you. Firing the cap
+is not a quality compromise, it is the mechanism that converts "unfixable within budget" into an
+inspectable outcome, with the attempt log kept as the diagnosis.
 
-Which leaves the contract: every run ends with a `stop_reason` from a closed set.
-`passed` means a draft survived the scorer. `retries_exhausted` means the defect
-class is unfixable by this generator within budget — that is a *diagnosis
-surface*, not an error to swallow; it routes to error analysis (S10). And some
-outcomes must never pass through the loop at all: a policy violation is a defect
-in the *request*, not the draft, so regenerating it is incoherent. The toy uses
-three reasons; the real build adds budget and turn caps and a safety handoff.
-The rule is the same at both scales: **no run ends ambiguously.** Downstream code
-keys on the reason; a missing reason is a lie about what happened.
+### Nothing ends ambiguously, and nothing ships on a lie
 
-## Exercises (in the notebook, predict first)
+Every run returns a `stop_reason` from `STOP_REASONS = {passed, retries_exhausted,
+policy_violation}`, and **a ticket exists if and only if the reason is `passed`** — `repair_ticket`
+returns `ticket: None` in the other two cases. Downstream code keys on the reason, so a missing one
+is a lie about what happened.
 
-Run top-to-bottom. Write each prediction as a comment in the attempt cell before
-running the solution cell.
+Some defects never enter the loop at all. `_request_is_policy_blocked` stops two classes before the
+first generation: an injection pattern in the brief itself, and a spec where every requested item
+contains the declared allergen. Both are defects in the *request*, and regeneration cannot fix a bad
+request — it would only grow the approved scope to make a check pass.
 
-1. Score the mock's whole repertoire — its sampling distribution, made visible.
-   Which drafts pass, and which check kills each failure?
-2. Naive retry: predict the three drafts and the stop reason. Then the seed
-   sweep: across 30 seeds, how often does resampling luck through — and what
-   does that number have to do with the lottery table above?
-3. Curated failure view: predict which attempt passes. Read the exact feedback
-   text that was sent — would *you* know what to fix from it?
-4. Full-history retry: predict what the visible failed draft does to attempt 2.
-   Watch the loop orbit its own failures.
-5. The contradictory spec: predict the stop reason. Confirm nothing ships. Then
-   answer: which failure classes must never enter the loop at all?
+---
 
+## Build (in the notebook, predict first)
 
-After the notebook, optional hard path: [bounded regeneration](../labs/s07_repair.md) — same session, live or cassette. Skip it and the easy path is still complete.
+Open [`notebooks/s07_repair_loop_toy.py`](../notebooks/s07_repair_loop_toy.py). Same endpoint
+configuration as S06 (`CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL`, then `cafe.doctor`).
+
+1. **The contradiction, scripted.** The first run uses `make_scripted_generator` — no model — whose
+   three candidates all fail the ticket contract (each is missing `total_eur` and
+   `allergen_checked`). Before running, predict the `stop_reason`, how many attempts appear in the
+   log, and whether a ticket survives.
+2. **Every run ends with a name.** A test cell asserts the reason is in `STOP_REASONS`, that
+   `ticket is None` exactly when the reason is not `passed`, and that the attempt count never
+   exceeds `CAP_DEFAULT`. Read those three assertions before you read the implementation.
+3. **Your turn — the failure view.** Write `attempt_failure_view(failures, attempt)`: one short,
+   specific line per failure. The compare cell checks that every failure is named. The reference is
+   behind a reveal switch — flip it *after* you attempt.
+4. **Against your model.** `make_model_generator(client)` turns your endpoint into the generator and
+   `repair_ticket` runs the real loop. Predict whether your model fails the contract on attempt 1 and
+   recovers on attempt 2, or exhausts the cap entirely.
+5. **The distribution.** The checkpoint cell runs three specs and bins the results.
+
+---
+
+## Checkpoint — the number you bank
+
+Run the repair over three specs and record the **attempts-to-pass distribution**: how many passed on
+attempt 1, on 2, on 3, and how many exhausted. Write it down with the model name. It is also a budget
+signal — if most runs need three attempts, you are buying every order three times, and S11 will make
+you confront that.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Evaluator-optimizer as a named workflow ([Anthropic, Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)) | **already in this path** | This session is that workflow with a deterministic scorer. Remember their two fit criteria: clear eval criteria, and evidence refinement helps. |
-| ACI finding: feedback design beats model swaps ([SWE-agent](https://arxiv.org/abs/2405.15793), §2) | **already in this path** | The failure view is the highest-leverage surface in the loop. Design it like an interface, because it is one. |
-| Intrinsic self-correction degrades reasoning ([Huang et al., ICLR 2024](https://arxiv.org/abs/2310.01798)); apparent self-correction gains trace to external/oracle signals | **already in this path** | The evidence under "naive retry is resampling." Correction needs new information; vibes are not information. |
-| Self-generated feedback loops: [Self-Refine](https://arxiv.org/abs/2303.17651), [Reflexion](https://arxiv.org/abs/2303.11366) | **recognize** | The 2023 ancestors: the model writes its own critique. Works when self-critique adds signal; weaker than an external check, and it inherits the model's blind spots. |
-| Tool-verified correction ([CRITIC](https://arxiv.org/abs/2305.11738)): critique grounded in external tool output | **recognize** | The conceptual bridge: correction anchored to something outside the model. Your scorer is that anchor, in miniature. |
-| Productized reask loops: validators with `on_fail=REASK`, failure message re-prompted verbatim, `num_reasks` cap ([Guardrails AI docs](https://guardrailsai.com/guardrails/docs/concepts/validator_on_fail_actions)) | **adopt** | If already using the framework: exactly this loop, off the shelf — including the cap. Read the failure-pattern reports before chaining validators; reask costs multiply. |
-| Make format defects unrepresentable instead of repairing them (`strict: true` schemas, constrained decoding — [OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)) | **adopt** | S04's point, restated as triage: construction beats repair for structure. Reserve the repair loop for semantic defects construction can't reach. |
-| Calibrated LLM judge as the scorer for semantic defects ([judge playbook](https://hamel.dev/blog/posts/llm-judge/)) | **newer than this session** | S12 calibrates judges against human labels. Until then: deterministic checks carry pass/fail; a judge's verdict is uncalibrated input, not a stop condition. |
-| "Reflect on your answer" prompt-only retries | **ignore** | Intrinsic self-correction with zero new signal — measured to degrade ([Huang et al.](https://arxiv.org/abs/2310.01798)). The failure view exists precisely because this doesn't work. |
+| [Anthropic, Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | **already in this path** | This session is the evaluator-optimizer workflow with a deterministic scorer. Remember the two fit criteria: clear eval criteria, and evidence that refinement helps. |
+| [SWE-agent: Agent-Computer Interfaces](https://arxiv.org/abs/2405.15793) | **already in this path** | Feedback design beat model swaps. The failure view is the highest-leverage surface in the loop because it is an interface. |
+| [Huang et al., LLMs Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798) | **already in this path** | The evidence under "a retry is not a resample". Self-critique with no external signal degrades output; correction needs new information. |
+| [Self-Refine](https://arxiv.org/abs/2303.17651) and [Reflexion](https://arxiv.org/abs/2303.11366) | **recognize** | The self-generated-feedback ancestors. They work when the critique adds signal and inherit the model's blind spots when it does not. |
+| [CRITIC: tool-interactive critiquing](https://arxiv.org/abs/2305.11738) | **recognize** | Critique grounded in external tool output — the conceptual bridge to your scorer, which is that anchor in miniature. |
+| [Guardrails AI validators](https://github.com/guardrails-ai/guardrails) | **adopt** | On-fail reask with a bounded number of re-asks is this loop, off the shelf. Read its failure reports before chaining validators; reask costs multiply. |
+| [Instructor](https://github.com/567-labs/instructor) | **adopt** | The productized version of "validate the output, return specific errors, retry with them attached" for structured extraction. |
+| [OpenAI function-calling guide](https://developers.openai.com/api/docs/guides/function-calling) | **adopt** | Strict schemas make format defects unrepresentable instead of repairable. S04's point restated as triage: construction beats repair. |
+| ["Reflect on your answer and try again" prompt-only retries](https://arxiv.org/abs/2310.01798) | **ignore** | Intrinsic self-correction with zero new signal, measured to degrade. The failure view exists precisely because this does not work. |
+
+---
 
 ## Annotated readings
 
-- **Yang et al., [SWE-agent: Agent-Computer Interfaces Enable Automated Software
-  Engineering](https://arxiv.org/abs/2405.15793), §2.** Extract this: the ACI
-  design principles — feedback concise, localized, lint-like — and the headline
-  that interface design moved outcomes more than model choice. Your failure view
-  is an ACI for one user: the generator.
-- **Huang et al., [Large Language Models Cannot Self-Correct Reasoning
-  Yet](https://arxiv.org/abs/2310.01798) (ICLR 2024).** Extract this: without
-  external feedback, self-correction *degrades* accuracy; the gains in earlier
-  self-correction papers came from oracle labels — i.e., from new information
-  smuggled in. This is the paper that tells you what a retry is worth.
-- **Anthropic, [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)
-  — the evaluator-optimizer section.** Extract this: the two fit criteria (clear
-  evaluation criteria; demonstrable value from refinement) and the examples they
-  file it under. Note what they *don't* recommend: looping without a measurable
-  criterion.
-- **Guardrails AI, [Validator OnFail actions](https://guardrailsai.com/guardrails/docs/concepts/validator_on_fail_actions).**
-  Extract this: what REASK actually sends — the validator's error message,
-  re-prompted — and how `num_reasks` interacts with chained validators. The
-  productized version of your toy, costs included.
+- **Yang et al., [SWE-agent](https://arxiv.org/abs/2405.15793), §2.** Extract: the interface design
+  principles — feedback concise, localized, lint-like — and the headline that interface design moved
+  outcomes more than model choice. Your failure view is an interface for one user: the generator.
+- **Huang et al., [LLMs Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798).**
+  Extract: without external feedback self-correction degrades accuracy, and earlier gains came from
+  oracle labels — information smuggled in. This is the paper that tells you what a retry is worth.
+- **Anthropic, [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents).**
+  Extract: the evaluator-optimizer section and its two fit criteria. Note what they do *not*
+  recommend: looping without a measurable criterion.
+- **Shinn et al., [Reflexion](https://arxiv.org/abs/2303.11366).** Extract: what gets stored between
+  attempts — distilled lessons, not full failed trajectories. That is the curated-context decision,
+  made for you by someone else's measurements.
+- **Guardrails AI, [validators](https://github.com/guardrails-ai/guardrails).** Extract: what a reask
+  actually sends — the validator's message, re-prompted — and how the re-ask count interacts with
+  chained validators. The productized version of your toy, costs included.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"Retry is repair."** Same-context retry is a lottery ticket with a correlation
-  discount. If the context carries no new information, you are buying variance,
-  not fixing defects — and self-critique with no external signal is measured to
-  make things worse.
-- **"Paste the whole rubric into the feedback."** The failure view is an
-  interface: name the failed checks, quote the spans, state the constraints. A
-  wall of rubric text buries the one actionable line — S03's distraction failure,
-  self-inflicted.
-- **"Keep the failed drafts in context for transparency."** Visible failures
-  anchor: the model imitates what it can see, and the loop starts orbiting its
-  own rejections (the toy shows this oscillation). Curate the retry context;
-  record the decision.
-- **"If it keeps failing, raise the cap."** Attempt 2 failing the *same check* as
-  attempt 1 means the defect is systematic, not unlucky. Raising the cap converts
-  an honest, cheap stop into a slow, expensive one. The cap firing *is* the
-  diagnosis.
-- **"Everything is retryable."** Policy and scope violations are defects in the
-  request, not the draft. Regenerating them is incoherent — the loop rewrites
-  drafts, never tasks, and must never grow the approved scope to make a check
-  pass.
+- *"Retry is repair."* Same-context retry is a lottery ticket with a correlation discount, and
+  self-critique with no external signal is measured to make things worse. A retry is worth exactly
+  the new information it carries.
+- *"Paste the whole rubric into the feedback."* Feedback is prompt content. Name the failed checks,
+  quote the spans, state the constraints — a wall of rubric text buries the one actionable line.
+- *"Keep the failed drafts visible for transparency."* Visible failures anchor; the model imitates
+  what it can see. Curate the retry context, and record that you chose to.
+- *"If it keeps failing, raise the cap."* Attempt 2 failing the same check as attempt 1 means the
+  defect is systematic, not unlucky. The cap firing *is* the diagnosis.
+- *"Everything is retryable."* Policy violations are defects in the request, not the draft.
+  Regeneration must never grow the approved scope to make a check pass.
+- *"The run ended, so something shipped."* A ticket exists if and only if the reason is `passed`.
+  Anything else and `ticket` is `None` — by construction, not by convention.
+
+---
 
 ## Self-check
 
-<details><summary>Why is a same-context retry "resampling, not repair"?</summary>
-Because the model faces the identical distribution: the retry carries zero new
-information, so success is a lottery (1 − (1−p)ⁿ under independence that real,
-correlated failures violate). Worse, intrinsic self-critique with no external
-signal measurably degrades output. A retry is worth exactly the new information
-it carries — which is why the failure view is the mechanism.</details>
+<details><summary>Why is a same-context retry resampling rather than repair?</summary>
+
+Because the model faces the identical distribution: the retry carries no new information, so success
+is a lottery under an independence assumption that correlated failures violate. Worse, intrinsic
+self-critique with no external signal measurably degrades output. That is why `retry_messages` appends
+a failure view instead of re-sending the brief.</details>
 
 <details><summary>What goes into a curated failure view, and what stays out?</summary>
-In: one line per failed check, the offending span quoted, the constraint stated
-as a fix target, and a change-nothing-else framing. Out: the full rubric, the
-run history, and any prose that isn't actionable. Feedback is prompt content —
-an interface you design, concise and localized.</details>
 
-<details><summary>Why can a visible failed draft hurt the next attempt?</summary>
-Anchoring: text in context is salient, and models imitate what they can see —
-the retry keeps the rejected phrase while fixing the named detail, or orbits
-between visible failures. This is why reflection systems store distilled lessons
-rather than full failed trajectories, and why "what context does a retry get" is
-a recorded decision, not a default.</details>
+In: one line per failed check, the offending span quoted, the constraint stated as a fix target, and
+the change-nothing-else framing `failure_view` opens with. Out: the full rubric, the run history, and
+the failed drafts themselves. Feedback is prompt content — an interface you design.</details>
 
-<details><summary>Why must every run end with a stop_reason from a closed set — and which outcomes must never enter the loop?</summary>
-Because downstream code keys on the reason: `passed` means the artifact survived
-the scorer; `retries_exhausted` means the defect class is unfixable within budget
-and routes to error analysis. An ambiguous ending lets a failing draft pass as a
-success. Policy violations never enter the loop: the defect is in the request,
-not the draft, and regenerating must never grow the approved scope.</details>
+<details><summary>Why must every run end with a stop_reason from a closed set?</summary>
 
-## What's next
+Because downstream code keys on the reason, and the ticket biconditional depends on it: `passed`
+means the draft survived the scorer, `retries_exhausted` means the defect class is unfixable within
+budget and routes to error analysis (S10), `policy_violation` means the request was the defect. An
+ambiguous ending lets a failing run read as a success.</details>
 
-**S08 — Observability and replay:** the repair loop makes runs *branch* — failed
-drafts, feedback messages, a stop reason — and the final transcript alone can no
-longer tell you what happened. Next: trace every phase, record every request and
-response, and replay a session content-identical offline.
+<details><summary>Which failures never enter the repair loop, and why?</summary>
+
+An injection in the brief, and a spec where every requested item contains the declared allergen —
+`_request_is_policy_blocked` returns `policy_violation` before the first generation. The defect is in
+the request, not the draft, so regenerating is incoherent; and a loop that could rewrite the request
+to satisfy a check is the bug the consent gate (S05) exists to stop.</details>
+
+---
+
+## What this unlocks
+
+Your agent can now recover from its own contract failures, and it can tell you how many attempts that
+cost. What it cannot do is tell you *what happened*: the attempt log lives and dies inside one run.
+**[S08 — Observability & replay](S08-observability-replay.html)** gives the shift a memory — spans, a
+JSONL record of your own live session, and a replay you can prove is content-identical.

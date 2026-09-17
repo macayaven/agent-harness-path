@@ -1,12 +1,13 @@
 # Take The Agent Harness Path in Cursor
 
 This tree is **v0.3.0**, which supersedes v0.2.0. Lessons and notebooks are the
-v0.2.0 course; `labs/` ships a complete trivia host; **session bridges** let a
+rebuilt café course, one `cafe/` package grown across S01–S12; `labs/` ships a
+complete trivia host as an optional separate hard path; **session bridges** let a
 Cursor (or other OpenAI-compatible) assistant stand in the gap between a tiny
 toy and the lab.
 
 You still clone the course. Cursor is the window; the companion is chat with a
-project rule. JupyterLab is optional notebook tooling, not the product.
+project rule. marimo is the notebook tooling, not the product.
 
 ## 1. Open the course
 
@@ -23,7 +24,9 @@ present (always-on learner rule).
 A session:
 
 1. Open `lessons/SNN-*.html` (preview or browser).
-2. Open `notebooks/sNN_*_toy.ipynb` and run cells (Cursor or `uv run jupyter lab`).
+2. Open `notebooks/sNN_*_toy.py` with `uv run marimo edit notebooks/sNN_*_toy.py`
+   and run it. The notebook runs **live** against your own OpenAI-compatible
+   endpoint (see §3).
 3. Predict-first: write your guess **before** asking the assistant to confirm.
 4. Optional hard path: open `labs/sNN_*.md` and `@bridges/sNN.md` in chat.
 
@@ -76,10 +79,23 @@ Do not mix these up.
 | What | Where | Purpose |
 | --- | --- | --- |
 | **Tutor** | Cursor model settings (base URL + key) | Explains lessons/labs |
+| **Notebooks (`cafe/`)** | shell `CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL` | Your own endpoint the café notebooks run against |
 | **Lab `--live`** | shell `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional trivia-host against a real/local chat API |
 
-Hard path default is **`--replay`** (no keys). `--live` is never required to
-finish S01–S12 easy path, and never runs in CI.
+The notebooks read `CAFE_*` before `OPENAI_*`. Point them at your endpoint and
+smoke-test the wiring:
+
+```bash
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+export CAFE_API_KEY=ollama          # any non-empty string for a local server
+export CAFE_MODEL=llama3.2
+uv run python -m cafe.doctor
+```
+
+Only CI is offline: it sets `COURSE_MODE=stub` (deterministic stub plus the
+socket guard). The learner path is live. Lab hard-path default is **`--replay`**
+(no keys); `--live` is never required to finish the S01–S12 core path, and never
+runs in CI.
 
 ```bash
 # optional lab live, local model — separate from Cursor chat
@@ -99,5 +115,5 @@ unless you say you are stuck; S13/S14 stay unaided.
 
 ## 5. Native route still works
 
-`uv run jupyter lab` and opening `lessons/index.html` remain the zero-assistant
-path. This companion cut does not remove them.
+`uv run marimo edit notebooks/sNN_*_toy.py` and opening `lessons/index.html`
+remain the zero-assistant path. This companion cut does not remove them.

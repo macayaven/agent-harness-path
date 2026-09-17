@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S08-observability-replay — Traces and deterministic replay</title>
+  <title>S08-observability-replay — A shift with a memory</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -107,136 +107,111 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
-<h1 id="s08-observability-replay-traces-and-deterministic-replay">S08-observability-replay — Traces and deterministic replay</h1>
-<p><strong>What this teaches:</strong> how to see what an agent run actually did — the span /
-generation / trace data model, telemetry that fails soft instead of taking the
-product down, and record/replay cassettes that reproduce a run offline,
-content-identical, with zero model calls — plus what replay can never prove.
-<strong>Time:</strong> ~90 min with the notebook.
-<strong>Prerequisites:</strong> S01 (the loop); S02 (scripted users, fixtures) recommended.
-<strong>Hands-on (easy):</strong> <a href="../notebooks/s08_observability_replay_toy.ipynb"><code>notebooks/s08_observability_replay_toy.ipynb</code></a>
-<strong>Hands-on (hard, optional):</strong> <a href="../labs/s08_replay.md"><code>labs/s08_replay.md</code></a> — after the notebook.
-<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — A bounded re-ask with real feedback</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The thirty-second debrief &rarr;</a></span></nav>
+<h1 id="s08-observability-replay-a-shift-with-a-memory">S08-observability-replay — A shift with a memory</h1>
+<p><strong>Carried in:</strong> <code>cafe/repair.py</code> from S07 — the bounded re-ask, the last piece of the harness that
+only ever existed inside one terminal run.
+<strong>Today you ship:</strong> <code>cafe/trace.py</code> — spans, a JSONL record of a real shift, and a replay that is
+content-identical to the run that produced it.
+<strong>What this teaches:</strong> how a trace tree differs from a transcript, why a recording is a contract with
+two separate invariants, why export failure is a boundary decision rather than a crash, and how to
+hunt the nondeterminism a replay exposes by injecting the clock and the RNG.
+<strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop and its
+<code>stop_reason</code>), S07 (the runs you now record).
+<strong>Hands-on:</strong> <a href="../notebooks/s08_observability_replay_toy.py"><code>notebooks/s08_observability_replay_toy.py</code></a> — runs against <strong>your</strong> model.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S08-observability-replay.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2 id="the-hook">The hook</h2>
+<p>A customer calls back. <em>"Ayer me cobraste dos veces."</em> You open a terminal and scroll: the shift
+printed a perfectly nice transcript, and it is gone. You cannot show what the model actually saw, you
+cannot re-run the shift, and you cannot prove which turn produced the second ticket. The debrief
+becomes your memory against theirs, and memory loses.</p>
+<h2 id="the-promise">The promise</h2>
+<p>By the end of this session you will have recorded <strong>your own live shift</strong> to a JSONL trace, replayed
+it with <strong>zero model calls</strong>, and printed a transcript that is content-identical to the live run.
+Then you will do the part that separates a recording from a replay: prove determinism by injecting
+the two things that quietly break it — the wall clock and the RNG.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
-<h3 id="logs-say-what-happened-traces-say-what-caused-what">Logs say what happened; traces say what caused what</h3>
-<p>A finished agent run leaves you with questions that are causal and financial:
-<em>which phase produced the bad output? which phase burned the tokens?</em> Flat logs
-can't answer either without archaeology — a log line knows its own text and
-nothing about what it belongs to. An agent run is not a list of events; it is a
-tree: the session contains phases, phases contain model calls, model calls
-contain retries.</p>
-<p>The industry converged on one data model for this tree — OpenTelemetry,
-Langfuse, and the OpenAI Agents SDK all share the shape:</p>
-<ul>
-<li><strong>Trace</strong> — one run of the system, end to end. The unit you link to from an
-  eval row or an incident.</li>
-<li><strong>Span</strong> — one named, timed unit of work with a parent. The parent edge is
-  the causality; without it you have a pile of timestamps.</li>
-<li><strong>Generation</strong> — a span specialized for a model call: input, output, model
-  identity, token usage. This is where the money lives. The name is Langfuse's
-  vendor term (<a href="https://langfuse.com/docs/observability/data-model">data model</a>);
-  OTel models the same unit as model/agent spans, not a distinct type.</li>
-</ul>
+<h3 id="a-transcript-is-a-printout-a-trace-is-a-structure">A transcript is a printout; a trace is a structure</h3>
+<p><code>run_shift</code> returns a run record: the message list, the turns, the stop reason, the counters. That
+tells you <em>what</em> the conversation said, not <em>where the time and tokens went</em>. <code>Tracer</code> builds a tree
+instead. Each span carries a name, a kind, attributes, children, a start time and a rounded duration.
+A <strong>generation</strong> is a span that also carries a model call:</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay.svg" alt="One end-to-end trace contains a session span, phase spans for setup, rounds, and wrap-up, and nested generation spans that record each model input, output, and usage." style="--diagram-width: 560px" /></div>
-<p>The payoff is arithmetic: sum <code>usage</code> over the generations under a phase span
-and you have cost per phase — the number every routing and budget decision
-(S11) is made from. No tree, no attribution.</p>
-<h3 id="a-span-is-a-question-someone-will-ask-later">A span is a question someone will ask later</h3>
-<p>Design the tree around the questions, not the code structure. A span per
-pipeline phase because someone will ask <em>which phase failed and what did it
-cost</em>; a generation per model call because someone will ask <em>what exactly did
-the model see, and what did it return</em>. Both directions fail:</p>
-<ul>
-<li><strong>Too coarse</strong> (one span for the whole run): you are back to grep.</li>
-<li><strong>Too fine</strong> (a span per function, attributes nobody reads): span spam — you
-  pay storage for a tree too noisy to read. Auto-instrumentation defaults tend
-  here.</li>
-</ul>
-<h3 id="telemetry-is-a-sidecar-never-on-the-critical-path">Telemetry is a sidecar, never on the critical path</h3>
-<p>The tracing backend will go down. The SDK will rename its API between the
-version you pinned and the one that resolved. Both are routine events, which is
-why the rule is absolute: <strong>an exception in telemetry must never fail the
-product run.</strong> Instrument inline, export at the boundary, catch everything at
-that boundary, degrade to no traces, keep the session. The notebook runs both
-variants; the unguarded one finishes all the work and then throws the result
-away when the exporter raises — the worst outcome, all cost and no artifact.</p>
-<p>One more boundary telemetry inherits: traces contain the transcript, usually
-the most sensitive data you hold. Vendors' own docs concede the collision —
-OpenAI's tracing is unavailable under a Zero Data Retention policy, and its SDK
-ships a <code>trace_include_sensitive_data</code> switch
-(<a href="https://openai.github.io/openai-agents-python/tracing/">docs</a>). What may
-leave the machine is a decision, not a default; S11 makes you take it.</p>
-<h3 id="recordreplay-the-cassette-contract">Record/replay: the cassette contract</h3>
-<p>Wrap the model function. Recording: forward each call, append
-<code>{request, response}</code> to a JSONL file — the cassette. Replaying: answer each
-call from the cassette, but only when the full request matches a recorded one.
-Three properties buy almost everything:</p>
-<ul>
-<li><strong>Offline.</strong> Zero model calls, zero network, zero cost. You can debug on a
-  plane.</li>
-<li><strong>Content-identical.</strong> Same cassette ⇒ same response content ⇒ same
-  transcript content: diffable, hashable, bankable as a fixture (S02's fixture
-  invariant applies to the cassette itself).</li>
-<li><strong>Strict matching.</strong> If the code under test changes what it asks for, replay
-  fails loudly instead of serving the nearest response. A sequential replayer
-  would serve the old "CORRECT" verdict to the new wrong answer — wrong, and
-  invisible. Strictness turns the cassette into a behavior-drift alarm.</li>
-</ul>
+<p>This session's shift is that shape with café names: <code>record_shift</code> opens one <code>shift</code> span and wraps
+the client in <code>TracingClient</code>, which opens one generation per <code>chat</code> call. Into that generation go a
+deep copy of the input messages (the loop keeps mutating the list after the call, so the copy is not
+a nicety), the output content, the names of any tool calls, and the <code>usage</code> block the endpoint
+returned. <code>usage_of</code> then sums tokens and durations over the generations — which is how "which turn
+burned the tokens?" becomes arithmetic instead of an argument. <code>NullTracer</code> answers the same
+interface while doing nothing, so instrumentation never costs you an <code>if tracer:</code> branch.</p>
+<h3 id="a-recording-is-a-contract-not-a-printout">A recording is a contract, not a printout</h3>
+<p><code>RecordingClient</code> wraps any client and appends one JSONL line per call — <code>{"request": ...,
+"response": ...}</code>, in order. It never constructs a client of its own; it takes whatever
+<code>get_client()</code> returned. <code>ReplayClient</code> serves those responses back and refuses to guess:</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S08-observability-replay-2.svg" alt="During recording, a recorder relays host requests to the live model and stores responses in a cassette; during replay, the unchanged host receives content-equal recorded responses without a live call." style="--diagram-width: 1113px" /></div>
-<p>The lineage is VCR's HTTP cassettes
-(<a href="https://github.com/kevin1024/vcrpy">vcrpy</a>, itself a port of 2012-era Ruby
-VCR); the agent version moves the same contract up one layer, from HTTP to "the
-model function." Note that vcrpy's default matcher is method + URL — weaker
-than full-body matching. Whatever the layer, know your matcher's strength.</p>
-<h3 id="what-replay-guarantees-and-what-it-cant">What replay guarantees — and what it can't</h3>
-<p>Replay freezes the <em>model</em>. It does not freeze your code, and it does not
-freeze the world:</p>
-<ul>
-<li><strong>It can't make your pipeline deterministic.</strong> The wall clock, an unseeded
-  RNG, iteration order, volatile envelope fields (response <code>id</code>, <code>created</code>) all
-  leak around the cassette. The cassette guarantees identical model <em>content</em>
-  for identical requests; whether your transcript is byte-identical is a
-  property of the whole pipeline.</li>
-<li><strong>It can't speak for the model today.</strong> A cassette is a photograph. Providers
-  don't promise determinism even at temperature 0 — Thinking Machines measured
-  80 distinct completions out of 1000 identical greedy requests, traced to
-  batch-size-dependent kernels
-  (<a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/">post</a>).
-  Re-record cassettes deliberately, the way you re-baseline a golden set.</li>
-<li><strong>It can't cover what it didn't see.</strong> An unmatched request is the cassette
-  telling you the truth: this path was never recorded.</li>
-</ul>
-<p>The diagnostic that separates model nondeterminism from yours: <strong>replay the
-same cassette twice.</strong> The recorded responses are frozen content (parsed
-JSON) — replay cannot
-introduce model variance — so if two replays differ, the nondeterminism is
-provably in your code. Then the fix is the fixture fix: inject the clock,
-inject the RNG, fresh seeded instances per run (one shared seeded RNG
-reproduces across processes but drifts across two runs inside one).</p>
-<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
-<p>Run top-to-bottom. Write your prediction in the attempt cell before opening the
-solution.</p>
+<p>Two invariants, and they catch two different regressions. <strong>Matching</strong> polices the calls that
+<em>arrive</em>: the next recorded request must equal the incoming one exactly, otherwise <code>ReplayMismatch</code>
+raises instead of serving a response recorded for something else. <strong>Exhaustion</strong> polices the calls
+that <em>should have arrived</em>: a regression that deletes the last model call sends nothing bad to match,
+so only <code>assert_exhausted()</code> — "every recorded call was consumed" — sees it. One client, two ways to
+be wrong.</p>
+<h3 id="telemetry-degrades-the-shift-does-not">Telemetry degrades; the shift does not</h3>
+<p><code>Tracer.export()</code> propagates whatever the exporter raises. That is deliberate: nobody should be able
+to pretend a dead backend was fine. <code>export_fail_soft</code> is the boundary where you decide what the
+failure costs — the traces, or the shift. It returns the error text when the exporter raised and
+<code>None</code> when the trace shipped. A tracing backend is a network call you do not own; it fails on a
+schedule you do not choose.</p>
+<h3 id="determinism-is-wired-in-not-hoped-for">Determinism is wired in, not hoped for</h3>
+<p>Here is the hunt the notebook stages. A teammate ships a "harmless" PR: a timestamped header and a
+livelier closing line for the end-of-shift note. Now two replays of the <em>same recording</em> disagree.
+That is impossible for the model — the recorded responses are frozen JSON on disk, so replay cannot
+add variance. The nondeterminism is in the host, and the diff names two suspects: a wall clock read
+and an unseeded RNG draw.</p>
+<p>The fix is not to delete the timestamp and the flourish; it is to make them <em>inputs</em>. Pass a clock
+and an RNG into the note builder, and create a <strong>fresh seeded instance per run</strong>. <code>TickClock</code> is the
+same idea for the tracer itself: a deterministic stand-in for <code>time.monotonic</code>, which is what makes
+two rendered trees comparable at all. One shared <code>Random(7)</code> reproduces across processes but drifts
+between two runs inside one process — the trap is subtler than it looks.</p>
+<p>Nothing in the notebook writes anywhere it was not handed: every path lives inside a
+<code>tempfile.TemporaryDirectory()</code>, and a test cell walks the repo root before and after to prove that
+not one <code>.jsonl</code> landed in it.</p>
+<hr />
+<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<p>Open <a href="../notebooks/s08_observability_replay_toy.py"><code>notebooks/s08_observability_replay_toy.py</code></a>.
+Same endpoint configuration as S06, plus the <code>SCRIPT</code> of two customer lines the notebook replays.</p>
 <ol>
-<li><strong>Trace anatomy.</strong> One trivia session, tracer attached. Predict the tree —
-   which spans nest where, how many generations — then render it and check the
-   token totals.</li>
-<li><strong>The dead exporter.</strong> Point the tracer at a backend that raises. Predict
-   whether the quiz still completes; compare against the unguarded variant.</li>
-<li><strong>Record, then replay.</strong> Record a session to a JSONL cassette; replay it.
-   Prove zero live model calls, a content-identical transcript, and
-   <code>assert_exhausted()</code> — every recorded pair was served, nothing left over.</li>
-<li><strong>Replay as tripwire.</strong> Change one scripted answer, replay the old cassette.
-   Predict where it breaks — and what a non-strict replayer would have done
-   instead. A second predict-first in the notebook asks whether strict matching
-   fires on a call that never happens.</li>
-<li><strong>The hunt.</strong> A teammate's "harmless" PR adds a dated header and livelier
-   praise. Two live runs now differ; so do two replays of one cassette.
-   Localize the nondeterminism from the diff, fix it by injection, and prove
-   content-identity end to end.</li>
+<li><strong>Record your own shift.</strong> <code>record_shift(client, SCRIPT, path, tracer=Tracer(clock=TickClock()))</code>
+   runs the real loop through a recording client and prints the rendered tree, the tools that ran and
+   the usage totals.</li>
+<li><strong>Predict the replay.</strong> Before running it: how many times will your live model fire during a
+   replay? Can the replayed transcript differ from the recorded one, given the responses are frozen
+   on disk? Write both answers down.</li>
+<li><strong>Replay twice.</strong> Two replays of one recording, compared with <code>transcript()</code> — a canonical
+   rendering that contains nothing but the conversation, so a difference would be a real divergence
+   and not a formatting artefact. A second test cell replays a <em>stale</em> script and expects
+   <code>ReplayMismatch</code>.</li>
+<li><strong>Kill the exporter.</strong> <code>Tracer(exporter=dead_exporter)</code> raises on export; <code>export_fail_soft</code>
+   returns the error and the shift still reports its stop reason. Read that boundary before you
+   trust it.</li>
+<li><strong>The hunt.</strong> Compare the teammate's note across two replays, then write
+   <code>attempt_handover_note(run, *, clock, rng)</code> yourself, where every changing value must come from
+   <code>clock</code> or <code>rng</code>. The reference is behind a reveal switch — flip it <em>after</em> you attempt.</li>
 </ol>
-<p>After the notebook, optional hard path: <a href="../labs/s08_replay.md">spans + cassette replay</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
+<hr />
+<h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
+<p>Two numbers, and both are exact rather than statistical:</p>
+<ul>
+<li><strong>model calls during replay: 0.</strong> The replay is offline by construction — the notebook counts your
+  live client's calls before and after and expects the same total.</li>
+<li><strong>live transcript == replay transcript.</strong> Content-identical, turn for turn, because the responses
+  are frozen on disk and everything else — clock, RNG, system prompt, tool schemas — is now an input.</li>
+</ul>
+<p>Write both down with the model name. They are the S08 contract, and S09 spends it: a debrief that
+cites turns of a trace you can hand to someone else, who can replay it.</p>
+<hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
@@ -248,116 +223,121 @@ solution.</p>
 </thead>
 <tbody>
 <tr>
-<td>Trace data model converged: trace → observations (span / generation / event) + sessions at <a href="https://langfuse.com/docs/observability/data-model">Langfuse</a>; traces and spans on by default in the <a href="https://openai.github.io/openai-agents-python/tracing/">OpenAI Agents SDK</a></td>
+<td><a href="https://opentelemetry.io/docs/concepts/signals/traces/">OpenTelemetry traces</a></td>
 <td><strong>already in this path</strong></td>
-<td>The tree you build by hand in the notebook is the industry shape. You learned the model, not a vendor.</td>
+<td>The span tree is this idea, smaller. Spans, parents, attributes and durations are the same vocabulary your <code>Tracer</code> speaks.</td>
 </tr>
 <tr>
-<td>OpenTelemetry GenAI semantic conventions, now in a dedicated repo: core semconv deprecated <code>gen_ai.*</code> in v1.42.0 (June 2026); development moved to <a href="https://github.com/open-telemetry/semantic-conventions-genai">semantic-conventions-genai</a> — inference and agent spans, usage metrics</td>
+<td><a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">OpenTelemetry GenAI semantic conventions</a></td>
 <td><strong>adopt</strong></td>
-<td>When you wire real telemetry: vendor-neutral names; emit OTLP and any backend can read your traces. The toy's attributes are a pocket sketch of this — pin the semconv version you emit, because the names are still settling.</td>
+<td>The agreed attribute names for model calls — model, token usage, prompts. Adopt the names before you ship a trace format nobody else can read.</td>
 </tr>
 <tr>
-<td>HTTP cassettes: <a href="https://github.com/kevin1024/vcrpy">vcrpy</a> (+ pytest-recording) as the CI standard</td>
+<td><a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/">OpenTelemetry GenAI spans</a></td>
 <td><strong>recognize</strong></td>
-<td>The lineage of record/replay, one layer down. Default matcher is method+URL — weaker than the toy's full-request match.</td>
+<td>The concrete span shape for a generation. Compare it with <code>Tracer.generation</code>; the fields you kept are the ones you can defend.</td>
 </tr>
 <tr>
-<td><a href="https://docs.langchain.com/oss/python/langgraph/use-time-travel">LangGraph time travel</a>: replay from state checkpoints</td>
+<td><a href="https://opentelemetry.io/docs/collector/">OpenTelemetry Collector</a></td>
 <td><strong>recognize</strong></td>
-<td>Different mechanism: re-executes the graph from saved state, which can call the model <em>again</em>. A cassette recalls; a checkpoint re-runs. Know which guarantee you're holding.</td>
+<td>Where fail-soft belongs at scale: buffering, retry and backpressure live in the pipeline, not in your request path.</td>
 </tr>
 <tr>
-<td>Record &amp; replay as an agent paradigm: <a href="https://arxiv.org/abs/2505.17716">AgentRR</a> records execution traces, abstracts them into reusable "experience," replays under a check function</td>
-<td><strong>newer than this session</strong></td>
-<td>The cassette idea promoted to a memory mechanism. Same contract, bigger claims — the check function is their strict matcher.</td>
+<td><a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a></td>
+<td><strong>adopt</strong></td>
+<td>Open-source instrumentation that emits OTel-compatible GenAI spans, if you would rather not maintain a tracer.</td>
 </tr>
 <tr>
-<td>Bitwise-deterministic inference: <a href="https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/">Thinking Machines on batch invariance</a> (Sep 2025)</td>
-<td><strong>newer than this session</strong></td>
-<td>Even if providers ship true determinism, it freezes only the model — your clock and RNG still leak. The cassette remains the guarantee you own.</td>
+<td><a href="https://langfuse.com/docs">Langfuse</a></td>
+<td><strong>recognize</strong></td>
+<td>A hosted trace UI and store. Useful the day a human has to read traces; a dependency the day it is down, so keep the JSONL.</td>
 </tr>
 <tr>
-<td>Zero-config agent observability in cloud APM suites (<a href="https://docs.datadoghq.com/llm_observability/">Datadog Agent Observability</a> et al.)</td>
+<td><a href="https://github.com/kevin1024/vcrpy">VCR.py</a></td>
+<td><strong>adopt</strong></td>
+<td>Cassette record/replay for HTTP, in the same spirit as <code>RecordingClient</code>/<code>ReplayClient</code>. Note its strict-match mode, which is the invariant that matters.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/getsentry/responses"><code>responses</code> HTTP mocking</a></td>
+<td><strong>recognize</strong></td>
+<td>A library-level way to freeze HTTP responses in tests — cheaper than a cassette when the wiring, not the model, is under test.</td>
+</tr>
+<tr>
+<td><a href="https://platform.openai.com/docs/guides/latency-optimization">OpenAI latency optimization guide</a></td>
 <td><strong>ignore</strong></td>
-<td>For now — auto-captured spans answer the platform's questions. The span tree is a design artifact; revisit when production telemetry decisions land (S11).</td>
+<td>For this session. It is about making calls faster; you first need to be able to say which call was slow.</td>
 </tr>
 </tbody>
 </table>
+<hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
-<li><strong>Langfuse, <a href="https://langfuse.com/docs/observability/data-model">Tracing data model</a>.</strong>
-  Extract the hierarchy — sessions contain traces, traces contain observations,
-  observations are typed (span / generation / event) — and why <code>generation</code> is
-  the special one: the only observation that carries model identity, usage, and
-  cost.</li>
-<li><strong>OpenTelemetry, <a href="https://opentelemetry.io/docs/concepts/signals/traces/">Traces concepts</a>.</strong>
-  Extract the span record itself: <code>trace_id</code>, <code>parent_id</code>, start/end,
-  attributes, status. The toy's <code>Tracer</code> is this page with the distributed
-  parts amputated — note what was amputated (context propagation across
-  processes) and when you'd need it.</li>
-<li><strong>vcrpy, <a href="https://github.com/kevin1024/vcrpy">README</a>.</strong> Extract the cassette
-  contract and the record modes (once / new episodes / none) — the policy knob
-  for when re-recording is allowed. Then ask what the equivalent modes would be
-  for a model cassette.</li>
-<li><strong>OpenAI Agents SDK, <a href="https://openai.github.io/openai-agents-python/tracing/">Tracing</a>.</strong>
-  Extract three things: what gets traced by default (one span kind per workflow
-  concept), the disable switches, and the two confessions — tracing unavailable
-  under ZDR, and <code>trace_include_sensitive_data</code> existing at all. Telemetry
-  inherits the privacy boundary.</li>
+<li><strong>OpenTelemetry, <a href="https://opentelemetry.io/docs/concepts/signals/traces/">traces</a>.</strong> Extract: span,
+  parent, attribute, and the difference between a trace and a log line. Then map those onto
+  <code>Tracer.nodes()</code> and <code>Tracer.render()</code>.</li>
+<li><strong>OpenTelemetry, <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/">GenAI semantic conventions</a>.</strong>
+  Extract: the attribute names for a model call, and where usage lands. Rename your generation
+  attributes to match and your trace becomes readable by tools you did not write.</li>
+<li><strong>VCR.py <a href="https://github.com/kevin1024/vcrpy">README</a>.</strong> Extract: what a cassette stores, and its
+  match-on-request behaviour — the same "matching polices the calls that arrive" invariant, with the
+  same blind spot that only an exhaustion check closes.</li>
+<li><strong>OpenLLMetry <a href="https://github.com/traceloop/openllmetry">repository</a>.</strong> Extract: which attributes it
+  emits per call. It is a free answer key for the field list you are about to invent.</li>
+<li><strong>Your own JSONL file.</strong> Extract: the request at line 1 and the response at line 1. Everything the
+  replay guarantees rests on those two objects being complete.</li>
 </ul>
+<hr />
 <h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
-<li><strong>"Tracing is structured logging."</strong> A log line has no parent. The tree is
-  what makes "which phase burned the tokens" an arithmetic question instead of
-  an afternoon of grep.</li>
-<li><strong>"Temperature 0 (or a seed) gives me replay."</strong> Provider-side determinism is
-  best-effort and does not survive model version changes — and even true
-  inference determinism freezes only the model, not your clock or RNG. The
-  cassette is the only guarantee you own.</li>
-<li><strong>"The cassette matched, so my code is deterministic."</strong> It proves the
-  requests matched. Nondeterminism in <em>rendering</em> — timestamps, draws from a
-  global RNG — never touches the request. Hence the diagnostic: two replays of
-  one cassette, not one.</li>
-<li><strong>Telemetry on the critical path.</strong> An unguarded exporter converts a
-  monitoring outage into a product outage — after the work is done and paid
-  for. Catch at the boundary; degrade to no traces.</li>
-<li><strong>"Record everything, forever, just in case."</strong> Cassettes rot (prompts
-  change, models drift) and transcripts are usually the most sensitive data you
-  hold. Re-record deliberately; keep telemetry inside the privacy boundary.</li>
+<li><em>"The transcript is the trace."</em> A transcript is a rendering of one artefact. A trace says which
+  phase called what, for how long, with which tokens — which is the question you actually have.</li>
+<li><em>"Replay means calling the model again with the same prompt."</em> That is a re-run, and it measures
+  variance. Replay serves recorded responses and makes zero calls; that is why it can be compared at
+  all.</li>
+<li><em>"A recording that matches is a replay that is correct."</em> Matching only polices the calls that
+  arrived. Deleting the last call passes every match; only <code>assert_exhausted()</code> catches it.</li>
+<li><em>"Telemetry should never break the shift, so swallow export errors everywhere."</em> Swallow at the
+  boundary you chose, and return the error so somebody can see it. Errors hidden inside a tracer are
+  worse than no tracer.</li>
+<li><em>"The model injected the nondeterminism."</em> Frozen responses cannot vary. Look for wall clocks,
+  process-wide RNG, unordered iteration and cached state — the host is the usual suspect.</li>
+<li><em>"Just delete the timestamp."</em> Then you lose the information. Make it an input and the same line
+  becomes reproducible <em>and</em> present.</li>
 </ul>
+<hr />
 <h2 id="self-check">Self-check</h2>
-<details><summary>What does a generation span carry that a plain span doesn't, and what question does that answer?</summary>
-Input, output, model identity, and token usage. That is what makes "which phase
-burned the tokens / produced the bad output" answerable by summing over a
-subtree — cost and quality attribution per phase.</details>
+<details><summary>Why does the replay make zero model calls, and why does that matter?</summary>
 
-<details><summary>Why must a replayer match requests instead of serving responses in order?</summary>
-Sequential serving hides behavior drift: change the code's questions and it
-still gets the old answers, producing a silently wrong transcript. Strict
-matching converts drift into a loud mismatch — the cassette doubles as a
-determinism audit of your own code.</details>
+`ReplayClient` serves responses recorded earlier and compares each incoming request against the next
+recorded one, raising `ReplayMismatch` rather than calling anything. That is what makes the replay
+comparable: any difference between the live transcript and the replay is a harness change, not model
+variance — and it costs nothing to run in CI.</details>
 
-<details><summary>Two replays of the same cassette differ. Where is the bug, and why can you be certain?</summary>
-In your code, necessarily. The model's responses are frozen content (parsed
-JSON) in the cassette, so replay cannot introduce model variance. The leak is
-on your side —
-wall clock, unseeded RNG, iteration order. Find it in the diff, then inject and
-seed it.</details>
+<details><summary>The shift makes one fewer model call than the recording. Which invariant catches it, and why not the other?</summary>
 
-<details><summary>Why is fail-soft telemetry a correctness requirement and not polish?</summary>
-Because the exporter shares the process with the product. If its exception
-propagates, a monitoring outage becomes a product outage — typically after the
-expensive work is done, so you pay for the run and lose the result. Catch at
-the boundary, degrade to no traces, never fail the session.</details>
+`assert_exhausted()` — one recorded entry is left unconsumed. Matching cannot catch it, because a
+missing final call never sends a mismatched request; there is simply nothing to compare. Two
+invariants exist because they catch two different regressions.</details>
 
-<h2 id="whats-next">What's next</h2>
-<p><strong>S09 — Evidence reports:</strong> you can now capture a run completely and replay it
-offline; next is compression. S09 turns one recorded session into a debrief a
-depleted reader can trust in thirty seconds without opening the raw transcript —
-and the trace pointer at the bottom of that report is why this session came
-first.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — Bounded self-repair</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The report a depleted reader can trust &rarr;</a></span></nav>
+<details><summary>Two replays of one recording produce different handover notes. Where is the nondeterminism?</summary>
+
+In the host. The responses are frozen JSON, so replay adds no variance. The likely causes are a wall
+clock read and an unseeded process-wide RNG draw. Pass a clock and a fresh seeded `Random` into the
+note builder and the output becomes reproducible without deleting the timestamp or the flourish.</details>
+
+<details><summary>Why does `Tracer.export()` raise instead of swallowing a failing exporter?</summary>
+
+So the failure cannot be mistaken for success. The decision about what telemetry failure costs belongs
+at one explicit boundary — `export_fail_soft` — which returns the error text and lets the shift finish.
+Errors hidden inside the tracer are worse than no tracer.</details>
+
+<hr />
+<h2 id="what-this-unlocks">What this unlocks</h2>
+<p>You have a trace and a replay. What you do not have is anything a busy owner would read. <strong><a href="S09-evidence-reports.html#the-theory-in-depth">S09 —
+Evidence reports</a></strong> turns this JSONL into a shift debrief with turn
+citations, and builds the two validators that catch the two ways a report lies: the tidy paraphrase
+presented as a quote, and the omission that leaves no false sentence behind.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S07-repair-loop.html#the-theory-in-depth">&larr; Prev: S07-repair-loop — A bounded re-ask with real feedback</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S09-evidence-reports.html#the-theory-in-depth">Next: S09-evidence-reports — The thirty-second debrief &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S08-observability-replay.md</code> — part of The Agent Harness Path.

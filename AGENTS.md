@@ -1,218 +1,205 @@
-# AGENTS.md — The Agent Harness Path
+# AGENTS.md — Repository Guidelines: The Agent Harness Path
 
-## If you are taking the course (Cursor companion)
+A self-contained course on building, evaluating, and governing LLM agents:
+14 HTML lessons in `lessons/`, twelve stdlib-only toy notebooks in `notebooks/`,
+an optional hard path in `labs/`. There is **no product code and no product test
+suite**. Entry point: `lessons/index.html`.
 
-You are a **tutor**, not a maintainer and not an impl-for-hire.
+This file governs two audiences. Read the mode that matches what you were asked
+to do, and say which mode you are in before editing anything.
 
-1. Read `.cursor/rules/ahp-companion.mdc`.
-2. For the current session, read `bridges/sNN.md` before explaining a lab.
-3. Easy path: lesson HTML + toy notebook + self-check. Labs are optional.
-4. `labs/trivia_host/` is a **complete** host in this cut. Explain it; do not
-   silently rewrite it; do not fill predict-first work.
-5. Never open `labs/reference/` unless the learner is stuck (same spine).
-6. S13/S14: process only. Do not write the audit or ship report.
-7. No secrets in git or recap blocks.
+| Mode | Trigger | Governed by |
+|---|---|---|
+| **A — Learner companion (tutor)** | Human is *taking* the course in Cursor | Read `.cursor/rules/ahp-companion.mdc`, then `bridges/sNN.md` before explaining a lab. Explain `labs/trivia_host/`; never silently rewrite it or fill predict-first work. Never open `labs/reference/` unless the learner is stuck. S13/S14: **process only** — never write the audit or the ship report. |
+| **B — Contributor (redesign)** | Human is *editing* course content | Everything below. |
 
-If the human is **editing course content** (lessons, CI, licenses), skip this
-block and follow the contributor rules below.
+When a course-facing artifact and this file disagree, this file wins.
 
-## What this project is
+---
 
-A **self-contained course** on building, evaluating, and governing LLM agents.
-Entry point: `lessons/index.html`. Fourteen sessions (S01–S14), each a deep HTML
-lesson in `lessons/`; the twelve notebook sessions (S01–S12) pair it with a
-runnable stdlib-only toy notebook in `notebooks/`. An **optional hard path** in
-`labs/` grows one trivia-host spine (cassette replay or a live OpenAI-compatible
-endpoint). S13/S14 are optional, notebook-less protocols: easy path = a system
-the learner already owns; hard path = `labs/trivia_host/` if they built it.
+## Non-negotiables
 
-This repo contains **no product code and no test suite of a product** — it is
-educational material. Each lesson carries a dated state-of-the-art section with
-cited sources.
+These survive every rewrite, restyle, and re-theme. Breaking one is a defect.
 
-The toolchain is `uv` with `requires-python = ">=3.11"`. A root `pyproject.toml`
-pins that floor; `uv sync` builds `.venv/` from it.
+1. **Toy-domain rule.** Every example lives in **one** toy domain the learner does
+   not ship: the neighbourhood café. Tools stay in-domain (`price_check`,
+   `check_allergens`, `propose_order`, `fire_ticket`, `close_check`). If an example
+   drifts close enough to be a drop-in harness, rewrite it *further away*. A
+   paste-ready generic harness in `notebooks/` or `labs/` is a defect. All domain
+   strings live in `cafe/domain.py` so re-theming stays a one-module change.
+2. **CI is zero network, zero keys, zero cost — the learner path is live.**
+   `COURSE_MODE=stub` plus the socket guard in `tests/no_network_site/` makes this
+   structural, not a promise. The learner default is a real OpenAI-compatible
+   endpoint of their choosing; a local model costs nothing. Course logic is
+   stdlib-only Python (3.11+); the only permitted non-stdlib imports are `marimo`
+   (notebook runtime) and the course's own `cafe` package. No provider SDK, ever —
+   the client is `urllib` against `/chat/completions`. No key is committed,
+   printed or logged. `labs/` keeps `--replay` first-class and `--live` never in CI.
+3. **Predict-first.** Markdown prompts before code; an `attempt_<topic>` skeleton
+   before a `solution_<topic>` gated behind `mo.ui.switch` + `mo.stop`. Never
+   pre-fill a prediction. Against a live model the prediction is genuinely
+   uncertain — that is the point.
+   **Live assertions** must be a protocol invariant, a relative comparison inside
+   one session, or a bounded statistic over N≥10. Never assert an absolute quality
+   score against a live model.
+4. **S13/S14 stay unaided.** No scaffolding, no generated audit, no generated ship
+   report, from any mode.
+5. **No secrets, raw chats, participant content, private hostnames, or home paths**
+   in git, fixtures, cassettes, or recap blocks.
+6. **Never break the verify workflow.** A change is done only when the commands in
+   *Build, test, development commands* pass locally.
+7. **Sourced claims.** SOTA rows link a URL and use exactly these tags:
+   **already in this path**, **recognize**, **adopt**, **newer than this session**,
+   **ignore**.
+8. **English** for all prose, comments, and docs. Spanish only for toy dialogue
+   where noted.
 
-## The toy-domain rule
+---
 
-Everything here is a **toy from a different domain** (a weather bot, a
-customer-support chatbot, a mopbot, a trivia host) — never a paste-ready
-production harness. This is the repo's core invariant:
+## Course experience mandate
 
-- Toy code is for **reading, running, and breaking** — not for copying into a
-  production agent.
-- If an example drifts close enough to be a drop-in harness, that is a defect —
-  rewrite it further away.
-- Notebook numbers never substitute for a banked eval baseline on a system the
-  learner owns. The path has its own notebook-local evidence habits
-  (predict-first, in-notebook assertions).
-- Labs are the documented exception to "zero network": optional, replay-first,
-  keys never in git, `--live` never in CI. Tools stay in the trivia domain
-  (`propose_round_spec`, `draw_clue`, `score_answer`, `end_round`). A paste-ready
-  generic harness in `labs/` is still a defect.
+The material is technically sound but reads as flat: sessions restart instead of
+building, artifacts are split across three surfaces (HTML / `.ipynb` / terminal
+scripts), and the payoff is delayed behind theory. Fix the experience **without**
+lowering rigor. Symptom → rule:
 
-When writing or editing content here, preserve this rule. Do not produce
-solutions to someone else's production deliverable.
+| Symptom | Rule |
+|---|---|
+| Nothing carries forward; each session feels like session one | One continuous spine: the learner builds/reuses **one artifact** across S01–S12, and every session opens by naming what carries in and closes by naming what it enables. |
+| No forward pull; long theory before any feedback | Session order is **hook → promise → theory → run → checkpoint → recap → bridge**. The "you will be able to" promise appears in the first screenful. |
+| Three looks and feels; notebooks load like homework, labs like homework-adjacent scripts | **One interface, one runtime** (below). Never introduce a new surface without retiring one. |
+| Domain the learner does not identify with (currently pub trivia) | Pick a **familiar, everyday domain the author knows firsthand** and re-skin the whole spine to it — see *Theme*. |
+| Flat titles and boilerplate transitions | Every session ends with an explicit bridge sentence to the next slug, and the next begins by picking it up. No orphan sessions. |
+
+### Theme
+
+Trivia is the current default and may be replaced. Requirements for any
+replacement: everyday and familiar to the learner, a different domain from a
+production harness (rule 1), enough structure to hold all 14 concepts, and
+dialogue-friendly. **Recommended default: the neighbourhood café / kitchen
+shift** — orders, kitchen tickets, allergens, refunds, shift handover.
+
+Re-skin by mapping beats, not by inventing a second course: trivia host →
+counter assistant, `propose_round_spec` → propose the order ticket `draw_clue`
+→ pull a menu item, `score_answer` → settle a ticket, `end_round` → close the
+shift. Keep the *concepts* unchanged; keep tool names in-domain.
+
+### One interface
+
+Jupyter is retired. Notebooks are **marimo** files (`notebooks/sNN_*_toy.py`):
+reactive, diffable, and executable as plain scripts. No `.ipynb` may re-enter the
+tree.
+
+- Pinned `marimo==0.24.2`. Commit **only** the form `marimo check --fix --ignore
+  MF004` produces, and gate it with `git diff --exit-code`. `--strict` alone does
+  not enforce this.
+- **Never `--unsafe-fixes`** — it deletes comment-only cells, i.e. every
+  predict-first and attempt skeleton.
+- marimo hoists a pure single-function cell to `@app.function` and strips setup
+  globals from cell signatures. Attempt/solution are therefore top-level
+  `attempt_<topic>` / `solution_<topic>` units, never cells.
+- The hard path uses the same surface: `labs/run.py` stays the CI/terminal path
+  and `labs/app.py` renders it.
+
+### One model seam
+
+A notebook never constructs a client. It calls `get_client()` from `cafe.model`,
+which returns a live client for the learner and a deterministic `StubClient` when
+`COURSE_MODE=stub`. Identical notebook source, both paths. Adding a second way to
+reach a model is a defect.
+
+### One spine
+
+`cafe/` is the artifact the learner grows: `loop → evals → context → schema →
+consent → detect → repair → trace → report → taxonomy → routing → judge`. Session
+N imports session N−1's module. A session that does not build on the previous one
+has broken the arc; `tests/test_arc.py` enforces the chain.
+
+### Voice
+
+Warm, direct, evidence-first. Dry humour tolerated; **no cheerleading, no filler,
+no emoji headers**. Tables for comparison, Mermaid for structure. Keep
+"naive baseline", "deterministic vs judged tier", "fixture invariant", "predict
+first" as terms of art — reuse, never paraphrase. Prefer concrete payoffs
+("you will bank a number you can defend") to adjectives.
+
+---
 
 ## Repository layout
 
 ```
-├── README.md                  — what the path is and how to use it
-├── WHY-THIS-DESIGN.md         — deliberate vs accidental difficulty; the fix pattern
-├── COURSE-MAP.md              — S1–S14 coverage table
-├── CONTRIBUTING.md            — how to propose a change
-├── docs/                       — documentation map, release process and evidence
-├── pyproject.toml             — uv manifest: Python >=3.11
-├── uv.lock                    — pinned resolution of the above (generated by `uv sync`)
-├── lessons/
-│   ├── index.html             — course entry point (generated; src/index.md)
-│   ├── build.py               — renders src/*.md → *.html via template.html
-│   │                              (injects the prev/index/next nav bars)
-│   ├── README.md              — HTML is the reader; src/ is authoring source
-│   ├── check_links.py         — relative href/src + optional http-link checker
-│   ├── site_urls.py           — GCS base for Video Overview hrefs
-│   ├── template.html          — page shell (dark CSS, script-free static diagrams)
-│   ├── diagrams/              — rendered SVGs and input/asset freshness receipt
-│   ├── vendor/                — mermaid@10 UMD build used by diagram regeneration
-│   ├── src/SNN-*.md           — lesson sources, S01–S14 (the editable files)
-│   ├── SNN-*.html             — generated lessons, checked in for offline reading
-│   └── videos/SNN-*.mp4       — Gemini Notebook Video Overviews, one per lesson, plus
-│                                S00-course-overview.mp4; canonical name = lesson slug
-│                                (Git LFS archive; build.py points ▶ at the GCS replica)
-├── notebooks/                 — s01–s12 toy notebooks (S13/S14 have none by design)
-├── labs/                      — optional hard path (sNN_*.md protocols, not lessons)
-├── bridges/                   — Cursor companion rungs (sNN.md)
-└── docs/COMPANION.md          — local OpenAI-compatible tutor wiring
+lessons/src/SNN-slug.md   lesson sources (editable)   → build.py → lessons/SNN-slug.html
+lessons/build.py          md → html, injects prev/index/next nav
+lessons/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
+notebooks/sNN_*           stdlib-only toys, committed without outputs
+labs/sNN_*.md             hard-path protocols; labs/run.py + cassettes + trivia_host/
+bridges/sNN.md            Cursor companion rungs (distinct artifact, not lesson text)
+tests/                    content + build contracts, fixtures
+docs/, study/, scripts/   docs map, learner records, publish_videos.sh
 ```
 
-Beyond the tree above there is `LICENSE`, `LICENSES/`, `NOTICE`, `CHANGELOG.md`,
-`CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/`, `.cursor/`, `study/`, `scripts/`,
-and `review/`. `.lfsconfig` skips fetching the mp4s on clone (`git lfs pull` to
-get the archive). `uv.lock`, the generated `lessons/*.html`, static SVGs and the
-vendored Mermaid build in `lessons/vendor/` are checked in. Lessons and diagrams
-read offline; preview videos stream. The `SNN` / `sNN` filenames in `lessons/`,
-`labs/`, and `bridges/` are **different artifacts**, not duplicated lesson text.
+Filenames `SNN` / `sNN` in `lessons/`, `labs/`, and `bridges/` are **different
+artifacts**, not duplicated lesson text.
 
-`README.md` is the learner entry point, `CONTRIBUTING.md` is the authoritative
-contributor setup/validation guide, and `docs/RELEASING.md` is the publication
-checklist. v0.3.0 is a Cursor clone.
+## Build, test, development commands
 
-## Build and run
+```bash
+uv sync --frozen                              # pinned toolchain
+uv run python lessons/build.py                # regenerate lessons/*.html
+uv run python lessons/render_diagrams.py      # after editing a Mermaid block, then rebuild
+uv run python -m unittest discover -s tests -v
+uv run python lessons/check_links.py          # relative href/src; add --http for unique http refs
+uv run python lessons/check_sota_urls.py      # every SOTA row carries a source URL
+uv run python -m unittest labs/test_contracts.py
+uv run python labs/run.py --all --replay      # never --live
+```
 
-- **Build step:** `uv run python lessons/build.py` regenerates all `lessons/*.html`
-  from `lessons/src/*.md`. Re-run after editing any lesson source. Video hrefs
-  `videos/*.mp4` are rewritten to the public GCS replica. The build warns if
-  a non-index lesson has no mermaid diagram.
-- **Diagram changes:** after editing a Mermaid block, run
-  `uv run --group diagrams python lessons/render_diagrams.py`, then rebuild HTML.
-  The pinned optional Playwright/Chromium renderer records all input and SVG
-  hashes; ordinary builds reject stale assets. `--check` compares fresh bytes on
-  the recorded renderer/font host. Multiple blocks have separate SVGs and useful
-  text alternatives; wide diagrams scroll instead of shrinking labels.
-- **Link check:** `uv run python lessons/check_links.py` (after a build).
-  Unique http hrefs (GCS videos, SOTA sources):
-  `uv run python lessons/check_links.py --http`.
-- **No product test suite.** Verification is: every notebook runs top-to-bottom
-  (`uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb > /dev/null`),
-  the HTML regenerates cleanly, relative hrefs and script/img src resolve, and
-  CI GETs unique http refs in the generated lessons (404 fails; 401/403/429 warn).
-  SOTA table rows must carry a source URL (`lessons/check_sota_urls.py`).
-  Labs: `uv run python -m unittest labs/test_contracts.py` and
-  `uv run python labs/run.py --all --replay` (reference + committed cassettes;
-  never `--live`). The contract runs on Python 3.11 and 3.12.
-- **Environment:** `uv sync` creates `.venv/`; run anything with `uv run`.
-- **Notebooks run on Python 3.11+, standard library only** (e.g., `itertools`,
-  `json`, `random`, `statistics`, `pathlib`, `tempfile`). Zero network, zero API
-  keys, zero cost. This is a hard
-  constraint (see COURSE-MAP.md's session contract, rule 2), not an accident:
-  every "model" is a plain Python function returning API-shaped dicts. Nothing in
-  `notebooks/` may import anything from `.venv/` — the venv only supplies tooling.
+Notebooks must execute top-to-bottom on 3.11 and 3.12 before you commit them.
+If you rename a session slug, update all of: `lessons/src`, `notebooks`, `labs/*.md`,
+`bridges/*.md`, `lessons/videos/SNN-slug.mp4`, the `DIAGRAMS` map in
+`tests/test_lesson_build.py`, `COURSE-MAP.md`, `docs/`, and any GCS video path.
 
-## Content conventions
+## Coding style and naming
 
-Follow these when editing existing material or writing a new session.
+- Python: 4 spaces, stdlib only in course code, snake_case functions, `SNN-slug` /
+  `sNN_snake` filenames. Small, readable cells; comments explain *why*.
+- Lessons: raw HTML on its own lines for `<details>` blocks; one diagram minimum
+  per lesson; keep SOTA tables at Development | Status | Take.
+- Match existing density. Tight sentences; no headers beyond the session structure.
 
-### Lesson format (`lessons/src/SNN-*.md`)
+## Testing guidelines
 
-Every lesson follows this fixed structure (S01/S02 are the exemplars):
+No product suite, but content is tested: `tests/` pins build output, diagram
+freshness, notebook cell receipts, and transfer fixtures. Notebook verification is
+execution in a clean venv; lab verification is contract tests plus `--replay`
+against committed cassettes (reference implementation). CI must stay green on
+Python 3.11 and 3.12, and HTML drift must be zero after a rebuild.
 
-1. H1 `# SNN-slug — Title` + bold header block (**What this teaches:** / **Time:** /
-   **Prerequisites:** / **Hands-on (easy):** notebook; **Hands-on (hard, optional):**
-   `labs/sNN_*.md`; S13/S14 have no notebook — hard path retargets `trivia_host/`).
-2. **The theory in depth** — 3–5 subsections, ≥1 mermaid diagram.
-3. **Exercises (in the notebook, predict first)** — matching the notebook 1:1
-   (S13/S14: **The protocol** instead — a concrete runbook).
-4. **State of the art (as of August 2026)** — table: Development | Status | Take.
-   Status tags are exactly: **already in this path**, **recognize**, **adopt**,
-   **newer than this session**, **ignore**. Every row links a source URL; verify key
-   sources with web search when writing, omit what you can't verify. Re-date the
-   header if the section is refreshed.
-5. **Annotated readings** — each with one line on what to extract.
-6. **Misconceptions and failure modes.**
-7. **Self-check** — foldable `<details><summary>` answers, raw HTML on its own lines.
-8. **What's next** — bridge to the next session slug. S12 may point at S13 as an
-   *optional* lab.
+## Commit and pull request guidelines
 
-Each lesson also carries an optional **Video:** line in its header block linking its
-Gemini Notebook overview in `lessons/videos/` (filename = lesson slug). Videos are
-Google Gemini Notebook (formerly NotebookLM) generations — previews/reviews that
-may lag the lesson text; they never replace the notebook (S01–S12) or the protocol
-(S13/S14). Credit Google for branding in the files; do not strip watermarks.
-When adding a new video, name it `SNN-slug.mp4`, drop it in `lessons/videos/`,
-add the header line, rebuild, and publish the GCS replica with
-`scripts/publish_videos.sh`.
+Concise imperative commits naming the artifact and session
+(`S03: rewrite transition into S04`, `notebooks: port s07 to marimo`). One
+conceptual change per PR. PRs state the learner-facing effect, list regenerated
+artifacts, and paste the command output that proves the verify workflow passed.
+Link the issue for any re-theming or interface migration. No secrets, no
+learner notebooks, no raw logs.
 
-Lessons are self-contained: they teach concepts without assuming any other
-repository.
+## Security and configuration
 
-### Public documentation conventions
+Nothing in S01–S12 reads network, keys, or credentials; keep it that way. The S01
+statute intentionally demonstrates unsafe patterns inside labeled experiments —
+do not "fix" the deliberately broken variants. Labs may read `OPENAI_API_KEY` from
+the environment for `--live`; never print or commit it. Report real repo
+vulnerabilities per `SECURITY.md`.
 
-- Keep `CHANGELOG.md` reader-focused and preserve released history. Draft release
-  notes may name the recommended next version, but `Unreleased` receives no date
-  until the release exists.
-- Public verification records name exact artifacts and observed checks. They do
-  not establish general learning efficacy, accessibility, teacher workflows,
-  live-provider behavior, compliance or production readiness.
-- Never publish credentials, raw chats, participant content, private hostnames,
-  home-directory paths or raw operational logs. Learner notebooks, progress and
-  evidence belong outside Git; repository templates are blank source material.
-- Preserve authored S13/S14 protocol meaning and the separation between
-  preparation, unaided work and review. Remove participant-specific wording from
-  reusable protocols without weakening those boundaries.
+## Agent workflow for content changes
 
-### Notebook conventions
-
-- Alternate short markdown cells (context, **"Predict first:"** prompts) with small,
-  self-contained code cells. Run top-to-bottom, in order.
-- Exercises are predict-first, with attempt-then-solution cells (an attempt
-  skeleton followed by a clearly marked `# SOLUTION` cell) where implementation
-  is required; S01/S02 are largely predict-then-run demonstrations.
-- Committed **without outputs** (`"execution_count": null`, `"outputs": []`), nbformat
-  4.5 with an `id` on every cell — build notebooks programmatically with `nbformat`
-  to guarantee this. Keep it that way.
-- Mocks mimic real API behavior where it matters (e.g., the S01 mock reproduces
-  the orphaned-tool-result failure class the way a real API does — one check,
-  not full protocol validation), so experiments fail the way production
-  would — cheaply.
-- Spanish is used for toy dialogue content where noted (S02, S12; the author works in
-  Spanish); all explanatory prose, comments, and docs are in English.
-
-## Style and tone
-
-- English. Direct, evidence-first, dry humor tolerated; no cheerleading, no filler.
-- Heavy use of tables for comparisons; Mermaid for structure diagrams.
-- Terms like "naive baseline", "deterministic vs judged tier", "fixture invariant",
-  and "predict first" have specific meanings — reuse them, don't paraphrase.
-- Match the existing density: tight sentences, no boilerplate headers beyond the
-  lesson structure above.
-
-## Security considerations
-
-- Notebooks execute only local stdlib code — by design there are no secrets, keys,
-  network calls, or credentials anywhere in this repo. Keep it that way.
-- The S01 notebook deliberately demonstrates *unsafe* patterns (a tool that raises,
-  a loop missing the append-verbatim line) inside labeled experiments. That is
-  teaching material, not a defect — do not "fix" the intentionally broken variants.
-- See `SECURITY.md` for how to report a real vulnerability in the repo itself.
-  Labs may use `OPENAI_API_KEY` in the environment for `--live`; never print or
-  commit it. `--live` is not a CI job.
+1. State your mode (A or B). Under B, name the session(s) and the experience
+   symptom you are fixing.
+2. Read the lesson source, its notebook/app, its bridge, and its lab protocol
+   before editing; keep the concept and its evidence contract intact.
+3. Edit sources, never generated HTML; regenerate and re-verify.
+4. Preserve the arc: add the incoming recap and outgoing bridge when you touch a
+   session, and update `COURSE-MAP.md` in the same change.
+5. Report what you changed, which commands you ran, and any invariant you had to
+   reinterpret — before claiming the change is done.

@@ -13,7 +13,7 @@ Same session numbers elsewhere are different artifacts, not extra lessons:
 | --- | --- |
 | `lessons/SNN-*.html` | Learner lesson (read this) |
 | `lessons/src/SNN-*.md` | Authoring source (edit this, then rebuild) |
-| `notebooks/sNN_*.ipynb` | Stdlib toy |
+| `notebooks/sNN_*_toy.py` | Marimo toy (stdlib + `cafe`, live model) |
 | `labs/sNN_*.md` | Optional hard-path protocol |
 | `bridges/sNN.md` | Cursor companion rung |
 

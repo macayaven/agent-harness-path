@@ -1,99 +1,66 @@
-# S09-evidence-reports — The report a depleted reader can trust
+# S09-evidence-reports — The thirty-second debrief
 
-**What this teaches:** an evidence report is an *interface to what happened*, not a
-summary of it — fixed sections that pre-answer a depleted reviewer's questions,
-claims phrased as checkable observations, and two deterministic validators
-(citation, coverage) that catch the two lies checkable against the record — and
-certify checkability, not honesty.
-**Time:** ~75 min with the notebook. **Prerequisites:** S02 (checker tiers, the
-fixture invariant); S08 (traces and replay) helps but is not required.
-**Hands-on (easy):** [`notebooks/s09_evidence_report_toy.ipynb`](../notebooks/s09_evidence_report_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s09_debrief.md`](../labs/s09_debrief.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S09-evidence-reports.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/trace.py` from S08 — you can record a real shift and replay it exactly.
+**Today you ship:** `cafe/report.py` — a debrief a tired reader can trust, with the validators that
+keep it honest.
+**What this teaches:** how to write for a depleted reader, why a claim without a verbatim citation is
+a rumour, why the two ways a report lies need two complementary validators, and why a failed run still
+gets an honest report.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. **Prerequisites:** S02 (golden sets and
+deterministic checks), S08 (the trace and replay this session reads).
+**Hands-on:** [`notebooks/s09_evidence_report_toy.py`](../notebooks/s09_evidence_report_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S09-evidence-reports.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+It is 23:40. Someone has to read what happened on this shift and decide whether to change anything
+tomorrow. They will give your report **thirty seconds**.
+
+A chronological transcript fails that test. So does a cheerful summary — and the cheerful one fails
+worse, because every sentence in it can be *true* while the report as a whole lies by omission.
+
+## The promise
+
+By the end of this session you can generate a debrief whose every claim resolves to a real turn, and
+you will have built the two validators that catch the two different ways a report lies: the quote
+that was never said, and the safety event that quietly never happened.
 
 ---
 
 ## The theory in depth
 
-### The reader is depleted, and the log is write-only
+### Write for the depleted reader
 
-Nobody rereads a forty-turn transcript. The raw log is where truth lives, but as a
-reading experience it is write-only: the information is all there, evenly weighted,
-in chronological order, with no signposts. The report exists because the reader who
-matters most is you at your worst — thirty seconds after a hard session, attention
-spent, wanting to know one thing: *what just happened, and can I trust it?*
+The reader is tired and accountable. They need six things, fast:
 
-The transferable property comes from code review. Google's reviewer guide
-([google.github.io/eng-practices](https://google.github.io/eng-practices/review/reviewer/looking-for.html))
-is, structurally, a list of questions a good change description pre-answers — the
-author writes so the reviewer never has to dig. Treat your report's reader as a
-reviewer with a fixed question list:
-
-1. What was I trying to do?
-2. Did it finish — and if it stopped, why?
-3. What actually happened — the moments that mattered, not all of them?
-4. Did anything safety-relevant happen?
-5. What do I do next?
-6. What did it cost, and where is the proof?
-
-A report that answers all six, in fixed slots, with surprises first, passes the
-thirty-second review. A chronological recap — "turn 1 the user said, turn 2 the
-assistant replied" — answers none of them quickly, even when it is perfectly
-faithful. Faithfulness is not the bar; *sufficiency at reading time* is.
-
-### Fixed sections are a feature, not a template fetish
-
-The anatomy that converged across incident postmortems, code-review descriptions,
-and clinical notes is the same handful of slots:
-
-| Slot | Content | Rule that keeps it honest |
+| slot | what it answers | where it comes from |
 |---|---|---|
-| Goal | The user's objective, **in the user's own words** — quoted, not paraphrased | The quote must appear verbatim in the opening turn |
-| Outcome | What the run record says: stop reason verbatim, turns used | Never inferred from how the last message *felt* |
-| Moments | Annotated events, each with an event id, a turn reference, and a verbatim quote. The toy cites every logged event (five in the fixture). A production report may highlight 2–4 plus a dedicated safety slot — coverage still keys on ids, not highlight count | Every quote must resolve to its cited turn; every logged id must surface |
-| Safety | The safety events, or an explicit "none logged" | Silence is forbidden; absence must be stated |
-| Next step | One concrete increment | Observable, not motivational |
-| Proof | Cost/latency, and a pointer to the raw trace | One hop from any doubt to the evidence |
+| `goal` | what the customer wanted | the first user turn, quoted |
+| `outcome` | how the shift ended | the run record's `stop_reason` |
+| `moments` | what happened | events read off the conversation |
+| `safety` | anything safety-relevant | the safety subset of the same events |
+| `next_step` | what to do next | the last thing said to the customer, quoted |
+| `cost` | what it cost | model calls, turns, tokens, model latency |
 
-Fixed order is doing cognitive work: after three sessions the reader knows exactly
-where the safety slot lives, and a non-empty safety slot *surprises in the right
-place*. The trace pointer is load-bearing in the other direction — the report never
-replaces the log, it indexes it. A report with no path back to the transcript is
-asking to be trusted on authority it has not earned.
+`write_report` produces exactly those slots — not a narrative. It is a deterministic stand-in for the
+LLM writer you would ship; two rules make it honest by construction: **quotes are copied from the
+conversation**, and **the outcome is read from the run record**, never inferred from how the last
+message felt.
 
-### Observations, not grades
+### A claim carries a turn and a verbatim quote
 
-"Good session, 8/10" is a claim about a person: unverifiable, arguable, and it
-invites the reader to negotiate with the report instead of checking what happened.
-"You seated the second bracket without the torque note (turn 11)" is a claim about
-the transcript: checkable, and it survives being checked. Blameless-postmortem
-culture made this the convention for incident reports decades ago — contributing
-causes and timelines, not verdicts
-([sre.google/sre-book/postmortem-culture](https://sre.google/sre-book/postmortem-culture/)).
-The same rule applies here, and it has a hard edge: **a claim that cannot resolve
-to a turn does not belong in the report.** Quality judgments that can't be grounded
-that way (was the next step actually *good*?) are a judged-tier question, and the
-judged tier waits for judge calibration — that is S12's job.
+`log_events` reads events off the trace rather than off a vibe: an allergen check that reported
+`contains: true` is a `safety` event, a check that cleared an item is an `observation`, a fired
+ticket is a `milestone`, an item priced while sold out is a `safety` event, and a shift the turn cap
+cut short is a `setback` carrying the last spoken turn. Each event quotes the raw tool result — the
+same string the loop wrote into the message list — so the quote resolves verbatim to its turn by
+construction. For the two free-text slots, `_first_sentence` and `_last_sentence` take a prefix and a
+suffix rather than a paraphrase.
 
-### Fabrication and omission: the two checkable lies
-
-The report generator is itself a model, and summarization research named its
-failure modes years ago: intrinsic hallucination — the summary contradicts the
-source — and extrinsic hallucination — the summary asserts what the source cannot
-support ([Maynez et al. 2020](https://arxiv.org/abs/2005.00661)). For reports over
-transcripts the practical forms are sharper:
-
-- **Fabrication.** An annotated moment whose quote never appears; a turn reference
-  that points one turn off; an outcome the run record contradicts. Characteristic
-  of LLM summarizers: the tidy paraphrase presented as a quote — fluent, same
-  meaning, not what was said.
-- **Omission.** Every sentence accurate, every quote verbatim — and the safety
-  event simply absent. The harder lie: nothing on the page is false, so no amount
-  of reading the page detects it. Note that omission is in neither hallucination
-  category above; the taxonomy covers additions, and the report's signature lie is
-  a subtraction.
-
-Each lie has exactly one defense, and both are deterministic:
+That makes the report *checkable*:
 
 ```mermaid
 flowchart LR
@@ -110,169 +77,149 @@ flowchart LR
     D -. one hop, when in doubt .-> T
 ```
 
-- **Citation validator.** Checks exactly three mechanical properties: every quoted
-  string appears verbatim in the turn its reference cites (substring presence);
-  the goal quote appears in the opening user turn; the stated stop reason matches
-  the run record. Catches fabrication. This is S02's fixture
-  invariant pointed at a generator: check the claims against ground truth before
-  the reader has to. Note what the check does *not* establish: that the cited
-  passage supports the claim made next to it. Support is entailment — a
-  judged-tier property (S12's tier), not a substring property. APIs are absorbing
-  the resolution half — Anthropic's Citations feature
-  returns claim-level pointers it *guarantees* resolve into the provided documents
-  ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)) —
-  and the guarantee stops there: the pointer always lands inside the supplied
-  text, but whether the passage it lands on is relevant, or backs the claim, is
-  not promised.
-- **Coverage validator.** Checks one property: every event the harness logged
-  during the run — identified by a stable event **id**, not by turn number —
-  surfaces in the report (the toy requires each id in the moments list; safety
-  ids also in the safety slot). Turn numbers stay for display and citation.
-  The wrong event narrated at the right turn fails: the ids don't match. Two
-  events sharing one turn cannot mask an omission. Catches omission of a
-  logged event. What it still cannot catch: the report names the right event
-  and *describes it wrongly* — wording, emphasis, unsupported interpretation —
-  because identity is not accurate narration. No API can do this half for you:
-  only your harness knows which event ids were logged.
+`validate_citations` re-reads the trace and confirms every quote appears inside the turn it cites,
+and that every number — `stop_reason`, `turns_used`, `model_calls`, the cost block — matches the run
+record. An LLM writing the same report will tidy a quote into something nicer and round a stopped
+shift up to a clean finish; the validator catches both because it compares bytes and integers, not
+impressions.
 
-A report is *checkable* iff both hold — and checkable is not honest. One
-validator alone certifies nothing: the
-citation-clean report that dropped the safety event is the canonical failure, and
-the notebook makes you watch it happen. But both together still leave the lies no
-substring check can see:
+### The two lies are different, so you need both validators
 
-- **Unsupported interpretation** — every quote verbatim, the gloss on them spun.
-- **Misleading emphasis** — everything cited, weighted so the wrong moment reads
-  as the story.
-- **Wrong notes, stale figures** — numbers and claims that are not quotes (no
-  citation resolves them) and not logged events (coverage never asks).
-- **Privacy leakage** — a verbatim quote that should never have left the
-  transcript is citation-clean by construction.
+| lie | shape | caught by |
+|---|---|---|
+| fabrication | a quote that was never said, a wrong turn, an outcome rounded up | `validate_citations` |
+| omission | every sentence true, a safety event quietly absent | `validate_coverage` |
 
-The validators are the floor: they make the two mechanical lies expensive. What
-the citations *mean* stays where it always was — with the depleted reader and the
-one-hop path, and eventually with S12's calibrated judge.
+`validate_coverage` compares the report against the events the harness logged, not against the report
+itself: every event must surface in `moments`, and every event whose type starts with `safety` must
+reach the `safety` slot. That is the only way to catch a lie that leaves no false sentence on the
+page. A report that passes one validator and fails the other is still dishonest — honesty is the
+conjunction. Neither validator is a judge: they check provenance, not quality, and inventing a
+quality score here is S12's problem, not this module's.
 
-### The thirty-second review test
+### A failed run still gets a report
 
-The acceptance test is behavioral, not textual. Hand the report to the reader cold
-— no transcript — and have them answer the six questions, timed. If they can't, the
-report failed, however accurate it is. *Then* open the raw log and check the
-report didn't lie. Accuracy is the entry fee; the bar is a depleted reader
-finishing the review in thirty seconds and being right. You will run this test on
-the toy in the notebook, and then again on a real session's report — where the
-depleted reader is you.
+A shift that hit the turn cap is not an excuse to write nothing. `capped_shift_trace()` is one such
+trace kept as teaching material: the allergen check found milk in the croissant, the model asked a
+clarifying question too many, and the harness stopped the shift before the ticket was fired. The same
+generator and the same validators run over it; the `outcome` slot simply says so
+(`OUTCOME_NOTES["turn_cap"]` begins with `INCOMPLETE`). Absence is stated, never silent: when no
+safety event exists, the rendered report says "none logged".
 
-## Exercises (in the notebook, predict first)
+---
 
-1. Read the raw transcript once. Generate the honest report, then run the
-   thirty-second test: answer the six reviewer questions from the report alone,
-   timed. Then verify your answers against the transcript. Any question you
-   couldn't answer is a report defect, not a reader defect.
-2. The chronological recap: run the naive turn-by-turn summary through the same
-   six-question check. Which questions can it structurally not answer — and
-   which does it technically contain but bury?
-3. The fabricated citation: build the citation validator. Watch the honest report
-   pass and the "tidied" variant — paraphrased quotes presented as verbatim —
-   fail. Then weaken the validator to check only that turn numbers exist, and
-   watch which lies slip through.
-4. The omission lie: a variant report drops the safety event and keeps every
-   remaining sentence accurate. Run the citation validator on it (clean!), then
-   build the coverage validator and catch it. State the invariant each validator
-   enforces.
-5. The failed run: a second transcript hits the turn cap mid-task. Generate its
-   report. What must the outcome slot say? Then run the validators on
-   `write_report_rounded_up` (declares the run complete) — which one catches
-   that, and which lie does *neither* validator catch? (`write_report_reassuring`
-   is the omission variant from exercise 4, not this one.)
+## Build (in the notebook, predict first)
 
+Open [`notebooks/s09_evidence_report_toy.py`](../notebooks/s09_evidence_report_toy.py). Same endpoint
+configuration as S06.
 
-After the notebook, optional hard path: [debrief + one real round](../labs/s09_debrief.md) — same session, live or cassette. Skip it and the easy path is still complete.
+1. **Run a real shift and read its events.** Three scripted customer lines, one live run, then
+   `log_events(shift_run)` prints what the harness can actually see. Count the safety events before you
+   read the report.
+2. **Predict the honest report.** Before running the next cell: will either validator report a
+   violation? If the answer is obviously "no", ask what that proves — and what it does not.
+3. **The omission.** `reassuring_variant` drops the safety events and keeps everything else. Watch
+   `validate_citations` wave it through — nothing on the page is false — and `validate_coverage`
+   refuse it. That asymmetry is the lesson.
+4. **Your turn — the thirty-second test.** Write `attempt_thirty_second_test(report)`: return the
+   slots that are missing or empty. It is a proxy for the reader, not a judge — and knowing the
+   difference is the point. The reference is behind a reveal switch; flip it *after* you attempt.
+5. **The capped shift.** Run the same generator and validators over `capped_shift_trace()` and read
+   the `outcome` slot. A failed run gets a report too.
+
+---
+
+## Checkpoint — the number you bank
+
+Generate a debrief for each scenario in your S02 golden set and record **how many pass both
+validators**. Write it down with the model name. Anything short of all of them is a generator bug,
+not a reporting style choice — a shift you cannot debit honestly is a shift you cannot defend.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Citation grounding as an API primitive: Anthropic's Citations parses responses into claims with pointers *guaranteed* to resolve into the provided documents ([docs.claude.com](https://docs.claude.com/en/docs/build-with-claude/citations)) | **adopt** | When you move off mocks, the guarantee is the pointer: every citation resolves into a supplied document. That the cited passage actually *supports* the claim stays model judgment — and whether you cited the right things, or dropped the safety event, remains yours. |
-| ALCE: automatic citation evaluation — recall (is every statement entailed by its citations?) and precision (is every citation pertinent?), NLI-judged ([Gao et al., arXiv:2305.14627](https://arxiv.org/abs/2305.14627)) | **recognize** | Your citation validator is the deterministic special case: substring match instead of entailment. But ALCE's recall is statement support and its precision is citation relevance — claims judged against their own citations. Neither asks whether the report covered the run's events; that remains your coverage validator's job. |
-| Deep-research products ship long, cited reports — and their own disclosures admit hallucinated facts, weak uncertainty calibration, and citation errors at launch ([OpenAI, Feb 2025](https://openai.com/index/introducing-deep-research/); [system card](https://cdn.openai.com/deep-research-system-card.pdf)) | **recognize** | The frontier's flagship report generator ships with known citation defects. Validation plus spot-checking against sources is the industry norm, not paranoia. |
-| Blameless postmortems: fixed anatomy, timeline with evidence, contributing causes not verdicts, written for readers who weren't there ([Google SRE book](https://sre.google/sre-book/postmortem-culture/)) | **already in this path** | This session's report anatomy is that convention pointed at agent sessions. "Blameless" and "observations, not grades" are the same move. |
-| Faithfulness as a measured property of summaries: intrinsic vs extrinsic hallucination ([Maynez et al., arXiv:2005.00661](https://arxiv.org/abs/2005.00661)) | **recognize** | The taxonomy names the addition lies (contradiction, unsupported claims). Omission — the report's signature lie — is in neither bucket, which is why you build a separate coverage validator. |
-| LLM-judged faithfulness metrics: decompose the answer into claims, judge each against the context (e.g. [RAGAS faithfulness](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/); [paper](https://arxiv.org/abs/2309.15217)) | **newer than this session** | A judged tier for reports — useful at scale, but it is a model grading a model, uncalibrated until S12. The deterministic validators stay the floor. |
-| Fully automated report chains: AI summarizes the run, the summary feeds the dashboard, no human ever opens the trace | **ignore** | Independent analysis keeps finding these systems well short of human care ([futuresearch.ai, Feb 2025](https://futuresearch.ai/blog/oaidr-feb-2025/)). A report without a one-hop path to raw evidence is a hallucination delivery mechanism. |
+| [Anthropic citations](https://docs.anthropic.com/en/docs/build-with-claude/citations) | **already in this path** | Server-side citations point each claim at a source span; your validator is the same contract enforced locally, against your own trace. |
+| [OpenAI structured outputs](https://platform.openai.com/docs/guides/structured-outputs) | **adopt** | The six slots are a schema. Making the report a typed object is what lets the validators read it instead of parsing prose. |
+| [Attributed QA (Bohnet et al.)](https://arxiv.org/abs/2212.08037) | **recognize** | Long-standing evidence that attribution and answer quality are separate axes — which is why citations alone never certify a report. |
+| [RAGAS](https://docs.ragas.io/) | **adopt** | Faithfulness and answer-relevance metrics as code. Useful for the semantic tier; it does not police coverage of harness events, which stays yours. |
+| [ARES](https://arxiv.org/abs/2311.09476) | **recognize** | A framework for judging context relevance, answer faithfulness and answer relevance with a calibrated judge. Read it before you let a model grade your reports. |
+| [Vectara hallucination leaderboard](https://github.com/vectara/hallucination-leaderboard) | **recognize** | A public measurement of summarization hallucination rates. A reminder that "summarize the trace" is a model call with a known error rate. |
+| [OpenAI evals](https://github.com/openai/evals) | **adopt** | The registry pattern for turning your validator into a suite entry. The report generator's contract belongs in the eval suite, not in a reviewer's memory. |
+| [Hallucination-free summaries via prompt instruction alone](https://arxiv.org/abs/2212.08037) | **ignore** | Asking the model to "only use the transcript" is advice, not verification. The validator is what makes the claim checkable. |
+
+---
 
 ## Annotated readings
 
-- **Google, [What to look for in a code review](https://google.github.io/eng-practices/review/reviewer/looking-for.html).**
-  Extract the transferable property, not the code advice: a good description
-  pre-answers the reviewer's questions. List the questions your own report's
-  reader has, and check each maps to a slot.
-- **Google SRE book, [Postmortem culture](https://sre.google/sre-book/postmortem-culture/).**
-  Extract the anatomy — summary, impact, timeline, root cause, action items — and
-  the reason blamelessness is a *correctness* property: verdicts make people
-  defend themselves; observations make them verify.
-- **Gao et al., [ALCE: Enabling LLMs to Generate Text with Citations](https://arxiv.org/abs/2305.14627) (EMNLP 2023).**
-  Extract the recall/precision definitions and the finding that fluency is easy
-  while attribution is the measurable hard part. Note the metric is NLI-judged:
-  your substring validator certifies that the quote exists where cited, never
-  that it supports the claim — the entailment question stays judged-tier.
-- **Maynez et al., [On Faithfulness and Factuality in Abstractive Summarization](https://arxiv.org/abs/2005.00661) (ACL 2020).**
-  Extract the intrinsic/extrinsic split — then notice what it omits: a summary
-  that only subtracts. That gap is your coverage validator.
+- **Anthropic, [citations](https://docs.anthropic.com/en/docs/build-with-claude/citations).** Extract:
+  how a cited span is represented and what happens when the source does not contain the claim. Compare
+  it with `_check_quote`.
+- **Bohnet et al., [Attributed Question Answering](https://arxiv.org/abs/2212.08037).** Extract: the
+  separation between attribution and quality, and how they measure each. That separation is the reason
+  this session ships two validators and no score.
+- **[RAGAS docs](https://docs.ragas.io/).** Extract: the definitions of faithfulness and relevance.
+  Then note what none of them measure: whether an event the harness logged was omitted from the
+  summary.
+- **ARES, [arXiv:2311.09476](https://arxiv.org/abs/2311.09476).** Extract: what has to be true before a
+  model-based judge may grade anything — calibration data, agreement measurement, a stated threshold.
+  S12 comes back to this.
+- **`cafe/report.py`, the `write_report` docstring.** Two rules, one paragraph. Read them and then find
+  the line of code that enforces each.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"Accurate means honest."** A report where every sentence is true can still
-  lie by subtraction. Omission is invisible to any check that only reads the
-  report — coverage must be derived from the run record.
-- **"The summary replaces the transcript."** The report indexes the log; it never
-  supersedes it. Ship every report with a trace pointer, and treat any report
-  without one as unverified by construction.
-- **Grades as evidence.** "8/10" cannot be checked against a turn, so it teaches
-  the reader to argue with the report. Observations cite turns and survive
-  checking; verdicts belong to the calibrated judge you don't have yet (S12).
-- **The chronological recap as report.** Narrating everything is summarizing
-  nothing: in the notebook the safety event sits at line 9 of 16, weighted the
-  same as the small talk. Fixed slots with surprises first exist precisely for
-  the reader who will not scroll that far.
-- **The unvalidated generator.** The report writer is a model with documented
-  fabrication modes; shipping its output unchecked is shipping confidence you
-  haven't earned. The validators are cheap, deterministic, and always on.
+- *"The report is accurate, so it is honest."* Accuracy is per sentence. Omission is a whole-document
+  defect: `reassuring_variant` keeps every sentence true and still lies.
+- *"A citation validator is enough."* It catches fabrication, not absence. Without coverage, deleting
+  the awkward event is a clean pass.
+- *"The model wrote a nice summary, so the summary is right."* A tidy paraphrase is the most common
+  fabrication precisely because it reads well. Compare bytes, not impressions.
+- *"A run that failed does not need a report."* Failure is the run you most need on the record. The
+  outcome slot says `INCOMPLETE` and the attempt log stays attached.
+- *"Quote roughly; the meaning is what counts."* Then the validator cannot check anything, and neither
+  can the reader. Quotes are copied, not remembered.
+- *"These validators grade quality."* They check provenance and coverage. Quality belongs to a
+  calibrated judge (S12), and calling a provenance check a quality score is its own small lie.
+
+---
 
 ## Self-check
 
-<details><summary>Who is the report's reader, and what does that impose on the format?</summary>
-The user at their most depleted, thirty seconds after a hard session. That imposes
-fixed slots that pre-answer a known question list, surprises first (safety never
-buried), and a one-hop pointer to the raw evidence. Faithful prose that takes
-twenty minutes to mine fails this reader even when every sentence is true.</details>
+<details><summary>Why does `reassuring_variant` pass the citation validator?</summary>
 
-<details><summary>Why "observations, not grades"?</summary>
-A grade is an unverifiable claim about a person; an observation is a checkable
-claim about a transcript. Every claim in the report must resolve to a turn —
-claims that can't (quality judgments) are the judged tier's job, deferred until
-judge calibration in S12.</details>
+Because nothing it keeps is false: the remaining quotes still resolve to their turns and the numbers
+still match the record. It simply removed the safety events. That is exactly why a citation check
+alone cannot certify a report — it polices the sentences that are present, not the events that are
+missing.</details>
 
-<details><summary>A report in which every sentence is accurate still lies. How, and what catches it?</summary>
-By omission — the safety event simply absent. Nothing on the page is false, so no
-check that reads only the page can catch it. The coverage validator catches it by
-deriving what must surface from the run record: every logged event appears in the
-report.</details>
+<details><summary>What does the coverage validator derive its ground truth from, and why does that matter?</summary>
 
-<details><summary>What do the citation and coverage validators each catch, and why do you need both?</summary>
-Citation catches fabrication: quotes that don't appear in their cited turn, wrong
-references, a stop reason the run record contradicts (including a cap that fired
-but the outcome slot rounded up). Coverage catches omission: logged events
-(safety, setbacks, milestones) whose **ids** never surface in the report. A
-wrong event at the right turn fails on id mismatch. Each passes reports the
-other fails, so you need both — but the conjunction buys *checkability*, not
-honesty: support, emphasis, unquoted numbers, and leakage still belong to the
-reader. Identity is not accurate narration.</details>
+From the events the harness logged (`log_events`), not from the report. Deriving it from the report
+would make the check circular — it could only confirm that the report agrees with itself. This is the
+only way to catch an omission, which leaves no false sentence behind.</details>
 
-## What's next
+<details><summary>How are the quoted spans guaranteed to resolve verbatim?</summary>
 
-**S10 — Error analysis:** a good report lets one depleted reader trust one
-session. But across a suite of runs, the failures themselves are a pile of raw
-evidence no one has read — and reading them, open-coded, is how the eval suite
-grows. Next: failure transcripts into a labeled taxonomy, and the taxonomy into
-new golden tasks.
+Because they are copied from the conversation rather than paraphrased: `log_events` quotes the raw
+tool result the loop wrote, and the free-text slots take a first or last sentence, which is a prefix or
+suffix of the original string. The validator then checks the quote is a substring of the cited turn.</details>
+
+<details><summary>A shift hits the turn cap. What does its report say, and why is that not optional?</summary>
+
+`outcome.stop_reason` is `turn_cap` and its note begins `INCOMPLETE`. The same generator and the same
+two validators run over it, with the safety event and the closing turn quoted from the trace. Omitting
+the report would hide the run that most needs a decision made about it.</details>
+
+---
+
+## What this unlocks
+
+You can describe one shift honestly, and you can prove the description resolves to the trace. You
+still have no idea which failures *recur* — every trace gets read on its own. **[S10 — Error
+analysis](S10-error-analysis.html)** turns a pile of real traces into open-coded notes, a labeled
+taxonomy, and a top category that becomes a permanent eval task.

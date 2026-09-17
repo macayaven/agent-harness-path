@@ -7,6 +7,17 @@ All notable changes to The Agent Harness Path are documented here.
 - Rewrite leftover CourseWeave application wording in `study/` (Use this lesson,
   Continue, Course assistant, guide records) so study protocols match the Cursor
   companion path.
+- Rebuild the course on one live-model seam, one café spine, and one marimo
+  surface (`feat/course-rebuild-v2`): `cafe/` grows loop → judge across S01–S12,
+  all twelve notebooks are live-by-default marimo files with an offline
+  `COURSE_MODE=stub` CI path, lessons are arc-shaped with carried-in/bridge
+  links, and labs stay a separate trivia hard path with a new `labs/app.py`
+  marimo shell over the unchanged runner.
+- Unify the live transport: `labs/client.py` shares `_post_chat_completions`
+  with `cafe/model.py`; replay/record behavior and every error string are
+  unchanged (`--replay` output byte-identical).
+- Video previews still show the previous toy domain and are labelled as lagging;
+  the re-record procedure is `docs/RELEASING.md` §4.
 
 ## 0.3.0 — 2026-09-16
 

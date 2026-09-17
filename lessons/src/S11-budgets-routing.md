@@ -1,75 +1,59 @@
-# S11-budgets-routing — Budgets, routing, and the privacy boundary
+# S11-budgets-routing — Budgets, routes, and the privacy boundary
 
-**What this teaches:** a run's cost, latency, and data flow are harness-enforced
-invariants, not operational afterthoughts — budgets that stop runs as a first-class
-outcome, route tables as policy-as-data justified by a measured number, and a
-privacy boundary that *refuses to run* when misconfigured.
-**Time:** ~90 min with the notebook. **Prerequisites:** S01 (the loop), S02
-(defensible comparisons — the routing argument *is* a delta table).
-**Hands-on (easy):** [`notebooks/s11_budgets_routing_toy.ipynb`](../notebooks/s11_budgets_routing_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s11_budgets.md`](../labs/s11_budgets.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S11-budgets-routing.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/taxonomy.py` — S10's failure classes, and the debrief number S10 banked. Your shift can now name what goes wrong; tonight it learns what a call is allowed to cost and where it is allowed to run.
+**Today you ship:** `cafe/routing.py` — the budget gate, the route table, and the boundary that refuses a leak.
+**What this teaches:** cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose *projected* cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
+**Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
+**Hands-on:** [`notebooks/s11_budgets_routing_toy.py`](../notebooks/s11_budgets_routing_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S11-budgets-routing.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+Last Thursday the till showed **€0.42** of model spend on a task the shift prices at
+**€0.05**. Nothing errored. The loop kept refining, every individual call looked
+reasonable, and the first moment anyone could see the total was the moment the invoice
+existed. Money spent on a call you did not need is not refundable by adding an `if`
+afterwards.
+
+The same evening, a "performance tweak" pointed the phase that reads the customer's
+handwritten note — card number, phone number, the lot — at a cloud route. It worked
+beautifully. It was also a leak, and it happened at the routing decision, not inside the
+model.
+
+## The promise
+
+By the end of this session you will be able to write a route table as data, prove that a
+call whose projected cost would cross the budget is refused **before** it is dispatched,
+and prove that a content phase pointed at a cloud route raises before a single request
+leaves the machine. You will also bank real token and latency numbers — read from the
+endpoint's own `usage` and the client's own clock, not from a formula.
 
 ---
 
 ## The theory in depth
 
-### A runaway agent is a billing bug
+### A budget is a runtime invariant, not a finance report
 
-S01 gave the loop a `max_turns` cap because a model that can't stop will run
-forever. The same argument applies to money and time, except worse: `max_turns`
-bounds iterations but says nothing about what each iteration costs. A loop of
-frontier-priced calls that stays politely under the iteration cap can still be
-the most expensive bug you ship this quarter.
+The invoice is a lagging indicator. By the time it exists, the calls have been paid for. So
+the budget lives **inside** the loop and reads *ahead*: the route prices its own call
+before the call happens, and a call that would cross the line is refused.
+`stop_reason="budget_exceeded"` is a first-class outcome — a run that costs more than the
+task is worth has failed, even mid-progress.
 
-So the harness treats the budget as a runtime invariant. The run carries a meter
-(tokens × route price, wall time), and crossing the budget ends the run with a
-first-class `stop_reason=budget_exceeded` — the same dignity as a normal
-completion, not a crash.
+The estimate is a lie you need: a gate cannot know the usage before the endpoint speaks.
+The **ledger** is the truth, and it is written from `response["usage"]` after the call.
+Two numbers, two jobs: **the estimate refuses, the usage records.**
 
-One refinement to "crossing the budget ends the run": a meter that reads only
-*after* each call is a **soft stop** — the crossing call was already dispatched
-and paid for. A pre-dispatch estimate improves that bound: if `spent + estimate`
-would cross, the call never runs. But an estimate makes a hard ceiling only when
-it is a conservative upper bound. If it underestimates, the allowed call can
-cross the limit; post-call accounting stops subsequent calls but cannot undo
-that spend. A hard ceiling requires a conservative pre-dispatch reservation or
-another upstream limit verified to refuse the crossing call. Gateway budget
-checks may instead account completed usage and reject only subsequent calls, so
-verify their semantics rather than assuming they prevent overshoot. The
-deterministic toy can price each route's call exactly before dispatch, so its
-estimate is the gate and its post-call meter is the ledger.
+### Routing is policy-as-data
 
-Two properties matter:
-
-- **It stops the run, not the conversation about the run.** A budgeted stop is
-  an outcome the product can handle — degrade, ask the user, reschedule. An
-  invoice is not an outcome; it's evidence.
-- **The budget is set from the value of the task, not from fear.** It encodes
-  "this run is no longer worth what it's spending." A session that meanders past
-  that line isn't being generously thorough — it's defective. A run that costs
-  more than the task is worth has failed even when the transcript looks great.
-
-### Routing is policy-as-data, justified by a number
-
-Different phases of one pipeline differ wildly in difficulty. Classifying a
-transaction is not writing prose about it; rendering a table is not judging a
-summary. Route everything to the strongest model and you pay frontier rates for
-clerical work. Route everything to the cheapest and you ship the cheap model's
-failure rate on the hard phases.
-
-The mechanism is a **route table**: a mapping from phase → route, kept as *data*
-— a config file, a dict — not as `if` statements inside the engine. Data can be
-reviewed, diffed, validated, and re-measured without touching engine code; a
-hardcoded model choice cannot. But the table is only half the story. The other
-half is what justifies it:
-
-- **Naive:** "I tried the small model once and it seemed fine." Unfalsifiable,
-  unrepeatable, and un-auditable — the three horsemen of config drift.
-- **Defensible:** S02's diverge/rejoin. Same fixtures, same deterministic
-  checker, same everything except the route under test. The route that ships is
-  the **cheapest one that holds the number** on your suite. The deliverable of a
-  routing exercise is not the table — it's the measurement the table cites.
+A route table is a dict: café phase → route name. Each route carries a location, a model
+label, and a price per 1k tokens. It is diffable, reviewable, and validatable without
+touching the engine — and the route you choose cites a measured number rather than a
+preference. Different phases of one shift differ wildly in difficulty; sending the note
+(and its card number) to the same place as a category summary is not a routing policy, it
+is an accident.
 
 ```mermaid
 flowchart LR
@@ -85,166 +69,131 @@ flowchart LR
     M -->|"would breach"| B[stop_reason=budget_exceeded]
 ```
 
-### The privacy boundary is a routing invariant, enforced as refusal
+### The privacy boundary refuses; it does not warn
 
-Routing has a second axis besides cost and quality: **where the data goes**.
-Give every phase a data classification (raw *content* vs derived *metadata*) and
-every route a location (*local* vs *cloud*). The invariant: content-classified
-phases resolve to local routes, always.
+Every phase carries a **classification**; every route carries a **location**. A content
+phase — the note with the card and phone numbers, the prose about this customer's order —
+must resolve to a local route. `validate_policy` runs before any model call and **raises**.
+It does not warn, and it does not fall back to a safe route: a silent fallback is the same
+leak with better logging.
 
-The failure mode to design against is not malice but drift. Someone tunes the
-route table for cost, points a content phase at a cloud route, and the pipeline
-— helpful as ever — runs it. Hence the enforcement rule: **a misconfigured table
-refuses to run.** Not warns, not logs-and-continues: validation raises before a
-single model call is made. Warnings are output; output gets ignored; a refusal
-makes the bad configuration un-runnable and turns review of the route table into
-review of the boundary.
+A warning is a log line nobody reads during the incident. A refusal makes the
+misconfiguration un-runnable. The one phase allowed off-local is `till_summary`, which
+carries metadata only — category totals, no descriptions — because classification decides
+what may leave, not the vendor's reputation.
 
-This is how the big systems are built, not toy paranoia: Apple Intelligence
-routes on-device by default and escalates only to a stateless, attested cloud
-([Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/))
-— the boundary is architecture, not a promise in a privacy policy.
+### What "measured" means tonight
 
-Note the subtlety the toy demonstrates: the boundary runs on **data
-classification, not vendor virtue**. Category *totals* may lawfully take a cloud
-route; transaction *descriptions* may not take any cloud route — even the cheap,
-fast, tempting one. And content on a local route can still leak through your own
-logs. "Local = safe, cloud = unsafe" is a starting heuristic, not the policy.
+`response["usage"]` gives the tokens the endpoint actually charged for.
+`client.last_latency_ms` gives the wall time around the request, set by the client around
+the call, not by a formula in this notebook. A refused call is never sent, so
+`client.calls` and `client.last_latency_ms` keep the values of the previous dispatched
+call — which is exactly how the notebook proves the refusal happened before the wire.
 
-### Latency is a budget with a human attached
+---
 
-Cost budgets answer to finance; latency budgets answer to the nervous system.
-Human conversational turn-taking clusters around ~250 ms response offsets across
-ten languages (Stivers et al.,
-[PNAS 2009](https://doi.org/10.1073/pnas.0903616106)), and users read much more
-than ~1 s of dead air in a voice interface as "broken." OpenAI's GPT-4o launch
-made the same point numerically: audio responses in 232 ms (average 320 ms),
-versus 2.8–5.4 s for the older chained ASR → LLM → TTS pipeline — which also
-shed tone, laughter, and emotion at every hand-off
-([Hello GPT-4o](https://openai.com/index/hello-gpt-4o/)).
+## Build (in the notebook, predict first)
 
-So a voice-mode design starts from a per-turn latency budget and works backward:
-sum the phase latencies on the turn's critical path, take the p50 across real
-turns (the *typical* experience; the p95 is the *memorable* one — budget both,
-but p50 decides whether the average turn feels human), and interrogate every
-phase: does this need to be in the turn at all, can it stream, can it be
-precomputed, can a faster route hold its number? Routing shows up twice here —
-the route table is also your latency table — and the privacy boundary removes
-the easy escape of buying latency from the frontier cloud for content phases.
-That is why the math happens on paper before the build, not after the first
-demo.
+Open [`notebooks/s11_budgets_routing_toy.py`](../notebooks/s11_budgets_routing_toy.py).
+Configure your endpoint first:
 
-In the toy there are no real turns to sample: latencies are deterministic
-functions of the fixtures, so three months yield a **three-fixture median** — a
-stand-in for p50, not a measured one. A real latency claim needs repeated
-sampled trials (timed runs, many of them); the tails users remember live in
-variance the toy deliberately does not have.
+```bash
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+export CAFE_API_KEY=ollama
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor
+uv run marimo edit notebooks/s11_budgets_routing_toy.py
+```
 
-## Exercises (in the notebook, predict first)
+1. **The seam, unchanged.** `get_client()` is the only way this notebook reaches a model.
+   Tonight the numbers that matter come from the client: `usage` on the response and
+   `client.last_latency_ms` around the request.
+2. **Predict first: the gate predicate.** The harness knows `spent_usd` and the route's
+   `projected_usd`. Write the predicate that refuses the call, then flip the reveal switch.
+   Edge case that matters: no budget means no limit. The harness does the refusing; your
+   predicate only returns a bool.
+3. **One real metered call.** A `draft_reply` routed through `local-large`. The projected
+   cost prints next to the real one; on a short note they are close, on a long one they
+   drift. That gap is why the gate uses an estimate and the ledger uses usage.
+4. **Predict first: a table that validates.** Fill `attempt_route_table()` so
+   `validate_policy` accepts it: `read_note` and `draft_reply` are content phases,
+   `till_summary` is metadata, and `local-small`, `local-large`, `cloud-frontier` are the
+   routes. Then flip the reveal switch for a reference. The boundary answers "is it
+   allowed"; it never answers "is it wise" — that is a measurement you would run next.
+5. **Watch the invariants.** Three notebook cells are protocol invariants: an over-budget
+   call is refused and `client.calls` does not move; a content phase on a cloud route
+   raises while the metadata phase on the same route is permitted; and every metered token
+   count equals the endpoint's `usage`, with latency read from `client.last_latency_ms`.
 
-1. **The meandering run.** A summarize phase with no convergence criterion on
-   all-large routes, `max_passes=12`. Predict: with no budget, what `stop_reason`
-   ends the run and what does it cost? With `budget_usd = 0.25`, after *exactly
-   which* summarize pass does the run die, and with what `stop_reason`?
-2. **Measure the tiers.** Run the 3-month suite under `all-small` and
-   `all-large`. Predict, per phase, where small holds its number — then read the
-   pass/cost table.
-3. **The cheapest table that holds the number.** Write your own route table
-   targeting suite parity with all-large at minimum cost. Any table that passes
-   cheaper than the solution is a correct answer — the constraint is the number,
-   not the answer key.
-4. **The privacy refusal.** Point `summarize` (content) at `cloud-frontier`.
-   Predict *when* it fails and how many model calls happen first. Then the
-   subtle case: `format` (metadata) on cloud runs fine — and costs more than
-   local. Allowed ≠ wise.
-5. **The voice budget.** From the latency models in the suite logs, compute the
-   three-fixture median per-turn latency for all-large vs routed against a
-   1000 ms budget. Predict which configs fit before running; name the phase
-   that dominates the loser; and what the *forbidden* fix (frontier cloud for
-   content) would have cost in latency.
+---
 
+## Checkpoint — the numbers you bank
 
-After the notebook, optional hard path: [budgets and a hard route refusal](../labs/s11_budgets.md) — same session, live or cassette. Skip it and the easy path is still complete.
+Two invariants you can now demonstrate on demand:
+
+- a call whose projected cost crosses the budget is refused **before** dispatch, so
+  `client.calls` does not move and its cost never lands;
+- a content phase pointed at a cloud route raises, while the same route on a metadata
+  phase is permitted.
+
+And two measured numbers from your own endpoint: **total tokens** and **median latency**
+across the checkpoint calls, plus what they cost at the route's price. On a small local
+model these are small and a little noisy; they are still live measurements. S12's judge
+costs money too, and without these numbers you cannot say whether it is worth running.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Model families ship in explicit cost/latency tiers ([Anthropic model overview](https://docs.anthropic.com/en/docs/about-claude/models/overview), [OpenAI models](https://platform.openai.com/docs/models)) | **already in this path** | The price/quality spread across tiers is the raw material your route table arbitrages. |
-| FrugalGPT: cascade cheap→strong with a learned accept/escalate scorer; matched GPT-4 at up to 98% lower cost on narrow tasks ([arXiv:2305.05176](https://arxiv.org/abs/2305.05176)) | **recognize** | The academic root of routing. The 98% figure is task-specific and widely over-quoted; the durable idea is paying for the big model only on the fraction that needs it. |
-| RouteLLM: routers trained on preference data choose strong-vs-weak per query; >2× cost cuts at fixed quality ([arXiv:2406.18665](https://arxiv.org/abs/2406.18665), [LMSYS blog](https://lmsys.org/blog/2024-07-01-routellm/)) | **newer than this session** | The learned generalization of your hand-built table. Revisit when phase count or traffic makes hand-tuning the bottleneck — it still starts from a measured quality/cost frontier. |
-| Gateway budget checks: LiteLLM Budget Routing rejects requests after recorded spend is over the configured budget ([docs](https://docs.litellm.ai/docs/proxy/provider_budget_routing)) | **adopt** | This controls subsequent calls; the documented first call updates spend and can overshoot before the next rejection. Verify scope and accounting timing in the deployed gateway; the in-harness ledger remains an independent audit. |
-| Routing by data sensitivity at production scale: Apple Intelligence on-device by default, escalating to stateless, attested Private Cloud Compute ([security guide](https://security.apple.com/documentation/private-cloud-compute), [launch post](https://security.apple.com/blog/private-cloud-compute/)) | **recognize** | Content *does* leave the device on the PCC path — prompt and parameters travel end-to-end encrypted to attested nodes. What the architecture guarantees is narrower and verifiable: stateless constrained processing, deletion after the response, inaccessibility to Apple (admin staff included), non-targetability, verifiable transparency. Your validation-time refusal is the same idea at toy scale. |
-| Voice latency as a product spec: GPT-4o answers audio in ~232 ms (avg 320 ms), "similar to human response time in conversation"; the chained pipeline it replaced ran 2.8–5.4 s ([OpenAI, Hello GPT-4o](https://openai.com/index/hello-gpt-4o/)) | **already in this path** | These numbers anchor Exercise 5; the human base rate underneath is Stivers et al. 2009 ([PNAS](https://doi.org/10.1073/pnas.0903616106)). |
-| Managed auto-routers that pick a model per prompt for you ([OpenRouter Auto Router](https://openrouter.ai/docs/guides/routing/routers/auto-router)) | **ignore** | For now: a learned black box between you and your bill — and per-request model changes are a reproducibility hazard for evals. Build and measure the table by hand first; then you'll know what to audit the service against. |
+| [LiteLLM proxy — provider budget routing](https://docs.litellm.ai/docs/proxy/provider_budget_routing) | **recognize** | A gateway can enforce budgets across providers. Read the semantics: many gateways stop *subsequent* calls rather than refusing the crossing one — verify before you assume it prevents overshoot. |
+| [RouteLLM (LMSYS)](https://lmsys.org/blog/2024-07-01-routellm/) | **recognize** | Learned routing between a strong and a weak model. Your table is the hand-written version; their result is the evidence that routing beats "always strong." |
+| [RouteLLM — the paper](https://arxiv.org/abs/2406.18665) | **recognize** | Same idea with the numbers: cost reduction at a held quality bar. Read it as the defensible version of "the cheapest route that holds the number." |
+| [OpenRouter — auto router](https://openrouter.ai/docs/guides/routing/routers/auto-router) | **recognize** | Model selection as a service. Note that it picks on capability, not on *your* data classification — the privacy boundary stays yours to enforce. |
+| [Apple — Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/) | **adopt** | The industrial version of "content stays local unless the boundary says otherwise." Steal the stance: the boundary is architectural, not a flag you remember to set. |
+| [OWASP LLM06: Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) | **recognize** | An unbounded, un-metered agent is the excessive-agency risk with a bill attached. Your budget and route table are the governance layer it asks for. |
+
+---
 
 ## Annotated readings
 
-- **LMSYS, [RouteLLM blog](https://lmsys.org/blog/2024-07-01-routellm/)
-  (Jul 2024).** Extract this: the savings-at-fixed-quality table, and the fact
-  that even a *learned* router is trained and judged against a measured
-  quality/cost frontier — the thing you build by hand this session.
-- **OpenAI, [Hello GPT-4o](https://openai.com/index/hello-gpt-4o/) (May 2024).**
-  Extract this: the description of the old three-model chained voice pipeline
-  and why chaining loses *both* time and information at every hand-off — the
-  argument for computing per-phase latency honestly instead of hoping.
-- **Apple, [Private Cloud Compute security guide](https://security.apple.com/documentation/private-cloud-compute).**
-  Extract this: the enforcement mechanisms — stateless computation, no
-  persistence, attestation — i.e., what a boundary looks like when it's
-  verifiable rather than promised.
-- **Stivers et al., [Universals and cultural variation in turn-taking in
-  conversation](https://doi.org/10.1073/pnas.0903616106) (PNAS 2009).** Extract
-  this: the ~250 ms median response offset and its cross-linguistic stability.
-  That is the number your voice latency budget ultimately answers to.
+- **LiteLLM, [provider budget routing](https://docs.litellm.ai/docs/proxy/provider_budget_routing).** Extract where the budget is checked relative to the request: pre-dispatch or post-usage. The difference is the whole of this session's first invariant.
+- **LMSYS, [RouteLLM](https://lmsys.org/blog/2024-07-01-routellm/) / [paper](https://arxiv.org/abs/2406.18665).** Extract the framing of the quality bar: a route is defensible only against a measured number, never a preference.
+- **Apple, [Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/).** Extract the stance, not the infrastructure: the boundary is enforced by design and refuses, which is what `validate_policy` is a toy of.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"Budgets are a finance concern."** The invoice arrives a month after the
-  bug. The meter belongs in the loop, next to `max_turns`, denominated in the
-  run's own currency: tokens × route price.
-- **"Warn, don't refuse."** A warning on a misrouted content phase is a log line
-  read by no one during the incident. Validation-time refusal is the only
-  version that holds — it makes the bad config un-runnable.
-- **Routing by vibes.** "The small model seemed fine" is unfalsifiable. If the
-  route choice doesn't cite a suite number, you haven't measured anything —
-  you've just decided.
-- **"Local = safe, cloud = unsafe."** The boundary runs on data classification,
-  not vendor virtue. Metadata can lawfully take a cloud route; content on a
-  local route can still leak through your own logs.
-- **Quoting mean (or best-case) latency.** Users experience the distribution,
-  not the average. A config whose p50 fits but whose p95 doubles the budget will
-  be remembered as sluggish: budget p50 for "feels human," p95 for "not broken."
+- *"The budget is a report."* A report is written after the money is gone. The gate must read *ahead*: a crossing call refused before dispatch is cheap; one refused after is an FYI.
+- *"The estimate is the cost."* The estimate is a lie you need to make the pre-dispatch decision; the endpoint's `usage` is the truth. Confuse them and your ledger drifts from your invoice.
+- *"Warn and fall back to a safe route."* A silent fallback is the same leak with better logging. The boundary raises, and the misconfiguration becomes un-runnable.
+- *"Route by which model sounds better."* Route by classification and by a measured number. The vendor's reputation does not entitle a content phase to leave the machine.
+- *"A refused call still costs latency."* It does not: a refused call never reaches `client.chat`, so `client.calls` and `last_latency_ms` do not move. That is how you prove the refusal happened before the wire.
+
+---
 
 ## Self-check
 
-<details><summary>Why is budget_exceeded a stop_reason rather than an alert?</summary>
-An agent that can't stop converts software bugs into invoices. An alert notifies
-a human after the money is gone; a stop_reason is a first-class run outcome the
-product handles programmatically — degrade, ask, reschedule. It is S01's
-max_turns logic extended from iterations to money and time.</details>
+<details><summary>Why does the gate use an estimate before dispatch if the real cost is only known after?</summary>
+Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate refuses the call that would cross, so the cost never lands. The estimate is not the ledger; it only has to be good enough to refuse.</details>
 
-<details><summary>What justifies moving a phase to a cheaper route?</summary>
-A measured delta under diverge/rejoin: same fixtures, same deterministic
-checker, same everything except the route under test — and the cheapest route
-whose suite number holds wins. Intuition justifies nothing; the shipped table
-cites the measurement.</details>
+<details><summary>A content phase is routed to a route whose location is cloud. What does the harness do?</summary>
+`validate_policy` raises before any model call. It does not warn and does not fall back to a safe route — a silent fallback is the same leak with better logging. The misconfiguration has to be un-runnable.</details>
 
-<details><summary>Why refuse at validation time instead of warning at runtime?</summary>
-Warnings are output, and output gets ignored — especially mid-incident.
-Validation-time refusal makes the misconfiguration un-runnable and forces the
-fix into the route table itself, which, being data, is diffable and reviewable.
-Zero model calls happen before the refusal; that's the point.</details>
+<details><summary>Why is `till_summary` allowed off-local when `read_note` is not?</summary>
+Because classification is a property of the data, not the vendor. `read_note` sees the customer's handwritten card and phone numbers — content. `till_summary` carries metadata only: category totals, no descriptions. The boundary permits the second and refuses the first on the same route.</details>
 
-<details><summary>all-large median per-turn latency across the three fixtures is 1180 ms against a 1000 ms voice budget. Cheapest correct fix?</summary>
-Route categorize to the small route (its number holds on the suite) and keep
-summarize on the large route — routed median is ~861 ms. The tempting alternative,
-frontier cloud at ~790 ms, is off the table: content phases stay local, so
-latency gets engineered (streaming, precompute) rather than bought.</details>
+<details><summary>The metadata phase and the content phase use the same cloud route. Does the boundary care about the route or the data?</summary>
+The data. The same route is permitted for metadata and refused for content; `validate_policy` checks each phase's classification against its route's location. Routing decisions are about what the data is, not which model is fashionable.</details>
 
-## What's next
+---
 
-**S12 — Judge calibration:** the routed pipeline still
-leans on model judgment — a critic reading transcripts, a judge scoring quality.
-Next session measures the judges themselves: seeded-defect detection rates,
-false positives, and agreement against your own hand labels, because an
-unmeasured judge is decoration.
+## What this unlocks
+
+You now have a harness that can refuse work before paying for it, and a policy table you can
+review in a diff. What you still do not have is any idea whether the thing producing the
+answers is any good. **[S12 — Judge calibration](S12-judge-calibration.html)** turns a model
+into an instrument: it seeds defects you already know the answer to, and makes you measure
+detection and false positives before you trust a single verdict.

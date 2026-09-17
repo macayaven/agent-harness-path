@@ -1,54 +1,58 @@
-# S05-consent-gate — Approval that actually constrains execution
+# S05-consent-gate — The gate before the irreversible action
 
-**What this teaches:** plan-then-execute with a human gate in the seam — and the part
-everyone skips: the approved plan becomes *data*, and the harness checks every action
-against it before it runs. The prompt states the limits; code holds them. Plus
-violation semantics: what the system does when execution would cross the approved
-boundary.
-**Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop), S02 (naive vs
-governed).
-**Hands-on (easy):** [`notebooks/s05_consent_gate_toy.ipynb`](../notebooks/s05_consent_gate_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s05_consent.md`](../labs/s05_consent.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S05-consent-gate.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/schema.py` — the ticket contract and the validator that decides whether a proposal is even readable. A ticket you can validate is a ticket a human can approve.
+**Today you ship:** `cafe/consent.py` — the gate that stands between the model and the one irreversible action in the café.
+**What this teaches:** propose → confirm → fire, with approve, edit and reject as first-class outcomes; an enforcement check that runs before dispatch on the harness's own copy of the approved ticket; and the two violation semantics, abort and degrade.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S04 (the ticket contract).
+**Hands-on:** [`notebooks/s05_consent_gate_toy.py`](../notebooks/s05_consent_gate_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S05-consent-gate.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+A customer asks for a cortado. The model calls `propose_order`, and then — without
+waiting for anyone — it calls `fire_ticket`. A ticket is already in the kitchen
+before a human has read a word. The coffee is on the pass; you cannot un-make it.
+
+S01's loop ran whatever the model asked for. It had no concept of *consent*, and no
+amount of prompt wording changes that: the model can say anything, so the decision
+cannot live in the model's mouth.
+
+## The promise
+
+By the end of this session you will have watched a rejected plan leave the world
+untouched, an edited plan change what actually executes, and a drifting model get
+stopped *before* dispatch — and you will be able to say which of those three is the
+property that matters.
 
 ---
 
 ## The theory in depth
 
-### The prompt is not a fence
+### The proposal is data, so the check can be mechanical
 
-The default way to constrain an agent is to write the constraint down: "never exceed
-power level 2," "the nursery is off-limits." That works exactly as well as the model's
-cooperation allows. A system-prompt instruction is *advice the model usually takes* —
-under an insistent user, an adversarial tool result, or a long distracting context,
-compliance degrades, and it degrades **silently**: the transcript says success while
-the world says otherwise.
+A prose plan cannot be checked: there is nothing to compare a later request
+against. The ticket from S04 is JSON — `{"items": [...], "table": int}` — so every
+downstream action can be compared with the approved object field by field.
+`enrich_ticket` attaches the data-derived fields the contract requires and never
+takes a total from the model or the customer; `validate_ticket` reuses S04's
+contract, so a ticket that fails validation **never reaches a human**. A customer
+only ever reads a valid order.
 
-Any constraint that must hold has to live outside the model, in deterministic code,
-and it has to fire **before** the side effect, not after. A post-hoc audit of the
-transcript finds the violation after the nursery floor is already wet. Enforcement is
-pre-dispatch, per-action, and indifferent to how persuasive the conversation got.
+### Propose → consent → fire
 
-The notebook's mock executor makes this concrete: it never even parses the system
-prompt containing its limits. Real models do parse them — and then, measurably often,
-talk themselves out of them. The gate exists for both cases.
+`consent_gate` renders the ticket, asks the responder for a decision, and loops on
+edits. The rendered ticket is short enough to read in seconds — that is a safety
+property, not a design preference. The three outcomes are not variations on one
+another:
 
-### Plan-then-execute: separate proposing from doing
-
-The consent gate splits the run in two and puts a human in the seam:
-
-1. **Propose.** The agent produces a plan *as data* — a JSON spec naming the scope
-   (what may be touched), the ceilings (how far it may go), the off-limits list, and
-   a budget (turns or time). Data is the whole point: a prose plan can't be checked
-   mechanically; a JSON spec can be compared against every later action.
-2. **Consent.** The spec is rendered for a human — short enough to actually read,
-   because a gate whose text nobody reads is decoration. The human has exactly three
-   moves: **approve** (execution may start, bound by this spec), **edit** (amend the
-   spec; the amendment is revalidated and re-presented in full — an amended plan
-   restarts the flow, no partial state carries over), **reject** (nothing happens,
-   and "nothing happens" must be verifiable: zero side effects).
-3. **Execute.** The S01 loop, with one addition: every tool call is checked against
-   the *approved* spec before dispatch.
+- **approve** returns the approved ticket and the log records it.
+- **edit** revalidates the payload and re-presents the amended ticket **in full**.
+  An amended plan restarts the flow; no partial state carries over. A customer who
+  walks away without answering is a rejection, the safe default.
+- **reject** returns `None`. Nothing downstream ever runs.
 
 ```mermaid
 flowchart LR
@@ -66,161 +70,162 @@ flowchart LR
     C -- yes --> D[dispatch:<br/>side effect happens]
     D --> L
     C -- no --> S[violation semantics<br/>+ readable report]
+
 ```
 
-The approved spec is the contract, and it binds the model — not the other way around.
-If the human lowered the ceiling and the model still attempts the level it originally
-wanted, the check fires. That is the gate working, not a malfunction.
+### Reject means zero side effects, and that is a claim to test
 
-### Why the gate asks once, up front
+"Nothing happens" is an assertion about the world, so it gets tested instead of
+asserted in prose. The notebook's first cell drives a rejection through the gate and
+then through `fire_requested`, and checks three things: the approved ticket is
+`None`, `state.fired` is empty, and `state.tool_log` is empty. A rejected plan
+leaves no ticket, no log entry, no order — by construction, not by good behaviour.
 
-The tempting fourth move — execution pausing mid-run to ask "level 3, just this
-once?" — renegotiates consent under pressure. It destroys the property the gate
-exists to create: the user knew exactly what would happen before anything happened.
-It also trains the worst habit in this corner of the industry: reflexive approval.
-Anthropic measured a 93% approval rate on Claude Code's permission prompts and
-responded by automating part of the consent away
-([anthropic.com/engineering/claude-code-auto-mode](https://www.anthropic.com/engineering/claude-code-auto-mode)).
-A dialog everyone clicks through is a gate that has already failed. Design the
-contract so execution never needs to ask; when the run genuinely can't proceed inside
-it, that's what abort is for.
+### The gate is the check, not the dialog
 
-### Violation semantics: abort, degrade, ask
+`check_fire(requested, approved)` compares one requested ticket against the approved
+one, and the request is never the authority — `approved` is. The model can drift, or
+a customer can edit the order down to a single `café solo`, and the request that
+fires must match what was approved. `fire_requested` is the only caller of
+`fire_ticket` that this module allows, and it has two violation semantics:
 
-When a checked action crosses the approved boundary, something has to happen. There
-are three honest options and one dishonest one:
+- **abort** (the default) — return `{"action": "aborted"}` and touch nothing.
+- **degrade** — fire **exactly the approved ticket** and log, loudly, what was
+  refused.
 
-| Semantics | What happens | What it costs | When it's right |
-|---|---|---|---|
-| **abort** | Stop the run; emit a readable violation report (turn, action, clause, approved vs attempted) | Partial work; the human re-plans | When a half-done state is worse than a clean stop, or when the divergence itself is the harm |
-| **degrade-to-cap** | Clamp the action to the approved bound, log the clamp, continue | The run reports success while delivering X′ against an approval of X | Only where divergence is itself safe — and the clamps are reported as loudly as violations |
-| **pause-and-ask** | Interrupt for fresh consent mid-run | Predictability; trains reflexive approval | Rarely: low stakes, and the user explicitly asked to be asked |
-| **silent divergence** | Execution crosses the boundary; the success message doesn't say so | Everything — this is the only unforgivable option | Never |
+Note what degrade does *not* do: it never fires the model's request. The approved
+ticket is the only ticket in the building.
 
-Violation semantics is a design decision, not an implementation detail: chosen at
-design time, documented, loud. The notebook runs the same adversarial scenario under
-abort and under degrade so you can watch what each one costs — and notice that
-"which one" is a product question, not an engineering one.
+### The gate inside the loop
 
-### The pattern predates agents
+`cafe/consent.py`'s `run_shift` intercepts `propose_order` to collect consent and
+stash the approved ticket on the run; a later `fire_ticket` is compared against it
+before anything reaches `state.fired`. When the gate refuses, the loop stops with
+`stop_reason="consent_violation"` instead of pretending the turn succeeded. The
+stop reason set is still the harness's: `answered`, `script_done`, `turn_cap`,
+`consent_violation` — every run can say why it ended.
 
-Terraform has shipped exactly this shape for a decade: `plan` produces the approval
-object, `apply` executes precisely it
-([docs](https://developer.hashicorp.com/terraform/cli/commands/apply)). CI pipelines
-gate deploys on manual approval; migration tools print the DDL and wait; `sudo`
-re-asks before the irreversible. Agents didn't invent the consent gate — they made it
-necessary at conversation speed, with a probabilistic executor that can *want* to
-cross the boundary mid-run. Which is why the load-bearing piece was never the dialog.
-It's the per-action check behind it.
+---
 
-## Exercises (in the notebook, predict first)
+## Build (in the notebook, predict first)
 
-Run the notebook top-to-bottom. Each experiment has an attempt cell; write your
-predictions there before running the solution cell below it.
+Open [`notebooks/s05_consent_gate_toy.py`](../notebooks/s05_consent_gate_toy.py)
+with your endpoint already exported.
 
-1. **Clean path.** The scripted owner approves the spec as proposed; the robot
-   cleans. Predict the executed actions, the highest power level used, and the
-   baby's state — then verify the world matches.
-2. **Reject path.** The owner rejects. Predict the side-effect count, then assert
-   it. "Nothing happens" is a claim you can test.
-3. **Edit path.** The owner's first edit is invalid (the validator refuses it; the
-   gate re-presents); the second lowers the power cap. Predict where the run stops,
-   and which spec the violation report names — the proposed one or the approved one.
-4. **Pressure, two harnesses.** Same model, same prompt, same begging owner — one
-   harness enforces, one trusts the prompt. Predict which one notices the ceiling
-   breach, and at which turn. Then run the post-hoc auditor over the naive
-   transcript: what did it catch, and what had already happened by then?
-5. **Degrade semantics.** Rerun the pressure scenario with clamp-and-continue. The
-   run completes. Before reading the clamp log, write down what you think diverged
-   from the approved spec. Then decide, in a comment: abort or degrade for (a) a
-   coding assistant, (b) this robot?
+1. **Predict the render.** A model proposes `cortado + tostada con tomate` for table
+   4; the scripted customer edits it down to a single `café solo` and approves.
+   Before running: what does the customer read, and what exactly ends up in the
+   approved ticket? Then run the cell and compare the log against your answer.
+2. **Write the enforcement point.** Implement `attempt_gate(state, requested,
+   approved)`: decide whether the irreversible action runs. On a violation **nothing
+   may fire** — no ticket, no tool log. Return a record with at least `fired` and
+   `action`. The reference is behind a switch; flip it after your attempt.
+3. **Watch the three properties.** `test_s05_reject_leaves_zero_side_effects` checks
+   the untouched world. `test_s05_edit_rebinds_what_executes` checks that the model
+   asking for the *original* ticket aborts while the *edited* request fires.
+   `test_s05_degrade_fires_exactly_the_approved_ticket` checks that degrade fires the
+   approved object, never the request.
+4. **Run the shift with a scripted model.** A stub script walks propose → fire →
+   answer so you can see the whole path with the decisions visible in `gate_log`.
+5. **Then your model.** The same run, live. A real endpoint usually does not rush to
+   `fire_ticket`, and when it never proposes, the gate has nothing to hold. That is
+   not a failure — it is the honest shape of the path. Watch what the model actually
+   does and read `stop_reason`, `approved`, `gate_log` and `fires`.
 
+---
 
-After the notebook, optional hard path: [consent gate on round rules](../labs/s05_consent.md) — same session, live or cassette. Skip it and the easy path is still complete.
+## Checkpoint — the number you bank
+
+Rejected three times, live: **how many runs fired nothing**. The claim "reject means
+nothing happens" is only worth what you have tested it against, and this page will
+not predict your count.
+
+Bank it as a rate with the model name, then state what it does and does not cover:
+it exercises the reject path on this endpoint, with this script, and it says nothing
+yet about a model that proposes something nobody approved. That is the loop-level
+case the drift assertion covers.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Approve/edit/reject interrupts are a first-class, documented pattern in agent frameworks ([LangChain human-in-the-loop](https://docs.langchain.com/oss/python/langchain/human-in-the-loop)) | **already in this path** | The triad you just built is the industry vocabulary. The framework supplies the pause; the per-action check against the approved object is still yours to write. |
-| Plan mode and permission modes in coding agents: a read-only propose phase, then approval-gated execution ([Claude Code auto-mode](https://www.anthropic.com/engineering/claude-code-auto-mode)) | **already in this path** | Plan-then-execute, productized. Notice what is enforced in code (tool allowlists, read-only tools) versus what is merely asked of the model. |
-| Approval fatigue measured at scale: 93% of permission prompts get approved; vendors now ship classifiers to auto-approve the boring ones ([Anthropic](https://www.anthropic.com/engineering/claude-code-auto-mode)) | **recognize** | The gate's usability failure mode, quantified. Automating consent away is one response; designing runs that rarely need to ask is another. Hold both. |
-| MCP elicitation: a server may pause tool execution to request structured user input mid-run ([spec 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)) | **recognize** | Pause-and-ask, standardized. Legitimate for missing parameters; as a re-consent channel it formalizes the ambush question. The spec has moved two revisions since 2025-06-18: 2026-07-28 ([release post](https://blog.modelcontextprotocol.io/posts/2026-07-28/)) makes requests stateless and self-contained (no initialize handshake, no `Mcp-Session-Id`), adds per-request capability negotiation and a versioned Extensions framework (Tasks and MCP Apps shipped), hardens OAuth/OIDC, and deprecates Roots/Sampling/Logging — check which revision your server pins. |
-| OWASP's LLM Top 10 ranks excessive agency a top risk; mitigations include scoping tools narrowly and human approval for high-impact actions ([LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/); 2025 numbering alias: [LLM06](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/)) | **adopt** | The security community's name for this session's problem — and the 2026 list, the current release, moved it *up*: sixth to third. The mitigation list reads like your toy's spec fields. |
-| OWASP Top 10 for Agentic Applications (Dec 2025): ASI01–ASI10 — Goal Hijack, Tool Misuse, Identity & Privilege Abuse, Agentic Supply Chain, Unexpected Code Execution, Memory & Context Poisoning, Insecure Inter-Agent Communication, Cascading Failures, Human-Agent Trust Exploitation, Rogue Agents ([OWASP Top 10 for Agentic Applications for 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/)) | **recognize** | The 2026 threat vocabulary for the governance sessions — Tool Misuse and Human-Agent Trust Exploitation are this session's gate and its 93% click-through under their new names. |
-| Terraform plan/apply as the reference shape: the plan file is the approval object, apply runs exactly it ([apply docs](https://developer.hashicorp.com/terraform/cli/commands/apply)) | **adopt** | A decade of production evidence for the two-phase split. Your agent gate is the same shape at conversation speed. |
-| Human oversight in EU law, on a delayed schedule: AI Act Article 14 requires high-risk systems to be built so assigned humans can effectively oversee and intervene ([Article 14](https://artificialintelligenceact.eu/article/14/)), but the Digital Omnibus on AI ([Regulation (EU) 2026/1744](https://eur-lex.europa.eu/eli/reg/2026/1744/oj), in force 27 July 2026) dates the obligations — Annex III high-risk from 2 Dec 2027, Annex I product-embedded from 2 Aug 2028 | **recognize** | What binds today (Aug 2026) is the Art 5 prohibitions (since Feb 2025), GPAI obligations (since Aug 2025), and Art 50 transparency (from 2 Aug 2026) — the high-risk human-oversight duties are not yet enforceable. The gate becomes a compliance artifact on a published schedule; worth knowing before someone asks for yours. |
-| Fully autonomous YOLO modes that skip per-action approval | **ignore** | For anything you can't undo: fine for sandboxes and throwaway branches. The moment actions touch state you care about, you are back here building the gate. Vendors productize the opposite pressure — auto-approving the boring prompts ([Anthropic](https://www.anthropic.com/engineering/claude-code-auto-mode)), not deleting the gate. |
+| [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | **recognize** | Owns the loop and offers tool-level approval flows, so a human can interrupt before a sensitive call. The same design question: who holds the approved object. |
+| [Anthropic tool use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | **recognize** | A tool call is a request, not an execution. Every consent design starts from that fact, which S01 established the hard way. |
+| [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | **recognize** | Names excessive agency as a risk class and treats human approval as the control. Read it as a checklist for what your gate does not yet cover. |
+| [Model Context Protocol](https://modelcontextprotocol.io/) | **recognize** | Standardises tool discovery and deliberately leaves approval to the host. The gate you wrote is that host's job. |
+| [LangGraph](https://langchain-ai.github.io/langgraph/) | **adopt** | Models human-in-the-loop as interrupts with durable state, so an approval can resume a paused graph. Read it when you need the gate to survive a restart. |
+
+---
 
 ## Annotated readings
 
-- **LangChain, [Human-in-the-loop](https://docs.langchain.com/oss/python/langchain/human-in-the-loop).**
-  Extract this: the approve/edit/reject decision shapes and how the interrupt
-  carries the pending action to the human. Note what the framework does *not* give
-  you: the policy deciding which actions need asking, and any check of what happens
-  after approval.
-- **Anthropic, [How we built Claude Code auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode).**
-  Extract this: the 93% approval-rate measurement — your standing citation for
-  approval fatigue — and the design tension of automating consent without hollowing
-  it out.
-- **HashiCorp, [terraform apply](https://developer.hashicorp.com/terraform/cli/commands/apply).**
-  Yes, the man page. Extract this: the plan file as the exact artifact of consent,
-  and what the docs say `-auto-approve` is for. Ten years of the two-phase pattern,
-  hiding in a man page.
-- **OWASP, [LLM Top 10 2026](https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/)**
-  (Excessive Agency; 2025 numbering was [LLM06](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/)).
-  Extract this: the mitigation list — constrain tool scope, require approval for
-  high-impact actions, log everything — and map each item to a line of the toy's
-  spec or harness.
+- **OWASP Top 10 for LLM Applications, excessive agency** — extract: the listed
+  mitigations and mark which ones this session implements and which ones it hands
+  to S06.
+- **OpenAI Agents SDK, human approval for tools** — extract: what the SDK pauses,
+  what it preserves across the pause, and how it decides which tools are sensitive.
+  Compare it with your single `IRREVERSIBLE_ACTION` name.
+- **`cafe/consent.py`, `check_fire` and `fire_requested`** — read them in that order.
+  The comparison is small on purpose; the point is *where* it runs, not how clever
+  it is.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"It's in the system prompt, so it holds."** The prompt is advice. Under
-  pressure — an insistent user, a long context, an adversarial tool result — the
-  model talks itself out of it, and the transcript won't tell you. If a limit must
-  hold, code holds it.
-- **"A confirmation dialog is a consent gate."** If nothing checks later actions
-  against what was confirmed, the dialog is theater: consent preceded execution but
-  never bound it. The gate is the per-action check; the dialog is its front door.
-- **"Degrade is the safe default."** Clamping quietly rewrites the contract — the
-  human approved X, the machine delivered X′, the report says success. Degrade only
-  where divergence is itself harmless, and log clamps as loudly as aborts.
-- **"When unsure, ask again mid-run."** Re-consent under interruption trains
-  reflexive approval — the measured 93%. Ask once, in the calm, before anything
-  moves; if the run can't continue inside the contract, abort to a report.
-- **"Post-hoc audit is enforcement."** Audit finds the violation after the side
-  effect. Useful for learning, useless for prevention — the baby is already awake.
+- *"The prompt can ask the model to confirm before firing."* Asking is not
+  enforcing. The model can say anything; the gate is a check on the harness's own
+  copy of the approved ticket.
+- *"Reject just means the model stops."* Reject returns `None` and nothing
+  downstream runs. It is a state, not a message.
+- *"Degrade is a softer abort."* Degrade fires exactly the approved ticket. It is
+  the product decision to serve what the human agreed to while logging the refusal
+  — never to serve the model's request.
+- *"An edit only updates the fields that changed."* An edit re-renders the whole
+  ticket and restarts the flow. Partial state is how a customer approves one thing
+  and gets another.
+- *"The model proposed it, so it is obviously what the customer wants."* The
+  proposal is unvalidated until the gate validates it, and unauthorised until a
+  human approves it. Both checks run before dispatch.
+
+---
 
 ## Self-check
 
-<details><summary>Why can't the approved limits live only in the system prompt?</summary>
-Because the model is a probabilistic executor and the prompt is advice it usually
-takes. Under pressure it degrades silently — the run reports success while the
-constraint is already broken. A limit that must hold must be checked by deterministic
-code, per action, before dispatch.</details>
+<details><summary>Why must <code>fire_requested</code> compare against the approved ticket rather than the model's request?</summary>
 
-<details><summary>What turns an approval dialog into a contract?</summary>
-The approved plan exists as data, and every subsequent action is mechanically checked
-against it before it executes — including actions the model believed were fine.
-Binding execution to the approved spec (not the proposed one, not the prompt) is what
-makes consent real; without the per-action check, the dialog is theater.</details>
+Because the request is the thing under suspicion. The approved object is the only
+record of what a human agreed to; if the model drifts, or a customer edits the
+order down, the request will disagree with it. The check exists to catch exactly
+that disagreement before dispatch.</details>
 
-<details><summary>Abort vs degrade — what does each cost, and what is never acceptable?</summary>
-Abort costs partial work and forces a re-plan; degrade costs delivering something the
-human never approved under a success message. Both are defensible when chosen at
-design time and reported loudly. Silent divergence — crossing the approved boundary
-with no report — is the one unforgivable option.</details>
+<details><summary>What exactly does "reject leaves zero side effects" mean, and how is it tested?</summary>
 
-<details><summary>Why does this design refuse mid-run re-approval questions?</summary>
-Because predictability is the feature: the human consented to a specific shape of
-run, in the calm, up front. Mid-run questions renegotiate under pressure and train
-reflexive approval (the measured 93% click-through). A gate that asks constantly is
-a gate nobody reads.</details>
+No fired ticket and no tool-log entry, plus an approved ticket of `None`. The cell
+drives a rejection through the gate and the enforcement point and asserts all
+three. It is a claim about the world, so it is tested, not described.</details>
 
-## What's next
+<details><summary>Under <code>degrade</code>, which ticket reaches the kitchen when the model asks for something else?</summary>
 
-**S06 — Layered detection:** the gate constrains what the agent *planned* to do. It
-says nothing about what flows through the run — the user turn that discloses a
-crisis, the tool result carrying an injection, the content your policy must catch on
-the fly. Next: detection as data-driven policy, in layers, with a false-trigger
-budget you actually count.
+The approved ticket, always. Degrade fires the approved object and records the
+clauses it refused. Firing the model's request — even partially — would make the
+gate decorative.</details>
+
+<details><summary>A live run never calls <code>fire_ticket</code>. Did the gate fail?</summary>
+
+No. The gate only acts on what it is given. A model that answers in prose instead
+of firing leaves the gate with nothing to hold, which is the honest shape of the
+path. Read `stop_reason` and `gate_log` before calling it a success or a failure.</details>
+
+---
+
+## What this unlocks
+
+You can now hold an irreversible action behind a check that runs before dispatch.
+But the gate only sees what it is *given*: an untrusted message still flows straight
+into the model. **[S06 — Layered detection](S06-layered-detection.html)** puts an
+ordered pipeline in front of the model — a deterministic keyword floor before any
+model call, an allergen classifier, and a scope governor — with a real allergen as
+the stake.

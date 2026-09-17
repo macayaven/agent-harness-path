@@ -2,7 +2,7 @@
 
 The public starting point is this clone: follow the root README, run
 `uv sync --frozen`, open [the course index](../lessons/index.html) in Cursor,
-and run notebooks there or with `uv run jupyter lab`.
+and run the marimo notebooks with `uv run marimo edit notebooks/sNN_*_toy.py`.
 
 Keep learner work on nonsynced local storage outside the Git checkout. Copy an
 edited notebook before a clean clone, branch switch or version change.
@@ -13,14 +13,19 @@ For every S01–S12 module, follow **Read and trace the theory → Notebook: pre
 attempt, observe → Self-check and explain**. Course content is ordered by session.
 Each of those twelve sessions has three required activities (read, notebook,
 self-check), so 36 activities, not twelve automatically graded completions.
+The twelve sessions accumulate **one** `cafe/` package
+(`loop → evals → context → schema → consent → detect → repair → trace → report →
+taxonomy → routing → judge`), not twelve separate toys.
 
 Read the objectives and use the diagram. Write a prediction before the relevant
 notebook result, attempt the authored work yourself and compare one observation
 with the prediction. Save the notebook outside this checkout so a clean clone
 does not eat your predictions.
-Notebooks execute only standard-library toy code, without a model service, keys or
-network. Running all cells demonstrates execution; empty attempt skeletons and
-reference-label scores do not become your independent work.
+Notebooks are marimo files that run **live** against your own OpenAI-compatible
+endpoint through the single `cafe/` seam (`CAFE_BASE_URL`, `CAFE_API_KEY`,
+`CAFE_MODEL`; smoke-test with `uv run python -m cafe.doctor`). Only CI is offline,
+via `COURSE_MODE=stub`. Running all cells demonstrates execution; empty attempt
+skeletons and reference-label scores do not become your independent work.
 
 | Session | A useful feedback focus |
 | --- | --- |

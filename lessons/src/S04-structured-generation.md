@@ -1,54 +1,60 @@
-# S04-structured-generation — The schema is the contract
+# S04-structured-generation — The ticket contract
 
-**What this teaches:** getting data instead of prose out of a model is a contract
-problem, not a prompting problem — the three ways to get structure (prompt-and-pray,
-validate-and-retry, constrained decoding), why the validator is the real interface,
-and why schema-valid is never the same as correct.
-**Time:** ~75 min with the notebook. **Prerequisites:** S01 (the loop — the retry
-you'll build reuses its errors-are-messages rule), S02 (golden sets — the agreement
-score is the same instrument thinking).
-**Hands-on (easy):** [`notebooks/s04_structured_generation_toy.ipynb`](../notebooks/s04_structured_generation_toy.ipynb)
-**Hands-on (hard, optional):** [`labs/s04_schema.md`](../labs/s04_schema.md) — after the notebook.
-**Video:** [Gemini Notebook overview](videos/S04-structured-generation.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.
+**Carried in:** `cafe/context.py` — compaction policies and the proof that the pinned allergen rule still governs after the boundary. The conversation is now under control; the *reply* is not.
+**Today you ship:** `cafe/schema.py` — the ticket contract, a hand-rolled stdlib validator, and a bounded validate-and-retry loop.
+**What this teaches:** structured generation as a contract with two gates — shape against a schema, meaning against tonight's data — plus error-feedback retries, a cap you choose, and why a valid ticket is not automatically a correct one.
+**Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S02 (the checkers).
+**Hands-on:** [`notebooks/s04_structured_generation_toy.py`](../notebooks/s04_structured_generation_toy.py) — runs against **your** model.
+**Video:** [Gemini Notebook overview](videos/S04-structured-generation.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
+
+---
+
+## The hook
+
+A customer orders. The model answers with a friendly paragraph, a fenced code
+block, and a price nobody ever quoted. The kitchen's ticket system eats JSON and
+nothing else, so none of it reaches the pass.
+
+So you add a schema. The model now returns valid JSON every single time — and one
+of those valid tickets asks the kitchen to cook an item it ran out of two hours
+ago, at a total that is wrong by eighty cents. The schema did exactly what you
+asked. It was not enough.
+
+## The promise
+
+By the end of this session you will have a ticket contract, a validator you wrote
+yourself out of stdlib pieces, and a capped retry loop that turns validation errors
+into messages the model can act on. You will also be able to explain why *valid is
+not correct*, and point at the checker that catches the difference.
 
 ---
 
 ## The theory in depth
 
-### Free text is a liability at a system boundary
+### The contract is a data model, not a prompt style
 
-An agent that only talks to humans can afford prose. The moment its output feeds
-*code* — a scheduler, a database, a gate, another agent — prose becomes a parsing
-problem, and parsing prose with regex and hope is where reliability goes to die.
-The standard move is the **intake pattern**: free-text brief in, machine-readable
-plan out, with a machine check between the model and everything downstream.
+`TICKET_SCHEMA` describes what the kitchen's system accepts: `table` as an integer,
+`items` as a non-empty array drawn from the menu, `total_eur` as a number,
+`allergen_checked` as a boolean. The menu itself is the `enum` — enums are policy,
+and a schema is the place where policy gets written down where a machine can check
+it.
 
-That check has a consequence people skip: model output crossing a boundary is
-*untrusted input*. You wouldn't `INSERT` a user-submitted form without validating
-it; a model's JSON deserves exactly the same suspicion. The validator is not a
-nicety bolted on after generation — it *is* the interface. The prompt is a request;
-the schema is the contract; the validator is the enforcement.
+The validator is a **stdlib subset** of JSON Schema: `type`, `required`,
+`properties`, `enum`, `items`, `minItems`. That is deliberate. A library is these
+same checks with more keywords; writing them once means you know exactly which
+promises your contract does and does not make. One detail earns its place
+immediately: `bool` is an `int` in Python, so a table number of `True` passes a
+naive integer check. The validator excludes it, because `True` is not a table.
 
-### Three ways to get structure — one of them is a guarantee
+### Two gates, not one
 
-| Approach | Mechanism | Guarantee | Works on | What still fails |
-|---|---|---|---|---|
-| Prompt-and-pray | instructions and examples in the prompt | none — a request, not a constraint | every API and model | everything, occasionally: fences, preamble prose, dropped fields, wrong types |
-| Validate-and-retry | parse + validate locally, append the error as a message, re-ask — capped | eventual conformance, *if* the failure is convergent | every API and model | non-convergence, retry cost and latency |
-| Constrained decoding ("Structured Outputs", guided decoding) | schema compiled to a grammar; invalid tokens masked at sampling time | syntactic conformance *by construction* | supporting APIs and runtimes | semantics — and schema-subset limits, refusals, truncation |
-
-Only the third row is a guarantee, and only of *shape*. OpenAI's 2024 launch of
-Structured Outputs reported schema adherence on its complex-schema eval going from
-under 40% unconstrained to 100% with constrained decoding
-([announcement](https://openai.com/index/introducing-structured-outputs-in-the-api/),
-[docs](https://platform.openai.com/docs/guides/structured-outputs)). Read that
-number precisely: 100% *schema adherence*, not 100% correct.
-
-The second row is the portable fallback — it works on every backend, including
-local models whose `response_format` support is partial or absent. The first row
-is not a strategy; it's the naive baseline you measure the other two against.
-
-### The retry loop is S01's loop with the validator as the tool
+The first gate is *shape*: is this the object the contract describes? The second is
+*meaning*: does it agree with tonight's menu and prices? `checkers.ticket_matches_menu`
+from S02 is the second gate — it catches an 86'd item by name and a total that does
+not match the menu sum. A ticket can clear the first gate and fail the second on
+every field the schema allowed. This is the session's central fact: **the schema
+constrains what you thought to describe; it cannot constrain what you forgot.**
 
 ```mermaid
 flowchart LR
@@ -62,159 +68,157 @@ flowchart LR
     F2 --> R
     R -- yes --> C
     R -- no --> X[escalate: suspect the schema,<br/>not only the model]
+
 ```
 
-Two things to notice. First, there are **two failure classes** — output that
-doesn't parse (fences, prose, truncated) and output that parses but violates the
-schema (missing field, wrong type, out-of-enum value). They share a loop but not a
-fix, and the feedback text should say which class fired. Second, this is S01's
-machinery verbatim: the error goes *into the messages* (errors are messages, not
-exceptions), and the attempt cap is a harness property, exactly like `max_turns`.
-An uncapped retry loop is a non-terminating agent wearing a trench coat.
+### Replies arrive broken in two ways
 
-### The schema is a product document, not a DTO
+Before validation there is parsing. `parse_json` recovers an object from a real
+reply: it strips code fences, tries the whole string, then falls back to the first
+`{` through the last `}`. Two distinct failures reach the retry loop, and they need
+different feedback:
 
-A schema for LLM output is not a data-transfer object you derive from a struct.
-Every keyword is a decision with a failure mode attached:
+- `PARSE ERROR` — there was no object to validate. The fix is to ask for the raw
+  JSON only, no prose, no fences.
+- `VALIDATION ERRORS` — there was an object; the schema rejected it. The fix is the
+  error list, verbatim, with paths like `$.items[0]`.
+- `SEMANTIC ERRORS` — the object was valid and disagrees with the menu. The fix is
+  the menu disagreement, not a schema lecture.
 
-- **Every required field is a claim the input must support.** If the brief doesn't
-  contain it, the model will still fill it in — hallucination with perfect types.
-  OpenAI's own guide warns that the model "will always try to adhere to the
-  provided schema, which can result in hallucinations" on unrelated input
-  ([docs](https://platform.openai.com/docs/guides/structured-outputs)). A field
-  the input can't support belongs in `optional`, or nowhere.
-- **Enums are policy.** An enum says what the world is allowed to be. Too narrow,
-  and reality itself fails validation — the notebook has a brief whose device is
-  not in the enum, and the model is *right* every time it refuses to lie. Repeated
-  identical validation errors are telemetry about the schema, not the model.
-- **Minimalism is a safety property.** Every field you keep must earn its render
-  downstream. Fields nobody reads are fields the model hallucinates that nobody
-  checks. This becomes concrete at the next session's gate, where a human reads
-  the spec.
+Specific errors are the whole mechanism. A model cannot act on "invalid"; it can act
+on "`$.table`: expected integer, got `\"cuatro\"`".
 
-The toy hand-rolls a validator over a JSON-Schema subset (`type`, `required`,
-`properties`, `enum`) so the checks are visible. The full spec adds `items`,
-`anyOf`, `additionalProperties`, and more
-([json-schema.org](https://json-schema.org/learn/getting-started-step-by-step)) —
-worth knowing exists, and worth reaching for via the real library once your subset
-starts growing its tenth keyword.
+### The loop is capped, and the transcript stays legal
 
-### Valid ≠ correct
+`ask_ticket` gives the model at most three attempts. An uncapped retry loop is a
+non-terminating agent holding your budget. Each attempt appends the assistant turn
+**verbatim** before the feedback — the S01 invariant, reused, so a model that
+answered with a tool call still has its message and every result paired. The
+returned message list is the receipt: it shows exactly what the model was told
+after each failure. The function returns `(ticket_or_None, messages, attempts)` and
+never raises on a bad reply.
 
-Conformance is checkable by code. Correctness is checkable only against the world.
-Two failure classes sail through any validator:
+### Escalation is a decision
 
-- **The in-enum wrong value** — `priority: "normal"` on a brief that says
-  *tomorrow 8am or we lose the account*. Valid; wrong.
-- **The unconstrained-field hallucination** — a `parts_mentioned` entry the
-  customer never said. An array of strings can't object.
+Three failures on the same brief is data, not noise. A repeated identical error is
+the contract talking: either the model cannot produce this shape, or the schema is
+wrong for the task. S04's diagram ends on that fork on purpose — when retries are
+exhausted, the honest next move is to suspect the schema as much as the model.
 
-The measurement that catches these is S02's instrument moved one step downstream:
-blinded human labels on *n* briefs, recorded *before* generation, then an agreement
-score, n/5. Until you've run it, "it validates" is a claim about syntax. After
-you've run it, you know which semantic errors your schema is structurally blind
-to — which is the thing you actually needed to know.
+---
 
-## Exercises (in the notebook, predict first)
+## Build (in the notebook, predict first)
 
-1. Run the naive extractor over the five briefs. **Predict first:** for each
-   brief, does the raw output fail to parse, parse but fail validation, or pass?
-   Note which failure class dominates — the remedy differs by class.
-2. Write the validate-and-retry loop yourself (attempt cell provided): parse,
-   validate, append the error as a user message, re-ask, cap at 4 attempts.
-   **Predict first:** which briefs converge, and which one *can't* — and why not?
-3. Attack the schema. The failing brief keeps failing the same field. Decide
-   whether the model or the schema is wrong; fix the enum; re-run to green.
-   Then say what *else* you'd challenge in this draft schema.
-4. Valid ≠ correct. The mock "upgrades" to constrained decoding: every output is
-   schema-valid. **Predict first:** blinded — write down your expected `device`
-   and `priority` for all five briefs *before* running. Then score agreement
-   n/5 and identify which failures the validator structurally cannot see.
+Open [`notebooks/s04_structured_generation_toy.py`](../notebooks/s04_structured_generation_toy.py)
+with your endpoint already exported.
 
+1. **Predict the validator.** Before running: which of a ticket missing `total_eur`
+   with `"table": "cuatro"`, and a correct two-item ticket, does `validate` accept —
+   and what exact error does it hand the other one? Then run the cell.
+2. **Predict the semantic gap.** A ticket below is *schema-valid*. Write down how
+   many semantic violations it should earn and name them. Then implement
+   `attempt_semantic`, which must check the shift data rather than the schema. The
+   reference is `checkers.ticket_matches_menu` behind a switch.
+3. **Predict the live run.** For each of the three briefs, write down parse error,
+   schema invalid, semantically wrong, or accepted — and on which attempt. Then run
+   `ask_ticket` against your endpoint. A small local model is genuinely bad at this;
+   briefs that fail all three attempts are data, not a broken notebook.
+4. **Read the assertions.** They do not claim your model produces valid tickets.
+   They claim the machinery: the validator accepts a hand-built reference and
+   rejects an off-menu item on the enum; a valid-but-wrong ticket fails the schema
+   and fails the semantic checker; and the retry loop keeps the conversation
+   protocol-legal across every attempt.
 
-After the notebook, optional hard path: [round spec + validate-and-retry](../labs/s04_schema.md) — same session, live or cassette. Skip it and the easy path is still complete.
+---
+
+## Checkpoint — the number you bank
+
+Two numbers from the live run: **how many of the three briefs produced a valid
+ticket**, and **how many of those valid tickets were also correct**. The gap between
+them is the session. Small local models usually show the first comfortably above
+the second, and this page will not tell you the values — your endpoint decides.
+
+Bank both numbers with the model name. When you report them, keep the distinction
+intact: "valid" is a claim about shape, "correct" is a claim about agreement with
+tonight's data.
+
+---
 
 ## State of the art (as of August 2026)
 
 | Development | Status | Take |
 |---|---|---|
-| Constrained decoding is default on hosted APIs: OpenAI Structured Outputs (`strict: true` + `json_schema` response format; vendor-reported schema adherence ~100% vs <40% unconstrained) ([announcement](https://openai.com/index/introducing-structured-outputs-in-the-api/), [docs](https://platform.openai.com/docs/guides/structured-outputs)) | **adopt** | On routes that support it: buys syntax, never semantics. Note the supported-schema subset (no `allOf`/`if`/`then`, root must be an object) and the refusal/truncation edge cases. |
-| Prompt → validate → retry, industrialized: Instructor wraps pydantic schemas and re-prompts with the validation error, capped by `max_retries` ([github.com/567-labs/instructor](https://github.com/567-labs/instructor)) | **already in this path** | The notebook's loop with plumbing. Build it by hand once — which you just did — and the library becomes legible instead of magical. |
-| Same mechanism in open runtimes: vLLM structured outputs (xgrammar/guidance backends; the `guided_*` params were retired for `structured_outputs` in v0.12) ([docs](https://docs.vllm.ai/en/latest/features/structured_outputs.html)) | **adopt** | When self-hosting: local backends honor JSON-Schema features unevenly. Test your exact schema, and keep the retry loop as the net underneath. |
-| Anthropic Structured Outputs, GA across the Claude API: grammar-constrained `output_config.format` with `type: "json_schema"` plus strict tool use; SDK helpers `client.messages.parse()`/`output_format`; documented on the model list in the compatibility table (it grows — check the docs, don't snapshot names here) ([docs](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)) | **newer than this session** | Constrained decoding is now table stakes on every major API. Documented holes: refusals and max_tokens can break schema compliance, and enum casing is not guaranteed. The portable validate-retry fallback still earns its place — for those edges, and for the semantic layer no sampler can fix. |
-| Format restrictions can degrade reasoning: "Let Me Speak Freely?" ([arXiv:2408.02442](https://arxiv.org/abs/2408.02442)) | **recognize** | Think in free text, structure the extraction. If a task's quality drops under a schema, split the call: reason first, emit JSON second. |
-| JSON mode without a schema (`{"type": "json_object"}`) ([docs](https://platform.openai.com/docs/guides/structured-outputs)) | **ignore** | As a reliability strategy: guarantees parseable, not valid — the vendor's own comparison table says schema adherence: "No". Prompt-and-pray with a parser attached. |
-| Schemas became the agent-to-agent contract: MCP tools declare `inputSchema`/`outputSchema` in JSON Schema ([spec 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28)) | **recognize** | Your validator skills transfer verbatim. A tool schema is the same contract, one hop further downstream. The spec has moved two revisions since 2025-06-18 (2025-11-25, then 2026-07-28) — pin the version you code against. |
+| [JSON Schema](https://json-schema.org/) | **already in this path** | The subset in `cafe/schema.py` is this specification minus the parts a café ticket does not need. Read the `enum` and `items` sections and you can reconstruct the validator. |
+| [OpenAI structured outputs](https://platform.openai.com/docs/guides/structured-outputs) | **recognize** | Server-side schema enforcement that makes the parse failure mostly disappear. It does not touch the second gate — a conforming object can still name an 86'd item. |
+| [Outlines](https://github.com/dottxt-ai/outlines) | **recognize** | Constrained decoding removes the invalid shape before it is generated. Same goal as your retry loop, moved earlier in the pipeline and out of your control. |
+| [Guidance](https://github.com/guidance-ai/guidance) | **recognize** | Interleaves generation with program structure so the contract and the output share one grammar. Worth reading as the alternative to validate-and-retry. |
+| [Instructor](https://python.useinstructor.com/) | **adopt** | The validate-and-retry loop you just hand-rolled, packaged and maintained. Read its error-feedback behaviour against yours before you decide you need it. |
+
+---
 
 ## Annotated readings
 
-- **OpenAI, [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).**
-  Extract three things: the supported-schema subset (so you know which JSON-Schema
-  features won't survive the trip), the refusal/incomplete edge cases (the schema
-  guarantee has holes — handle them), and the "handling user-generated input"
-  warning, which is the vendor's own version of valid ≠ correct.
-- **OpenAI, [Introducing Structured Outputs in the API](https://openai.com/index/introducing-structured-outputs-in-the-api/)
-  (Aug 2024).** Extract the mechanism section: schema → grammar → token masking at
-  each sampling step. Then reread the headline number and name exactly what it
-  measures (schema adherence) and what it doesn't (task quality).
-- **Tam et al., [Let Me Speak Freely?](https://arxiv.org/abs/2408.02442) (2024).**
-  Extract the shape of the result, not just the headline: reasoning tasks degrade
-  under format restriction, stricter formats degrade more, and
-  classification/extraction mostly hold. That shape is your rule for when to split
-  thinking from structuring.
-- **Instructor, [repo](https://github.com/567-labs/instructor) and docs.** Extract
-  the retry contract: the validation error is re-inserted into the prompt, retries
-  are capped, and pydantic is the validator. It's the loop you built, with
-  production plumbing — read it to recognize your own machinery, not to copy it.
+- **JSON Schema, `enum` and array keywords only** — extract: how a schema expresses
+  policy (the menu) rather than just structure. Then decide what it means that
+  tonight's 86 list is data, not an enum.
+- **OpenAI structured outputs guide** — extract: what the API guarantees about the
+  object's *shape* and what it explicitly does not guarantee about its *content*.
+  That sentence is S04's thesis, written by someone else.
+- **`cafe/schema.py`, `ask_ticket`** — extract: where the assistant turn is
+  appended and why it has to be recorded even when the attempt fails. The receipt
+  is only useful if it is complete.
+
+---
 
 ## Misconceptions and failure modes
 
-- **"JSON mode means structured output."** Parseable is not schema-valid. JSON
-  mode guarantees the braces balance; it says nothing about your fields. The
-  validator still has to run.
-- **"Constrained decoding makes the output right."** It constrains the sampler,
-  not the truth. An in-enum hallucination validates. Worse, adherence pressure
-  makes the model fill fields the input doesn't support — garbage, perfectly typed.
-- **"Retry until valid."** Some failures can't converge: an enum that doesn't
-  cover reality, a required field the brief can't support. Cap the retries, and
-  read repeated identical errors as a schema bug report, not a model bug.
-- **"More fields, more value."** Every field is a claim the model must support
-  from the input and a line a human must read downstream. Unsupported required
-  fields are hallucination magnets. Delete fields that don't earn their render.
-- **"Validation errors are noise to suppress."** They're the highest-signal
-  channel in the system: re-prompt content for the model, schema-quality telemetry
-  for you. Log them; don't swallow them.
+- *"Valid JSON is a correct ticket."* Validity is shape. Correctness is agreement
+  with tonight's menu, prices and 86 list. Two gates.
+- *"Give the model the errors and it will fix them."* Sometimes. That is why the
+  loop is capped, the attempt count is returned, and three identical failures are
+  treated as information about the contract.
+- *"The schema is model-independent."* Any schema that enumerates the menu encodes
+  tonight's policy. When the menu changes, the enum changes with it.
+- *"Retries are free."* Every attempt is a paid call. A cap is a budget decision
+  (S11), not a politeness.
+- *"Parse errors mean the model is broken."* They mean the reply contained no
+  object. Ask for raw JSON and no fences, then look at the receipt before blaming
+  the model.
+
+---
 
 ## Self-check
 
-<details><summary>Why does "please reply in JSON" fail even with a perfect prompt?</summary>
-Because a prompt constrains nothing at sampling time — it's a request, and the model
-can always drift into fences, preamble prose, or a dropped field. Only constrained
-decoding is a guarantee (of shape). Everything between the two is why you validate:
-prompts can't be trusted, validators can be audited.</details>
+<details><summary>Why does the validator reject a boolean for <code>table</code> instead of accepting it as an integer?</summary>
 
-<details><summary>Name the two failure classes of raw model output, and the remedy for each.</summary>
-Unparseable (fences, prose, truncation) — retry with the parse error as feedback,
-or remove the class with constrained decoding. Parseable but schema-invalid —
-validator error list appended as feedback, targeted retry. Same loop, different
-feedback text; saying which class fired is part of the feedback.</details>
+Because `bool` subclasses `int` in Python, so `type(True) is int` is misleadingly
+true. A table number of `True` is nonsense, and a contract that accepts it is
+weaker than it reads. The validator excludes bool explicitly.</details>
 
-<details><summary>A retry loop fails on the same field three times. Model problem or schema problem?</summary>
-Suspect the schema: an enum that doesn't cover the domain, or a required field the
-input can't support. Repeated identical validation errors are telemetry about the
-contract, not the generator. Fix the schema or escalate to a human — retrying a
-fourth time is how you pay for the same error again.</details>
+<details><summary>A ticket passes the schema but names an 86'd item. Which gate failed, and who catches it?</summary>
 
-<details><summary>Your pipeline emits 100% schema-valid specs. Why isn't that enough to ship?</summary>
-Valid ≠ correct: wrong in-enum values and hallucinated unconstrained fields
-validate fine. Semantic agreement needs blinded human labels and an n/5 score —
-and before any spec *executes*, a human gate, which is S05.</details>
+The second gate, meaning. The schema only knows the enum of menu items; it has no
+knowledge of tonight's stock. `checkers.ticket_matches_menu` catches it — the same
+kind of deterministic checker you learned to trust in S02.</details>
 
-## What's next
+<details><summary>Why is the retry loop capped at three attempts and not "until it works"?</summary>
 
-**S05-consent-gate:** you can now produce a validated, machine-readable plan — and
-a schema minimal enough that a human can actually read it. S05 puts that human in
-the loop: a gate that renders the spec for explicit approval before anything
-executes, where "every field earns its place" becomes "every field earns its render
-in under 60 seconds." Validation told you the plan is well-formed; it cannot tell
-you the plan should run.
+Because an uncapped retry loop is a non-terminating agent with your budget in its
+hand. A cap turns "it never produced a valid ticket on this brief" into a countable
+outcome, which is what makes it reportable.</details>
+
+<details><summary>The model fails all three attempts with the same validation error. What does that tell you?</summary>
+
+That the feedback is not moving the model — either it cannot produce this shape or
+the schema is wrong for the task. Repeating the same request a fourth time is not a
+fix; suspect the contract and read the receipt.</details>
+
+---
+
+## What this unlocks
+
+You can now force a shape and tell a valid reply from a correct one. But a
+perfectly valid, perfectly correct ticket is still only a proposal — and
+`fire_ticket` is irreversible. **[S05 — The consent gate](S05-consent-gate.html)**
+puts a human confirmation between the two, and asks what your harness does when the
+customer says no.

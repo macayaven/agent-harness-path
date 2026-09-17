@@ -21,14 +21,25 @@ jobs:
       - name: Install tooling
         run: uv sync --frozen
       - name: Content and static freshness contracts
+        env:
+          COURSE_MODE: stub
         run: uv run python -m unittest discover -s tests -v
-      - name: Execute notebooks
+      - name: Execute notebooks offline
+        env:
+          COURSE_MODE: stub
+          MARIMO_SKIP_UPDATE_CHECK: "1"
         run: |
           set -euo pipefail
-          for nb in notebooks/s*.ipynb; do
+          for nb in notebooks/s*_toy.py; do
             echo "=== $nb ==="
-            uv run jupyter nbconvert --to notebook --execute --stdout "$nb" > /dev/null
+            PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python "$nb" > /dev/null
           done
+      - name: Lint notebooks and prove canonical marimo form
+        run: |
+          set -euo pipefail
+          uv run marimo check --strict --ignore MF004 notebooks labs/app.py
+          uv run marimo check --fix --ignore MF004 notebooks labs/app.py
+          git diff --exit-code -- notebooks labs/app.py
       - name: Rebuild lessons and fail on drift
         run: |
           uv run python lessons/build.py
