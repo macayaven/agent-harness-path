@@ -31,15 +31,21 @@ uv sync
 
 ## Edit, then verify
 
-1. Edit sources in `lessons/src/*.md`, `notebooks/*.ipynb`, or `labs/`
+1. Edit sources in `lessons/src/*.md`, `notebooks/*.py`, or `labs/`
    (protocols and Python). Never hand-edit generated `lessons/*.html`. Learners read the generated HTML from a clone
    (`lessons/index.html`). GitHub's file view of `lessons/src/` is not a
    supported reader — relative `videos/` paths are rewritten to the public
    bucket at build time.
    Edits to `lessons/src/study-plan.md` must preserve its authoritative external
    links and workload honesty, then rebuild `lessons/study-plan.html`.
-2. Rebuild: `uv run python lessons/build.py`
-3. Check links: `uv run python lessons/check_links.py`
+2. Run the content contracts:
+
+   ```bash
+   COURSE_MODE=stub uv run python -m unittest discover -s tests
+   ```
+
+3. Rebuild: `uv run python lessons/build.py`
+4. Check links: `uv run python lessons/check_links.py`
    After a lesson or SOTA change, also:
 
    ```bash
@@ -49,23 +55,28 @@ uv sync
    ```
 
    Re-publish videos after adding or replacing an mp4: `scripts/publish_videos.sh`.
-4. Execute any notebook you touched (and its neighbours if you changed a shared
-   claim):
+5. Execute any notebook you touched (and its neighbours if you changed a shared
+   claim) headless, then check canonical form:
 
    ```bash
-   uv run jupyter nbconvert --to notebook --execute --stdout notebooks/sNN_….ipynb > /dev/null
+   COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python notebooks/sNN_….py
+   uv run marimo check --strict --ignore MF004 notebooks
+   uv run marimo check --fix --ignore MF004 notebooks && git diff --exit-code -- notebooks
    ```
 
-5. Commit notebooks **without outputs** (`execution_count` null, empty
-   `outputs`). If Jupyter wrote outputs, clear them before the commit.
-6. If you touched `labs/`:
+   Commit **only** the form `marimo check --fix --ignore MF004` produces; the
+   `git diff --exit-code` line is the contract. **Never `--unsafe-fixes`** — it
+   deletes comment-only cells, i.e. every predict-first and attempt skeleton.
+6. marimo notebooks are plain Python: they have no stored outputs to clear, but
+   they **must** be committed in canonical form (previous step).
+7. If you touched `labs/`:
 
    ```bash
    uv run python -m unittest labs/test_contracts.py
    uv run python labs/run.py --all --replay
    ```
 
-7. If you changed a SOTA row, open the source URL and confirm it still says what
+8. If you changed a SOTA row, open the source URL and confirm it still says what
    the Take column claims. Re-date the section header if you refresh the table.
 
 ## Pull requests
@@ -87,9 +98,10 @@ convert to private if needed) or email macayaven@gmail.com.
 ## Static diagrams
 
 Run `uv run python -m unittest discover -s tests -v` for content and static
-freshness checks (also run in CI). Original notebook cells are protected by a checked-in
-semantic hash receipt; add learner attempt cells without changing original IDs,
-sources, metadata or outputs. Execute notebooks after edits as above.
+freshness checks (also run in CI). Notebook structure is protected by contracts
+in `tests/test_notebooks.py`; add `attempt_<topic>` units and other learner work
+without renaming or rewriting the existing named cells. Execute notebooks after
+edits as above.
 
 Every lesson diagram is a committed SVG, so offline clone-and-read and ordinary
 HTML builds need no browser or Node. S08 and S14 each contain two diagrams. To

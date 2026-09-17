@@ -8,7 +8,7 @@ create a tag or public asset.
 
 Use a dedicated clean checkout on nonsynced local storage. Verify the public
 remote by URL. Review every change since the last tag. Confirm generated HTML
-and diagrams, notebook preservation receipts, licenses, learner documentation
+and diagrams, notebook structural contracts, licenses, learner documentation
 and public evidence. Search public text for credentials, raw chats/logs,
 participant content, private hostnames and machine paths.
 
@@ -17,9 +17,12 @@ participant content, private hostnames and machine paths.
 ```sh
 uv sync --frozen
 uv run --frozen python -m unittest discover -s tests -v
-for nb in notebooks/s*.ipynb; do
-  uv run --frozen jupyter nbconvert --to notebook --execute --stdout "$nb" > /dev/null
+for nb in notebooks/s*.py; do
+  COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run --frozen python "$nb" > /dev/null
 done
+uv run --frozen marimo check --strict --ignore MF004 notebooks
+uv run --frozen marimo check --fix --ignore MF004 notebooks
+git diff --exit-code -- notebooks
 uv run --frozen python lessons/build.py
 git diff --exit-code -- lessons/*.html lessons/index.html
 test -z "$(git status --porcelain --untracked-files=all -- lessons/)"

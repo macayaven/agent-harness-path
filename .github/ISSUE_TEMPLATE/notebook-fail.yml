@@ -1,5 +1,5 @@
 name: Notebook fail
-description: A toy notebook does not run top-to-bottom, or committed outputs leaked
+description: A marimo notebook does not run top-to-bottom, or was not committed in canonical form
 title: "[notebook] "
 labels: ["notebook"]
 body:
@@ -7,14 +7,14 @@ body:
     id: file
     attributes:
       label: Notebook
-      placeholder: notebooks/s08_observability_replay_toy.ipynb
+      placeholder: notebooks/s08_observability_replay_toy.py
     validations:
       required: true
   - type: textarea
     id: error
     attributes:
       label: Command and error
-      description: Prefer `uv run jupyter nbconvert --to notebook --execute --stdout notebooks/FILE.ipynb`.
+      description: Prefer the headless run, `COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python notebooks/FILE.py`, or `uv run marimo edit notebooks/FILE.py`.
     validations:
       required: true
   - type: dropdown
@@ -23,7 +23,7 @@ body:
       label: Kind
       options:
         - Does not execute
-        - Outputs committed
+        - Not committed in canonical marimo form
         - Non-stdlib import
         - Claim contradicts the lesson
     validations:
