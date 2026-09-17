@@ -60,8 +60,8 @@ uv sync
 
    ```bash
    COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python notebooks/sNN_….py
-   uv run marimo check --strict --ignore MF004 notebooks
-   uv run marimo check --fix --ignore MF004 notebooks && git diff --exit-code -- notebooks
+   uv run marimo check --strict --ignore MF004 notebooks labs/app.py
+   uv run marimo check --fix --ignore MF004 notebooks labs/app.py && git diff --exit-code -- notebooks labs/app.py
    ```
 
    Commit **only** the form `marimo check --fix --ignore MF004` produces; the

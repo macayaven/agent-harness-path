@@ -91,6 +91,7 @@ Copy `PROGRESS.template.md` to `labs/PROGRESS.md` (gitignored).
 - `trivia_host/` — complete host (study with bridges; you may still rewrite it)
 - `client.py` — stdlib OpenAI-compatible POST + cassettes
 - `run.py` — naïve vs engine, markdown report
+- `app.py` — marimo shell over `run.py` (`uv run marimo edit labs/app.py`)
 - `cassettes/` — committed traces, one file per `(task, naïve|engine)` plus `s01-round.jsonl`
 - `evals/` — golden tasks p01–p06 (S02), p07–p09 (S10)
 - `reference/` — spotter
