@@ -8,7 +8,7 @@ Use one consenting, trusted adult. Have them read the page first: scope and limi
 
 ## During the pilot
 
-Let them use the system end-to-end while you stay quiet. Do not steer them past confusing steps or narrate away pauses. Honor requests to stop. Observe what they do, where they hesitate and what they work around. The guide’s **Unaided human pilot** activity disables assistant calls, sharing and proposals; it does not perform the pilot for you.
+Let them use the system end-to-end while you stay quiet. Do not steer them past confusing steps or narrate away pauses. Honor requests to stop. Observe what they do, where they hesitate and what they work around. During the unaided sitting, do not call the assistant, share transcripts, or ask it to propose consent text; it does not perform the pilot for you.
 
 ## After the pilot
 

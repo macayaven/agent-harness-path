@@ -10,13 +10,14 @@ edited notebook before a clean clone, branch switch or version change.
 ## The twelve-session route
 
 For every S01–S12 module, follow **Read and trace the theory → Notebook: predict,
-attempt, observe → Self-check and explain**. Course content is ordered by session;
-Continue follows the next required activity with missing records. The guide
-counts 36 activities, not twelve automatically graded completions.
+attempt, observe → Self-check and explain**. Course content is ordered by session.
+Each of those twelve sessions has three required activities (read, notebook,
+self-check), so 36 activities, not twelve automatically graded completions.
 
 Read the objectives and use the diagram. Write a prediction before the relevant
 notebook result, attempt the authored work yourself and compare one observation
-with the prediction. Save the notebook separately from the guide's records.
+with the prediction. Save the notebook outside this checkout so a clean clone
+does not eat your predictions.
 Notebooks execute only standard-library toy code, without a model service, keys or
 network. Running all cells demonstrates execution; empty attempt skeletons and
 reference-label scores do not become your independent work.
@@ -38,23 +39,19 @@ reference-label scores do not become your independent work.
 | S13, optional | Were the prerequisites, safe scratch setup and unaided boundary usable? |
 | S14, optional | Was the criteria/holdout/pilot/evidence sequence understandable? |
 
-Attempt guide self-checks before revealing answers. Every option has explanatory
-feedback. The native foldable references remain available in the lesson, and are
-omitted from explicit lesson grounding. Record your correction in your own words;
-a correct selection does not replace a reflection or certify mastery.
+Attempt the foldable self-checks in the lesson HTML before revealing answers.
+Record your correction in your own words; a correct selection does not replace a
+reflection or certify mastery.
 
 ## Assistance and optional material
 
-The same Course assistant remains across permitted activities for the running
-application session. **Use this lesson** deliberately selects lesson text. The
-scope label names its session. Navigation keeps the selected excerpt until you
-choose **Use this lesson** on the new reading or **Clear lesson scope**; inspect
-the S01–S14 label when switching sessions. **Share** sends only the selection, cell or
-output you explicitly choose for one answer. Saving a response in the guide is a
-separate explicit learning record. Notebook discussion waits for the prediction
-record, and the assistant has no authority to complete activities or execute copied
-commands. Authored hints work without a provider. Record assistance and premature
-answer exposure honestly.
+The Cursor companion stays on the same chat across lesson, notebook, and lab.
+Ground it with `@bridges/sNN.md` plus the HTML lesson you are on
+(`docs/COMPANION.md`). Do not paste a whole notebook. Predict-first cells stay
+empty until you write them. The assistant has no authority to complete activities
+or execute copied commands. Authored hints and foldable self-checks live in the
+lesson HTML and work without a provider. Record assistance and premature answer
+exposure honestly.
 
 The videos are optional Google Gemini Notebook previews/reviews, and may lag the
 lesson. Hard labs remain optional and build a trivia host with their own scopes,
@@ -65,8 +62,8 @@ Reference replay and real-provider evidence are different categories.
 S13/S14 have **no notebooks**. Read their prerequisites before choosing to perform
 them. Use [S13's audit card](S13-AUDIT.md), [S14's cold-run card](S14-RUNS.md),
 [pilot-page prompts](S14-PILOT-PAGE.md) and [human-pilot card](S14-PILOT.md) together
-with the original lessons. Unaided work disables assistant discussion and sharing;
-return to permitted review only after the sitting ends and evidence is saved.
+with the original lessons. During unaided work, close the assistant chat; return
+to review only after the sitting ends and evidence is saved.
 Deferring either protocol does not block S01–S12. Record planned and performed
 activities separately. No software test manufactures a rebuild, elapsed week,
 consenting person, publication or learning result.
@@ -94,5 +91,6 @@ partial work as partial. Your observations can identify defects and guide course
 improvement; they do not establish general learning gains or readiness.
 
 The earlier [FIRST-TEST.md](FIRST-TEST.md) and immediate/delayed transfer fixtures
-remain a separate optional S01/S02 study. Their answer keys stay outside the course
-manifest. They are not substitutes for studying and reporting on the later sessions.
+remain a separate optional S01/S02 study. Their answer keys stay outside the
+lesson HTML. They are not substitutes for studying and reporting on the later
+sessions.

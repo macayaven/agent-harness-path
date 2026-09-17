@@ -6,11 +6,11 @@ Follow the [authored S14 protocol](../lessons/S14-ship-and-pilot.html#the-protoc
 
 - Write dated pass criteria that another person could apply without your explanation.
 - Freeze two previously unseen scenarios: the acceptance fixture and a **separate untouched holdout** for the final gate. Keep the holdout unopened during diagnosis and fixing. Do not share it with the assistant.
-- Record the target version, fixture identities, criteria and clean-state setup in your own local project. A pointer in the guide is a record, not proof the run occurred.
+- Record the target version, fixture identities, criteria and clean-state setup in your own local project. A note in that folder is a record, not proof the run occurred.
 
 ## Run without steering
 
-Start cold, with clean state and traces enabled. No warmup, narration or assistant steering. The **Cold acceptance and untouched holdout** activity disables provider calls, sharing and proposals. Run your system yourself; copied commands never execute automatically.
+Start cold, with clean state and traces enabled. No warmup, narration or assistant steering. During cold acceptance, do not call a provider, share the holdout, or ask the assistant to steer. Run your system yourself; copied commands never execute automatically.
 
 If acceptance fails, retain the failure trace and original criteria, amend the system and rerun. The diagnosed fixture is now a tuning case. Its green rerun is regression evidence; it does not become unseen again. The final gate is one cold run on the still-untouched holdout. If that gate fails, record the failure and stop claiming acceptance. Do not quietly recycle an exposed fixture as a new holdout.
 

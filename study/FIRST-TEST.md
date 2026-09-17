@@ -7,16 +7,16 @@ Keep observations outside the course checkout; copy the CSV template there.
 
 ## 1. Ten to fifteen minutes: interaction route, not a learning score
 
-Start S01/read, open the lesson, inspect the static diagram, and optionally choose
-Use this lesson. Ask a question if a provider is configured. Continue to the
-notebook; verify that the notebook prediction prompt is visible and optional help
-waits for your prediction record. Save a real brief prediction, then open the
-notebook and inspect an existing predict-first cell. Navigate to self-check,
-attempt a formative choice, and deliberately open its native reference. Confirm
-that the same assistant conversation remains, including after closing/reopening
-the guide. Open the optional lab and copy its replay command into a note; copying
-must not execute it. Observe state outside the checkout and the course kernel
-interpreter. Report an unavailable provider honestly; static hints still work.
+Start S01: open `lessons/S01-agent-loop.html`, inspect the static diagram, and
+optionally `@bridges/s01.md` in Cursor chat. Ask a question if a model is
+configured. Open the notebook; verify that the prediction prompt is visible and
+do not ask the companion to fill it first. Save a real brief prediction, then
+inspect an existing predict-first cell. Navigate to self-check, attempt a
+formative choice, and deliberately open its native reference. Confirm that the
+same chat remains when you switch files. Open the optional lab and copy its
+replay command into a note; copying must not execute it. Keep observations
+outside the checkout. Report an unavailable model honestly; static hints in the
+lesson still work.
 
 This route discovers interaction problems. It is not the full course session and
 does not test unaided learning. Do not manufacture progress records for a score.
@@ -33,7 +33,7 @@ library/museum assessment. Write an attempt before any hint:
 
 | Practice | Static condition prompt/hint | Adapted condition prompt |
 |---|---|---|
-| Weather failure | Explain where the fragile weather error appears. Static hint: follow dispatch's return value into the messages list; distinguish continuation from successful retrieval. | Explain your attempted trace to the Course assistant and ask for one next question about your uncertainty. |
+| Weather failure | Explain where the fragile weather error appears. Static hint: follow dispatch's return value into the messages list; distinguish continuation from successful retrieval. | Explain your attempted trace to the Cursor companion and ask for one next question about your uncertainty. |
 | Fitness evidence | Explain whether the table's equal p50 values show equal speed. Static hint: find where drive creates each latency value and read the column label. | Give your attempted interpretation to the same assistant and ask for a targeted hint, not the final explanation. |
 
 For a first self-guided run, use static weather and adapted fitness. If another
@@ -70,7 +70,7 @@ Delayed observations include possible immediate-feedback effects as well as cour
 and practice exposure; they do not isolate retention from the course alone.
 Missing results stay missing. The fixtures and starter use only Python's standard
 library with no course runtime or model. General scoring dimensions and the two
-separate references remain outside lesson progress UI.
+separate references remain outside the lesson HTML.
 
 ## 4. What to record and when to continue
 

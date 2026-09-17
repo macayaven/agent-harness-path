@@ -7,7 +7,7 @@ You need a non-trivial system you own, a defended eval suite, a banked baseline 
 ## Prepare outside the timed sitting
 
 1. Choose one core component and identify its load-bearing invariants. Keep the rest of the project intact.
-2. Preserve a clean committed original and its banked suite result. The automatically installed study copy has **no Git history**. If using your completed trivia lab, first copy your completed work into a separate nonsynced local project, version it there and verify its suite. Keep the original student folder intact.
+2. Preserve a clean committed original and its banked suite result. A course clone has Git history for the course, not for your trivia-host edits. If using your completed trivia lab, first copy your completed work into a separate nonsynced local project, version it there and verify its suite. Keep the original student folder intact.
 3. Create a separate branch or worktree from that committed target in nonsynced local storage. Verify its path before blanking the target file there. Never blank the only copy of your student work. Write down how you will restore this scratch copy from the saved commit.
 4. Record the target, commit, suite command, baseline, tolerance and intended cap before starting. Close original/reference tabs, the assistant and the browser. No `git show`, original core or `labs/reference/` during recall. Allowed aids are the language, standard library and `--help`, as specified by the lesson.
 
@@ -28,6 +28,6 @@ Use a visible **60-minute** timer. Rebuild the core at the same path in the scra
 2. Run the full suite against the rebuild. Compare with the baseline and tolerance. A green result does not erase a behavioral gap that the suite missed.
 3. Save a forgot-list: what you dropped, why it existed and the one-line retrieval rule. Preserve the diff and `UNSURE` marks as evidence, not a replacement production patch.
 4. Restore the original **in the scratch checkout** from the banked commit, or retire the scratch branch/worktree after preserving its audit evidence. Keep the canonical student project unchanged.
-5. Record the actual evidence in the guide. Use **Review the audit and plan the delay** only when no unaided sitting is active. Review and restudy the forgot-list, then plan a cold repeat roughly a week later.
+5. Record the actual evidence in your local notes. Review and restudy the forgot-list only after the unaided sitting has ended, then plan a cold repeat roughly a week later.
 
 Keep a planned date separate from an observed repeat date and actual elapsed delay. Do not submit a second-audit result before doing it. A saved note, passing self-check or assistant response does not certify a rebuild or learning gain.

@@ -2,8 +2,8 @@
 
 Read these dimensions only after saving the corresponding attempt. This file
 contains no fixture-specific answer key. Use the reference linked at the end of
-that task's prompt only after its own saved attempt. No manifest or automatic
-assistant grounding points to these scoring materials.
+that task's prompt only after its own saved attempt. The lesson HTML, bridges,
+and companion do not point at these scoring materials automatically.
 
 Score each dimension 0/1/2 and preserve the reasoning. The total 0–8 is an
 exploratory observation, separate from course progress and certification. These
@@ -25,5 +25,5 @@ that feedback; they do not isolate retention from the course alone.
 If the delayed key was exposed before the saved delayed attempt, record that as
 prior assistance in `help_used` and notes. Do not label the resulting delayed score
 unaided. A later correction cannot erase that exposure or retroactively create an
-unaided result. Do not copy reference text into a pre-attempt lesson scope or
-prediction field to make progress look complete.
+unaided result. Do not copy reference text into a prediction cell or notes to make an
+attempt look complete before you have written it.
