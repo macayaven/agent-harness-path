@@ -110,6 +110,49 @@ def _slim(response: dict) -> dict:
     return out
 
 
+class _TransportError(RuntimeError):
+    """A wire failure from _post_chat_completions, not yet a client error.
+
+    The shared transport classifies the failure; each client renders its own
+    message, so neither public error string changes.
+    """
+
+    def __init__(self, kind: str, detail: str = "", code: int | None = None) -> None:
+        super().__init__(detail)
+        self.kind = kind  # "timeout" | "http" | "url"
+        self.detail = detail
+        self.code = code
+
+
+def _post_chat_completions(
+    *, base_url: str, api_key: str, data: bytes, timeout: float
+) -> bytes:
+    """POST pre-serialized `data` to {base_url}/chat/completions; return raw bytes.
+
+    The one transport both clients share (`cafe` live calls and `labs` live /
+    record runs). Callers own serialization, redaction, and every error string.
+    """
+    request = urllib.request.Request(
+        base_url + "/chat/completions",
+        data=data,
+        method="POST",
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read()
+    except TimeoutError:
+        raise _TransportError("timeout") from None
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise _TransportError("http", detail, exc.code) from None
+    except urllib.error.URLError as exc:
+        raise _TransportError("url", str(exc.reason)) from None
+
+
 class LiveClient:
     """Talks to a real OpenAI-compatible endpoint."""
 
@@ -167,29 +210,27 @@ class LiveClient:
             body["tools"] = tools
         if tool_choice is not None:
             body["tool_choice"] = tool_choice
-        request = urllib.request.Request(
-            self.base_url + "/chat/completions",
-            data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
-            method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self._api_key}",
-            },
-        )
+        data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         started = time.monotonic()
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                raw = response.read()
-        except TimeoutError:
+            raw = _post_chat_completions(
+                base_url=self.base_url,
+                api_key=self._api_key,
+                data=data,
+                timeout=self.timeout,
+            )
+        except _TransportError as exc:
+            if exc.kind == "timeout":
+                raise ModelError(
+                    f"/chat/completions timed out after {self.timeout:.0f}s"
+                ) from None
+            if exc.kind == "http":
+                detail = _redact(exc.detail)
+                raise ModelError(
+                    f"HTTP {exc.code} from /chat/completions: {detail}"
+                ) from None
             raise ModelError(
-                f"/chat/completions timed out after {self.timeout:.0f}s"
-            ) from None
-        except urllib.error.HTTPError as exc:
-            detail = _redact(exc.read().decode("utf-8", errors="replace")[:500])
-            raise ModelError(f"HTTP {exc.code} from /chat/completions: {detail}") from None
-        except urllib.error.URLError as exc:
-            raise ModelError(
-                f"cannot reach {self.base_url}: {_redact(str(exc.reason))}"
+                f"cannot reach {self.base_url}: {_redact(exc.detail)}"
             ) from None
         self.calls += 1
         self.last_latency_ms = (time.monotonic() - started) * 1000.0

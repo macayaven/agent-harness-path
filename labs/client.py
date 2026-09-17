@@ -1,5 +1,7 @@
 """OpenAI-compatible chat client with cassette replay/record.
 
+Live transport is shared with the course client (`cafe.model`, one POST path);
+replay, record, and every error string here are unchanged.
 Match contract (S08, not weaker): the next unused cassette entry must equal the
 canonical request, in order. Exhaustion is a separate invariant.
 The match key is {messages, tools, temperature, tool_choice} — not `model`.
@@ -10,10 +12,15 @@ from __future__ import annotations
 
 import json
 import os
-import urllib.error
-import urllib.request
+import sys
 from pathlib import Path
 from typing import Any
+
+try:
+    from cafe.model import _TransportError, _post_chat_completions
+except ImportError:  # labs/ on sys.path without the repo root (run.py, tests)
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from cafe.model import _TransportError, _post_chat_completions
 
 
 class ReplayMismatch(AssertionError):
@@ -178,26 +185,22 @@ class Client:
         if "tool_choice" in key:
             body["tool_choice"] = key["tool_choice"]
         data = json.dumps(body).encode("utf-8")
-        url = self.base_url + "/chat/completions"
-        req = urllib.request.Request(
-            url,
-            data=data,
-            method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            },
-        )
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                raw = resp.read()
-        except TimeoutError:
-            raise RuntimeError("chat/completions timed out") from None
-        except urllib.error.HTTPError as exc:
-            detail = _redact(exc.read().decode("utf-8", errors="replace")[:500])
-            raise RuntimeError(f"HTTP {exc.code} from chat/completions: {detail}") from None
-        except urllib.error.URLError as exc:
-            raise RuntimeError(f"chat/completions failed: {exc.reason}") from None
+            raw = _post_chat_completions(
+                base_url=self.base_url,
+                api_key=self.api_key,
+                data=data,
+                timeout=self.timeout,
+            )
+        except _TransportError as exc:
+            if exc.kind == "timeout":
+                raise RuntimeError("chat/completions timed out") from None
+            if exc.kind == "http":
+                detail = _redact(exc.detail)
+                raise RuntimeError(
+                    f"HTTP {exc.code} from chat/completions: {detail}"
+                ) from None
+            raise RuntimeError(f"chat/completions failed: {exc.detail}") from None
         response = json.loads(raw.decode("utf-8"))
         response = _slim_response(response)
         if write:
