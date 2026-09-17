@@ -168,7 +168,9 @@ def test_s09_omission_passes_citations_but_fails_coverage(
     """The two validators are complementary; neither is sufficient alone."""
     citation_violations = validate_citations(reassuring, shift_run)
     coverage_violations = validate_coverage(reassuring, events)
-    safety_events = [event for event in events if event["kind"].startswith("safety")]
+    safety_events = [
+        event for event in events if str(event.get("type", "")).startswith("safety")
+    ]
     if safety_events:
         assert coverage_violations, "dropping a safety event must fail coverage"
         assert len(coverage_violations) >= len(citation_violations)
