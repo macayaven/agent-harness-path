@@ -70,7 +70,7 @@ def s09_demo_client():
     print("mode        :", client.mode)
     print("stop_reason :", shift_run["stop_reason"])
     print("events      :", len(events))
-    return (events, shift_run)
+    return client, events, shift_run
 
 
 @app.cell(hide_code=True)
@@ -128,7 +128,11 @@ def s09_demo_honest(events, shift_run):
 
 
 @app.cell
-def test_s09_honest_report_passes_both_validators(events, honest_report, shift_run):
+def test_s09_honest_report_passes_both_validators(
+    events,
+    honest_report,
+    shift_run,
+):
     assert validate_citations(honest_report, shift_run) == []
     assert validate_coverage(honest_report, events) == []
     return
@@ -156,7 +160,11 @@ def s09_demo_omission(events, honest_report, shift_run):
 
 
 @app.cell
-def test_s09_omission_passes_citations_but_fails_coverage(events, reassuring, shift_run):
+def test_s09_omission_passes_citations_but_fails_coverage(
+    events,
+    reassuring,
+    shift_run,
+):
     """The two validators are complementary; neither is sufficient alone."""
     citation_violations = validate_citations(reassuring, shift_run)
     coverage_violations = validate_coverage(reassuring, events)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S12-judge-calibration — Measuring the measurers</title>
+  <title>S12-judge-calibration — A judge you have not calibrated is an opinion</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -108,160 +108,110 @@
 <body>
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S11-budgets-routing.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budgets, routes, and the privacy boundary</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S13-rebuild-from-memory.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
-<h1 id="s12-judge-calibration-measuring-the-measurers">S12-judge-calibration — Measuring the measurers</h1>
-<p><strong>What this teaches:</strong> an unmeasured judge is decoration. Two instruments get
-calibrated here — a <em>critic</em> that finds defects (measured by detection rate and
-false-positive rate on seeded ground truth) and a <em>rubric judge</em> that grades
-quality (measured by agreement with your hand labels, chance-corrected). Until
-both have numbers attached, the judged tier of your eval suite is vibes with a
-dashboard.
-<strong>Time:</strong> ~90 min with the notebook. <strong>Prerequisites:</strong> S02 (two-tier checks —
-the judged column was labeled <em>uncalibrated</em> there; this session removes the
-label, with a rate attached).
-<strong>Hands-on (easy):</strong> <a href="../notebooks/s12_judge_calibration_toy.ipynb"><code>notebooks/s12_judge_calibration_toy.ipynb</code></a>
-<strong>Hands-on (hard, optional):</strong> <a href="../labs/s12_judge.md"><code>labs/s12_judge.md</code></a> — after the notebook.
-<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the notebook.</p>
+<h1 id="s12-judge-calibration-a-judge-you-have-not-calibrated-is-an-opinion">S12-judge-calibration — A judge you have not calibrated is an opinion</h1>
+<p><strong>Carried in:</strong> <code>cafe/routing.py</code> — S11's route table, its budget gate, and the token and latency numbers it measured on your endpoint. You now know what a call costs; tonight you find out whether the verdict it returns is worth anything.
+<strong>Today you ship:</strong> <code>cafe/judge.py</code> — the seeded-defect game, the detection and false-positive rates, and the agreement math.
+<strong>What this teaches:</strong> how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus <em>before</em> you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
+<strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
+<strong>Hands-on:</strong> <a href="../notebooks/s12_judge_calibration_toy.py"><code>notebooks/s12_judge_calibration_toy.py</code></a> — runs against <strong>your</strong> model.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S12-judge-calibration.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2 id="the-hook">The hook</h2>
+<p>Your judge scored the shift <strong>9/10</strong>, so you let it gate the release. A week later a
+customer found two defects it had waved through — and one clean order it had failed for
+being "too terse". You never measured either number. The 9/10 was never a measurement; it
+was an opinion with a decimal point.</p>
+<h2 id="the-promise">The promise</h2>
+<p>By the end of this session you will have seeded known defects into clean café transcripts,
+labeled the corpus yourself <strong>before</strong> any judge output existed on your screen, and
+reported a detection rate, a false-positive rate, and Cohen's κ — with the pair for an
+uncalibrated rubric next to the pair for a calibrated one, so the change is attributable.
+You will be able to say exactly what that κ licenses and what it does not.</p>
+<p>One thing to read before the numbers: <strong>a small local model is often a poor judge.</strong> That is
+the expected finding, not a bug in the notebook — and it is the reason calibration exists
+rather than trust.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
-<h3 id="the-recursion-problem-the-judge-is-also-a-model">The recursion problem: the judge is also a model</h3>
-<p>S02 split checking into two tiers because deterministic code can't see quality —
-tone, consistency, whether the question was actually answered. So you add a
-judged tier, and immediately inherit the recursion: the judge is itself a model,
-with the biases documented for the models it grades — position bias, verbosity
-bias, self-preference
-(<a href="https://arxiv.org/abs/2306.05685">Zheng et al., arXiv:2306.05685</a>) — plus one
-that only appears in grading: <em>criteria drift</em>, the rubric quietly redefining
-itself as grading proceeds
-(<a href="https://arxiv.org/abs/2404.12272">Shankar et al., arXiv:2404.12272</a>). You added
-the judge because the model's output couldn't be trusted unexamined; the same
-logic applies to the judge's output. A judge whose agreement with you has never
-been measured is not an instrument — it is a second opinion from a stranger.</p>
-<p>Two different instruments hide under the word "judge". They fail differently, so
-they are measured differently:</p>
-<table>
-<thead>
-<tr>
-<th>Instrument</th>
-<th>Question it answers</th>
-<th>Reference</th>
-<th>Metric</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Critic</strong> (detector)</td>
-<td>Does this transcript contain a defect?</td>
-<td>Transcripts with seeded, known defects</td>
-<td>Detection rate <strong>and</strong> false-positive rate</td>
-</tr>
-<tr>
-<td><strong>Rubric judge</strong> (grader)</td>
-<td>Is this transcript good enough to ship?</td>
-<td>Your hand labels</td>
-<td>Raw agreement + Cohen's κ, stratified</td>
-</tr>
-</tbody>
-</table>
-<h3 id="seeded-defects-ground-truth-you-control">Seeded defects: ground truth you control</h3>
-<p>You cannot measure a detector without knowing where the defects are — and in
-production you never know. So you manufacture ground truth: take transcripts
-known to be clean, seed each with exactly one subtle defect, mix in clean
-controls, run the critic blind, and count. This is mutation testing's logic
-applied to evaluators
-(<a href="https://en.wikipedia.org/wiki/Mutation_testing">mutation testing</a>): the test
-of a detector is whether it catches a known-planted fault.</p>
-<p>Four rules keep the game honest:</p>
-<ul>
-<li><strong>Subtle defects only.</strong> A critic that catches blatant garbage proves nothing;
-  production defects are the quiet kind — an ignored allergy, a recipe that
-  contradicts its own serving count, an engine that abandons a correct answer
-  the moment the user pushes back. Seed the quiet kind.</li>
-<li><strong>One defect per transcript.</strong> Two defects in one transcript makes a catch
-  unattributable: which one did it find?</li>
-<li><strong>The pair is the metric, never one number.</strong> A critic that flags everything
-  scores detection 5/5 and false positives 5/5. Reported alone, the first number
-  is a lie of omission.</li>
-<li><strong>Counts, not percentages.</strong> 2/5 is the honest report of five probes; "40%"
-  borrows precision the sample doesn't have. Grow the set when the counts stop
-  fitting in one hand — Hamel starts at ~30 labeled examples
-  (<a href="https://hamel.dev/blog/posts/llm-judge/">hamel.dev/blog/posts/llm-judge</a>).</li>
-</ul>
-<p>And the set rots: once the critic has been tuned against these five defects,
-they stop being an independent probe. Re-seed fresh ones every calibration
-round — the same reason you never report a judge's agreement on the examples
-you tuned it against.</p>
-<h3 id="hand-labels-before-judge-output-the-calibration-protocol">Hand labels before judge output: the calibration protocol</h3>
-<p>For the rubric judge there is no planted fault — "good enough" is defined by
-<em>your</em> judgment, so the reference judgments are your hand labels and the
-measurement is agreement. The protocol, in order (the order is the protocol):</p>
-<ol>
-<li><strong>Label first, blind.</strong> Write pass/fail for every transcript in the sample
-   <em>before</em> any judge output exists on your screen. A verdict seen before you
-   label anchors your label, and the measurement dies quietly — you end up
-   measuring how much you trust the judge, not how much you agree with it.</li>
-<li><strong>Then run the judge</strong> and compute two numbers: raw agreement, and Cohen's
-   κ, which corrects for the agreement you'd get by chance from the label
-   marginals alone
-   (<a href="https://en.wikipedia.org/wiki/Cohen%27s_kappa">Cohen's κ</a>):
-   κ = (p<sub>o</sub> − p<sub>e</sub>) / (1 − p<sub>e</sub>). A judge that
-   passes everything in a mostly-clean stream posts a beautiful raw agreement
-   and a κ near zero. The conventional reading
-   (<a href="https://doi.org/10.2307/2529310">Landis &amp; Koch, 1977</a>) calls anything under
-   ~0.6 less than "substantial"; the practitioner rule is simpler — below that,
-   the judged column doesn't gate anything.</li>
-<li><strong>Stratify the disagreement.</strong> Split agreement by clean vs defective. A judge
-   that agrees with you on every clean transcript and none of the defective ones
-   posts a fine-looking aggregate — and is blind exactly where judgment is
-   needed. The aggregate hides the bias; the strata expose it.</li>
-<li><strong>Iterate on the disagreeing classes, then re-measure on fresh labels.</strong>
-   Each disagreement class is either a rubric gap (write the missing clause)
-   or a judge gap (fix the prompt, swap the model). Then label a <em>new</em> sample:
-   reporting agreement on the set you tuned against is overfitting with extra
-   steps.</li>
-</ol>
-<p>What the toy cannot teach is when the measurement earns an operational gate. A
-10-item, single-author, binary set is enough to learn the mechanics — the
-blinding, the pair of rates, the κ — but nobody should ship a gate on it. A real
-calibration adds what the toy strips away: multi-annotator labeling with
-adjudication for the subjective calls, because one author's blind spot becomes
-the judge's target; bootstrap uncertainty intervals around agreement and κ,
-because a point estimate on ten items borrows precision the sample doesn't have;
-repeated runs of a stochastic judge, so one lucky sample doesn't pass as
-agreement; position-swap testing, because order bias does not retire under a
-binary rubric; and a prevalence-aware reading of κ, which deflates exactly when
-a lopsided label stream makes raw agreement look best. Mechanics first — then
-the machinery that makes the number worth gating on.</p>
-<h3 id="the-measured-rates-decide-policy">The measured rates decide policy</h3>
-<p>The point of both measurements is a decision, not a report:</p>
+<h3 id="a-judge-is-an-instrument-an-uncalibrated-instrument-is-an-opinion">A judge is an instrument; an uncalibrated instrument is an opinion</h3>
+<p>A rubric judge is a model call that returns pass/fail. Nothing in that call tells you how
+often it is right, and a verdict is far more persuasive than it deserves to be. Calibration
+is the act of measuring the instrument against something you already know.</p>
+<h3 id="you-need-an-answer-key-you-built">You need an answer key you built</h3>
+<p>So you seed the defects yourself. Take clean café transcripts, mutate a known number of
+them in ways the harness can prove: an allergen served after the customer declared one, a
+price that is not on the menu, a ticket fired before the customer confirmed. Now every
+transcript has a key — defective class, or clean — and the judge never sees it.</p>
+<p>The seeded defects must be <em>quiet</em>: the kind a tired shift actually ships, not obvious
+garbage. A judge that only catches the blatant is useless.</p>
+<h3 id="the-order-of-operations-is-the-protocol">The order of operations is the protocol</h3>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S12-judge-calibration.svg" alt="Seeded transcripts feed both a defect critic and a rubric judge; detection and false-positive counts combine with judge agreement against prior hand labels to determine what findings may trigger." style="--diagram-width: 969px" /></div>
-<p>A critic with false positives 1/5 is telling you a blocking finding has a real
-chance of being wrong — so a blocking finding triggers at most one bounded,
-human-auditable repair, never a silent rewrite, and every finding carries a
-turn reference so a human can check it in thirty seconds. A rubric judge at
-κ = 0.2 gets its verdicts reported as advisory; only a measured κ earns the
-gate. That is how the <em>uncalibrated</em> label from S02 comes off — not by trusting
-the judge, but by stapling its track record to every number it produces.
-Recalibrate whenever the rubric or the judge model changes; the calibration is
-a property of the pair, not of either alone.</p>
-<h2 id="exercises-in-the-notebook-predict-first">Exercises (in the notebook, predict first)</h2>
+<p>Hand labels come <strong>before</strong> judge output, because a verdict you have already seen anchors
+your label and the measurement dies quietly. Detection reported without false positives is
+half a number: a judge that fails everything detects everything. And a judge you tuned
+against this corpus has stopped measuring it.</p>
+<h3 id="and-what-undefined-means">κ, and what "undefined" means</h3>
+<p>Raw agreement flatters a judge when one class dominates. Cohen's κ subtracts the agreement
+chance would have produced anyway:</p>
+<p>κ = (p_observed − p_expected) / (1 − p_expected)</p>
+<p>If the chance term is degenerate — every transcript in both vectors carries the same label
+— κ is <strong>undefined</strong>, not 1.0. <code>cohens_kappa</code> returns <code>None</code> there, on purpose: reporting
+<code>1.0</code> for two constant vectors would be a lie, and a report that turns that <code>None</code> into
+<code>1.0</code> is lying to you. Read a real κ as "how much of the agreement was base rates doing
+the work." <code>κ = 0.4</code> is a judge that has earned a bigger calibration set, not one you can
+gate on.</p>
+<h3 id="one-verdict-per-transcript-and-unparseable-is-a-result">One verdict per transcript, and <code>unparseable</code> is a result</h3>
+<p>The harness guarantees the mechanical part: <code>run_judge_all</code> returns exactly one verdict per
+transcript, in a fixed, mixed corpus order, so "the defective ones are first" never becomes
+a habit. <code>parse_verdict</code> reads whatever the model actually said; output it cannot read
+becomes <code>unparseable</code>, which counts as neither a detection nor a clean pass and must never
+be silently turned into "pass".</p>
+<h3 id="calibration-is-a-property-of-the-pair">Calibration is a property of the pair</h3>
+<p>The rubric and the model are one instrument. v1 of the rubric is strict, style-sensitive,
+and told to distrust short answers — the judge most people ship on the first try. v2 spells
+out S10's failure classes and deletes the style bias, with the same model and the same
+corpus. The claim this session makes is deliberately narrow: the calibrated rubric does not
+produce <strong>more</strong> false alarms than the uncalibrated one on the same corpus. It promises
+nothing about detection, because a better rubric is not a better model.</p>
+<hr />
+<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<p>Open <a href="../notebooks/s12_judge_calibration_toy.py"><code>notebooks/s12_judge_calibration_toy.py</code></a>.
+Configure your endpoint first:</p>
+<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+export CAFE_API_KEY=ollama
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor
+uv run marimo edit notebooks/s12_judge_calibration_toy.py
+</code></pre>
 <ol>
-<li>Run the seeded-defect game blind: before the answer key, predict how many
-   transcripts the keyword critic will flag — and how many of those flags will
-   be right. Which defect <em>classes</em> is a keyword machine structurally unable
-   to see?</li>
-<li>Make the critic negation-aware. Predict which confusion-table cells move —
-   and which provably don't. Re-measure both rates.</li>
-<li>Hand-label all 10 transcripts against the rubric <em>before</em> running the judge
-   (the notebook instructs the order — your discipline, not a gate, is what
-   enforces it). Predict judge v1's agreement and κ; then
-   measure. Then score your own labels against the reference.</li>
-<li>Stratify: agreement on clean vs defective. Where does the judge's bias
-   actually live, and what does the aggregate hide?</li>
-<li>Judge v2, calibrated against the failure classes. Predict whether agreement
-   reaches 10/10 — then inspect the one residual disagreement and explain why
-   that class defeats any judge without ground truth.</li>
+<li><strong>Read the corpus.</strong> Six clean café transcripts in a fixed, mixed order; three of them
+   carry exactly one seeded defect. The key stays out of the notebook until the labeling
+   section. Read a couple before you go on.</li>
+<li><strong>Judge v1.</strong> One pass/fail verdict per transcript, JSON out. This rubric is deliberately
+   uncalibrated: strict, style-sensitive, told to distrust short answers.</li>
+<li><strong>Hand-label first — this is the protocol, not a warm-up.</strong> Before you see more judge
+   output, label all six transcripts yourself in <code>attempt_hand_labels</code> against the rubric.
+   Then flip the reveal switch for the seed-derived reference. A verdict you have already
+   seen anchors your label, and an anchored label measures the judge's influence on you,
+   not the judge.</li>
+<li><strong>Predict the pair.</strong> Before the calibration cell, write down how many defective
+   transcripts judge v1 will catch and how many clean ones it will fail. Detection and
+   false positives are reported together, because either alone is half a number.</li>
+<li><strong>Read the misses, then judge v2.</strong> The v1 misses are not mysteries; they are classes.
+   v2 spells them out and removes the style bias — same corpus, same model, same order,
+   only the rubric changed. Re-measure on the same corpus and compare the pairs.</li>
+<li><strong>κ both ways.</strong> <code>cohens_kappa</code> compares the judge vectors with the reference labels. If
+   both vectors are constant, it returns <code>None</code> and the notebook prints "undefined" — the
+   honest answer. The closing cells are protocol invariants: κ is undefined for constant
+   vectors, every transcript gets exactly one verdict, and the calibrated rubric's
+   false-positive rate does not worsen.</li>
 </ol>
-<p>After the notebook, optional hard path: <a href="../labs/s12_judge.md">critic calibration</a> — same session, live or cassette. Skip it and the easy path is still complete.</p>
+<hr />
+<h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
+<p>Put this in one sentence and defend it: <strong>6 transcripts, 3 seeded defects, detection n/3,
+false positives n/3, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
+it so the change is attributable. On a small local model those numbers may be poor. That is
+your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.</p>
+<hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>
 <thead>
@@ -273,108 +223,74 @@ a property of the pair, not of either alone.</p>
 </thead>
 <tbody>
 <tr>
-<td>Binary verdicts, ~30-example calibration, critique-shadowing the domain expert, judge agreement as its own reported number (<a href="https://hamel.dev/blog/posts/llm-judge/">Hamel, Creating an LLM Judge</a>)</td>
+<td><a href="https://hamel.dev/blog/posts/llm-judge/">Hamel Husain — Creating a LLM-as-a-Judge that drives business results</a></td>
 <td><strong>already in this path</strong></td>
-<td>The notebook is exactly this loop, shrunk to 10 items so you can see every cell of the confusion table.</td>
+<td>The method behind this session: label your own corpus first, report agreement as a pair, and never trust a judge you have not measured.</td>
 </tr>
 <tr>
-<td>The bias catalog your judge inherits — position, verbosity, self-preference (<a href="https://arxiv.org/abs/2306.05685">Zheng et al., arXiv:2306.05685</a>); criteria drift while grading (<a href="https://arxiv.org/abs/2404.12272">Shankar et al., arXiv:2404.12272</a>)</td>
-<td><strong>already in this path</strong></td>
-<td>The toy's judge v1 ships with the verbosity bias built in; criteria drift is why the rubric gets frozen between calibration rounds, not during.</td>
+<td><a href="https://en.wikipedia.org/wiki/Cohen%27s_kappa">Cohen's κ — overview</a></td>
+<td><strong>recognize</strong></td>
+<td>Chance-corrected agreement. Note the degenerate case: κ is undefined, not 1.0, when the chance term is 1.</td>
 </tr>
 <tr>
-<td>Separate-context reviewers: subagents that don't share the writer's window (<a href="https://www.anthropic.com/engineering/multi-agent-research-system">Anthropic, How we built our multi-agent research system</a>)</td>
+<td><a href="https://doi.org/10.2307/2529310">Cohen 1960 — A Coefficient of Agreement for Nominal Scales</a></td>
+<td><strong>recognize</strong></td>
+<td>The original definition your helper implements. Read the assumption your constant-vector guard protects.</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2306.05685">Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</a></td>
+<td><strong>recognize</strong></td>
+<td>Documents the judge's known biases — position, verbosity, self-enhancement. Small models are more susceptible, which is why this session expects a poor judge.</td>
+</tr>
+<tr>
+<td><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Anthropic — Demystifying evals for AI agents</a></td>
 <td><strong>adopt</strong></td>
-<td>The paper supports isolated reviewer context, not a separate "reviewer route" as a product primitive — that framing is this path's. A critic that shares the writer's window shares the writer's blind spots.</td>
-</tr>
-<tr>
-<td>G-Eval: chain-of-thought, form-filling rubric scoring (<a href="https://arxiv.org/abs/2303.16634">Liu et al., arXiv:2303.16634</a>)</td>
-<td><strong>recognize</strong></td>
-<td>The influential ancestor of every rubric judge; its own authors flagged bias toward LLM-generated text. Practice has since moved from 1–5 scales to binary verdicts — scales hide disagreement in the middle.</td>
-</tr>
-<tr>
-<td>Open-weight specialized judge models (<a href="https://arxiv.org/abs/2405.01535">Prometheus 2, arXiv:2405.01535</a>)</td>
-<td><strong>recognize</strong></td>
-<td>A judge you can version, diff, and run offline. Specialization is still not agreement with <em>your</em> rubric — calibrate it like anything else.</td>
-</tr>
-<tr>
-<td>Meta-evaluation benchmarks for judges (<a href="https://arxiv.org/abs/2410.12784">JudgeBench, arXiv:2410.12784</a>)</td>
-<td><strong>newer than this session</strong></td>
-<td>Useful when shopping among judge models. Your own hand-labeled transcripts remain the final word — a benchmark measures judges in general, not on your data.</td>
-</tr>
-<tr>
-<td>"A frontier model is judge enough, no calibration needed"</td>
-<td><strong>ignore</strong></td>
-<td>Model strength is not agreement with your rubric (<a href="https://hamel.dev/blog/posts/llm-judge/">Hamel, Creating an LLM Judge</a>). The measurement exists precisely to replace that assumption.</td>
+<td>Judged criteria stay labeled uncalibrated until you have the rates. This session is the calibration that lets a judged tier count.</td>
 </tr>
 </tbody>
 </table>
+<hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
-<li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/llm-judge/">Creating an LLM Judge</a>.</strong>
-  Extract this: binary pass/fail with written critiques (not scores), the
-  ~30-example starting sample, and critique-shadowing — iterate the judge prompt
-  until it converges with the domain expert, then keep checking on a cadence.
-  His FAQ answer to "how do you evaluate the judge?" is this entire session.</li>
-<li><strong>Zheng et al., <a href="https://arxiv.org/abs/2306.05685">Judging LLM-as-a-Judge</a>.</strong>
-  Extract this: the four biases (position, verbosity, self-enhancement, limited
-  reasoning) and the mitigations table — position-swap testing is the cheap one
-  worth adopting on real APIs.</li>
-<li><strong>Shankar et al., <a href="https://arxiv.org/abs/2404.12272">Who Validates the Validators?</a></strong>
-  Extract this: criteria drift — you cannot fully fix a rubric before grading,
-  because grading is how you discover what you meant. Version the rubric, freeze
-  it between calibration rounds, and re-measure when it changes.</li>
-<li><strong>Anthropic, <a href="https://www.anthropic.com/engineering/multi-agent-research-system">How we built our multi-agent research system</a>.</strong>
-  Extract this: why evaluators and reviewers run in their own context, and
-  "start evaluating immediately with small samples" — a small labeled set is a
-  feature, not a compromise, as long as you report counts honestly.</li>
+<li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/llm-judge/">Creating a LLM-as-a-Judge that drives business results</a>.</strong> Extract the order of operations — hand labels before judge output — and the insistence on reporting agreement as a pair, not a single flattering number.</li>
+<li><strong><a href="https://en.wikipedia.org/wiki/Cohen%27s_kappa">Cohen's κ</a>, overview.</strong> Extract the degenerate case and why chance-correction matters: raw agreement flatters a judge when one class dominates.</li>
+<li><strong>Zheng et al., <a href="https://arxiv.org/abs/2306.05685">Judging LLM-as-a-Judge</a>.</strong> Extract the catalogue of judge biases. It explains why a small local model lands where it lands, and why the rates come before the verdict.</li>
 </ul>
+<hr />
 <h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
-<li><strong>"The judge is a stronger model, so its verdict is trustworthy."</strong> Strength
-  and agreement are different axes. A frontier model graded against <em>your</em>
-  rubric can still post κ = 0.2 — the notebook's judge v1 does, while being
-  "right" in every individual rationale.</li>
-<li><strong>Reporting the detection rate alone.</strong> The flag-everything critic has
-  perfect detection and perfect false positives. The pair is the metric.</li>
-<li><strong>Percentages on tiny probes.</strong> 4/5 is a count; "80%" is a claim about the
-  world. On five items the honest report is the count.</li>
-<li><strong>Tuning the judge on the calibration set, then reporting agreement on the
-  same set.</strong> That number describes the tuning, not the judge. Fresh labels,
-  every round.</li>
-<li><strong>Labeling after seeing the judge's output.</strong> Anchoring is silent: you'll
-  sincerely believe you disagreed with the judge more than you did. The
-  protocol's order — labels first — is the whole mechanism.</li>
+<li><em>"The judge said fail, so it is a defect."</em> Not until you have measured the judge. An uncalibrated verdict is an opinion with a decimal point; the calibration set is what turns it into an instrument.</li>
+<li><em>"Label after you have seen the verdicts."</em> A seen verdict anchors your label, and the measurement quietly becomes the judge's influence on you. Hands first, always.</li>
+<li><em>"Report detection."</em> Detection without false positives is half a number: a judge that fails everything detects everything. Report the pair.</li>
+<li><em>"κ = 1.0 means a perfect judge."</em> Two constant vectors agree 100% of the time and that agreement carries no information. <code>cohens_kappa</code> returns <code>None</code> there, and that <code>None</code> is the honest answer.</li>
+<li><em>"A bad local judge means the setup is broken."</em> A small local model is often a poor judge — that is the finding. Calibration is what lets you say <em>how</em> poor, and whether it is worth the calls.</li>
 </ul>
+<hr />
 <h2 id="self-check">Self-check</h2>
-<details><summary>Why must hand labels be written before the judge runs?</summary>
-Because a seen verdict anchors your label. Once you've read the judge's pass/fail
-and its confident rationale, your "independent" label is partially the judge's —
-and you end up measuring how much you trust the judge instead of how much you
-agree with it. The blindness is the measurement.</details>
+<details><summary>Why must the hand labels come before any judge output?</summary>
+Because a verdict you have already seen anchors your label. Your label then measures the judge's influence on you rather than your independent reading, and the agreement you compute is inflated in a way you cannot detect. Hands first is the protocol, not a warm-up.</details>
 
-<details><summary>What does Cohen's κ correct that raw agreement doesn't, and what does κ ≈ 0 mean?</summary>
-It corrects for chance agreement given the label marginals: if 90% of transcripts
-are clean, a judge that passes everything scores 90% raw agreement. κ subtracts
-that base-rate luck — κ ≈ 0 means the judge agrees with you no more than a
-coin weighted by the marginals would.</details>
+<details><summary>The judge fails all six transcripts. What are its detection and false-positive rates, and what does that say about it?</summary>
+Detection 3/3 and false positives 3/3. It detects everything and flags everything, so it carries no information: a judge that fails every transcript is not strict, it is useless. Reporting only the detection rate would have made it look perfect.</details>
 
-<details><summary>A critic flags all 10 transcripts in the seeded-defect game. What are its two rates, and is it a good critic?</summary>
-Detection 5/5, false positives 5/5. No — it detected everything, including
-nothing. This is why the pair is the metric: either number alone can be
-perfect while the instrument is useless.</details>
+<details><summary>When does <code>cohens_kappa</code> return <code>None</code>, and why not 1.0?</summary>
+When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. `None` means "undefined", and the notebook prints it that way.</details>
 
-<details><summary>Why stratify judge agreement by clean vs defective instead of trusting the aggregate?</summary>
-Because the bias you care about is concentrated in one stratum. A judge that
-agrees on all clean transcripts and misses every defective one can still post
-a passable aggregate — and it is blind exactly where a quality gate must see.
-The aggregate hides the failure; the strata name it.</details>
+<details><summary>The calibrated rubric holds the false-positive rate but the detection rate drops. Did calibration fail?</summary>
+No — and the session only claims what it measured. The claim is relative and inside one session: the calibrated rubric does not produce more false alarms than the uncalibrated one on the same corpus. It promises nothing about detection, because you changed the rubric, not the model.</details>
 
-<h2 id="whats-next">What's next</h2>
-<p><strong>S13-rebuild-from-memory (optional lab):</strong> S01–S12 is the self-contained path.
-If you walked the hard path, the audit target is <code>labs/trivia_host/loop.py</code>
-against this suite. Otherwise: a non-trivial system you own. Skip it if you do
-not yet have a system to audit.</p>
+<hr />
+<h2 id="what-this-unlocks">What this unlocks</h2>
+<p>That is the core path closed. Twelve sessions produced <strong>one <code>cafe/</code> package</strong> — a loop with
+proven invariants, a golden set, a context budget, a ticket contract, a consent gate,
+layered detection, bounded repair, a replayable trace, an evidence report, a failure
+taxonomy, a cost and latency ledger, and a calibrated judge — plus <strong>a banked number per
+session</strong>.</p>
+<p>You are not done, but the next step is deliberately unaided and <strong>OPTIONAL</strong>:
+<strong><a href="S13-rebuild-from-memory.html#the-protocol">S13 — Rebuild from memory</a></strong> is the closed-book audit.
+Close every notebook and rebuild the core from memory — no scaffolding, no generated
+answers, nothing filled in for you. Everything you would need is already in what you built;
+the audit only tells you whether it is in <em>you</em>.</p>
 <nav class="lesson-nav"><span class="nav-prev"><a href="S11-budgets-routing.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budgets, routes, and the privacy boundary</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S13-rebuild-from-memory.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from

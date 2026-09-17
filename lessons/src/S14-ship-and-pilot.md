@@ -8,10 +8,10 @@ vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
 **Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
 a non-trivial project of your own to ship — or, if you walked the hard path,
-`labs/trivia_host/`. **This session is optional.** Completing S01–S12 does not
+the course's own `cafe/` package. **This session is optional.** Completing S01–S12 does not
 require S14.
-**Hands-on:** no notebook — the hands-on is your own system (easy) or the trivia
-host (hard), run through the protocol below.
+**Hands-on:** no notebook — the hands-on is your own system (easy) or the
+`cafe/` package (hard), run through the protocol below.
 **Video:** [Gemini Notebook overview](videos/S14-ship-and-pilot.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
@@ -171,9 +171,10 @@ meaningful against a frozen baseline.
 
 ## The protocol
 
-**Hard path:** the system is `labs/trivia_host/`. The public artifact is a
-**fixture** run (naïve vs engine numbers from `labs/run.py`), never a real-round
-transcript. The pilot is one consenting adult playing trivia.
+**Hard path:** the system is the `cafe/` package. The public artifact is a
+**fixture** run — the naïve-vs-governed numbers your S02 golden set produces —
+never a real shift's transcript. The pilot is one consenting adult running a
+scripted café shift.
 
 **Easy path:** run this against your own system, in order.
 

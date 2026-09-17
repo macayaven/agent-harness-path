@@ -107,7 +107,7 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html#the-theory-in-depth">&larr; Prev: S12-judge-calibration — Measuring the measurers</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html#the-protocol">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html#the-theory-in-depth">&larr; Prev: S12-judge-calibration — A judge you have not calibrated is an opinion</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html#the-protocol">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
 <h1 id="s13-rebuild-from-memory-the-closed-book-audit">S13-rebuild-from-memory — The closed-book audit</h1>
 <p><strong>What this teaches:</strong> why "I built it" is not evidence that you own it — and the one
 measurement that is: a closed-book rebuild of the core component, judged by your own
@@ -115,11 +115,12 @@ eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 <strong>Time:</strong> ~20 min reading, then ~90 min for the audit itself.
 <strong>Prerequisites:</strong> S01–S02 to read the protocol (instrument vocabulary). Running
 it honestly needs a system whose suite you built — the S02–S12 instrument, on a
-project you own, <strong>or</strong> <code>labs/trivia_host/</code> if you walked the optional hard path.
+project you own, <strong>or</strong> the <code>cafe/</code> package if you walked the core path.
 <strong>This session is optional.</strong> Completing S01–S12 does not require S13.
 <strong>Hands-on:</strong> none — there is no notebook this session. Scaffolding the rebuild would
-defeat it. Hard path: the audit target is <code>labs/trivia_host/loop.py</code> against
-<code>uv run python labs/run.py --all --impl student --replay</code>. Easy path: a project of yours.
+defeat it. Hard path: the audit target is <code>cafe/loop.py</code> against the café suite in
+<code>cafe/evals</code> (score it from <code>notebooks/s02_scripted_user_eval_toy.py</code> with
+<code>uv run marimo edit notebooks/s02_scripted_user_eval_toy.py</code>). Easy path: a project of yours.
 The protocol below is the hands-on.
 <strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S13-rebuild-from-memory.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.</p>
 <hr />
@@ -234,12 +235,14 @@ repair, verify the repair.</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="diagrams/S13-rebuild-from-memory.svg" alt="A closed-book audit rebuilds one core file on a branch, classifies every diff, runs the suite against a banked number, restores the original, and turns behavioral gaps into a focused forgot-list for a later re-audit." style="--diagram-width: 2215px" /></div>
 <h2 id="the-protocol">The protocol</h2>
 <p>One sitting, no interruptions, roughly 90 minutes end to end.</p>
-<p><strong>Hard path:</strong> you built <code>labs/trivia_host/</code>. The core is <code>trivia_host/loop.py</code>;
-the suite is <code>uv run python labs/run.py --all --impl student --replay</code> (or <code>--live</code> on your
-endpoint, keeping <code>--impl student</code>). Confirm <code>impl=student</code> in the report and
-compare its actual task results, not only the process exit status. <code>--all</code> alone
-defaults to the reference implementation and would not measure your rebuilt core.
-Do not open <code>labs/reference/</code> during the sitting.</p>
+<p><strong>Hard path:</strong> you built <code>cafe/</code>. The core is <code>cafe/loop.py</code>; the suite is the café golden
+set in <code>cafe/evals</code>, scored from <a href="../notebooks/s02_scripted_user_eval_toy.py"><code>notebooks/s02_scripted_user_eval_toy.py</code></a>
+with <code>uv run marimo edit notebooks/s02_scripted_user_eval_toy.py</code> (a live endpoint works
+too — run <code>uv run python -m cafe.doctor</code> first if you need to prove it). Confirm the
+rebuilt core actually ran the golden set and compare its per-scenario results, not only the
+process exit status: an unchanged import would score the original, not your rebuild.
+Do not open the original <code>cafe/loop.py</code> from history or the notebook's <code>solution_*</code> reveals
+during the sitting.</p>
 <p><strong>Easy path:</strong> any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that
 project's own.</p>
@@ -250,7 +253,7 @@ project's own.</p>
    one sitting. Never the whole system — the rest is reference material, and
    looking reference material up is the <em>correct</em> move, not a failure. The audit
    targets restating and rebuilding the core abstractions and their invariants —
-   not memorizing implementation trivia; whatever documentation can hold, let
+   not memorizing implementation details; whatever documentation can hold, let
    documentation hold.</li>
 <li><strong>Set the terms.</strong> Commit a clean tree — HEAD now holds the canonical
    original. Rebuild off the main line: <code>git switch -c rebuild-audit</code> (or a
@@ -394,7 +397,7 @@ in doubt — a project you own, not a toy.</details>
 proves it works for someone who is not you. Acceptance runs on unseen scenarios,
 assembled architecture and failure documentation, and a public evidence artifact —
 the rebuild says you can defend the machine, S14 makes you defend it in public.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html#the-theory-in-depth">&larr; Prev: S12-judge-calibration — Measuring the measurers</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html#the-protocol">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="S12-judge-calibration.html#the-theory-in-depth">&larr; Prev: S12-judge-calibration — A judge you have not calibrated is an opinion</a></span><span class="nav-index"><a href="index.html">Index</a></span><span class="nav-next"><a href="S14-ship-and-pilot.html#the-protocol">Next: S14-ship-and-pilot — The cold run, the pilot, and the public artifact &rarr;</a></span></nav>
 <footer>
   Generated by <code>lessons/build.py</code> from
   <code>lessons/src/S13-rebuild-from-memory.md</code> — part of The Agent Harness Path.

@@ -128,7 +128,7 @@ def s07_demo_contradiction():
     print("ticket     :", contradiction_run["ticket"])
     for attempt in contradiction_run["attempts"]:
         print(f"  attempt {attempt['n']}: {attempt['failures']}")
-    return (contradiction_run, contradiction_spec)
+    return (contradiction_run,)
 
 
 @app.cell
@@ -224,7 +224,7 @@ def s07_demo_live(client):
     print("stop_reason:", live_run["stop_reason"])
     print("attempts   :", len(live_run["attempts"]))
     print("ticket     :", live_run["ticket"])
-    return (live_run, live_spec)
+    return live_run, live_spec
 
 
 @app.cell

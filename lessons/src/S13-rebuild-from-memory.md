@@ -6,11 +6,12 @@ eval suite, with the diff as diagnosis and the forgot-list as the deliverable.
 **Time:** ~20 min reading, then ~90 min for the audit itself.
 **Prerequisites:** S01–S02 to read the protocol (instrument vocabulary). Running
 it honestly needs a system whose suite you built — the S02–S12 instrument, on a
-project you own, **or** `labs/trivia_host/` if you walked the optional hard path.
+project you own, **or** the `cafe/` package if you walked the core path.
 **This session is optional.** Completing S01–S12 does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
-defeat it. Hard path: the audit target is `labs/trivia_host/loop.py` against
-`uv run python labs/run.py --all --impl student --replay`. Easy path: a project of yours.
+defeat it. Hard path: the audit target is `cafe/loop.py` against the café suite in
+`cafe/evals` (score it from `notebooks/s02_scripted_user_eval_toy.py` with
+`uv run marimo edit notebooks/s02_scripted_user_eval_toy.py`). Easy path: a project of yours.
 The protocol below is the hands-on.
 **Video:** [Gemini Notebook overview](videos/S13-rebuild-from-memory.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
@@ -136,12 +137,14 @@ flowchart LR
 
 One sitting, no interruptions, roughly 90 minutes end to end.
 
-**Hard path:** you built `labs/trivia_host/`. The core is `trivia_host/loop.py`;
-the suite is `uv run python labs/run.py --all --impl student --replay` (or `--live` on your
-endpoint, keeping `--impl student`). Confirm `impl=student` in the report and
-compare its actual task results, not only the process exit status. `--all` alone
-defaults to the reference implementation and would not measure your rebuilt core.
-Do not open `labs/reference/` during the sitting.
+**Hard path:** you built `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
+set in `cafe/evals`, scored from [`notebooks/s02_scripted_user_eval_toy.py`](../notebooks/s02_scripted_user_eval_toy.py)
+with `uv run marimo edit notebooks/s02_scripted_user_eval_toy.py` (a live endpoint works
+too — run `uv run python -m cafe.doctor` first if you need to prove it). Confirm the
+rebuilt core actually ran the golden set and compare its per-scenario results, not only the
+process exit status: an unchanged import would score the original, not your rebuild.
+Do not open the original `cafe/loop.py` from history or the notebook's `solution_*` reveals
+during the sitting.
 
 **Easy path:** any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that
@@ -153,7 +156,7 @@ project's own.
    one sitting. Never the whole system — the rest is reference material, and
    looking reference material up is the *correct* move, not a failure. The audit
    targets restating and rebuilding the core abstractions and their invariants —
-   not memorizing implementation trivia; whatever documentation can hold, let
+   not memorizing implementation details; whatever documentation can hold, let
    documentation hold.
 2. **Set the terms.** Commit a clean tree — HEAD now holds the canonical
    original. Rebuild off the main line: `git switch -c rebuild-audit` (or a
