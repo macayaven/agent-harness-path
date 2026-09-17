@@ -46,9 +46,9 @@ model decide when to stop:
 ```mermaid
 flowchart LR
     M[messages list<br/>the only state] --> C[call model]
-    C --> D{asked for<br/>a tool?}
+    C --> D{model asked for<br/>a tool?}
     D -- no --> E[final answer<br/>loop exits]
-    D -- yes --> X[run tool locally]
+    D -- yes --> X[execute tool locally]
     X --> A[append assistant message<br/>AND tool result verbatim]
     A --> C
 ```
@@ -173,35 +173,27 @@ three times, not evidence — and knowing the difference is what S02 installs.
 
 ## Self-check
 
-<details>
-<summary>Why does dropping the assistant message break the next request, even though the tool result still has the right id?</summary>
+<details><summary>Why does dropping the assistant message break the next request, even though the tool result still has the right id?</summary>
 
 Because the id now refers to nothing. The result claims to answer a call that the
 conversation no longer contains, so the server cannot validate the pairing. The id
-is only meaningful relative to an assistant message that is still present.
-</details>
+is only meaningful relative to an assistant message that is still present.</details>
 
-<details>
-<summary>One assistant message requests three tools. How many tool messages do you append before calling the model again?</summary>
+<details><summary>One assistant message requests three tools. How many tool messages do you append before calling the model again?</summary>
 
 Three — one per call, each carrying its own `tool_call_id`. They form a group; a
-partial group is as invalid as none.
-</details>
+partial group is as invalid as none.</details>
 
-<details>
-<summary>Your loop ran to the turn cap. Is that a model failure?</summary>
+<details><summary>Your loop ran to the turn cap. Is that a model failure?</summary>
 
 No. The cap is a harness property you configured. It tells you the model kept
 requesting tools and never produced a final answer; whether that is the model's
-fault, the prompt's, or the tools' is a separate question the trace (S08) answers.
-</details>
+fault, the prompt's, or the tools' is a separate question the trace (S08) answers.</details>
 
-<details>
-<summary>Why does the course check tool pairing client-side when the server checks it anyway?</summary>
+<details><summary>Why does the course check tool pairing client-side when the server checks it anyway?</summary>
 
 So the failure is visible where you caused it, before a paid request leaves the
-machine — and so you can see the rule as one explicit function instead of a `400`.
-</details>
+machine — and so you can see the rule as one explicit function instead of a `400`.</details>
 
 ---
 

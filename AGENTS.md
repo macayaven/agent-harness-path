@@ -21,15 +21,27 @@ When a course-facing artifact and this file disagree, this file wins.
 
 These survive every rewrite, restyle, and re-theme. Breaking one is a defect.
 
-1. **Toy-domain rule.** Every example is a toy from a domain the learner does not
-   ship. If an example drifts close enough to be a drop-in harness, rewrite it
-   *further away*. A paste-ready generic harness in `notebooks/` or `labs/` is a defect.
-2. **Zero network, zero keys, zero cost** for S01–S12. Toys are stdlib-only
-   Python (3.11+); `notebooks/` and notebook-style cells import **nothing** from
-   `.venv/`. The venv supplies tooling only. `labs/` is the documented exception:
-   `--replay` first-class, `--live` never the default and never in CI.
-3. **Predict-first.** Markdown prompts before code; attempt cell before a clearly
-   marked `# SOLUTION` cell. Never pre-fill a prediction.
+1. **Toy-domain rule.** Every example lives in **one** toy domain the learner does
+   not ship: the neighbourhood café. Tools stay in-domain (`price_check`,
+   `check_allergens`, `propose_order`, `fire_ticket`, `close_check`). If an example
+   drifts close enough to be a drop-in harness, rewrite it *further away*. A
+   paste-ready generic harness in `notebooks/` or `labs/` is a defect. All domain
+   strings live in `cafe/domain.py` so re-theming stays a one-module change.
+2. **CI is zero network, zero keys, zero cost — the learner path is live.**
+   `COURSE_MODE=stub` plus the socket guard in `tests/no_network_site/` makes this
+   structural, not a promise. The learner default is a real OpenAI-compatible
+   endpoint of their choosing; a local model costs nothing. Course logic is
+   stdlib-only Python (3.11+); the only permitted non-stdlib imports are `marimo`
+   (notebook runtime) and the course's own `cafe` package. No provider SDK, ever —
+   the client is `urllib` against `/chat/completions`. No key is committed,
+   printed or logged. `labs/` keeps `--replay` first-class and `--live` never in CI.
+3. **Predict-first.** Markdown prompts before code; an `attempt_<topic>` skeleton
+   before a `solution_<topic>` gated behind `mo.ui.switch` + `mo.stop`. Never
+   pre-fill a prediction. Against a live model the prediction is genuinely
+   uncertain — that is the point.
+   **Live assertions** must be a protocol invariant, a relative comparison inside
+   one session, or a bounded statistic over N≥10. Never assert an absolute quality
+   score against a live model.
 4. **S13/S14 stay unaided.** No scaffolding, no generated audit, no generated ship
    report, from any mode.
 5. **No secrets, raw chats, participant content, private hostnames, or home paths**
@@ -74,18 +86,34 @@ shift. Keep the *concepts* unchanged; keep tool names in-domain.
 
 ### One interface
 
-Retire Jupyter as the notebook surface. Notebooks are old-feeling, hidden-state,
-and un-diffable; they also fragment the path against `labs/`.
+Jupyter is retired. Notebooks are **marimo** files (`notebooks/sNN_*_toy.py`):
+reactive, diffable, and executable as plain scripts. No `.ipynb` may re-enter the
+tree.
 
-- Adopt **marimo** (pure-Python, reactive, git-diffable, offline) as the notebook
-  format, added as tooling in `pyproject.toml` like `jupyterlab` is today.
-- The same interface presents the **hard path**: `labs/` keeps its headless CLI
-  (`labs/run.py`, used by CI and `--replay`) and gains a marimo app shell, so
-  easy and hard paths look and behave identically.
-- Cell code stays stdlib-only and dependency-free; the runtime is tooling.
-- Migrate in one pass: convert notebooks, update lesson links, `bridges/`,
-  `labs/*.md`, `notebooks/` references in `tests/`, and the CI loop, then delete
-  the `.ipynb` files. Do not leave both formats in tree.
+- Pinned `marimo==0.24.2`. Commit **only** the form `marimo check --fix --ignore
+  MF004` produces, and gate it with `git diff --exit-code`. `--strict` alone does
+  not enforce this.
+- **Never `--unsafe-fixes`** — it deletes comment-only cells, i.e. every
+  predict-first and attempt skeleton.
+- marimo hoists a pure single-function cell to `@app.function` and strips setup
+  globals from cell signatures. Attempt/solution are therefore top-level
+  `attempt_<topic>` / `solution_<topic>` units, never cells.
+- The hard path uses the same surface: `labs/run.py` stays the CI/terminal path
+  and `labs/app.py` renders it.
+
+### One model seam
+
+A notebook never constructs a client. It calls `get_client()` from `cafe.model`,
+which returns a live client for the learner and a deterministic `StubClient` when
+`COURSE_MODE=stub`. Identical notebook source, both paths. Adding a second way to
+reach a model is a defect.
+
+### One spine
+
+`cafe/` is the artifact the learner grows: `loop → evals → context → schema →
+consent → detect → repair → trace → report → taxonomy → routing → judge`. Session
+N imports session N−1's module. A session that does not build on the previous one
+has broken the arc; `tests/test_arc.py` enforces the chain.
 
 ### Voice
 
