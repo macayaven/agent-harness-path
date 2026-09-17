@@ -1,19 +1,37 @@
 # The Agent Harness Path
 
 A self-contained course on **building, evaluating, and governing LLM agents** —
-twelve notebook sessions plus two optional apply-to-your-system protocols (S13
-rebuild audit, S14 ship & pilot). **v0.3.0 supersedes v0.2.0.** Take it in
-**Cursor**: this clone, session bridges, and a complete trivia host.
+twelve build sessions plus two optional apply-to-your-system protocols (S13
+rebuild audit, S14 ship & pilot).
 
-The default core notebook path is zero network, zero API keys, zero cost: every
-"model" in the notebooks is a plain Python function you can read. An **optional
-hard path** (`labs/`) grows one toy trivia-host spine against committed
-cassettes (`--replay`) or a live OpenAI-compatible endpoint (`--live`).
-Completing S01–S12 never requires a lab.
+**You build one agent, against a real model.** Across S01–S12 you grow a single
+café-counter agent in `cafe/`: loop → evals → context → schema → consent →
+detection → repair → tracing → reports → taxonomy → routing → judge. Every
+session starts from the artifact and the number the last one produced.
 
-**Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md)
-(local OpenAI-compatible models = override base URL + key), then start
-`lessons/S01-agent-loop.html` with `@bridges/s01.md` in chat.
+Every experiment runs against **your** OpenAI-compatible endpoint — a local model
+costs nothing. The mocks are gone: a prediction is only worth writing down when
+the thing you are predicting can surprise you.
+
+```bash
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+export CAFE_API_KEY=ollama                       # any non-empty string for a local server
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor                     # one live call; proves your endpoint
+uv run marimo edit notebooks/s01_agent_loop_toy.py
+```
+
+`CAFE_*` is read before `OPENAI_*`, so the course never collides with production
+credentials. No key is ever committed, printed, or logged. Notebooks are
+[marimo](https://marimo.io) files — plain Python, reactive, diffable.
+
+**Model size matters.** Most sessions are *better* with a mediocre model: bad
+output is exactly what S02, S07 and S10 measure and repair. S04
+(structured generation) and S12 (judge calibration) need a mid-size instruct
+model with real tool-calling support.
+
+**Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
+then start `lessons/S01-agent-loop.html` with `@bridges/s01.md` in chat.
 
 **Start here (HTML):** [`lessons/index.html`](lessons/index.html). Click ▶ to
 watch an optional preview (streams from a public bucket). A 9-minute
@@ -21,9 +39,9 @@ watch an optional preview (streams from a public bucket). A 9-minute
 covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
 overviews; the lesson + notebook are canonical).
 
-S01–S12 are the self-contained path. S13 and S14 are optional unaided protocols.
-Easy path: a system you own. Hard path: `labs/trivia_host/`. The notebooks do
-not accumulate a capstone; the optional spine does.
+S01–S12 are the core path and they **do** accumulate: the capstone is the `cafe/`
+package you finish with. S13 and S14 are optional unaided protocols — rebuild
+`cafe/loop.py` closed-book, judged by the eval suite you built.
 
 ## Core route and post-core overlay
 

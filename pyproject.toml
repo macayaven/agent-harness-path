@@ -6,11 +6,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0 AND CC-BY-4.0" }
 authors = [{ name = "Carlos Crespo Macaya" }]
-# Dependencies are tooling only: `jupyterlab` runs the notebooks, `markdown` renders
-# the lessons/ HTML. Notebook code itself stays Python standard library only
-# (COURSE-MAP.md session contract, rule 2) — nothing in `notebooks/` imports
-# anything from here.
-dependencies = ["jupyterlab>=4.0", "markdown>=3.5"]
+# Dependencies are tooling only: `marimo` is the notebook runtime, `markdown`
+# renders the lessons/ HTML. Course logic stays Python standard library only
+# (COURSE-MAP.md session contract, rule 2); the two permitted non-stdlib imports
+# are `marimo` and the course's own `cafe` package. No provider SDK: the model
+# client in `cafe/model.py` is `urllib` against /chat/completions.
+dependencies = ["marimo==0.24.2", "markdown>=3.5"]
 
 [project.urls]
 Homepage = "https://github.com/macayaven/agent-harness-path"
@@ -25,3 +26,8 @@ package = false
 diagrams = [
     "playwright==1.58.0",
 ]
+
+[tool.marimo.save]
+autosave = "after_delay"
+autosave_delay = 1000
+format_on_save = false
