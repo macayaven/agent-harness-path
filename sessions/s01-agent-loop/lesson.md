@@ -63,6 +63,11 @@ because it makes the bookkeeping inspectable. Some providers offer stateful
 alternatives that manage history for you; tool execution, failure policy and
 stopping still need owners.
 
+The loop blocks on every call: no streaming, no mid-generation steering, no
+cancellation. That is a deliberate scope cut, not an omission — the blocking
+shape is what keeps the bookkeeping inspectable, and everything from S02's
+fixtures to S11's ledger assumes a call that returns exactly once.
+
 ### The two mechanical invariants
 
 1. **Preserve the assistant message verbatim.** Append it — with its `tool_calls`
