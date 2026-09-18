@@ -2,7 +2,7 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
-## Unreleased
+## 0.4.0 — 2026-09-18
 
 - One directory per session: `sessions/sNN-slug/` holds `lesson.md` (builds to
   `lesson.html` in place), `toy.py`, `lab.md`, `companion.md` and
