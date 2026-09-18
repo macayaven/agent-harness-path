@@ -1,37 +1,37 @@
-"""OpenAI function schemas for the trivia host. Shared so replay match keys stay stable."""
+"""OpenAI function schemas for the café host. Shared so replay match keys stay stable."""
 
 TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "propose_round_spec",
-            "description": "Propose a round spec for the consent gate. All fields required.",
+            "name": "propose_order",
+            "description": "Propose an order spec for the consent gate. All fields required.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "theme": {"type": "string"},
+                    "occasion": {"type": "string"},
                     "difficulty": {
                         "type": "string",
                         "enum": ["easy", "medium", "hard"],
                     },
-                    "categories": {
+                    "sections": {
                         "type": "array",
                         "items": {
                             "type": "string",
-                            "enum": ["science", "geography", "literature"],
+                            "enum": ["espresso", "pastry", "kitchen"],
                         },
                     },
-                    "clue_count": {"type": "integer", "minimum": 1, "maximum": 5},
-                    "off_limits": {"type": "array", "items": {"type": "string"}},
-                    "language": {"type": "string", "enum": ["en", "es"]},
+                    "item_count": {"type": "integer", "minimum": 1, "maximum": 5},
+                    "restrictions": {"type": "array", "items": {"type": "string"}},
+                    "language": {"type": "string", "enum": ["en"]},
                     "house_rules": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": [
-                    "theme",
+                    "occasion",
                     "difficulty",
-                    "categories",
-                    "clue_count",
-                    "off_limits",
+                    "sections",
+                    "item_count",
+                    "restrictions",
                     "language",
                     "house_rules",
                 ],
@@ -42,44 +42,44 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "draw_clue",
-            "description": "Draw the next unused clue from the canned deck.",
+            "name": "pull_item",
+            "description": "Pull the next unserved menu item from the kitchen.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "category": {
+                    "section": {
                         "type": "string",
-                        "enum": ["science", "geography", "literature"],
+                        "enum": ["espresso", "pastry", "kitchen"],
                     },
                     "difficulty": {
                         "type": "string",
                         "enum": ["easy", "medium", "hard"],
                     },
                 },
-                "required": ["category", "difficulty"],
+                "required": ["section", "difficulty"],
             },
         },
     },
     {
         "type": "function",
         "function": {
-            "name": "score_answer",
-            "description": "Score the player's answer against the drawn clue.",
+            "name": "settle_item",
+            "description": "Settle a pulled item against the ticket.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "clue_id": {"type": "string"},
-                    "player_answer": {"type": "string"},
+                    "item_id": {"type": "string"},
+                    "note": {"type": "string"},
                 },
-                "required": ["clue_id", "player_answer"],
+                "required": ["item_id", "note"],
             },
         },
     },
     {
         "type": "function",
         "function": {
-            "name": "end_round",
-            "description": "End the round and return the tally.",
+            "name": "close_shift",
+            "description": "Close the shift and return the bill.",
             "parameters": {"type": "object", "properties": {}},
         },
     },

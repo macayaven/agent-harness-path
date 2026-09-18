@@ -2,7 +2,7 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S03-context-engineering](lesson.html) and
 the Governance Decay result the lesson cites: in-context constraints die

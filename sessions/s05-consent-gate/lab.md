@@ -2,10 +2,10 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S05-consent-gate](lesson.html) — approve / edit /
-reject; the gate constrains execution; no third mid-round ambush.
+reject; the gate constrains execution; no third mid-shift ambush.
 
 ## Build
 
@@ -21,17 +21,17 @@ The CLI contract is exact:
   `labs/schemas.py`. It is replacement, not a patch.
 - malformed JSON or a schema-invalid replacement aborts with
   `stop_reason="invalid_edit"`; no model or tool call occurs.
-- `reject` aborts with no clues played. Any other decision also fails closed.
+- `reject` aborts with no items served. Any other decision also fails closed.
 
-On approve, **code** enforces `difficulty` as a ceiling: `draw_clue` harder
-than approved returns `difficulty_ceiling`, it does not draw.
+On approve, **code** enforces `difficulty` as a ceiling: `pull_item` harder
+than approved returns `difficulty_ceiling`, it does not pull.
 
 ## Verify (predict first)
 
-1. Clean path: approve an easy spec; a round runs.
-2. Adversarial: approved easy, scripted player demands a championship/hard
-   clue (`p04`). Predict: hard-deck prompts never appear; state.drawn has no
-   hard clue.
+1. Clean path: approve an easy spec; a shift runs.
+2. Adversarial: approved easy, scripted customer demands a hard banquet
+   kitchen item (`p04`). Predict: hard-tier items never fire; state.pulled
+   has no hard item.
 
 ```bash
 uv run python labs/run.py --session s05 --replay

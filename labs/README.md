@@ -12,7 +12,7 @@ Two signed routes. Completing S01–S12 **never** requires a lab.
 | **Hard (optional)** | Same, **then** this directory | optional: `--replay` needs none |
 
 `--replay` is a first-class hard-path mode, not a consolation. You build the
-trivia host against committed traces from a real model. `--live` is how you
+café host against committed traces from a real model. `--live` is how you
 feel stochasticity, latency, and schema miss on *your* endpoint.
 
 ```bash
@@ -30,12 +30,14 @@ Default mode is **replay**. `--live` is never the default and is never used in C
 
 ## What you are building
 
-One toy-domain spine: a **trivia host**. Tools stay in-domain
-(`propose_round_spec`, `draw_clue`, `score_answer`, `end_round`). If this
+One toy-domain spine: a **café host** — the same neighbourhood-café domain
+as the core path, but a separate system from the notebook's `cafe/` toy.
+Tools stay in-domain
+(`propose_order`, `pull_item`, `settle_item`, `close_shift`). If this
 drifts toward a paste-ready generic harness (files, shell, a workspace), that
-is a defect — rewrite it back into pub quiz.
+is a defect — rewrite it back into the café.
 
-This cut **ships a complete host** in `trivia_host/` so `--replay` runs without
+This cut **ships a complete host** in `cafe_host/` so `--replay` runs without
 filling stubs. `reference/` is the same spine for CI `--impl reference`. Open
 it only if stuck; peeking makes S13 a recognition test.
 
@@ -63,10 +65,10 @@ The reference tool return envelopes are exact replay-facing shapes:
 
 | Tool | Success envelope | Error envelope(s) |
 |---|---|---|
-| `propose_round_spec` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
-| `draw_clue` | `{"clue_id": ID, "category": CATEGORY, "difficulty": LEVEL, "prompt": TEXT}` | `{"error": "difficulty_ceiling", "approved": LEVEL}`, `{"error": "category_not_allowed", "allowed": CATEGORIES}`, or `{"error": "no_clue", "category": CATEGORY, "difficulty": LEVEL}` |
-| `score_answer` | `{"correct": BOOL, "points": INT, "clue_id": ID}` | `{"error": "unknown_clue", "clue_id": ID}` |
-| `end_round` | `{"score": INT, "clues_played": INT, "stop_reason": REASON}` | none |
+| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
+| `pull_item` | `{"item_id": ID, "section": SECTION, "difficulty": LEVEL, "name": NAME, "detail": TEXT}` | `{"error": "difficulty_ceiling", "approved": LEVEL}`, `{"error": "section_not_allowed", "allowed": SECTIONS}`, or `{"error": "no_item", "section": SECTION, "difficulty": LEVEL}` |
+| `settle_item` | `{"served": BOOL, "line_total": INT, "item_id": ID}` | `{"error": "unknown_item", "item_id": ID}` |
+| `close_shift` | `{"total": INT, "items_served": INT, "stop_reason": REASON}` | none |
 | unknown dispatch name | none | `{"error": "unknown_tool", "name": NAME}` |
 
 These are course-cassette wire contracts, not hidden spotter internals. Key
@@ -87,8 +89,8 @@ Copy `PROGRESS.template.md` to `labs/PROGRESS.md` (gitignored).
 
 ## Layout
 
-- `s01_loop.md` … `s12_judge.md` — protocols (Build / Verify / Record / Done-when)
-- `trivia_host/` — complete host (study with bridges; you may still rewrite it)
+- `sessions/sNN-slug/lab.md` — protocols (Build / Verify / Record / Done-when)
+- `cafe_host/` — complete host (study with bridges; you may still rewrite it)
 - `client.py` — stdlib OpenAI-compatible POST + cassettes
 - `run.py` — naïve vs engine, markdown report
 - `app.py` — marimo shell over `run.py` (`uv run marimo edit labs/app.py`)
@@ -96,5 +98,5 @@ Copy `PROGRESS.template.md` to `labs/PROGRESS.md` (gitignored).
 - `evals/` — golden tasks p01–p06 (S02), p07–p09 (S10)
 - `reference/` — spotter
 
-S13/S14: if you walked this path, the audit/ship target is `trivia_host/`
+S13/S14: if you walked this path, the audit/ship target is `cafe_host/`
 against this suite. Otherwise bring your own system (the easy-path rule).

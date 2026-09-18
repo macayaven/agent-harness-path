@@ -4,14 +4,14 @@
 
 Core: `lesson.html`,
 `toy.py`, `cafe/trace.py` (spans, the JSONL
-shift record, exact replay). Optional trivia lab: `sessions/s08-observability-replay/lab.md`,
+shift record, exact replay). Optional café-host lab: `sessions/s08-observability-replay/lab.md`,
 `labs/client.py` (`match_key`, `ReplayMismatch`, `assert_exhausted` /
 leftover entries), `labs/cassettes/*.jsonl`.
 
 ## The gap
 
 The core toy records a real café shift and replays it exactly; `cafe/trace.py`
-is that layer. The optional trivia lab client teaches next-entry match and
+is that layer. The optional café-host lab client teaches next-entry match and
 exhaustion. Match key: `{messages, tools, temperature, tool_choice}` — **not**
 `model` (so you can replay without the recording model). Order matters.
 Leftover cassette lines fail at end of file. A prompt change mismatches. A
@@ -24,16 +24,16 @@ Do not log API keys (`_redact` in `client.py`). No timestamps inside
 
 ## What to build this session (still)
 
-Per-phase spans (intake / spec / play / debrief) as JSONL under
+Per-phase spans (intake / spec / serve / debrief) as JSONL under
 `labs/work/traces/` (gitignored). Langfuse is optional and **not** required.
-Confirm `--replay` on a recorded round reproduces assistant/tool sequence.
+Confirm `--replay` on a recorded shift reproduces assistant/tool sequence.
 
 ## Commands
 
 ```bash
 # core path: run the notebook live against your own endpoint
 uv run marimo edit sessions/s08-observability-replay/toy.py
-# optional hard path: the separate trivia lab
+# optional hard path: the separate café-host lab
 uv run python labs/run.py --session s08 --replay
 uv run python labs/run.py --session s01 --replay   # same s01-round file twice
 ```

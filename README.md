@@ -77,7 +77,7 @@ product.
    `sessions/sNN-slug/companion.md` is what the Cursor companion should read first.
 5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a
    ship/pilot protocol. Easy path: a system you own. Hard path:
-   `labs/trivia_host/`. The assistant must not do these for you.
+   `labs/cafe_host/`. The assistant must not do these for you.
 
 The curriculum: agent loop → golden sets & baselines → context engineering →
 structured generation → consent gate → layered detection → repair loop →
@@ -104,7 +104,7 @@ uv run python -m cafe.doctor
 uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
-Optional hard path (complete host already in `labs/trivia_host/`):
+Optional hard path (complete host already in `labs/cafe_host/`):
 
 ```bash
 uv run python labs/run.py --session s01 --replay
@@ -148,8 +148,8 @@ Everything in the core path is **one toy from one familiar domain** — a
 neighbourhood-café counter assistant (orders, tickets, allergens, the till) —
 never a paste-ready production harness. Toy code is for reading, running,
 and breaking. The numbers you print in a notebook do not substitute for a banked
-eval baseline on a system you own. The optional labs are a **separate** trivia-host
-spine — still a toy domain. If either spine grows file/shell tools, rewrite it back.
+eval baseline on a system you own. The optional labs are a **separate** café-host
+spine — same toy domain, different artifact. If either spine grows file/shell tools, rewrite it back.
 
 ## Contributing
 

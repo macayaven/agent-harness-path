@@ -10,7 +10,7 @@ to do, and say which mode you are in before editing anything.
 
 | Mode | Trigger | Governed by |
 |---|---|---|
-| **A — Learner companion (tutor)** | Human is *taking* the course in Cursor | Read `.cursor/rules/ahp-companion.mdc`, then `bridges/sNN.md` before explaining a lab. Explain `labs/trivia_host/`; never silently rewrite it or fill predict-first work. Never open `labs/reference/` unless the learner is stuck. S13/S14: **process only** — never write the audit or the ship report. |
+| **A — Learner companion (tutor)** | Human is *taking* the course in Cursor | Read `.cursor/rules/ahp-companion.mdc`, then `bridges/sNN.md` before explaining a lab. Explain `labs/cafe_host/`; never silently rewrite it or fill predict-first work. Never open `labs/reference/` unless the learner is stuck. S13/S14: **process only** — never write the audit or the ship report. |
 | **B — Contributor (redesign)** | Human is *editing* course content | Everything below. |
 
 When a course-facing artifact and this file disagree, this file wins.
@@ -69,21 +69,24 @@ lowering rigor. Symptom → rule:
 | Nothing carries forward; each session feels like session one | One continuous spine: the learner builds/reuses **one artifact** across S01–S12, and every session opens by naming what carries in and closes by naming what it enables. |
 | No forward pull; long theory before any feedback | Session order is **hook → promise → theory → run → checkpoint → recap → bridge**. The "you will be able to" promise appears in the first screenful. |
 | Three looks and feels; notebooks load like homework, labs like homework-adjacent scripts | **One interface, one runtime** (below). Never introduce a new surface without retiring one. |
-| Domain the learner does not identify with (currently pub trivia) | Pick a **familiar, everyday domain the author knows firsthand** and re-skin the whole spine to it — see *Theme*. |
+| A second toy domain crept into the hard path (was: pub-trivia labs beside the café core) | One domain everywhere: re-skin the drifted surface to the spine's domain — see *Theme*. |
 | Flat titles and boilerplate transitions | Every session ends with an explicit bridge sentence to the next slug, and the next begins by picking it up. No orphan sessions. |
 
 ### Theme
 
-Trivia is the current default and may be replaced. Requirements for any
-replacement: everyday and familiar to the learner, a different domain from a
-production harness (rule 1), enough structure to hold all 14 concepts, and
-dialogue-friendly. **Recommended default: the neighbourhood café / kitchen
-shift** — orders, kitchen tickets, allergens, refunds, shift handover.
+The spine's domain is the neighbourhood café / kitchen shift — orders,
+kitchen tickets, allergens, refunds, shift handover. Requirements for any
+future replacement: everyday and familiar to the learner, a different domain
+from a production harness (rule 1), enough structure to hold all 14 concepts,
+and dialogue-friendly. The hard-path labs were re-skinned to the same domain
+in 2026-09 (trivia host → café host, `propose_round_spec` → `propose_order`,
+`draw_clue` → `pull_item`, `score_answer` → `settle_item`, `end_round` →
+`close_shift`); the tutor's throwaway examples stay out-of-domain (trivia /
+weather / mopbot in `.cursor/rules/ahp-companion.mdc`) so the assistant never
+does the learner's café work for them.
 
-Re-skin by mapping beats, not by inventing a second course: trivia host →
-counter assistant, `propose_round_spec` → propose the order ticket `draw_clue`
-→ pull a menu item, `score_answer` → settle a ticket, `end_round` → close the
-shift. Keep the *concepts* unchanged; keep tool names in-domain.
+Re-skin by mapping beats, not by inventing a second course. Keep the
+*concepts* unchanged; keep tool names in-domain.
 
 ### One interface
 
@@ -138,7 +141,7 @@ sessions/sNN-slug/        one session: lesson.md → lesson.html (in place),
                           toy.py, lab.md, companion.md, public/diagrams/
 tools/build.py            md → html, injects prev/index/next nav
 tools/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
-labs/                     hard path: run.py + cassettes + trivia_host/ (protocols live in sessions/)
+labs/                     hard path: run.py + cassettes + cafe_host/ (protocols live in sessions/)
 bridges/README.md         companion wire table (rungs live in sessions/)
 tests/                    content + build contracts, fixtures
 docs/, study/   docs map, learner records

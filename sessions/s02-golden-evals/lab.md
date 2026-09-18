@@ -2,7 +2,7 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S02-golden-evals](lesson.html) — the suite is a
 measurement instrument; naïve vs harness on the **same** model; the naïve row
@@ -10,7 +10,7 @@ is the product argument.
 
 ## Build
 
-1. `trivia_host/engine.py` — `run_naive(client, script)`: one system prompt
+1. `cafe_host/engine.py` — `run_naive(client, script)`: one system prompt
    (`house_rules.NAIVE_PROMPT`), no tools, same scripted user as the engine.
 2. Confirm `run_engine` still uses tools. Do not peek at `reference/` unless
    stuck.

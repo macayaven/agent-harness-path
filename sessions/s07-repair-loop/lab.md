@@ -2,14 +2,14 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S07-repair-loop](lesson.html) — cap retries;
 curated failure view; honest `stop_reason`.
 
 ## Build
 
-If a host turn hits policy (spoiler leak, PII), do not keep it as the product
+If a host turn hits policy (allergen leak, PII), do not keep it as the product
 turn. Append a short repair instruction, regenerate, **≤3** attempts. Never
 grow the approved difficulty on a retry.
 

@@ -20,13 +20,13 @@ from spec_schema import SpecError, validate_spec
 
 
 VALID_SPEC = {
-    "theme": "world capitals",
+    "occasion": "birthday",
     "difficulty": "easy",
-    "categories": ["geography"],
-    "clue_count": 2,
-    "off_limits": ["medical advice"],
+    "sections": ["pastry"],
+    "item_count": 2,
+    "restrictions": ["medical advice"],
     "language": "en",
-    "house_rules": ["clues from tools only"],
+    "house_rules": ["items from tools only"],
 }
 
 
@@ -62,18 +62,18 @@ class SpecSchemaTests(unittest.TestCase):
         with self.assertRaises(SpecError):
             validate_spec(list(VALID_SPEC))
 
-    def test_theme_must_be_a_string(self) -> None:
-        spec = {**VALID_SPEC, "theme": 7}
+    def test_occasion_must_be_a_string(self) -> None:
+        spec = {**VALID_SPEC, "occasion": 7}
         with self.assertRaises(SpecError):
             validate_spec(spec)
 
-    def test_bool_clue_count_is_rejected(self) -> None:
-        spec = {**VALID_SPEC, "clue_count": True}
+    def test_bool_item_count_is_rejected(self) -> None:
+        spec = {**VALID_SPEC, "item_count": True}
         with self.assertRaises(SpecError):
             validate_spec(spec)
 
-    def test_unknown_category_is_rejected(self) -> None:
-        spec = {**VALID_SPEC, "categories": ["history"]}
+    def test_unknown_section_is_rejected(self) -> None:
+        spec = {**VALID_SPEC, "sections": ["history"]}
         with self.assertRaises(SpecError):
             validate_spec(spec)
 
@@ -83,7 +83,7 @@ class SpecSchemaTests(unittest.TestCase):
             validate_spec(spec)
 
     def test_list_fields_reject_non_string_elements(self) -> None:
-        for field in ("categories", "off_limits", "house_rules"):
+        for field in ("sections", "restrictions", "house_rules"):
             with self.subTest(field=field):
                 spec = {**VALID_SPEC, field: [1]}
                 with self.assertRaises(SpecError):
@@ -98,15 +98,15 @@ class ConsentAndPolicyTests(unittest.TestCase):
     def test_edit_consent_replaces_spec_with_valid_json(self) -> None:
         replacement = {
             **VALID_SPEC,
-            "theme": "women in science",
-            "categories": ["science"],
-            "clue_count": 1,
+            "occasion": "regulars",
+            "sections": ["espresso"],
+            "item_count": 1,
         }
         client = RecordingClient()
 
         result = run_engine(
             client,
-            ["Start the round."],
+            ["Start the shift."],
             spec=VALID_SPEC,
             auto_approve=False,
             input_fn=input_sequence("edit", json.dumps(replacement)),
@@ -114,7 +114,7 @@ class ConsentAndPolicyTests(unittest.TestCase):
 
         self.assertEqual(result["spec"], replacement)
         self.assertEqual(result["state"]["approved_difficulty"], "easy")
-        self.assertEqual(result["state"]["allowed_categories"], ["science"])
+        self.assertEqual(result["state"]["allowed_sections"], ["espresso"])
         self.assertEqual(client.calls, 1)
 
     def test_unknown_consent_decision_fails_closed(self) -> None:
@@ -122,7 +122,7 @@ class ConsentAndPolicyTests(unittest.TestCase):
 
         result = run_engine(
             client,
-            ["Start the round."],
+            ["Start the shift."],
             spec=VALID_SPEC,
             auto_approve=False,
             input_fn=input_sequence("maybe"),
@@ -135,14 +135,14 @@ class ConsentAndPolicyTests(unittest.TestCase):
     def test_invalid_json_or_schema_edit_aborts_without_side_effects(self) -> None:
         invalid_edits = (
             "{not json",
-            json.dumps({**VALID_SPEC, "categories": ["history"]}),
+            json.dumps({**VALID_SPEC, "sections": ["history"]}),
         )
         for edit in invalid_edits:
             with self.subTest(edit=edit):
                 client = RecordingClient()
                 result = run_engine(
                     client,
-                    ["Start the round."],
+                    ["Start the shift."],
                     spec=VALID_SPEC,
                     auto_approve=False,
                     input_fn=input_sequence("edit", edit),
@@ -151,7 +151,7 @@ class ConsentAndPolicyTests(unittest.TestCase):
                 self.assertEqual(result["stop_reason"], "invalid_edit")
                 self.assertEqual(client.calls, 0)
                 self.assertEqual(result["state"]["tool_log"], [])
-                self.assertEqual(result["state"]["drawn"], {})
+                self.assertEqual(result["state"]["pulled"], {})
 
     def test_off_limits_medical_advice_mention_is_not_refused(self) -> None:
         client = RecordingClient()
@@ -159,8 +159,8 @@ class ConsentAndPolicyTests(unittest.TestCase):
         result = run_engine(
             client,
             [
-                "Call propose_round_spec for an easy geography round; "
-                "off_limits medical advice."
+                "Call propose_order for an easy pastry order; "
+                "restrictions medical advice."
             ],
             spec=VALID_SPEC,
         )

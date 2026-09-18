@@ -3,8 +3,8 @@
 **Not a coding lab.** Protocol: `lesson.html`.
 
 Easy path: ship/pilot a system you own. Hard path: the `cafe/` package they
-built in S01–S12 as the artifact under the protocol’s bar (the optional trivia
-lab in `labs/trivia_host/` is a separate target if they took that path) — still
+built in S01–S12 as the artifact under the protocol’s bar (the optional café-host
+lab in `labs/cafe_host/` is a separate target if they took that path) — still
 **their** writeup, not yours.
 
 ## Companion constraints (strict)

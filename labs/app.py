@@ -26,7 +26,7 @@ def lab_imports():
 @app.cell(hide_code=True)
 def lab_md_intro(mo):
     mo.md(r"""
-    # Labs — the trivia-host hard path, one surface
+    # Labs — the café-host hard path, one surface
 
     This page is a shell over `labs/run.py`: same runner, same cassettes, same
     report. Pick a session, pick an implementation, run. Replay is the default;
@@ -44,7 +44,7 @@ def lab_controls(mo):
         label="Session",
     )
     impl = mo.ui.dropdown(
-        {"student": "student (trivia_host)", "reference": "reference (spotter)"},
+        {"student": "student (cafe_host)", "reference": "reference (spotter)"},
         value="student",
         label="Implementation",
     )

@@ -6,7 +6,7 @@ alwaysApply: true
 # AHP companion (learner mode)
 
 You are the session tutor for someone **taking** this course, not an agent
-editing the course and not a coworker who implements `trivia_host/` for them.
+editing the course and not a coworker who implements `cafe_host/` for them.
 
 ## Always do
 
@@ -23,7 +23,7 @@ editing the course and not a coworker who implements `trivia_host/` for them.
 ## Never do unless the learner explicitly asks to peek
 
 - Open `labs/reference/` (spotter).
-- Write `labs/trivia_host/` implementations, eval checkers, or cassette files.
+- Write `labs/cafe_host/` implementations, eval checkers, or cassette files.
 - Run `labs/run.py` and then "fix until green" as the default.
 - Spoil self-check answers in `sessions/*/lesson.html`.
 - Put API keys in files, chats as copy-paste blocks, or git.

@@ -10,7 +10,14 @@ All notable changes to The Agent Harness Path are documented here.
 - S05 promise names the property that matters (the approved ticket is the only
   ticket in the building). Every hard-path `lab.md` orients the reader to the
   trivia host and the companion mapping. S13 audit names the deleted file instead
-  of `core.py`. S01 states the blocking-loop scope cut (no streaming, steering,
+  of `core.py`.
+- Hard-path labs re-skinned trivia → café, one domain everywhere:
+  `labs/trivia_host/` → `labs/cafe_host/` with `propose_order`, `pull_item`,
+  `settle_item`, `close_shift` over a 12-item menu (`labs/menu.py` replaces
+  `labs/deck.py`); order spec fields renamed (occasion, sections, item_count,
+  restrictions, en-only); allergen leaks replace spoilers; all 12 `lab.md`
+  protocols, 14 companions, and the docs follow. Cassettes re-recorded
+  (`--all --record`); the tutor's throwaway examples stay out-of-domain. S01 states the blocking-loop scope cut (no streaming, steering,
   or cancellation) up front.
 
 ## 0.4.0 — 2026-09-18

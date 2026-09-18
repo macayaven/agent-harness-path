@@ -17,7 +17,7 @@ file is Google's. Clone the repo to run the notebooks.
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own — or, if you walked the hard path in `labs/`, against
-the trivia host you built.
+the café host you built.
 
 ## Core route and post-core overlay
 
@@ -50,7 +50,7 @@ model-layer fundamentals depth.
 5. **(Optional) hard path.** After the notebook: [`labs/README.md`](../labs/README.md).
    Replay committed cassettes (`uv run python labs/run.py --session sNN --replay`)
    or call any OpenAI-compatible endpoint (`--live`). S13 is an optional
-   closed-book audit — of `labs/trivia_host/` if you built it, otherwise of a
+   closed-book audit — of `labs/cafe_host/` if you built it, otherwise of a
    system you own — and it is strict.
 
 Setup: `uv sync` once, then point `CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL`
@@ -75,11 +75,11 @@ standard library only; `marimo` is the runtime.
 | 10 | [Error analysis](s10-error-analysis/lesson.html) | Failure logs → taxonomy → new evals; open and axial coding on real traces | [toy.py](s10-error-analysis/toy.py) | [lab.md](s10-error-analysis/lab.md) |
 | 11 | [Budgets & routing](s11-budgets-routing/lesson.html) | Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math | [toy.py](s11-budgets-routing/toy.py) | [lab.md](s11-budgets-routing/lab.md) |
 | 12 | [Judge calibration](s12-judge-calibration/lesson.html) | Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy | [toy.py](s12-judge-calibration/toy.py) | [lab.md](s12-judge-calibration/lab.md) |
-| 13 | [Rebuild from memory](s13-rebuild-from-memory/lesson.html) | Optional lab: closed-book audit of a system you own | — (the audit is the exercise) | hard path: `trivia_host/`; else BYO |
+| 13 | [Rebuild from memory](s13-rebuild-from-memory/lesson.html) | Optional lab: closed-book audit of a system you own | — (the audit is the exercise) | hard path: `cafe_host/`; else BYO |
 | 14 | [Ship & pilot](s14-ship-and-pilot/lesson.html) | Optional lab: cold acceptance run, first real user, public artifact | — (protocol, not notebook) | hard path: fixture run of the host; else BYO |
 
 S13 and S14 have no notebook by design. Easy path: optional *bring your own
-system* labs. Hard path: the audit/ship target is `labs/trivia_host/` if you
+system* labs. Hard path: the audit/ship target is `labs/cafe_host/` if you
 built it. Completing S01–S12 does not require them, and does not require `labs/`.
 
 Per-session videos were removed in September 2026: they lagged the lessons and

@@ -2,7 +2,7 @@
 
 Tutor a learner on **S02**. The core path ships `cafe/evals` — a café golden set,
 deterministic checkers, and the naive arm the governed loop has to beat. The
-optional trivia lab already has `run_naive` and `run_engine`. In both, the work
+optional café-host lab already has `run_naive` and `run_engine`. In both, the work
 is to **read the report**, not to invent a second eval framework.
 
 ## Files
@@ -14,7 +14,7 @@ is to **read the report**, not to invent a second eval framework.
 | Core suite | `cafe/evals/tasks.py`, `cafe/evals/checkers.py` |
 | Core loop | `cafe/loop.py` (the governed arm) |
 | Protocol | `sessions/s02-golden-evals/lab.md` |
-| Engine | `labs/trivia_host/engine.py` (`run_naive`, `run_engine`) |
+| Engine | `labs/cafe_host/engine.py` (`run_naive`, `run_engine`) |
 | Tasks | `labs/evals/tasks.py` p01–p06 |
 | Checkers | `labs/evals/checkers.py` |
 | Cassettes | `labs/cassettes/p0N-naive.jsonl`, `p0N-engine.jsonl` |
@@ -26,7 +26,7 @@ S01 loop/tools/client constraints still apply (`sessions/s01-agent-loop/companio
 
 The core toy runs against the seam (stub by default, the learner's own endpoint under `COURSE_MODE=live`) and shows a miniature
 table: same scripted café scenarios, naive vs governed arm, explain every cell.
-The optional trivia lab runner writes `naïve n/6 vs engine n/6` against
+The optional café-host lab runner writes `naïve n/6 vs engine n/6` against
 **committed cassettes**. Several engine checks encode governors built in
 **later** sessions (spec tool, PII, ceiling). On a from-scratch host those fails
 are a valid baseline. On this companion cut the engine column should already
@@ -46,10 +46,10 @@ you to **understand** naïve vs engine on p01–p06.
 
 | id | slug | What the checker cares about |
 | --- | --- | --- |
-| p01 | round-spec | engine called `propose_round_spec` and stored a valid spec |
-| p02 | spoiler-interrupt | no official answer leaked in assistant prose before score |
-| p03 | pii-refuse | no phone/email in clue/assistant content on the engine |
-| p04 | difficulty-ceiling | no hard clue when spec is easy |
+| p01 | order-spec | engine called `propose_order` and stored a valid spec |
+| p02 | allergen-leak | no allergen detail leaked in assistant prose before settle |
+| p03 | pii-refuse | no phone/email in item/assistant content on the engine |
+| p04 | complexity-ceiling | no hard item when spec is easy |
 | p05 | tools-used | engine actually called tools (naïve cannot) |
 | p06 | debrief-refs | debrief has ≥2 `turn N:` citations |
 
@@ -63,7 +63,7 @@ silently edit checkers.
 ```bash
 # core path: run the notebook live against your own endpoint
 uv run marimo edit sessions/s02-golden-evals/toy.py
-# optional hard path: the separate trivia lab
+# optional hard path: the separate café-host lab
 uv run python labs/run.py --session s02 --replay
 # report: labs/reports/last.md (gitignored)
 ```
@@ -82,7 +82,7 @@ the report.
 ## Assistant: do / don't
 
 Do: explain why naïve p03 can leak PII (no tools, chat freely). Explain why
-engine p01 needs `propose_round_spec`. Map toy columns to `run_naive` /
+engine p01 needs `propose_order`. Map toy columns to `run_naive` /
 `run_engine`.
 
 Don't: “fix” naïve so it passes. Don't delete failing rows. Don't peek

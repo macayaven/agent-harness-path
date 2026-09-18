@@ -3,7 +3,7 @@
 You are tutoring a learner on **S01**. The core path is the HTML lesson plus the
 marimo toy notebook, and it ships `cafe/loop.py` — the café order-taking loop
 every later session extends. The optional hard path is a separate, **complete**
-trivia host in `labs/trivia_host/` (this companion cut). Your job is to connect
+café host in `labs/cafe_host/` (this companion cut). Your job is to connect
 the core loop to that host when they take it, not to hide either side, and not
 to rewrite the host unless asked.
 
@@ -18,17 +18,17 @@ to rewrite the host unless asked.
 | Core tools | `cafe/tools.py` (`price_check`, `check_allergens`, `propose_order`, `fire_ticket`, `close_check`) |
 | Domain strings | `cafe/domain.py` |
 | Protocol | `sessions/s01-agent-loop/lab.md` |
-| Loop | `labs/trivia_host/loop.py` |
-| Tools | `labs/trivia_host/tools.py` |
-| Engine | `labs/trivia_host/engine.py` |
+| Loop | `labs/cafe_host/loop.py` |
+| Tools | `labs/cafe_host/tools.py` |
+| Engine | `labs/cafe_host/engine.py` |
 | Client | `labs/client.py` (`canonicalize`, `check_orphans`, cassette replay) |
 | Wire strings | `labs/house_rules.py` (`PINNED_RULES`, `STARTER_PERSONA`) |
 | Tool JSON | `labs/schemas.py` |
-| Deck | `labs/deck.py` |
+| Menu | `labs/menu.py` |
 | Runner | `labs/run.py` |
 
 Do **not** open `labs/reference/` unless the learner is stuck. In this
-companion cut `trivia_host/` **is the complete host** (same spine). Study
+companion cut `cafe_host/` **is the complete host** (same spine). Study
 it via the bridges; S13 is still unaided.
 
 ## Global companion constraints (every session)
@@ -50,8 +50,8 @@ belongs to the loop. Café tools are `price_check`, `check_allergens`,
 
 The optional lab is a **client-owned loop** against `labs.client.Client`, which
 either replays committed JSONL cassettes or POSTs to an OpenAI-compatible
-`/v1/chat/completions`. Its tools are pub-quiz (`draw_clue`, `score_answer`,
-`end_round`, plus `propose_round_spec` used from S04). House rules occupy
+`/v1/chat/completions`. Its tools are counter-side (`pull_item`, `settle_item`,
+`close_shift`, plus `propose_order` used from S04). House rules occupy
 messages[0]–[1]. Replay matching is exact on
 `{messages, tools, temperature, tool_choice}`.
 
@@ -61,16 +61,16 @@ Same ideas: append the assistant **verbatim** (protocol fields only); pair every
 
 ## Core map → optional lab host
 
-| Core | Optional trivia host |
+| Core | Optional café host |
 | --- | --- |
 | `cafe.model.get_client()` → `LiveClient.chat` | `Client.chat(messages, tools=…, temperature=0.0)` |
-| `cafe.loop.run_shift(client, state, …, max_turns=…)` | `trivia_host.loop.run_loop` |
-| `cafe.tools.dispatch(state, call)` | `trivia_host.tools.dispatch(state, call)` |
+| `cafe.loop.run_shift(client, state, …, max_turns=…)` | `cafe_host.loop.run_loop` |
+| `cafe.tools.dispatch(state, call)` | `cafe_host.tools.dispatch(state, call)` |
 | dropped assistant message | `client.check_orphans` / `OrphanedToolResult` (runs before network/cassette) |
 | `max_turns` | `run_loop(..., max_turns=8)` then `stop_reason=turn_cap` |
 | tool result as JSON text | `content=canonicalize(result)` if the result is not already a str |
 
-## Shipped loop (`trivia_host/loop.py`)
+## Shipped loop (`cafe_host/loop.py`)
 
 For up to `max_turns`:
 
@@ -91,10 +91,10 @@ recipe.
 
 | Tool | Success | Errors |
 | --- | --- | --- |
-| `propose_round_spec` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
-| `draw_clue` | `clue_id, category, difficulty, prompt` | `difficulty_ceiling`, `category_not_allowed`, `no_clue` |
-| `score_answer` | `correct, points, clue_id` | `unknown_clue` |
-| `end_round` | `score, clues_played, stop_reason` | none |
+| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
+| `pull_item` | `item_id, section, difficulty, name, detail` | `difficulty_ceiling`, `section_not_allowed`, `no_item` |
+| `settle_item` | `served, line_total, item_id` | `unknown_item` |
+| `close_shift` | `total, items_served, stop_reason` | none |
 | unknown name | — | `{"error": "unknown_tool", "name": NAME}` |
 
 Changing `PINNED_RULES` or `STARTER_PERSONA` breaks course-cassette `--replay`.
@@ -104,7 +104,7 @@ Changing `PINNED_RULES` or `STARTER_PERSONA` breaks course-cassette `--replay`.
 ```bash
 # core path: run the notebook live against your own endpoint
 uv run marimo edit sessions/s01-agent-loop/toy.py
-# optional hard path: the separate trivia lab
+# optional hard path: the separate café-host lab
 uv run python labs/run.py --session s01 --replay
 # optional lab live local model — NOT the Cursor tutor credentials
 # export OPENAI_BASE_URL=http://127.0.0.1:11434/v1
@@ -113,7 +113,7 @@ uv run python labs/run.py --session s01 --replay
 # uv run python labs/run.py --session s01 --live
 ```
 
-Default `--impl student` loads `trivia_host.*`. `--impl reference` is CI.
+Default `--impl student` loads `cafe_host.*`. `--impl reference` is CI.
 
 ## Predict-first
 
@@ -127,6 +127,6 @@ Do: walk `cafe/loop.py` `run_shift` next to the notebook loop; explain why
 `_assistant_message` exists; point at `check_pairing`; if the learner continues
 to the lab, explain why its replay needs canonicalize.
 
-Don't: replace `cafe/loop.py` or `trivia_host/loop.py` with a “simpler” version;
+Don't: replace `cafe/loop.py` or `cafe_host/loop.py` with a “simpler” version;
 skip pairing;
 tell them to put keys in `.env` inside the course tree; open the spotter.
