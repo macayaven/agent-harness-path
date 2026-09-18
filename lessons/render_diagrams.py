@@ -70,9 +70,8 @@ def main():
                     key=f'public/{asset}'
                     generated[(public_out,f'{asset}.svg')]=data
                     receipt['diagrams'][key]={'inputs':inputs(source),'svg_sha256':sha(data)}
-        nb_src=HERE.parent/'notebooks/diagrams'
         for asset in sorted(NOTEBOOK_ALTERNATIVES):
-            source=(nb_src/f'{asset}.mmd').read_text().strip()
+            source=(public_out/f'{asset}.mmd').read_text().strip()
             data=render(source,asset,NOTEBOOK_ALTERNATIVES[asset][0])
             generated[(public_out,f'{asset}.svg')]=data
             receipt['diagrams'][asset]={'inputs':inputs(source),'svg_sha256':sha(data)}

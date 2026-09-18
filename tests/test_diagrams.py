@@ -16,7 +16,7 @@ FIGURE = re.compile(r"\]\(public/diagrams/([^)]+\.svg)\)")
 
 
 def notebook_sources():
-    return sorted((ROOT / "notebooks" / "diagrams").glob("*.mmd"))
+    return sorted(PUBLIC.glob("*.mmd"))
 
 
 def receipt():

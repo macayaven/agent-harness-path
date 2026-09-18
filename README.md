@@ -136,7 +136,7 @@ See [lessons/README.md](lessons/README.md).
 | `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
 | `docs/COMPANION.md` | Local OpenAI-compatible tutor wiring |
 | `study/` | Optional study, pilot and transfer protocols |
-| `AGENTS.md` / `COURSE-MAP.md` / `CONTRIBUTING.md` | Contributor map |
+| `AGENTS.md` / `CONTRIBUTING.md` | Contributor map |
 
 ## The toy-domain rule
 
@@ -169,11 +169,9 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
 
-The [documentation map](docs/README.md) separates learner, contributor, pilot and
-release material. The [release runbook](docs/RELEASING.md) records publication
-gates. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
-and [pilot receipt](docs/verification/student-pilot-2026-09-13.md) remain
-historical evidence about named artifacts.
+The [documentation map](docs/README.md) separates learner, contributor, and pilot
+material. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+remains historical evidence about named artifacts.
 
 ## License
 

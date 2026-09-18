@@ -2,7 +2,7 @@
 
 Git LFS under lessons/videos/ is the maintainer archive. Generated HTML points
 video hrefs at the GCS replica so ▶ works from a small clone without fetching
-mp4s. Keep scripts/publish_videos.sh in sync with VIDEO_CDN_BASE.
+mp4s. Publishing to the replica is a maintainer step outside this repo.
 """
 
 VIDEO_CDN_BASE = (

@@ -61,9 +61,9 @@ ALTERNATIVES = {
     ),
 }
 STATIC_LESSONS = frozenset(ALTERNATIVES)
-# Notebook-only diagrams: sources are notebooks/diagrams/<asset>.mmd, rendered
-# by the same pinned stack into notebooks/public/diagrams/<asset>.svg. Notebook
-# cells embed them as markdown figures (`![...](public/diagrams/<asset>.svg)`):
+# Notebook-only diagrams: sources are notebooks/public/diagrams/<asset>.mmd,
+# next to their renders. Notebook cells embed them as markdown figures
+# (`![...](public/diagrams/<asset>.svg)`):
 # marimo serves notebook-adjacent files only from a public/ directory, so this
 # one reference renders both statically (resolved against the notebook file)
 # and at runtime (served by the kernel). No mermaid runs at view time.

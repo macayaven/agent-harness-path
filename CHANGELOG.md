@@ -4,10 +4,15 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- Repo hygiene: remove `COURSE-MAP.md` and `WHY-THIS-DESIGN.md` (superseded by
+  `AGENTS.md` + `docs/README.md`); remove `docs/plans/`, `docs/verification/`,
+  and the release tooling (`scripts/`, `docs/RELEASING.md`, `docs/releases/`) —
+  build-log history now lives outside this repo, unreferenced;
+  `study/PROGRESS.md` ignored; `.vscode/` ships the md-preview default.
 - Notebooks embed committed SVGs as markdown figures from
   `notebooks/public/diagrams/` (served by marimo at runtime, resolved
   statically against the notebook file); no `mo.mermaid`, no `cafe.diagrams`.
-  The five notebook-only diagrams live in `notebooks/diagrams/*.mmd` and render
+  The five notebook-only diagrams live in `notebooks/public/diagrams/*.mmd` and render
   through the same pinned pipeline and receipt.
 - `get_client()` is offline by default: unset `COURSE_MODE` returns the
   deterministic stub on every platform; `COURSE_MODE=live` opts into the
@@ -29,7 +34,7 @@ All notable changes to The Agent Harness Path are documented here.
   with `cafe/model.py`; replay/record behavior and every error string are
   unchanged (`--replay` output byte-identical).
 - Video previews still show the previous toy domain and are labelled as lagging;
-  the re-record procedure is `docs/RELEASING.md` §4.
+  the re-record procedure is a maintainer step outside this repo.
 
 ## 0.3.0 — 2026-09-16
 

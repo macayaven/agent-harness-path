@@ -99,10 +99,11 @@ tree.
 - marimo hoists a pure single-function cell to `@app.function` and strips setup
   globals from cell signatures. Attempt/solution are therefore top-level
   `attempt_<topic>` / `solution_<topic>` units, never cells.
-- Notebook diagrams are committed SVGs inlined with `mo.Html` via
-  `cafe.diagrams` — never `mo.mermaid`, whose island the Cursor extension does
-  not render. New notebook-only diagrams go in `notebooks/diagrams/*.mmd` and
-  render through the pinned pipeline like lesson diagrams.
+- Notebook diagrams are committed SVGs embedded as markdown figures from
+  `notebooks/public/diagrams/` — never `mo.mermaid`, whose island the Cursor
+  extension does not render. New notebook-only diagrams go in
+  `notebooks/public/diagrams/*.mmd`, next to their renders, and render through
+  the pinned pipeline like lesson diagrams.
 - The hard path uses the same surface: `labs/run.py` stays the CI/terminal path
   and `labs/app.py` renders it.
 
@@ -140,7 +141,7 @@ notebooks/sNN_*           stdlib-only toys, committed without outputs
 labs/sNN_*.md             hard-path protocols; labs/run.py + cassettes + trivia_host/
 bridges/sNN.md            Cursor companion rungs (distinct artifact, not lesson text)
 tests/                    content + build contracts, fixtures
-docs/, study/, scripts/   docs map, learner records, publish_videos.sh
+docs/, study/   docs map, learner records
 ```
 
 Filenames `SNN` / `sNN` in `lessons/`, `labs/`, and `bridges/` are **different
@@ -162,7 +163,7 @@ uv run python labs/run.py --all --replay      # never --live
 Notebooks must execute top-to-bottom on 3.11 and 3.12 before you commit them.
 If you rename a session slug, update all of: `lessons/src`, `notebooks`, `labs/*.md`,
 `bridges/*.md`, `lessons/videos/SNN-slug.mp4`, the `DIAGRAMS` map in
-`tests/test_lesson_build.py`, `COURSE-MAP.md`, `docs/`, and any GCS video path.
+`tests/test_lesson_build.py`, `docs/`, and any GCS video path.
 
 ## Coding style and naming
 
@@ -205,6 +206,6 @@ vulnerabilities per `SECURITY.md`.
    before editing; keep the concept and its evidence contract intact.
 3. Edit sources, never generated HTML; regenerate and re-verify.
 4. Preserve the arc: add the incoming recap and outgoing bridge when you touch a
-   session, and update `COURSE-MAP.md` in the same change.
+   session, and keep the lesson's own recap and bridge truthful in the same change.
 5. Report what you changed, which commands you ran, and any invariant you had to
    reinterpret — before claiming the change is done.

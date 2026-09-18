@@ -13,7 +13,7 @@ The following are licensed under the Apache License 2.0
   `lessons/template.html`, `lessons/diagrams/receipt.json`
 - `pyproject.toml`, `uv.lock`
 - `.github/` (CI, issue and PR templates)
-- `scripts/`, `tests/`, `study/**/*.py` (offline transfer starter)
+- `tests/`, `study/**/*.py` (offline transfer starter)
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -30,8 +30,8 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `labs/**/*.md` (hard-path protocols and lab docs)
 - `bridges/` (Cursor companion rungs)
 - `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
-- `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `review/`, `docs/**/*.md`, `docs/**/*.json`
+- `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `review/`,
+  `docs/**/*.md`, `docs/**/*.json`
 
 SPDX-License-Identifier: CC-BY-4.0
 

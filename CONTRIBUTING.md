@@ -54,7 +54,7 @@ uv sync
    uv run python labs/run.py --all --replay
    ```
 
-   Re-publish videos after adding or replacing an mp4: `scripts/publish_videos.sh`.
+   Adding or replacing an mp4 needs a maintainer re-publish of the video CDN.
 5. Execute any notebook you touched (and its neighbours if you changed a shared
    claim) headless, then check canonical form:
 
@@ -105,10 +105,10 @@ edits as above.
 
 Every lesson diagram is a committed SVG, so offline clone-and-read and ordinary
 HTML builds need no browser or Node. S08 and S14 each contain two diagrams.
-Notebook diagrams are committed SVGs too: shared sessions inline the lesson
-asset, and the five notebook-only diagrams render from `notebooks/diagrams/`
-`.mmd` sources in the same command. Notebook cells inline bytes via
-`cafe.diagrams.inline` — never `mo.mermaid`, whose frontend island does not
+Notebook diagrams are committed SVGs too: shared sessions embed the lesson
+asset, and the five notebook-only diagrams render from `.mmd` sources next to
+their SVGs in `notebooks/public/diagrams/`, in the same command. Notebook cells
+embed markdown figures — never `mo.mermaid`, whose frontend island does not
 render in the Cursor extension. To change any Mermaid source, diagram
 alternative, renderer, options, vendored Mermaid asset or Python lock:
 
@@ -131,12 +131,11 @@ portable source/asset freshness checks, not a false cross-host byte equivalence
 claim. Inspect regenerated diagrams visually and retain their meaningful text
 alternatives. Generated HTML stays script-free; do not add in-browser Mermaid.
 
-## Documentation and releases
+## Documentation
 
 [docs/README.md](docs/README.md) maps the public documentation and names its
 authoritative sources. Keep setup commands in this file and link to them instead
-of duplicating variants. Use [docs/RELEASING.md](docs/RELEASING.md) for the course
-release process.
+of duplicating variants.
 
 Documentation-only changes still require the unit suite, clean lesson rebuild,
 relative-link check and SOTA source check. Execute notebooks or replay labs when
