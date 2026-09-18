@@ -20,8 +20,8 @@ material, local filesystem paths or a learner's full work product.
 
 ## Setup
 
-Python 3.11+, `uv`, Git. Preview videos stream from the public bucket; Git LFS
-only if you are replacing an mp4.
+Python 3.11+, `uv`, Git. The course overview streams from the public bucket; Git LFS
+only if you are replacing that mp4.
 
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
@@ -31,37 +31,38 @@ uv sync
 
 ## Edit, then verify
 
-1. Edit sources in `lessons/src/*.md`, `notebooks/*.py`, or `labs/`
-   (protocols and Python). Never hand-edit generated `lessons/*.html`. Learners read the generated HTML from a clone
-   (`lessons/index.html`). GitHub's file view of `lessons/src/` is not a
-   supported reader — relative `videos/` paths are rewritten to the public
+1. Edit sources in `sessions/*/lesson.md`, `sessions/*/toy.py`, or `labs/`
+   (protocols and Python). Never hand-edit generated `sessions/*/lesson.html`.
+   Learners read the generated HTML from a clone
+   (`sessions/index.html`). GitHub's file view of `sessions/` is not a
+   supported reader — the overview's relative mp4 path is rewritten to the public
    bucket at build time.
-   Edits to `lessons/src/study-plan.md` must preserve its authoritative external
-   links and workload honesty, then rebuild `lessons/study-plan.html`.
+   Edits to `sessions/study-plan.md` must preserve its authoritative external
+   links and workload honesty, then rebuild `sessions/study-plan.html`.
 2. Run the content contracts:
 
    ```bash
    COURSE_MODE=stub uv run python -m unittest discover -s tests
    ```
 
-3. Rebuild: `uv run python lessons/build.py`
-4. Check links: `uv run python lessons/check_links.py`
+3. Rebuild: `uv run python tools/build.py`
+4. Check links: `uv run python tools/check_links.py`
    After a lesson or SOTA change, also:
 
    ```bash
-   uv run python lessons/check_links.py --http
-   uv run python lessons/check_sota_urls.py
+   uv run python tools/check_links.py --http
+   uv run python tools/check_sota_urls.py
    uv run python labs/run.py --all --replay
    ```
 
-   Re-publish videos after adding or replacing an mp4: `scripts/publish_videos.sh`.
+   Replacing the overview mp4 needs a maintainer re-publish of the video CDN.
 5. Execute any notebook you touched (and its neighbours if you changed a shared
    claim) headless, then check canonical form:
 
    ```bash
-   COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python notebooks/sNN_….py
-   uv run marimo check --strict --ignore MF004 notebooks labs/app.py
-   uv run marimo check --fix --ignore MF004 notebooks labs/app.py && git diff --exit-code -- notebooks labs/app.py
+   COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python sessions/sNN-slug/toy.py
+   uv run marimo check --strict --ignore MF004 sessions/*/toy.py labs/app.py
+   uv run marimo check --fix --ignore MF004 sessions/*/toy.py labs/app.py && git diff --exit-code -- sessions labs/app.py
    ```
 
    Commit **only** the form `marimo check --fix --ignore MF004` produces; the
@@ -85,7 +86,7 @@ Use the PR template. One concern per PR when you can (SOTA refresh ≠ notebook
 refactor). Maintainers will reject:
 
 - toys that are paste-ready production harnesses
-- network calls, API keys, or non-stdlib imports in `notebooks/`
+- network calls, API keys, or non-stdlib imports in `sessions/*/toy.py`
 - `--live` in CI, or secrets committed under `labs/`
 - SOTA rows without a source, or status tags other than the five in `AGENTS.md`
 - cheerleading or padded prose that drops the existing density
@@ -105,19 +106,19 @@ edits as above.
 
 Every lesson diagram is a committed SVG, so offline clone-and-read and ordinary
 HTML builds need no browser or Node. S08 and S14 each contain two diagrams.
-Notebook diagrams are committed SVGs too: shared sessions inline the lesson
-asset, and the five notebook-only diagrams render from `notebooks/diagrams/`
-`.mmd` sources in the same command. Notebook cells inline bytes via
-`cafe.diagrams.inline` — never `mo.mermaid`, whose frontend island does not
+Notebook diagrams are committed SVGs too: shared sessions embed the lesson
+asset, and the five notebook-only diagrams render from `.mmd` sources next to
+their SVGs in `sessions/sNN-slug/public/diagrams/`, in the same command. Notebook cells
+embed markdown figures — never `mo.mermaid`, whose frontend island does not
 render in the Cursor extension. To change any Mermaid source, diagram
 alternative, renderer, options, vendored Mermaid asset or Python lock:
 
 ```bash
 uv sync --frozen --group diagrams
 uv run --group diagrams playwright install chromium
-uv run --group diagrams python lessons/render_diagrams.py
-uv run --group diagrams python lessons/render_diagrams.py --check
-uv run python lessons/build.py
+uv run --group diagrams python tools/render_diagrams.py
+uv run --group diagrams python tools/render_diagrams.py --check
+uv run python tools/build.py
 ```
 
 The course owns the pinned `playwright==1.58.0` optional dependency and uses its
@@ -131,12 +132,11 @@ portable source/asset freshness checks, not a false cross-host byte equivalence
 claim. Inspect regenerated diagrams visually and retain their meaningful text
 alternatives. Generated HTML stays script-free; do not add in-browser Mermaid.
 
-## Documentation and releases
+## Documentation
 
 [docs/README.md](docs/README.md) maps the public documentation and names its
 authoritative sources. Keep setup commands in this file and link to them instead
-of duplicating variants. Use [docs/RELEASING.md](docs/RELEASING.md) for the course
-release process.
+of duplicating variants.
 
 Documentation-only changes still require the unit suite, clean lesson rebuild,
 relative-link check and SOTA source check. Execute notebooks or replay labs when

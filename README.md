@@ -9,16 +9,18 @@ café-counter agent in `cafe/`: loop → evals → context → schema → consen
 detection → repair → tracing → reports → taxonomy → routing → judge. Every
 session starts from the artifact and the number the last one produced.
 
-Every experiment runs against **your** OpenAI-compatible endpoint — a local model
-costs nothing. The mocks are gone: a prediction is only worth writing down when
+Notebooks run offline on a deterministic stub unless you point them at
+**your** OpenAI-compatible endpoint — a local model costs nothing. Against a
+live model the mocks are gone: a prediction is only worth writing down when
 the thing you are predicting can surprise you.
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor                     # one live call; proves your endpoint
-uv run marimo edit notebooks/s01_agent_loop_toy.py
+uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
 `CAFE_*` is read before `OPENAI_*`, so the course never collides with production
@@ -31,13 +33,13 @@ output is exactly what S02, S07 and S10 measure and repair. S04
 model with real tool-calling support.
 
 **Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
-then start `lessons/S01-agent-loop.html` with `@bridges/s01.md` in chat.
+then start `sessions/s01-agent-loop/lesson.html` with
+`@sessions/s01-agent-loop/companion.md` in chat.
 
-**Start here (HTML):** [`lessons/index.html`](lessons/index.html). Click ▶ to
-watch an optional preview (streams from a public bucket). A 9-minute
+**Start here (HTML):** [`sessions/index.html`](sessions/index.html). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
-covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
-overviews; the lesson + notebook are canonical).
+covers the arc first (it may lag the lessons; it is a Google Gemini Notebook
+overview; the lesson + notebook are canonical).
 
 S01–S12 are the core path and they **do** accumulate: the capstone is the `cafe/`
 package you finish with. S13 and S14 are optional unaided protocols — rebuild
@@ -49,7 +51,7 @@ package you finish with. S13 and S14 are optional unaided protocols — rebuild
   S13/S14 and `labs/`. If you are new to harnesses, complete S01–S12 before using
   the overlay.
 - **Calibrated six-week post-core overlay:** use the
-  [study-plan overlay](lessons/study-plan.html) to schedule authoritative external
+  [study-plan overlay](sessions/study-plan.html) to schedule authoritative external
   work from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional
   Anthropic API course, with explicit evidence to bank. The overlay is not part of
   the 14-session core and contains no copied external-course materials.
@@ -70,9 +72,9 @@ product.
    agent in `cafe/`, against your live endpoint, with **predict-first**
    experiments and attempt-before-solution exercises.
 3. **Self-check** — foldable quiz questions at the end of the lesson.
-4. **(Optional) hard path** — after the notebook, `labs/sNN_*.md` against
-   cassettes (`--replay`) or your OpenAI-compatible endpoint (`--live`).
-   `@bridges/sNN.md` is what the Cursor companion should read first.
+4. **(Optional) hard path** — after the notebook, `sessions/sNN-slug/lab.md`
+   against cassettes (`--replay`) or your OpenAI-compatible endpoint (`--live`).
+   `sessions/sNN-slug/companion.md` is what the Cursor companion should read first.
 5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a
    ship/pilot protocol. Easy path: a system you own. Hard path:
    `labs/trivia_host/`. The assistant must not do these for you.
@@ -94,11 +96,12 @@ cd agent-harness-path
 uv sync --frozen   # creates .venv/ (Python 3.11+, pinned by uv.lock)
 # Open this folder in Cursor (companion rule in .cursor/rules/).
 # Point the course at your OpenAI-compatible endpoint, prove it, open S01:
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor
-uv run marimo edit notebooks/s01_agent_loop_toy.py
+uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
 Optional hard path (complete host already in `labs/trivia_host/`):
@@ -118,25 +121,26 @@ Cursor's; lab `--live` uses separate shell `OPENAI_*`. See
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
 not need Git LFS. Course logic is Python standard library only — the venv
 supplies just the tooling (`marimo` to run the notebooks, `markdown` to render
-the lessons). Open `lessons/index.html` locally (diagrams work from `file://`).
+the lessons). Open `sessions/index.html` locally (diagrams work from `file://`).
 
 ## Repository layout
 
-There is **one** lesson book. `lessons/*.html` is what you read;
-`lessons/src/*.md` is what authors edit (`uv run python lessons/build.py`).
-See [lessons/README.md](lessons/README.md).
+There is **one** lesson book, one directory per session. `sessions/sNN-slug/`
+holds everything that session needs: `lesson.md` (authoring source) builds to
+`lesson.html` (what you read) in place (`uv run python tools/build.py`).
+See [sessions/README.md](sessions/README.md).
 
 | Path | Role |
 | --- | --- |
-| `lessons/SNN-*.html` | Learner lesson (plus `videos/`) |
-| `lessons/src/SNN-*.md` | Authoring source — not a second course |
-| `notebooks/sNN_*_toy.py` | Marimo toy driving `cafe/` (S01–S12) |
-| `labs/sNN_*.md` | Optional hard-path protocol, not lesson text |
-| `bridges/sNN.md` | Cursor companion rung |
+| `sessions/sNN-slug/` | One session: lesson, toy, lab, companion, figures |
+| `sessions/sNN-slug/lesson.md` → `lesson.html` | Authoring source → learner lesson |
+| `sessions/sNN-slug/toy.py` | Marimo toy driving `cafe/` (S01–S12) |
+| `sessions/sNN-slug/lab.md` | Optional hard-path protocol, not lesson text |
+| `sessions/sNN-slug/companion.md` | Cursor companion rung |
 | `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
 | `docs/COMPANION.md` | Local OpenAI-compatible tutor wiring |
 | `study/` | Optional study, pilot and transfer protocols |
-| `AGENTS.md` / `COURSE-MAP.md` / `CONTRIBUTING.md` | Contributor map |
+| `AGENTS.md` / `CONTRIBUTING.md` | Contributor map |
 
 ## The toy-domain rule
 
@@ -169,20 +173,18 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
 
-The [documentation map](docs/README.md) separates learner, contributor, pilot and
-release material. The [release runbook](docs/RELEASING.md) records publication
-gates. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
-and [pilot receipt](docs/verification/student-pilot-2026-09-13.md) remain
-historical evidence about named artifacts.
+The [documentation map](docs/README.md) separates learner, contributor, and pilot
+material. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
+remains historical evidence about named artifacts.
 
 ## License
 
 Split license, 2026 Carlos Crespo Macaya:
 
-- **Apache-2.0** — notebooks, labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
-- **CC BY 4.0** — lessons, videos, documentation, lab protocols (`labs/**/*.md`), and `bridges/` (`LICENSES/CC-BY-4.0.txt`)
+- **Apache-2.0** — session toys (`sessions/*/toy.py`), labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
+- **CC BY 4.0** — lessons, the course overview video, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
 
-Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated with
-Google Gemini Notebook; Google's marks in those files are not part of the CC BY
+Vendored Mermaid.js remains MIT; see `NOTICE`. The course overview was generated with
+Google Gemini Notebook; Google's marks in that file are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.

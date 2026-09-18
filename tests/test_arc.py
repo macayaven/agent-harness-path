@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "lessons" / "src"
+SESSIONS = ROOT / "sessions"
 
 SLUGS = [
     "S01-agent-loop",
@@ -63,8 +63,12 @@ STALE_DOMAIN = (
 )
 
 
+def session_dir(slug: str) -> str:
+    return "s" + slug[1:]
+
+
 def lesson_path(slug: str) -> Path:
-    return SRC / f"{slug}.md"
+    return SESSIONS / session_dir(slug) / "lesson.md"
 
 
 def rebuilt_slugs() -> list[str]:
@@ -137,23 +141,23 @@ class Chain(unittest.TestCase):
             text = lesson_path(slug).read_text(encoding="utf-8")
             unlocks = text.split("## What this unlocks", 1)[1]
             with self.subTest(lesson=slug):
-                self.assertIn(nxt, unlocks, f"{slug} must hand off to {nxt}")
+                self.assertIn(
+                    f"{session_dir(nxt)}/lesson.html", unlocks,
+                    f"{slug} must hand off to {nxt}")
 
     def test_the_last_core_session_points_at_the_optional_audit(self):
         if "S12-judge-calibration" not in rebuilt_slugs():
             self.skipTest("S12 not rebuilt yet")
         text = lesson_path("S12-judge-calibration").read_text(encoding="utf-8")
-        self.assertIn("S13-rebuild-from-memory", text.split("## What this unlocks", 1)[1])
+        self.assertIn(
+            "s13-rebuild-from-memory/lesson.html",
+            text.split("## What this unlocks", 1)[1])
 
 
 class Domain(unittest.TestCase):
     def test_no_pre_cafe_domain_nouns_survive(self):
         for slug in rebuilt_slugs():
             text = lesson_path(slug).read_text(encoding="utf-8").lower()
-            # the Video line legitimately explains that the recording predates the rebuild
-            text = "\n".join(
-                line for line in text.splitlines() if not line.startswith("**video:**")
-            )
             for noun in STALE_DOMAIN:
                 with self.subTest(lesson=slug, noun=noun):
                     self.assertNotIn(noun, text)
@@ -162,7 +166,7 @@ class Domain(unittest.TestCase):
         for slug in rebuilt_slugs():
             text = lesson_path(slug).read_text(encoding="utf-8")
             with self.subTest(lesson=slug):
-                self.assertRegex(text, r"notebooks/s\d{2}_[a-z0-9_]+\.py")
+                self.assertIn("](toy.py)", text)
                 self.assertNotIn(".ipynb", text)
 
 

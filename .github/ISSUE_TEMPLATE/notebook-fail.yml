@@ -7,14 +7,14 @@ body:
     id: file
     attributes:
       label: Notebook
-      placeholder: notebooks/s08_observability_replay_toy.py
+      placeholder: sessions/s08-observability-replay/toy.py
     validations:
       required: true
   - type: textarea
     id: error
     attributes:
       label: Command and error
-      description: Prefer the headless run, `COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python notebooks/FILE.py`, or `uv run marimo edit notebooks/FILE.py`.
+      description: Prefer the headless run, `COURSE_MODE=stub PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python sessions/DIR/toy.py`, or `uv run marimo edit sessions/DIR/toy.py`.
     validations:
       required: true
   - type: dropdown

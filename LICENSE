@@ -7,13 +7,13 @@ Copyright 2026 Carlos Crespo Macaya
 The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
-- `notebooks/` (toy notebooks)
+- `sessions/*/toy.py` (toy notebooks)
 - `labs/**/*.py` (optional hard-path client, runner, trivia host, evals, reference)
-- `lessons/*.py` (build, validation and static diagram tooling),
-  `lessons/template.html`, `lessons/diagrams/receipt.json`
+- `tools/*.py` (build, validation and static diagram tooling),
+  `tools/template.html`, `tools/receipt.json`
 - `pyproject.toml`, `uv.lock`
 - `.github/` (CI, issue and PR templates)
-- `scripts/`, `tests/`, `study/**/*.py` (offline transfer starter)
+- `tests/`, `study/**/*.py` (offline transfer starter)
 
 SPDX-License-Identifier: Apache-2.0
 
@@ -22,16 +22,19 @@ SPDX-License-Identifier: Apache-2.0
 The following are licensed under Creative Commons Attribution 4.0 International
 (`LICENSES/CC-BY-4.0.txt`):
 
-- `lessons/src/` (lesson sources)
-- `lessons/README.md`
-- `lessons/*.html` (generated lessons), `lessons/diagrams/*.svg` (rendered lesson diagrams)
-- `lessons/videos/` (Video Overviews generated with Google Gemini Notebook,
-  formerly NotebookLM — see Third-party below)
-- `labs/**/*.md` (hard-path protocols and lab docs)
-- `bridges/` (Cursor companion rungs)
+- `sessions/*/lesson.md` (lesson sources), `sessions/index.md`,
+  `sessions/study-plan.md`
+- `sessions/README.md`
+- `sessions/*/lesson.html`, `sessions/index.html`, `sessions/study-plan.html`
+  (generated lessons), `sessions/*/public/diagrams/*.svg` (rendered diagrams)
+- `sessions/*/video.mp4`, `sessions/S00-course-overview.mp4` (Video Overviews
+  generated with Google Gemini Notebook, formerly NotebookLM — see
+  Third-party below)
+- `sessions/*/lab.md`, `labs/**/*.md` (hard-path protocols and lab docs)
 - `study/**/*.md`, `study/**/*.json`, `study/*.csv` (study protocols, fixtures and observation templates)
-- `README.md`, `AGENTS.md`, `COURSE-MAP.md`, `WHY-THIS-DESIGN.md`, `CONTRIBUTING.md`,
-  `CHANGELOG.md`, `review/`, `docs/**/*.md`, `docs/**/*.json`
+- `sessions/*/companion.md`, `bridges/README.md` (Cursor companion rungs and wire table)
+- `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `review/`,
+  `docs/**/*.md`, `docs/**/*.json`
 
 SPDX-License-Identifier: CC-BY-4.0
 
@@ -42,14 +45,14 @@ S14's public-artifact step — are your own work.
 ## Third-party
 
 Vendored Mermaid.js is MIT-licensed by its authors. See `NOTICE` and
-`lessons/vendor/LICENSE-mermaid.md`.
+`tools/vendor/LICENSE-mermaid.md`.
 
 **Cited sources.** Papers, posts, specs, and docs linked from the lessons remain
 the property of their authors. A citation is attribution, not a license grant.
 Trademarks (OpenAI, Anthropic, OWASP, Google, and others) remain their owners'.
 Short quotations in the lessons are used for commentary and teaching.
 
-**Video Overviews.** The files in `lessons/videos/` were generated on 14 August
+**Video Overviews.** The per-session `video.mp4` files were generated on 14 August
 2026 with Google Gemini Notebook (then still commonly called NotebookLM; Google
 rebranded the product in July 2026). The mp4 `encoder` tag is `Google`; the
 closing mark is Google's Gemini spark. Per Google's terms, Google does not claim

@@ -11,8 +11,9 @@ editing the course and not a coworker who implements `trivia_host/` for them.
 ## Always do
 
 - Stay the same assistant on lessons, notebooks, labs, and questions.
-- Before answering lab/notebook how-to, read the matching `bridges/sNN.md`
-  and the current lesson or protocol the learner has open.
+- Before answering lab/notebook how-to, read the matching
+  `sessions/sNN-slug/companion.md` and the current lesson or protocol the
+  learner has open.
 - Ground in those files. Quote paths and function names from them.
 - If the learner is on predict-first, discuss the *idea* and wait. Do not fill
   empty prediction cells, comments, or `expected_*` fields.
@@ -24,7 +25,7 @@ editing the course and not a coworker who implements `trivia_host/` for them.
 - Open `labs/reference/` (spotter).
 - Write `labs/trivia_host/` implementations, eval checkers, or cassette files.
 - Run `labs/run.py` and then "fix until green" as the default.
-- Spoil self-check answers in `lessons/*.html`.
+- Spoil self-check answers in `sessions/*/lesson.html`.
 - Put API keys in files, chats as copy-paste blocks, or git.
 - Invent a second JSON wire contract. The public envelopes live in
   `labs/README.md` only.

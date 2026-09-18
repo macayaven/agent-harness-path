@@ -1,9 +1,9 @@
 # AGENTS.md — Repository Guidelines: The Agent Harness Path
 
 A self-contained course on building, evaluating, and governing LLM agents:
-14 HTML lessons in `lessons/`, twelve stdlib-only toy notebooks in `notebooks/`,
-an optional hard path in `labs/`. There is **no product code and no product test
-suite**. Entry point: `lessons/index.html`.
+14 sessions in `sessions/` (lesson, toy, lab, companion, figures per
+directory), an optional hard path in `labs/`. There is **no product code and no
+product test suite**. Entry point: `sessions/index.html`.
 
 This file governs two audiences. Read the mode that matches what you were asked
 to do, and say which mode you are in before editing anything.
@@ -25,7 +25,7 @@ These survive every rewrite, restyle, and re-theme. Breaking one is a defect.
    not ship: the neighbourhood café. Tools stay in-domain (`price_check`,
    `check_allergens`, `propose_order`, `fire_ticket`, `close_check`). If an example
    drifts close enough to be a drop-in harness, rewrite it *further away*. A
-   paste-ready generic harness in `notebooks/` or `labs/` is a defect. All domain
+   paste-ready generic harness in `sessions/*/toy.py` or `labs/` is a defect. All domain
    strings live in `cafe/domain.py` so re-theming stays a one-module change.
 2. **CI is zero network, zero keys, zero cost — notebooks are offline by default.**
    `COURSE_MODE=stub` plus the socket guard in `tests/no_network_site/` makes this
@@ -87,7 +87,7 @@ shift. Keep the *concepts* unchanged; keep tool names in-domain.
 
 ### One interface
 
-Jupyter is retired. Notebooks are **marimo** files (`notebooks/sNN_*_toy.py`):
+Jupyter is retired. Toys are **marimo** files (`sessions/sNN-slug/toy.py`):
 reactive, diffable, and executable as plain scripts. No `.ipynb` may re-enter the
 tree.
 
@@ -99,10 +99,11 @@ tree.
 - marimo hoists a pure single-function cell to `@app.function` and strips setup
   globals from cell signatures. Attempt/solution are therefore top-level
   `attempt_<topic>` / `solution_<topic>` units, never cells.
-- Notebook diagrams are committed SVGs inlined with `mo.Html` via
-  `cafe.diagrams` — never `mo.mermaid`, whose island the Cursor extension does
-  not render. New notebook-only diagrams go in `notebooks/diagrams/*.mmd` and
-  render through the pinned pipeline like lesson diagrams.
+- Session figures are committed SVGs in the session's `public/diagrams/`,
+  embedded as markdown figures — never `mo.mermaid`, whose island the Cursor
+  extension does not render. New notebook-only diagrams go in
+  `sessions/sNN-slug/public/diagrams/*.mmd`, next to their renders, and render
+  through the pinned pipeline like lesson diagrams.
 - The hard path uses the same surface: `labs/run.py` stays the CI/terminal path
   and `labs/app.py` renders it.
 
@@ -133,41 +134,40 @@ first" as terms of art — reuse, never paraphrase. Prefer concrete payoffs
 ## Repository layout
 
 ```
-lessons/src/SNN-slug.md   lesson sources (editable)   → build.py → lessons/SNN-slug.html
-lessons/build.py          md → html, injects prev/index/next nav
-lessons/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
-notebooks/sNN_*           stdlib-only toys, committed without outputs
-labs/sNN_*.md             hard-path protocols; labs/run.py + cassettes + trivia_host/
-bridges/sNN.md            Cursor companion rungs (distinct artifact, not lesson text)
+sessions/sNN-slug/        one session: lesson.md → lesson.html (in place),
+                          toy.py, lab.md, companion.md, public/diagrams/
+tools/build.py            md → html, injects prev/index/next nav
+tools/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
+labs/                     hard path: run.py + cassettes + trivia_host/ (protocols live in sessions/)
+bridges/README.md         companion wire table (rungs live in sessions/)
 tests/                    content + build contracts, fixtures
-docs/, study/, scripts/   docs map, learner records, publish_videos.sh
+docs/, study/   docs map, learner records
 ```
 
-Filenames `SNN` / `sNN` in `lessons/`, `labs/`, and `bridges/` are **different
-artifacts**, not duplicated lesson text.
+Role-named files inside one session directory are **different artifacts**,
+not duplicated lesson text.
 
 ## Build, test, development commands
 
 ```bash
 uv sync --frozen                              # pinned toolchain
-uv run python lessons/build.py                # regenerate lessons/*.html
-uv run python lessons/render_diagrams.py      # after editing a Mermaid block, then rebuild
+uv run python tools/build.py                  # regenerate sessions/*/lesson.html
+uv run python tools/render_diagrams.py        # after editing a Mermaid block, then rebuild
 uv run python -m unittest discover -s tests -v
-uv run python lessons/check_links.py          # relative href/src; add --http for unique http refs
-uv run python lessons/check_sota_urls.py      # every SOTA row carries a source URL
+uv run python tools/check_links.py            # relative href/src; add --http for unique http refs
+uv run python tools/check_sota_urls.py        # every SOTA row carries a source URL
 uv run python -m unittest labs/test_contracts.py
 uv run python labs/run.py --all --replay      # never --live
 ```
 
-Notebooks must execute top-to-bottom on 3.11 and 3.12 before you commit them.
-If you rename a session slug, update all of: `lessons/src`, `notebooks`, `labs/*.md`,
-`bridges/*.md`, `lessons/videos/SNN-slug.mp4`, the `DIAGRAMS` map in
-`tests/test_lesson_build.py`, `COURSE-MAP.md`, `docs/`, and any GCS video path.
+Toys must execute top-to-bottom on 3.11 and 3.12 before you commit them.
+If you rename a session slug, update all of: its `sessions/sNN-slug/` directory,
+the `DIAGRAMS` map in `tests/test_lesson_build.py`, `docs/`, and the GCS overview path.
 
 ## Coding style and naming
 
-- Python: 4 spaces, stdlib only in course code, snake_case functions, `SNN-slug` /
-  `sNN_snake` filenames. Small, readable cells; comments explain *why*.
+- Python: 4 spaces, stdlib only in course code, snake_case functions, `sessions/sNN-slug/`
+  directories with role-named files. Small, readable cells; comments explain *why*.
 - Lessons: raw HTML on its own lines for `<details>` blocks; one diagram minimum
   per lesson; keep SOTA tables at Development | Status | Take.
 - Match existing density. Tight sentences; no headers beyond the session structure.
@@ -205,6 +205,6 @@ vulnerabilities per `SECURITY.md`.
    before editing; keep the concept and its evidence contract intact.
 3. Edit sources, never generated HTML; regenerate and re-verify.
 4. Preserve the arc: add the incoming recap and outgoing bridge when you touch a
-   session, and update `COURSE-MAP.md` in the same change.
+   session, and keep the lesson's own recap and bridge truthful in the same change.
 5. Report what you changed, which commands you ran, and any invariant you had to
    reinterpret — before claiming the change is done.

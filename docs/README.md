@@ -6,13 +6,10 @@ a clone in Cursor ([companion guide](COMPANION.md)).
 ## Start and contribute
 
 - [README](../README.md) — course scope and Cursor quickstart.
-- [Course map](../COURSE-MAP.md) — the S01–S14 curriculum contract.
 - [Contributor guide](../CONTRIBUTING.md) — environment, edit and validation commands.
 - [Course licenses](../LICENSE) — Apache-2.0 code and CC BY 4.0 educational content.
 - [Engineering and content rules](../AGENTS.md) — toy-domain, lesson, notebook,
   diagram and public-documentation conventions.
-- [Design rationale](../WHY-THIS-DESIGN.md) — deliberate difficulty and the fix
-  pattern.
 
 ## Optional study interfaces
 
@@ -21,17 +18,7 @@ a clone in Cursor ([companion guide](COMPANION.md)).
 - [First exploratory test](../study/FIRST-TEST.md) — reusable S01/S02 interaction
   and transfer protocol.
 
-## Release evidence
-
-- [Release runbook](RELEASING.md) — promotion gates, assets, migration and
-  rollback for the course repository.
-- [v0.2.0 notes](releases/v0.2.0.md) — previous cut (historical).
-- [Bounded student-pilot report](verification/student-pilot-2026-09-13.md) and
-  [JSON receipt](verification/student-pilot-2026-09-13.json) — exact local
-  artifacts and observed checks, with private paths and raw logs excluded.
-
-`CHANGELOG.md` is the complete reader-facing history. Versioned release notes
-summarize one release and link back to it; they do not replace the changelog.
+`CHANGELOG.md` is the complete reader-facing history.
 
 ## Ownership and privacy
 

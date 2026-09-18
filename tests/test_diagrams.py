@@ -1,4 +1,4 @@
-"""Notebook figures resolve to fresh committed SVGs under notebooks/public/."""
+"""Session figures resolve to fresh committed SVGs in per-session public/ dirs."""
 
 import json
 import re
@@ -7,39 +7,42 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "lessons"))
+sys.path.insert(0, str(ROOT / "tools"))
 
 import static_diagrams as sd  # noqa: E402
 
-PUBLIC = ROOT / "notebooks" / "public" / "diagrams"
+SESSIONS = ROOT / "sessions"
 FIGURE = re.compile(r"\]\(public/diagrams/([^)]+\.svg)\)")
 
 
 def notebook_sources():
-    return sorted((ROOT / "notebooks" / "diagrams").glob("*.mmd"))
+    out = []
+    for asset, session in sorted(sd.NOTEBOOK_SESSIONS.items()):
+        out.append(SESSIONS / session / "public" / "diagrams" / f"{asset}.mmd")
+    return out
 
 
 def receipt():
-    return json.loads(
-        (ROOT / "lessons" / "diagrams" / "receipt.json").read_text()
-    )["diagrams"]
+    return json.loads((ROOT / "tools" / "receipt.json").read_text())["diagrams"]
 
 
-class NotebookDiagramTests(unittest.TestCase):
-    def test_no_live_mermaid_in_notebooks(self):
-        """Cells embed committed SVGs; no frontend mermaid rendering is used."""
-        for nb in sorted((ROOT / "notebooks").glob("s*_toy.py")):
-            with self.subTest(notebook=nb.name):
-                self.assertNotIn("mo.mermaid", nb.read_text())
+class SessionDiagramTests(unittest.TestCase):
+    def test_no_live_mermaid_in_toys(self):
+        """Toys embed committed SVGs; no frontend mermaid rendering is used."""
+        toys = sorted(SESSIONS.glob("*/toy.py"))
+        self.assertEqual(len(toys), 12)
+        for toy in toys:
+            with self.subTest(toy=toy.parent.name):
+                self.assertNotIn("mo.mermaid", toy.read_text())
 
     def test_notebook_renders_fresh(self):
-        """Each .mmd source has a fresh receipt-pinned SVG under public/."""
+        """Each .mmd source has a fresh receipt-pinned SVG next to it."""
         entries = receipt()
         sources = notebook_sources()
         self.assertTrue(sources, "no notebook .mmd sources")
         for src in sources:
             with self.subTest(asset=src.stem):
-                svg = PUBLIC / f"{src.stem}.svg"
+                svg = src.with_suffix(".svg")
                 self.assertTrue(svg.is_file(), f"missing render for {src.name}")
                 entry = entries.get(src.stem, {})
                 self.assertEqual(
@@ -47,31 +50,31 @@ class NotebookDiagramTests(unittest.TestCase):
                 )
                 self.assertEqual(entry.get("svg_sha256"), sd.sha(svg.read_bytes()))
 
-    def test_lesson_copies_identical(self):
-        """public/ lesson copies are byte-identical to lessons/diagrams/."""
+    def test_lesson_renders_fresh(self):
+        """Each lesson mermaid block has a fresh receipt-pinned SVG."""
         entries = receipt()
-        self.assertTrue(sd.PUBLIC_LESSON_ASSETS, "no public lesson assets listed")
-        for asset in sorted(sd.PUBLIC_LESSON_ASSETS):
-            with self.subTest(asset=asset):
-                original = ROOT / "lessons" / "diagrams" / f"{asset}.svg"
-                copy = PUBLIC / f"{asset}.svg"
-                self.assertTrue(original.is_file(), f"missing {original}")
-                self.assertTrue(copy.is_file(), f"missing {copy}")
-                self.assertEqual(copy.read_bytes(), original.read_bytes())
-                entry = entries.get(f"public/{asset}", {})
-                self.assertEqual(
-                    entry.get("svg_sha256"), sd.sha(copy.read_bytes())
-                )
+        for slug in sorted(sd.ALTERNATIVES):
+            source = sd.lesson_source(slug).read_text()
+            blocks = re.findall(r"```mermaid\n(.*?)```", source, re.S)
+            expected = [sd.asset_name(slug, i) for i in range(len(blocks))]
+            self.assertEqual(len(blocks), len(sd.ALTERNATIVES[slug]), slug)
+            for asset in expected:
+                with self.subTest(asset=asset):
+                    svg = sd.diagram_path(slug, asset)
+                    self.assertTrue(svg.is_file(), f"missing {svg}")
+                    entry = entries.get(asset, {})
+                    self.assertEqual(
+                        entry.get("svg_sha256"), sd.sha(svg.read_bytes()))
 
-    def test_notebook_figure_references_resolve(self):
-        """Every markdown figure in every notebook resolves to a real SVG."""
-        notebooks = sorted((ROOT / "notebooks").glob("s*_toy.py"))
-        self.assertTrue(notebooks, "no notebooks found")
-        for nb in notebooks:
-            with self.subTest(notebook=nb.name):
-                refs = FIGURE.findall(nb.read_text())
-                self.assertTrue(refs, f"{nb.name} embeds no figure")
+    def test_session_figure_references_resolve(self):
+        """Every markdown figure in every toy resolves to a real SVG."""
+        toys = sorted(SESSIONS.glob("*/toy.py"))
+        self.assertTrue(toys, "no toys found")
+        for toy in toys:
+            with self.subTest(session=toy.parent.name):
+                refs = FIGURE.findall(toy.read_text())
+                self.assertTrue(refs, f"{toy.parent.name} embeds no figure")
                 for name in refs:
-                    svg = PUBLIC / name
+                    svg = toy.parent / "public" / "diagrams" / name
                     self.assertTrue(svg.is_file(), f"missing {svg}")
                     self.assertIn("<svg", svg.read_text(encoding="utf-8"))

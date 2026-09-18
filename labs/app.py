@@ -90,7 +90,7 @@ def lab_md_notes(mo):
     - The markdown report also lands in `labs/reports/last.md` (gitignored), as
       on the terminal. Replay never writes to `cassettes/`.
     - A red engine cell is the lesson, not a broken runner: read the reason, open
-      the protocol (`labs/sNN_*.md`), fix the host, re-run.
+      the protocol (`sessions/sNN-slug/lab.md`), fix the host, re-run.
     - `--live` is never the default and never runs in CI.
     """)
     return

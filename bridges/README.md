@@ -12,26 +12,26 @@ small and the lab feels too sudden.
 
 | Session | Lesson | Toy | Core module | Lab protocol | Bridge |
 | --- | --- | --- | --- | --- | --- |
-| S01 | `lessons/S01-agent-loop.html` | `notebooks/s01_agent_loop_toy.py` | `cafe/loop.py` | `labs/s01_loop.md` | [s01.md](s01.md) |
-| S02 | `lessons/S02-golden-evals.html` | `notebooks/s02_scripted_user_eval_toy.py` | `cafe/evals` | `labs/s02_evals.md` | [s02.md](s02.md) |
-| S03 | `lessons/S03-context-engineering.html` | `notebooks/s03_context_engineering_toy.py` | `cafe/context.py` | `labs/s03_context.md` | [s03.md](s03.md) |
-| S04 | `lessons/S04-structured-generation.html` | `notebooks/s04_structured_generation_toy.py` | `cafe/schema.py` | `labs/s04_schema.md` | [s04.md](s04.md) |
-| S05 | `lessons/S05-consent-gate.html` | `notebooks/s05_consent_gate_toy.py` | `cafe/consent.py` | `labs/s05_consent.md` | [s05.md](s05.md) |
-| S06 | `lessons/S06-layered-detection.html` | `notebooks/s06_layered_detection_toy.py` | `cafe/detect.py` | `labs/s06_policy.md` | [s06.md](s06.md) |
-| S07 | `lessons/S07-repair-loop.html` | `notebooks/s07_repair_loop_toy.py` | `cafe/repair.py` | `labs/s07_repair.md` | [s07.md](s07.md) |
-| S08 | `lessons/S08-observability-replay.html` | `notebooks/s08_observability_replay_toy.py` | `cafe/trace.py` | `labs/s08_replay.md` | [s08.md](s08.md) |
-| S09 | `lessons/S09-evidence-reports.html` | `notebooks/s09_evidence_report_toy.py` | `cafe/report.py` | `labs/s09_debrief.md` | [s09.md](s09.md) |
-| S10 | `lessons/S10-error-analysis.html` | `notebooks/s10_error_analysis_toy.py` | `cafe/taxonomy.py` | `labs/s10_errors.md` | [s10.md](s10.md) |
-| S11 | `lessons/S11-budgets-routing.html` | `notebooks/s11_budgets_routing_toy.py` | `cafe/routing.py` | `labs/s11_budgets.md` | [s11.md](s11.md) |
-| S12 | `lessons/S12-judge-calibration.html` | `notebooks/s12_judge_calibration_toy.py` | `cafe/judge.py` | `labs/s12_judge.md` | [s12.md](s12.md) |
-| S13 | `lessons/S13-rebuild-from-memory.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s13.md](s13.md) |
-| S14 | `lessons/S14-ship-and-pilot.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s14.md](s14.md) |
+| S01 | `sessions/s01-agent-loop/lesson.html` | `sessions/s01-agent-loop/toy.py` | `cafe/loop.py` | `sessions/s01-agent-loop/lab.md` | [s01.md](../sessions/s01-agent-loop/companion.md) |
+| S02 | `sessions/s02-golden-evals/lesson.html` | `sessions/s02-golden-evals/toy.py` | `cafe/evals` | `sessions/s02-golden-evals/lab.md` | [s02.md](../sessions/s02-golden-evals/companion.md) |
+| S03 | `sessions/s03-context-engineering/lesson.html` | `sessions/s03-context-engineering/toy.py` | `cafe/context.py` | `sessions/s03-context-engineering/lab.md` | [s03.md](../sessions/s03-context-engineering/companion.md) |
+| S04 | `sessions/s04-structured-generation/lesson.html` | `sessions/s04-structured-generation/toy.py` | `cafe/schema.py` | `sessions/s04-structured-generation/lab.md` | [s04.md](../sessions/s04-structured-generation/companion.md) |
+| S05 | `sessions/s05-consent-gate/lesson.html` | `sessions/s05-consent-gate/toy.py` | `cafe/consent.py` | `sessions/s05-consent-gate/lab.md` | [s05.md](../sessions/s05-consent-gate/companion.md) |
+| S06 | `sessions/s06-layered-detection/lesson.html` | `sessions/s06-layered-detection/toy.py` | `cafe/detect.py` | `sessions/s06-layered-detection/lab.md` | [s06.md](../sessions/s06-layered-detection/companion.md) |
+| S07 | `sessions/s07-repair-loop/lesson.html` | `sessions/s07-repair-loop/toy.py` | `cafe/repair.py` | `sessions/s07-repair-loop/lab.md` | [s07.md](../sessions/s07-repair-loop/companion.md) |
+| S08 | `sessions/s08-observability-replay/lesson.html` | `sessions/s08-observability-replay/toy.py` | `cafe/trace.py` | `sessions/s08-observability-replay/lab.md` | [s08.md](../sessions/s08-observability-replay/companion.md) |
+| S09 | `sessions/s09-evidence-reports/lesson.html` | `sessions/s09-evidence-reports/toy.py` | `cafe/report.py` | `sessions/s09-evidence-reports/lab.md` | [s09.md](../sessions/s09-evidence-reports/companion.md) |
+| S10 | `sessions/s10-error-analysis/lesson.html` | `sessions/s10-error-analysis/toy.py` | `cafe/taxonomy.py` | `sessions/s10-error-analysis/lab.md` | [s10.md](../sessions/s10-error-analysis/companion.md) |
+| S11 | `sessions/s11-budgets-routing/lesson.html` | `sessions/s11-budgets-routing/toy.py` | `cafe/routing.py` | `sessions/s11-budgets-routing/lab.md` | [s11.md](../sessions/s11-budgets-routing/companion.md) |
+| S12 | `sessions/s12-judge-calibration/lesson.html` | `sessions/s12-judge-calibration/toy.py` | `cafe/judge.py` | `sessions/s12-judge-calibration/lab.md` | [s12.md](../sessions/s12-judge-calibration/companion.md) |
+| S13 | `sessions/s13-rebuild-from-memory/lesson.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s13.md](../sessions/s13-rebuild-from-memory/companion.md) |
+| S14 | `sessions/s14-ship-and-pilot/lesson.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s14.md](../sessions/s14-ship-and-pilot/companion.md) |
 
 Notebooks are **marimo** files, offline by default (deterministic stub via the
 single seam `get_client()` in `cafe/model.py`). Set `COURSE_MODE=live` plus
 `CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL` to run against the learner's own
 OpenAI-compatible endpoint. Open one with
-`uv run marimo edit notebooks/sNN_…_toy.py`.
+`uv run marimo edit sessions/sNN-slug/toy.py`.
 
 How to take the course in Cursor, including a **local** OpenAI-compatible
 model: [docs/COMPANION.md](../docs/COMPANION.md).

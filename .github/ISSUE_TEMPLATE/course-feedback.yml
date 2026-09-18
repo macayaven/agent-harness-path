@@ -22,7 +22,7 @@ body:
     id: location
     attributes:
       label: Course location
-      description: Give a public session/activity or repository-relative path, such as S06 self-check or notebooks/s06_layered_detection_toy.py.
+      description: Give a public session/activity or repository-relative path, such as S06 self-check or sessions/s06-layered-detection/toy.py.
     validations:
       required: true
   - type: textarea

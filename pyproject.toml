@@ -7,8 +7,8 @@ requires-python = ">=3.11"
 license = { text = "Apache-2.0 AND CC-BY-4.0" }
 authors = [{ name = "Carlos Crespo Macaya" }]
 # Dependencies are tooling only: `marimo` is the notebook runtime, `markdown`
-# renders the lessons/ HTML. Course logic stays Python standard library only
-# (COURSE-MAP.md session contract, rule 2); the two permitted non-stdlib imports
+# renders the sessions/ HTML. Course logic stays Python standard library only
+# (AGENTS.md rule 2); the two permitted non-stdlib imports
 # are `marimo` and the course's own `cafe` package. No provider SDK: the model
 # client in `cafe/model.py` is `urllib` against /chat/completions.
 dependencies = ["marimo==0.24.2", "markdown>=3.5"]

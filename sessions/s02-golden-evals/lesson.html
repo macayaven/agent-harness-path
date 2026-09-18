@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S02-golden-evals — A baseline you can defend</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  </style>
+</head>
+<body>
+<main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s01-agent-loop/lesson.html#the-theory-in-depth">&larr; Prev: S01-agent-loop — The order-taking loop</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s03-context-engineering/lesson.html#the-theory-in-depth">Next: S03-context-engineering — What survives compaction &rarr;</a></span></nav>
+<h1 id="s02-golden-evals-a-baseline-you-can-defend">S02-golden-evals — A baseline you can defend</h1>
+<p><strong>Carried in:</strong> <code>cafe/loop.py</code> — the S01 loop, plus the number you banked there: three runs and no idea how often the shift behaves.
+<strong>Today you ship:</strong> <code>cafe/evals</code> — a golden set of café scenarios, deterministic checkers, and the naive arm your governed loop has to beat.
+<strong>What this teaches:</strong> what a pass rate is a claim about — one scripted user, deterministic checkers whose failures you trust, the fixture invariant, and the naive-versus-governed delta as the only attributable comparison.
+<strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop).
+<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.</p>
+<hr />
+<h2 id="the-hook">The hook</h2>
+<p>A customer says <em>"I'm allergic to egg, can I get a cheese omelette?"</em> Your agent
+answers in fluent Spanish, quotes a price, and sounds exactly as confident as it
+did on the easy order. Nothing in the transcript flags a problem.</p>
+<p>The problem is real: the cheese omelette carries egg. Yesterday you replayed a shift three
+times and called the result a number. A different customer, a declared allergy, a
+price that was never on the menu — any of them turns <em>looks fine to me</em> into a
+written complaint. You cannot defend three anecdotes to your own barista, let
+alone to whoever signs off on the shift.</p>
+<h2 id="the-promise">The promise</h2>
+<p>By the end of this session you have a golden set of scripted café scenarios, a
+checker that an empty run fails and a hand-built reference run passes, and two
+pass rates measured on the same endpoint in the same session. The difference
+between those two numbers is the only claim you make — and it is attributable,
+because the script, the model and the checker are shared.</p>
+<hr />
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="a-golden-set-removes-the-user-not-the-model">A golden set removes the user, not the model</h3>
+<p>Every S01 run was a different conversation, so no two runs were comparable. A
+golden set fixes the <strong>user side</strong> and leaves the model exactly as uncertain as it
+was. <code>cafe/evals/tasks.py</code> ships four scenarios, each carrying the facts a program
+can check:</p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>turns</code></td>
+<td>the customer's lines, replayed verbatim</td>
+</tr>
+<tr>
+<td><code>allergen</code></td>
+<td>a declared allergy, or <code>None</code></td>
+</tr>
+<tr>
+<td><code>confirm_text</code></td>
+<td>the line that authorises firing, or <code>None</code></td>
+</tr>
+<tr>
+<td><code>expect_tools</code></td>
+<td>the tools the task cannot be done without</td>
+</tr>
+</tbody>
+</table>
+<p>The script is reproducible; the model is not. That split is the whole design, and
+it is why the delta between two arms means something and a single absolute score
+does not.</p>
+<h3 id="the-checker-gets-checked-first">The checker gets checked first</h3>
+<p>A checker that cannot fail asserts nothing. Every deterministic checker earns its
+keep with one fixture invariant: <strong>an empty run must fail and a hand-built
+reference run must pass.</strong> <code>empty_record()</code> is a run that never happened —
+the checker has to reject it. <code>reference_record(scenario)</code> builds a legal tool
+exchange by hand — the checker has to accept it. The notebook asserts both halves
+for all four scenarios <em>before</em> it scores a live run. If either half breaks, the
+number you are about to bank is measuring noise.</p>
+<p>There are five checkers, and they are deliberately narrow:</p>
+<ul>
+<li><code>protocol_ok</code> — every tool result answers an assistant call that came before it.</li>
+<li><code>allergen_safety</code> — behavioural, not textual: the run served an item carrying the
+  declared allergen, <strong>or</strong> named that item in prose without consulting the menu
+  data and without declining.</li>
+<li><code>no_invented_price</code> — every quoted euro amount is already on the menu.</li>
+<li><code>ticket_only_after_confirmation</code> — nothing fires before a proposal and the
+  customer's own confirmation.</li>
+<li><code>task_completion</code> — the run actually called the tools the scenario required.</li>
+</ul>
+<h3 id="two-arms-one-golden-set-one-checker">Two arms, one golden set, one checker</h3>
+<p><code>naive_arm</code> is the status quo: append the customer's lines, answer in prose, no
+shift rules, no tools. <code>governed_arm</code> is <code>cafe.loop.run_shift</code> from S01 — rules in
+the system prompt, the five café tools wired in, the protocol invariants enforced.
+Both arms are replayed over the same scenarios, in the same order, against the same
+endpoint, and graded by the same <code>checkers.evaluate</code>.</p>
+<p><code>task_completion</code> is the one check the naive arm cannot pass by construction: no
+tools means no task. That is not a rigged test, it is a description of a chatbot.
+The honest assertion in the notebook is relative — <code>governed.passes &gt;=
+naive.passes</code> — because a live model is allowed to have a bad day and an absolute
+score would turn that day into a false claim.</p>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S02-golden-evals.svg" alt="Controlled fitness comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported." style="--diagram-width: 977px" /></div>
+<h3 id="what-this-number-cannot-say">What this number cannot say</h3>
+<p>The deterministic tier catches protocol and policy breaks. It cannot see quality:
+no checker here distinguishes a warm reply from a curt one, and none of them should
+try. Taste is a <em>judged</em> tier, and a judge needs calibration before you trust its
+scores — that is S12. If you find yourself adding "and the reply should be nice" to
+a checker, stop: you are smuggling taste into a tier that cannot hold it.</p>
+<hr />
+<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<p>Open <a href="toy.py"><code>toy.py</code></a>.
+Configure your endpoint first:</p>
+<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+export CAFE_API_KEY=ollama                       # any non-empty string for a local server
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor                     # one live call; proves the endpoint
+uv run marimo edit sessions/s02-golden-evals/toy.py
+</code></pre>
+<ol>
+<li><strong>Read the set before you score it.</strong> The first demo cell prints all four
+   scenarios — turns, allergen, confirmation, expected tools. Predict which arm
+   fails <code>p02-egg-allergy</code>, and why it can <em>never</em> pass it.</li>
+<li><strong>Run both arms.</strong> <code>naive_vs_governed(client)</code> prints a pass rate per arm and
+   the scenarios each one failed. A live model will not match your estimate
+   exactly; the direction of the gap is the argument.</li>
+<li><strong>Write one checker yourself.</strong> Implement <code>attempt_premature_fire</code>: return one
+   violation string for every <code>fire_ticket</code> that had no proposal before it or no
+   confirmation before it. Two fixtures are waiting — a dirty run that fires what
+   nobody confirmed, and a clean reference run. The starter reports <em>Attempt
+   pending</em>, not pass.</li>
+<li><strong>Reveal only after your attempt.</strong> The reference is <code>checkers.ticket_only_after_confirmation</code>
+   behind a switch. Compare it on both fixtures.</li>
+<li><strong>Watch the assertions hold.</strong> Three cells check the fixture invariant across
+   all four scenarios, that both arms scored the same scenarios in the same order,
+   and that the governed arm never comes in below the naive one.</li>
+</ol>
+<hr />
+<h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
+<p>Two numbers from one session on one endpoint: <strong>naive n/4 and governed n/4</strong>. Bank
+the pair, never the governed rate alone — a pass rate is only meaningful against
+the status quo it replaced. Write the model name next to it.</p>
+<p>On your endpoint these will not be exact values and this page will not predict
+them. What you can defend is the comparison: same scripts, same endpoint, same
+checker, one harness different. This is also the number S03 must not lose while it
+compacts the context.</p>
+<hr />
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.promptfoo.dev/">promptfoo</a></td>
+<td><strong>recognize</strong></td>
+<td>A full matrix runner with the same vocabulary — test cases, assertions, a baseline. Four scenarios do not need it, but reading its config teaches the shape you now own.</td>
+</tr>
+<tr>
+<td><a href="https://inspect.aisi.org.uk/">Inspect AI</a></td>
+<td><strong>recognize</strong></td>
+<td>Its solvers-and-scorers split is your arms-and-checkers split with more machinery. Worth knowing when your golden set outgrows one file.</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2406.12045">τ-bench</a></td>
+<td><strong>recognize</strong></td>
+<td>Scripted users plus a goal-state comparison, and reliability measured across repeated trials. This is where "one run is an anecdote" became a benchmark design.</td>
+</tr>
+<tr>
+<td><a href="https://platform.openai.com/docs/guides/evals">OpenAI evals guide</a></td>
+<td><strong>recognize</strong></td>
+<td>A hosted dataset plus graders. Same two moving parts as this session; the difference is who runs it.</td>
+</tr>
+<tr>
+<td><a href="https://www.anthropic.com/engineering/building-effective-agents">Anthropic: building effective agents</a></td>
+<td><strong>adopt</strong></td>
+<td>Start with the simplest thing and measure before you add. This session is that advice applied to the S01 loop.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="annotated-readings">Annotated readings</h2>
+<ul>
+<li><strong>τ-bench, the task-and-reward sections only</strong> — extract: how a scripted user and
+  a state comparison replace a human grader, and what the paper admits the
+  simulation cannot show.</li>
+<li><strong>Inspect AI: solvers and scorers</strong> — extract: why a harness keeps the thing
+  under test and the thing that judges it in separate interfaces. That separation
+  is why your checker can be run against a hand-built reference at all.</li>
+<li><strong><code>cafe/evals/checkers.py</code></strong> — read <code>allergen_safety</code> twice. It is the model for
+  behavioural checks: never ask whether the agent <em>mentioned</em> the rule, ask what it
+  did and what it named.</li>
+</ul>
+<hr />
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
+<ul>
+<li><em>"A checker that never fires is a good checker."</em> A checker that cannot fail on
+  the empty run asserts nothing. That is why the fixture invariant comes first.</li>
+<li><em>"Governed beat naive, so the harness is good."</em> It means the harness beat a
+  chatbot with no tools. It says nothing yet about quality.</li>
+<li><em>"Four scenarios is an eval suite."</em> It is an instrument with four graduations.
+  It detects what you scripted and nothing else.</li>
+<li><em>"I can assert the governed rate is 4/4."</em> Not against a live endpoint. Assert the
+  relative comparison and print the spread.</li>
+<li><em>"The allergen checker reads the prose."</em> Not only. Half of it is behavioural: an
+  item served that carries the declared allergen is a violation no matter how
+  reassuring the sentence around it.</li>
+</ul>
+<hr />
+<h2 id="self-check">Self-check</h2>
+<details><summary>Why must an empty run fail a checker before that checker is allowed to grade a live run?</summary>
+
+Because a checker that passes a run that did nothing is not measuring the run — it
+asserts nothing. The empty run is the negative fixture; the hand-built reference
+run is the positive one. Only a checker that moves between them carries information.</details>
+
+<details><summary>Both arms use the same model. What does the delta between them still not prove?</summary>
+
+It does not prove the output is *good*; it proves the harness changed behaviour
+that the deterministic tier can see. Quality needs a judged tier (S12), and a judge
+needs calibration before its scores mean anything.</details>
+
+<details><summary>Why is <code>task_completion</code> fair even though the naive arm can never pass it?</summary>
+
+Because the naive arm is the real status quo — a chatbot with no tools. The check
+states the job the scenario asked for. A baseline that cannot do the job is not a
+rigged measurement; it is the reason to build a harness.</details>
+
+<details><summary>A live run scores 3/4 governed and 1/4 naive today, 2/4 governed tomorrow. Is the harness broken?</summary>
+
+Not necessarily. You have one observation per day on an endpoint that varies. The
+relative ordering is the claim you bank; single absolute values are anecdotes.
+Re-run both arms in the same session before drawing conclusions.</details>
+
+<hr />
+<h2 id="what-this-unlocks">What this unlocks</h2>
+<p>You can now say <em>how often</em> the shift behaves, which is the only way to say whether
+a change helped. <strong><a href="../s03-context-engineering/lesson.html#the-theory-in-depth">S03 — Context engineering</a></strong>
+takes the governed arm into a long shift and asks the harder question: when the
+conversation outgrows the window, which of your rules survives compaction — and how
+would you prove it?</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s01-agent-loop/lesson.html#the-theory-in-depth">&larr; Prev: S01-agent-loop — The order-taking loop</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s03-context-engineering/lesson.html#the-theory-in-depth">Next: S03-context-engineering — What survives compaction &rarr;</a></span></nav>
+<footer>
+  Generated by <code>tools/build.py</code> from
+  <code>sessions/sessions/s02-golden-evals/lesson.md</code> — part of The Agent Harness Path.
+</footer>
+</main>
+</body>
+</html>

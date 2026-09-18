@@ -1,8 +1,8 @@
 # Studying and giving feedback on S01–S14
 
 The public starting point is this clone: follow the root README, run
-`uv sync --frozen`, open [the course index](../lessons/index.html) in Cursor,
-and run the marimo notebooks with `uv run marimo edit notebooks/sNN_*_toy.py`.
+`uv sync --frozen`, open [the course index](../sessions/index.html) in Cursor,
+and run the marimo notebooks with `uv run marimo edit sessions/sNN-slug/toy.py`.
 
 Keep learner work on nonsynced local storage outside the Git checkout. Copy an
 edited notebook before a clean clone, branch switch or version change.
@@ -51,15 +51,15 @@ reflection or certify mastery.
 ## Assistance and optional material
 
 The Cursor companion stays on the same chat across lesson, notebook, and lab.
-Ground it with `@bridges/sNN.md` plus the HTML lesson you are on
+Ground it with `@sessions/sNN-slug/companion.md` plus the HTML lesson you are on
 (`docs/COMPANION.md`). Do not paste a whole notebook. Predict-first cells stay
 empty until you write them. The assistant has no authority to complete activities
 or execute copied commands. Authored hints and foldable self-checks live in the
 lesson HTML and work without a provider. Record assistance and premature answer
 exposure honestly.
 
-The videos are optional Google Gemini Notebook previews/reviews, and may lag the
-lesson. Hard labs remain optional and build a trivia host with their own scopes,
+The course overview video is an optional Google Gemini Notebook preview, and may lag the
+lessons. Hard labs remain optional and build a trivia host with their own scopes,
 prerequisites and replay/live distinctions. S06's hard lab is pub-quiz policy only;
 S09's real round stays private; S12's replay does not perform critic calibration.
 Reference replay and real-provider evidence are different categories.

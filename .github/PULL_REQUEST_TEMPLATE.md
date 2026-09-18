@@ -10,10 +10,10 @@ raw chats, participant material, private paths or unpublished asset locations. -
 ## Checklist
 
 - [ ] `uv run python -m unittest discover -s tests -v`
-- [ ] `uv run python lessons/build.py` produces no generated HTML drift
-- [ ] `uv run python lessons/check_links.py`
-- [ ] `uv run python lessons/check_sota_urls.py`
-- [ ] If lesson/SOTA URLs changed: `uv run python lessons/check_links.py --http`
+- [ ] `uv run python tools/build.py` produces no generated HTML drift
+- [ ] `uv run python tools/check_links.py`
+- [ ] `uv run python tools/check_sota_urls.py`
+- [ ] If lesson/SOTA URLs changed: `uv run python tools/check_links.py --http`
 - [ ] If notebooks changed: touched notebooks execute top-to-bottom and remain output-free
 - [ ] If lab code/contracts changed: lab contract tests and `uv run python labs/run.py --all --replay` pass (never `--live` in CI)
 - [ ] Generated diagrams were visually inspected if Mermaid or diagram inputs changed

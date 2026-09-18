@@ -14,7 +14,7 @@ no authentication.
 - A lesson that includes a real secret, a live credential, or instructions that
   would cause a reader to disable a real safety control in production without
   saying so.
-- A supply-chain issue in `uv.lock` / vendored `lessons/vendor/mermaid.min.js`.
+- A supply-chain issue in `uv.lock` / vendored `tools/vendor/mermaid.min.js`.
 
 Do **not** report:
 

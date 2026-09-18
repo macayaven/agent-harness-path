@@ -32,7 +32,7 @@ def main() -> int:
     print(f"reply : {reply!r}")
     if latency:
         print(f"latency: {latency:.0f} ms")
-    print("\nendpoint works. Start at lessons/S01-agent-loop.html")
+    print("\nendpoint works. Start at sessions/s01-agent-loop/lesson.html")
     return 0
 
 

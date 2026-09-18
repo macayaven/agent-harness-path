@@ -7,8 +7,8 @@ Keep observations outside the course checkout; copy the CSV template there.
 
 ## 1. Ten to fifteen minutes: interaction route, not a learning score
 
-Start S01: open `lessons/S01-agent-loop.html`, inspect the static diagram, and
-optionally `@bridges/s01.md` in Cursor chat. Ask a question if a model is
+Start S01: open `sessions/s01-agent-loop/lesson.html`, inspect the static diagram, and
+optionally `@sessions/s01-agent-loop/companion.md` in Cursor chat. Ask a question if a model is
 configured. Open the notebook; verify that the prediction prompt is visible and
 do not ask the companion to fill it first. Save a real brief prediction, then
 inspect an existing predict-first cell. Navigate to self-check, attempt a
