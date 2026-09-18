@@ -1,6 +1,6 @@
 # S14 — your one-page pilot protocol
 
-Write this after the cold acceptance/holdout stage and before involving a participant. The [authored protocol](../lessons/S14-ship-and-pilot.html#the-protocol) requires four statements. These are prompts for **your words**, not a finished page to present as your own unaided writing.
+Write this after the cold acceptance/holdout stage and before involving a participant. The [authored protocol](../sessions/s14-ship-and-pilot/lesson.html#the-protocol) requires four statements. These are prompts for **your words**, not a finished page to present as your own unaided writing.
 
 1. **What the tool is and is not.** Describe the actual task, supported scope, limits and what the participant should not rely on it for.
 2. **Data handling.** Say what you will collect, where it stays, who can access it and how a deletion request is handled. Ask separately before recording a reaction. Make the procedure match the system you actually operate.

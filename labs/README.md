@@ -1,6 +1,6 @@
 # Labs — optional hard path
 
-`sNN_*.md` here are **lab protocols**, not a second copy of `lessons/src/`.
+`sessions/sNN-slug/lab.md` files are **lab protocols**, not a second copy of the lessons.
 Read the HTML lesson first; open a lab file only if you take the hard path.
 
 

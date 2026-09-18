@@ -30,32 +30,32 @@ jobs:
           MARIMO_SKIP_UPDATE_CHECK: "1"
         run: |
           set -euo pipefail
-          for nb in notebooks/s*_toy.py; do
+          for nb in sessions/*/toy.py; do
             echo "=== $nb ==="
             PYTHONPATH="$PWD/tests/no_network_site:$PWD" uv run python "$nb" > /dev/null
           done
       - name: Lint notebooks and prove canonical marimo form
         run: |
           set -euo pipefail
-          uv run marimo check --strict --ignore MF004 notebooks labs/app.py
-          uv run marimo check --fix --ignore MF004 notebooks labs/app.py
-          git diff --exit-code -- notebooks labs/app.py
+          uv run marimo check --strict --ignore MF004 sessions/*/toy.py labs/app.py
+          uv run marimo check --fix --ignore MF004 sessions/*/toy.py labs/app.py
+          git diff --exit-code -- sessions labs/app.py
       - name: Rebuild lessons and fail on drift
         run: |
-          uv run python lessons/build.py
-          git diff --exit-code -- lessons/*.html lessons/index.html
-          if git status --porcelain -- lessons/ | grep -E '^\?\? lessons/.*\.html'; then
-            echo "untracked generated HTML under lessons/" >&2
+          uv run python tools/build.py
+          git diff --exit-code -- sessions/*.html sessions/*/lesson.html
+          if git status --porcelain -- sessions/ | grep -E '^\?\? sessions/.*\.html'; then
+            echo "untracked generated HTML under sessions/" >&2
             exit 1
           fi
       - name: Check SOTA rows have source URLs
-        run: uv run python lessons/check_sota_urls.py
+        run: uv run python tools/check_sota_urls.py
       - name: Check relative links
-        run: uv run python lessons/check_links.py
+        run: uv run python tools/check_links.py
       - name: Test lab contracts
         run: uv run python -m unittest labs/test_contracts.py
       - name: Replay labs against committed cassettes
         run: uv run python labs/run.py --all --replay
       - name: Check http links
         if: matrix.python-version == '3.11'
-        run: uv run python lessons/check_links.py --http
+        run: uv run python tools/check_links.py --http

@@ -14,21 +14,21 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-NOTEBOOKS = ROOT / "notebooks"
+SESSIONS = ROOT / "sessions"
 
 EXPECTED = {
-    "s01_agent_loop_toy.py": "cafe.loop",
-    "s02_scripted_user_eval_toy.py": "cafe.evals",
-    "s03_context_engineering_toy.py": "cafe.context",
-    "s04_structured_generation_toy.py": "cafe.schema",
-    "s05_consent_gate_toy.py": "cafe.consent",
-    "s06_layered_detection_toy.py": "cafe.detect",
-    "s07_repair_loop_toy.py": "cafe.repair",
-    "s08_observability_replay_toy.py": "cafe.trace",
-    "s09_evidence_report_toy.py": "cafe.report",
-    "s10_error_analysis_toy.py": "cafe.taxonomy",
-    "s11_budgets_routing_toy.py": "cafe.routing",
-    "s12_judge_calibration_toy.py": "cafe.judge",
+    "s01-agent-loop": "cafe.loop",
+    "s02-golden-evals": "cafe.evals",
+    "s03-context-engineering": "cafe.context",
+    "s04-structured-generation": "cafe.schema",
+    "s05-consent-gate": "cafe.consent",
+    "s06-layered-detection": "cafe.detect",
+    "s07-repair-loop": "cafe.repair",
+    "s08-observability-replay": "cafe.trace",
+    "s09-evidence-reports": "cafe.report",
+    "s10-error-analysis": "cafe.taxonomy",
+    "s11-budgets-routing": "cafe.routing",
+    "s12-judge-calibration": "cafe.judge",
 }
 
 CELL_NAME = re.compile(r"^(test_)?s(0[1-9]|1[0-2])_[a-z0-9]+(_[a-z0-9]+)*$")
@@ -36,7 +36,11 @@ STALE_DOMAIN = ("trivia", "pub quiz", "mopbot", "concierge", "weather_bot")
 
 
 def notebooks() -> list[Path]:
-    return sorted(NOTEBOOKS.glob("s*_toy.py"))
+    return sorted(SESSIONS.glob("*/toy.py"))
+
+
+def session_of(path: Path) -> str:
+    return path.parent.name
 
 
 def source(path: Path) -> str:
@@ -68,7 +72,8 @@ def imported_roots(tree: ast.Module) -> set[str]:
 
 class Inventory(unittest.TestCase):
     def test_exactly_the_twelve_expected_notebooks(self):
-        self.assertEqual(sorted(p.name for p in notebooks()), sorted(EXPECTED))
+        self.assertEqual(
+            sorted(session_of(p) for p in notebooks()), sorted(EXPECTED))
 
     def test_no_ipynb_is_tracked(self):
         tracked = subprocess.run(
@@ -82,7 +87,7 @@ class Structure(unittest.TestCase):
     def test_each_notebook_declares_a_marimo_app(self):
         for path in notebooks():
             text = source(path)
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 ast.parse(text)
                 self.assertIn('__generated_with = "0.24.2"', text)
                 self.assertIn('app = marimo.App(width="medium")', text)
@@ -92,12 +97,12 @@ class Structure(unittest.TestCase):
         for path in notebooks():
             cells = decorated(ast.parse(source(path)), "cell")
             names = [c.name for c in cells]
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertNotIn("_", names, "unnamed cell: rename every `def _(`")
                 self.assertEqual(len(names), len(set(names)))
                 for name in names:
                     self.assertRegex(name, CELL_NAME)
-                    self.assertIn(path.name[:3], name)
+                    self.assertIn(session_of(path)[:3], name)
 
 
 class Seam(unittest.TestCase):
@@ -105,13 +110,13 @@ class Seam(unittest.TestCase):
 
     def test_every_notebook_uses_the_single_model_seam(self):
         for path in notebooks():
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertIn("get_client", source(path))
 
     def test_no_notebook_constructs_a_client_directly(self):
         for path in notebooks():
             text = source(path)
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertNotIn("LiveClient(", text)
                 self.assertNotIn("urllib.request", text)
                 self.assertNotIn("OPENAI_API_KEY", text)
@@ -122,7 +127,7 @@ class Spine(unittest.TestCase):
 
     def test_each_notebook_imports_the_module_its_session_ships(self):
         for path in notebooks():
-            module = EXPECTED[path.name]
+            module = EXPECTED[session_of(path)]
             leaf = module.split(".")[1]
             tree = ast.parse(source(path))
             found = False
@@ -142,21 +147,21 @@ class Spine(unittest.TestCase):
                         for alias in node.names
                     ):
                         found = True
-            with self.subTest(notebook=path.name, module=module):
-                self.assertTrue(found, f"{path.name} must drive {module}")
+            with self.subTest(notebook=session_of(path), module=module):
+                self.assertTrue(found, f"{session_of(path)} must drive {module}")
 
 
 class Safety(unittest.TestCase):
     def test_imports_are_stdlib_plus_marimo_and_cafe(self):
         allowed = set(sys.stdlib_module_names) | {"marimo", "cafe"}
         for path in notebooks():
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertLessEqual(imported_roots(ast.parse(source(path))), allowed)
 
     def test_no_credentials_or_home_paths(self):
         for path in notebooks():
             text = source(path)
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertNotIn("/Users/", text)
                 self.assertIsNone(re.search(r"\bsk-[A-Za-z0-9_-]{20,}\b", text))
 
@@ -168,7 +173,7 @@ class Domain(unittest.TestCase):
         for path in notebooks():
             text = source(path).lower()
             for noun in STALE_DOMAIN:
-                with self.subTest(notebook=path.name, noun=noun):
+                with self.subTest(notebook=session_of(path), noun=noun):
                     self.assertNotIn(noun, text)
 
 
@@ -177,7 +182,7 @@ class Pedagogy(unittest.TestCase):
         for path in notebooks():
             cells = decorated(ast.parse(source(path)), "cell")
             tests = [c for c in cells if c.name.startswith("test_")]
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertGreaterEqual(len(tests), 2)
 
     def test_attempt_skeletons_are_unanswered(self):
@@ -188,7 +193,7 @@ class Pedagogy(unittest.TestCase):
                 fn for fn in decorated(tree, "function") if fn.name.startswith("attempt_")
             ]
             for fn in attempts:
-                with self.subTest(notebook=path.name, unit=fn.name):
+                with self.subTest(notebook=session_of(path), unit=fn.name):
                     self.assertNotIn("solution", fn.name)
 
     def test_each_solution_is_gated_behind_a_reveal(self):
@@ -200,7 +205,7 @@ class Pedagogy(unittest.TestCase):
             ]
             if not solutions:
                 continue
-            with self.subTest(notebook=path.name):
+            with self.subTest(notebook=session_of(path)):
                 self.assertIn("mo.ui.switch(", text)
                 self.assertIn("mo.stop(", text)
                 self.assertIn("inspect.getsource(", text)

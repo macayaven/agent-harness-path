@@ -4,15 +4,19 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- One directory per session: `sessions/sNN-slug/` holds `lesson.md` (builds to
+  `lesson.html` in place), `toy.py`, `lab.md`, `companion.md`, `video.mp4` and
+  `public/diagrams/`; shared spine (`cafe/`, lab runner) and `tools/`, `tests/`,
+  `study/`, `docs/` stay top-level.
 - Repo hygiene: remove `COURSE-MAP.md` and `WHY-THIS-DESIGN.md` (superseded by
   `AGENTS.md` + `docs/README.md`); remove `docs/plans/`, `docs/verification/`,
   and the release tooling (`scripts/`, `docs/RELEASING.md`, `docs/releases/`) —
   build-log history now lives outside this repo, unreferenced;
   `study/PROGRESS.md` ignored; `.vscode/` ships the md-preview default.
 - Notebooks embed committed SVGs as markdown figures from
-  `notebooks/public/diagrams/` (served by marimo at runtime, resolved
+  `sessions/sNN-slug/public/diagrams/` (served by marimo at runtime, resolved
   statically against the notebook file); no `mo.mermaid`, no `cafe.diagrams`.
-  The five notebook-only diagrams live in `notebooks/public/diagrams/*.mmd` and render
+  The five notebook-only diagrams live next to their renders and render
   through the same pinned pipeline and receipt.
 - `get_client()` is offline by default: unset `COURSE_MODE` returns the
   deterministic stub on every platform; `COURSE_MODE=live` opts into the

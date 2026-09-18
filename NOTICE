@@ -7,14 +7,15 @@ Mermaid.js
   Copyright (c) 2014 - 2022 Knut Sveidqvist and Mermaid contributors
   License: MIT
   Source: https://github.com/mermaid-js/mermaid
-  Vendored at: lessons/vendor/mermaid.min.js (UMD build, mermaid 10.x)
-  Full license text: lessons/vendor/LICENSE-mermaid.md
-  Pilot static SVG in lessons/diagrams/ is generated from the course-authored
+  Vendored at: tools/vendor/mermaid.min.js (UMD build, mermaid 10.x)
+  Full license text: tools/vendor/LICENSE-mermaid.md
+  Pilot static SVG in sessions/*/public/diagrams/ is generated from the course-authored
   Mermaid source using this unchanged vendored renderer; the renderer retains MIT.
 
 Google Gemini Notebook (formerly NotebookLM) Video Overviews
   Generated 14 August 2026 with Google Gemini Notebook
-  (https://notebooklm.google/). Files: lessons/videos/*.mp4
+  (https://notebooklm.google/). Files: sessions/*/video.mp4,
+  sessions/S00-course-overview.mp4
   Encoder metadata: "Google" / "ISO Media file produced by Google Inc."
   Google does not claim ownership of generated content
   (https://support.google.com/notebooklm/answer/17004255).
@@ -22,7 +23,7 @@ Google Gemini Notebook (formerly NotebookLM) Video Overviews
   the files (closing mark, any watermark). Those marks are not licensed
   under this project's CC BY 4.0 grant.
 
-Cited papers, vendor docs, and blog posts in lessons/src/ remain copyright
+Cited papers, vendor docs, and blog posts in sessions/*/lesson.md remain copyright
 their respective authors. Links in each lesson's SOTA table and annotated
 readings are the attribution.
 

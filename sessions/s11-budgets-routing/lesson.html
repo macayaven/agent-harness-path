@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S11-budgets-routing — Budgets, routes, and the privacy boundary</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  </style>
+</head>
+<body>
+<main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
+<h1 id="s11-budgets-routing-budgets-routes-and-the-privacy-boundary">S11-budgets-routing — Budgets, routes, and the privacy boundary</h1>
+<p><strong>Carried in:</strong> <code>cafe/taxonomy.py</code> — S10's failure classes, and the debrief number S10 banked. Your shift can now name what goes wrong; tonight it learns what a call is allowed to cost and where it is allowed to run.
+<strong>Today you ship:</strong> <code>cafe/routing.py</code> — the budget gate, the route table, and the boundary that refuses a leak.
+<strong>What this teaches:</strong> cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose <em>projected</em> cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
+<strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
+<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S11-budgets-routing.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2 id="the-hook">The hook</h2>
+<p>Last Thursday the till showed <strong>€0.42</strong> of model spend on a task the shift prices at
+<strong>€0.05</strong>. Nothing errored. The loop kept refining, every individual call looked
+reasonable, and the first moment anyone could see the total was the moment the invoice
+existed. Money spent on a call you did not need is not refundable by adding an <code>if</code>
+afterwards.</p>
+<p>The same evening, a "performance tweak" pointed the phase that reads the customer's
+handwritten note — card number, phone number, the lot — at a cloud route. It worked
+beautifully. It was also a leak, and it happened at the routing decision, not inside the
+model.</p>
+<h2 id="the-promise">The promise</h2>
+<p>By the end of this session you will be able to write a route table as data, prove that a
+call whose projected cost would cross the budget is refused <strong>before</strong> it is dispatched,
+and prove that a content phase pointed at a cloud route raises before a single request
+leaves the machine. You will also bank real token and latency numbers — read from the
+endpoint's own <code>usage</code> and the client's own clock, not from a formula.</p>
+<hr />
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="a-budget-is-a-runtime-invariant-not-a-finance-report">A budget is a runtime invariant, not a finance report</h3>
+<p>The invoice is a lagging indicator. By the time it exists, the calls have been paid for. So
+the budget lives <strong>inside</strong> the loop and reads <em>ahead</em>: the route prices its own call
+before the call happens, and a call that would cross the line is refused.
+<code>stop_reason="budget_exceeded"</code> is a first-class outcome — a run that costs more than the
+task is worth has failed, even mid-progress.</p>
+<p>The estimate is a lie you need: a gate cannot know the usage before the endpoint speaks.
+The <strong>ledger</strong> is the truth, and it is written from <code>response["usage"]</code> after the call.
+Two numbers, two jobs: <strong>the estimate refuses, the usage records.</strong></p>
+<h3 id="routing-is-policy-as-data">Routing is policy-as-data</h3>
+<p>A route table is a dict: café phase → route name. Each route carries a location, a model
+label, and a price per 1k tokens. It is diffable, reviewable, and validatable without
+touching the engine — and the route you choose cites a measured number rather than a
+preference. Different phases of one shift differ wildly in difficulty; sending the note
+(and its card number) to the same place as a category summary is not a routing policy, it
+is an accident.</p>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S11-budgets-routing.svg" alt="A pipeline validates its policy route table before any model call, routes allowed content among local and cloud models, meters cost and latency, and stops before a run would breach its budget." style="--diagram-width: 1639px" /></div>
+<h3 id="the-privacy-boundary-refuses-it-does-not-warn">The privacy boundary refuses; it does not warn</h3>
+<p>Every phase carries a <strong>classification</strong>; every route carries a <strong>location</strong>. A content
+phase — the note with the card and phone numbers, the prose about this customer's order —
+must resolve to a local route. <code>validate_policy</code> runs before any model call and <strong>raises</strong>.
+It does not warn, and it does not fall back to a safe route: a silent fallback is the same
+leak with better logging.</p>
+<p>A warning is a log line nobody reads during the incident. A refusal makes the
+misconfiguration un-runnable. The one phase allowed off-local is <code>till_summary</code>, which
+carries metadata only — category totals, no descriptions — because classification decides
+what may leave, not the vendor's reputation.</p>
+<h3 id="what-measured-means-tonight">What "measured" means tonight</h3>
+<p><code>response["usage"]</code> gives the tokens the endpoint actually charged for.
+<code>client.last_latency_ms</code> gives the wall time around the request, set by the client around
+the call, not by a formula in this notebook. A refused call is never sent, so
+<code>client.calls</code> and <code>client.last_latency_ms</code> keep the values of the previous dispatched
+call — which is exactly how the notebook proves the refusal happened before the wire.</p>
+<hr />
+<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<p>Open <a href="toy.py"><code>toy.py</code></a>.
+Configure your endpoint first:</p>
+<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+export CAFE_API_KEY=ollama
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor
+uv run marimo edit sessions/s11-budgets-routing/toy.py
+</code></pre>
+<ol>
+<li><strong>The seam, unchanged.</strong> <code>get_client()</code> is the only way this notebook reaches a model.
+   Tonight the numbers that matter come from the client: <code>usage</code> on the response and
+   <code>client.last_latency_ms</code> around the request.</li>
+<li><strong>Predict first: the gate predicate.</strong> The harness knows <code>spent_usd</code> and the route's
+   <code>projected_usd</code>. Write the predicate that refuses the call, then flip the reveal switch.
+   Edge case that matters: no budget means no limit. The harness does the refusing; your
+   predicate only returns a bool.</li>
+<li><strong>One real metered call.</strong> A <code>draft_reply</code> routed through <code>local-large</code>. The projected
+   cost prints next to the real one; on a short note they are close, on a long one they
+   drift. That gap is why the gate uses an estimate and the ledger uses usage.</li>
+<li><strong>Predict first: a table that validates.</strong> Fill <code>attempt_route_table()</code> so
+   <code>validate_policy</code> accepts it: <code>read_note</code> and <code>draft_reply</code> are content phases,
+   <code>till_summary</code> is metadata, and <code>local-small</code>, <code>local-large</code>, <code>cloud-frontier</code> are the
+   routes. Then flip the reveal switch for a reference. The boundary answers "is it
+   allowed"; it never answers "is it wise" — that is a measurement you would run next.</li>
+<li><strong>Watch the invariants.</strong> Three notebook cells are protocol invariants: an over-budget
+   call is refused and <code>client.calls</code> does not move; a content phase on a cloud route
+   raises while the metadata phase on the same route is permitted; and every metered token
+   count equals the endpoint's <code>usage</code>, with latency read from <code>client.last_latency_ms</code>.</li>
+</ol>
+<hr />
+<h2 id="checkpoint-the-numbers-you-bank">Checkpoint — the numbers you bank</h2>
+<p>Two invariants you can now demonstrate on demand:</p>
+<ul>
+<li>a call whose projected cost crosses the budget is refused <strong>before</strong> dispatch, so
+  <code>client.calls</code> does not move and its cost never lands;</li>
+<li>a content phase pointed at a cloud route raises, while the same route on a metadata
+  phase is permitted.</li>
+</ul>
+<p>And two measured numbers from your own endpoint: <strong>total tokens</strong> and <strong>median latency</strong>
+across the checkpoint calls, plus what they cost at the route's price. On a small local
+model these are small and a little noisy; they are still live measurements. S12's judge
+costs money too, and without these numbers you cannot say whether it is worth running.</p>
+<hr />
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://docs.litellm.ai/docs/proxy/provider_budget_routing">LiteLLM proxy — provider budget routing</a></td>
+<td><strong>recognize</strong></td>
+<td>A gateway can enforce budgets across providers. Read the semantics: many gateways stop <em>subsequent</em> calls rather than refusing the crossing one — verify before you assume it prevents overshoot.</td>
+</tr>
+<tr>
+<td><a href="https://lmsys.org/blog/2024-07-01-routellm/">RouteLLM (LMSYS)</a></td>
+<td><strong>recognize</strong></td>
+<td>Learned routing between a strong and a weak model. Your table is the hand-written version; their result is the evidence that routing beats "always strong."</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2406.18665">RouteLLM — the paper</a></td>
+<td><strong>recognize</strong></td>
+<td>Same idea with the numbers: cost reduction at a held quality bar. Read it as the defensible version of "the cheapest route that holds the number."</td>
+</tr>
+<tr>
+<td><a href="https://openrouter.ai/docs/guides/routing/routers/auto-router">OpenRouter — auto router</a></td>
+<td><strong>recognize</strong></td>
+<td>Model selection as a service. Note that it picks on capability, not on <em>your</em> data classification — the privacy boundary stays yours to enforce.</td>
+</tr>
+<tr>
+<td><a href="https://security.apple.com/blog/private-cloud-compute/">Apple — Private Cloud Compute</a></td>
+<td><strong>adopt</strong></td>
+<td>The industrial version of "content stays local unless the boundary says otherwise." Steal the stance: the boundary is architectural, not a flag you remember to set.</td>
+</tr>
+<tr>
+<td><a href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">OWASP LLM06: Excessive Agency</a></td>
+<td><strong>recognize</strong></td>
+<td>An unbounded, un-metered agent is the excessive-agency risk with a bill attached. Your budget and route table are the governance layer it asks for.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="annotated-readings">Annotated readings</h2>
+<ul>
+<li><strong>LiteLLM, <a href="https://docs.litellm.ai/docs/proxy/provider_budget_routing">provider budget routing</a>.</strong> Extract where the budget is checked relative to the request: pre-dispatch or post-usage. The difference is the whole of this session's first invariant.</li>
+<li><strong>LMSYS, <a href="https://lmsys.org/blog/2024-07-01-routellm/">RouteLLM</a> / <a href="https://arxiv.org/abs/2406.18665">paper</a>.</strong> Extract the framing of the quality bar: a route is defensible only against a measured number, never a preference.</li>
+<li><strong>Apple, <a href="https://security.apple.com/blog/private-cloud-compute/">Private Cloud Compute</a>.</strong> Extract the stance, not the infrastructure: the boundary is enforced by design and refuses, which is what <code>validate_policy</code> is a toy of.</li>
+</ul>
+<hr />
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
+<ul>
+<li><em>"The budget is a report."</em> A report is written after the money is gone. The gate must read <em>ahead</em>: a crossing call refused before dispatch is cheap; one refused after is an FYI.</li>
+<li><em>"The estimate is the cost."</em> The estimate is a lie you need to make the pre-dispatch decision; the endpoint's <code>usage</code> is the truth. Confuse them and your ledger drifts from your invoice.</li>
+<li><em>"Warn and fall back to a safe route."</em> A silent fallback is the same leak with better logging. The boundary raises, and the misconfiguration becomes un-runnable.</li>
+<li><em>"Route by which model sounds better."</em> Route by classification and by a measured number. The vendor's reputation does not entitle a content phase to leave the machine.</li>
+<li><em>"A refused call still costs latency."</em> It does not: a refused call never reaches <code>client.chat</code>, so <code>client.calls</code> and <code>last_latency_ms</code> do not move. That is how you prove the refusal happened before the wire.</li>
+</ul>
+<hr />
+<h2 id="self-check">Self-check</h2>
+<details><summary>Why does the gate use an estimate before dispatch if the real cost is only known after?</summary>
+Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate refuses the call that would cross, so the cost never lands. The estimate is not the ledger; it only has to be good enough to refuse.</details>
+
+<details><summary>A content phase is routed to a route whose location is cloud. What does the harness do?</summary>
+`validate_policy` raises before any model call. It does not warn and does not fall back to a safe route — a silent fallback is the same leak with better logging. The misconfiguration has to be un-runnable.</details>
+
+<details><summary>Why is `till_summary` allowed off-local when `read_note` is not?</summary>
+Because classification is a property of the data, not the vendor. `read_note` sees the customer's handwritten card and phone numbers — content. `till_summary` carries metadata only: category totals, no descriptions. The boundary permits the second and refuses the first on the same route.</details>
+
+<details><summary>The metadata phase and the content phase use the same cloud route. Does the boundary care about the route or the data?</summary>
+The data. The same route is permitted for metadata and refused for content; `validate_policy` checks each phase's classification against its route's location. Routing decisions are about what the data is, not which model is fashionable.</details>
+
+<hr />
+<h2 id="what-this-unlocks">What this unlocks</h2>
+<p>You now have a harness that can refuse work before paying for it, and a policy table you can
+review in a diff. What you still do not have is any idea whether the thing producing the
+answers is any good. <strong><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">S12 — Judge calibration</a></strong> turns a model
+into an instrument: it seeds defects you already know the answer to, and makes you measure
+detection and false positives before you trust a single verdict.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
+<footer>
+  Generated by <code>tools/build.py</code> from
+  <code>sessions/sessions/s11-budgets-routing/lesson.md</code> — part of The Agent Harness Path.
+</footer>
+</main>
+</body>
+</html>

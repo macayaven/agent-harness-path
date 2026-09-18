@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>S05-consent-gate — The gate before the irreversible action</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --surface-2: #243040;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --line: #2f3d4c;
+      --ok: #3dba7e;
+      --bad: #e07070;
+      --warn: #d4a017;
+      --accent: #5eb1ff;
+      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
+      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 52rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
+    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
+    a { color: var(--accent); }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .9rem 1rem;
+      overflow-x: auto;
+    }
+    pre code { background: none; padding: 0; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: .92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .45rem .6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface-2); }
+    td { background: var(--surface); }
+    blockquote {
+      margin: 1rem 0;
+      padding: .4rem 1rem;
+      border-left: 3px solid var(--warn);
+      background: var(--surface);
+      color: var(--muted);
+    }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: .5rem .9rem;
+      margin: .6rem 0;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
+    .meta { color: var(--muted); font-size: .85rem; }
+    .lesson-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .lesson-nav a { color: var(--muted); }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
+    .static-diagram {
+      width: max(100%, var(--diagram-width));
+      max-width: none;
+      height: auto;
+      display: block;
+    }
+    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  </style>
+</head>
+<body>
+<main>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html#the-theory-in-depth">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
+<h1 id="s05-consent-gate-the-gate-before-the-irreversible-action">S05-consent-gate — The gate before the irreversible action</h1>
+<p><strong>Carried in:</strong> <code>cafe/schema.py</code> — the ticket contract and the validator that decides whether a proposal is even readable. A ticket you can validate is a ticket a human can approve.
+<strong>Today you ship:</strong> <code>cafe/consent.py</code> — the gate that stands between the model and the one irreversible action in the café.
+<strong>What this teaches:</strong> propose → confirm → fire, with approve, edit and reject as first-class outcomes; an enforcement check that runs before dispatch on the harness's own copy of the approved ticket; and the two violation semantics, abort and degrade.
+<strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
+These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop), S04 (the ticket contract).
+<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.
+<strong>Video:</strong> <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S05-consent-gate.mp4">Gemini Notebook overview</a> — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.</p>
+<hr />
+<h2 id="the-hook">The hook</h2>
+<p>A customer asks for a latte. The model calls <code>propose_order</code>, and then — without
+waiting for anyone — it calls <code>fire_ticket</code>. A ticket is already in the kitchen
+before a human has read a word. The coffee is on the pass; you cannot un-make it.</p>
+<p>S01's loop ran whatever the model asked for. It had no concept of <em>consent</em>, and no
+amount of prompt wording changes that: the model can say anything, so the decision
+cannot live in the model's mouth.</p>
+<h2 id="the-promise">The promise</h2>
+<p>By the end of this session you will have watched a rejected plan leave the world
+untouched, an edited plan change what actually executes, and a drifting model get
+stopped <em>before</em> dispatch — and you will be able to say which of those three is the
+property that matters.</p>
+<hr />
+<h2 id="the-theory-in-depth">The theory in depth</h2>
+<h3 id="the-proposal-is-data-so-the-check-can-be-mechanical">The proposal is data, so the check can be mechanical</h3>
+<p>A prose plan cannot be checked: there is nothing to compare a later request
+against. The ticket from S04 is JSON — <code>{"items": [...], "table": int}</code> — so every
+downstream action can be compared with the approved object field by field.
+<code>enrich_ticket</code> attaches the data-derived fields the contract requires and never
+takes a total from the model or the customer; <code>validate_ticket</code> reuses S04's
+contract, so a ticket that fails validation <strong>never reaches a human</strong>. A customer
+only ever reads a valid order.</p>
+<h3 id="propose-consent-fire">Propose → consent → fire</h3>
+<p><code>consent_gate</code> renders the ticket, asks the responder for a decision, and loops on
+edits. The rendered ticket is short enough to read in seconds — that is a safety
+property, not a design preference. The three outcomes are not variations on one
+another:</p>
+<ul>
+<li><strong>approve</strong> returns the approved ticket and the log records it.</li>
+<li><strong>edit</strong> revalidates the payload and re-presents the amended ticket <strong>in full</strong>.
+  An amended plan restarts the flow; no partial state carries over. A customer who
+  walks away without answering is a rejection, the safe default.</li>
+<li><strong>reject</strong> returns <code>None</code>. Nothing downstream ever runs.</li>
+</ul>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S05-consent-gate.svg" alt="A model proposal must validate and survive human approval or editing before the agent loop may run; only actions inside the approved specification dispatch, and violations stop with a readable report." style="--diagram-width: 1662px" /></div>
+<h3 id="reject-means-zero-side-effects-and-that-is-a-claim-to-test">Reject means zero side effects, and that is a claim to test</h3>
+<p>"Nothing happens" is an assertion about the world, so it gets tested instead of
+asserted in prose. The notebook's first cell drives a rejection through the gate and
+then through <code>fire_requested</code>, and checks three things: the approved ticket is
+<code>None</code>, <code>state.fired</code> is empty, and <code>state.tool_log</code> is empty. A rejected plan
+leaves no ticket, no log entry, no order — by construction, not by good behaviour.</p>
+<h3 id="the-gate-is-the-check-not-the-dialog">The gate is the check, not the dialog</h3>
+<p><code>check_fire(requested, approved)</code> compares one requested ticket against the approved
+one, and the request is never the authority — <code>approved</code> is. The model can drift, or
+a customer can edit the order down to a single <code>espresso</code>, and the request that
+fires must match what was approved. <code>fire_requested</code> is the only caller of
+<code>fire_ticket</code> that this module allows, and it has two violation semantics:</p>
+<ul>
+<li><strong>abort</strong> (the default) — return <code>{"action": "aborted"}</code> and touch nothing.</li>
+<li><strong>degrade</strong> — fire <strong>exactly the approved ticket</strong> and log, loudly, what was
+  refused.</li>
+</ul>
+<p>Note what degrade does <em>not</em> do: it never fires the model's request. The approved
+ticket is the only ticket in the building.</p>
+<h3 id="the-gate-inside-the-loop">The gate inside the loop</h3>
+<p><code>cafe/consent.py</code>'s <code>run_shift</code> intercepts <code>propose_order</code> to collect consent and
+stash the approved ticket on the run; a later <code>fire_ticket</code> is compared against it
+before anything reaches <code>state.fired</code>. When the gate refuses, the loop stops with
+<code>stop_reason="consent_violation"</code> instead of pretending the turn succeeded. The
+stop reason set is still the harness's: <code>answered</code>, <code>script_done</code>, <code>turn_cap</code>,
+<code>consent_violation</code> — every run can say why it ended.</p>
+<hr />
+<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<p>Open <a href="toy.py"><code>toy.py</code></a>
+with your endpoint already exported.</p>
+<ol>
+<li><strong>Predict the render.</strong> A model proposes <code>latte + tomato toast</code> for table
+   4; the scripted customer edits it down to a single <code>espresso</code> and approves.
+   Before running: what does the customer read, and what exactly ends up in the
+   approved ticket? Then run the cell and compare the log against your answer.</li>
+<li><strong>Write the enforcement point.</strong> Implement <code>attempt_gate(state, requested,
+   approved)</code>: decide whether the irreversible action runs. On a violation <strong>nothing
+   may fire</strong> — no ticket, no tool log. Return a record with at least <code>fired</code> and
+   <code>action</code>. The reference is behind a switch; flip it after your attempt.</li>
+<li><strong>Watch the three properties.</strong> <code>test_s05_reject_leaves_zero_side_effects</code> checks
+   the untouched world. <code>test_s05_edit_rebinds_what_executes</code> checks that the model
+   asking for the <em>original</em> ticket aborts while the <em>edited</em> request fires.
+   <code>test_s05_degrade_fires_exactly_the_approved_ticket</code> checks that degrade fires the
+   approved object, never the request.</li>
+<li><strong>Run the shift with a scripted model.</strong> A stub script walks propose → fire →
+   answer so you can see the whole path with the decisions visible in <code>gate_log</code>.</li>
+<li><strong>Then your model.</strong> The same run, live. A real endpoint usually does not rush to
+   <code>fire_ticket</code>, and when it never proposes, the gate has nothing to hold. That is
+   not a failure — it is the honest shape of the path. Watch what the model actually
+   does and read <code>stop_reason</code>, <code>approved</code>, <code>gate_log</code> and <code>fires</code>.</li>
+</ol>
+<hr />
+<h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
+<p>Rejected three times, live: <strong>how many runs fired nothing</strong>. The claim "reject means
+nothing happens" is only worth what you have tested it against, and this page will
+not predict your count.</p>
+<p>Bank it as a rate with the model name, then state what it does and does not cover:
+it exercises the reject path on this endpoint, with this script, and it says nothing
+yet about a model that proposes something nobody approved. That is the loop-level
+case the drift assertion covers.</p>
+<hr />
+<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
+<table>
+<thead>
+<tr>
+<th>Development</th>
+<th>Status</th>
+<th>Take</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://openai.github.io/openai-agents-python/">OpenAI Agents SDK</a></td>
+<td><strong>recognize</strong></td>
+<td>Owns the loop and offers tool-level approval flows, so a human can interrupt before a sensitive call. The same design question: who holds the approved object.</td>
+</tr>
+<tr>
+<td><a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use">Anthropic tool use</a></td>
+<td><strong>recognize</strong></td>
+<td>A tool call is a request, not an execution. Every consent design starts from that fact, which S01 established the hard way.</td>
+</tr>
+<tr>
+<td><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP Top 10 for LLM Applications</a></td>
+<td><strong>recognize</strong></td>
+<td>Names excessive agency as a risk class and treats human approval as the control. Read it as a checklist for what your gate does not yet cover.</td>
+</tr>
+<tr>
+<td><a href="https://modelcontextprotocol.io/">Model Context Protocol</a></td>
+<td><strong>recognize</strong></td>
+<td>Standardises tool discovery and deliberately leaves approval to the host. The gate you wrote is that host's job.</td>
+</tr>
+<tr>
+<td><a href="https://langchain-ai.github.io/langgraph/">LangGraph</a></td>
+<td><strong>adopt</strong></td>
+<td>Models human-in-the-loop as interrupts with durable state, so an approval can resume a paused graph. Read it when you need the gate to survive a restart.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="annotated-readings">Annotated readings</h2>
+<ul>
+<li><strong>OWASP Top 10 for LLM Applications, excessive agency</strong> — extract: the listed
+  mitigations and mark which ones this session implements and which ones it hands
+  to S06.</li>
+<li><strong>OpenAI Agents SDK, human approval for tools</strong> — extract: what the SDK pauses,
+  what it preserves across the pause, and how it decides which tools are sensitive.
+  Compare it with your single <code>IRREVERSIBLE_ACTION</code> name.</li>
+<li><strong><code>cafe/consent.py</code>, <code>check_fire</code> and <code>fire_requested</code></strong> — read them in that order.
+  The comparison is small on purpose; the point is <em>where</em> it runs, not how clever
+  it is.</li>
+</ul>
+<hr />
+<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
+<ul>
+<li><em>"The prompt can ask the model to confirm before firing."</em> Asking is not
+  enforcing. The model can say anything; the gate is a check on the harness's own
+  copy of the approved ticket.</li>
+<li><em>"Reject just means the model stops."</em> Reject returns <code>None</code> and nothing
+  downstream runs. It is a state, not a message.</li>
+<li><em>"Degrade is a softer abort."</em> Degrade fires exactly the approved ticket. It is
+  the product decision to serve what the human agreed to while logging the refusal
+  — never to serve the model's request.</li>
+<li><em>"An edit only updates the fields that changed."</em> An edit re-renders the whole
+  ticket and restarts the flow. Partial state is how a customer approves one thing
+  and gets another.</li>
+<li><em>"The model proposed it, so it is obviously what the customer wants."</em> The
+  proposal is unvalidated until the gate validates it, and unauthorised until a
+  human approves it. Both checks run before dispatch.</li>
+</ul>
+<hr />
+<h2 id="self-check">Self-check</h2>
+<details><summary>Why must <code>fire_requested</code> compare against the approved ticket rather than the model's request?</summary>
+
+Because the request is the thing under suspicion. The approved object is the only
+record of what a human agreed to; if the model drifts, or a customer edits the
+order down, the request will disagree with it. The check exists to catch exactly
+that disagreement before dispatch.</details>
+
+<details><summary>What exactly does "reject leaves zero side effects" mean, and how is it tested?</summary>
+
+No fired ticket and no tool-log entry, plus an approved ticket of `None`. The cell
+drives a rejection through the gate and the enforcement point and asserts all
+three. It is a claim about the world, so it is tested, not described.</details>
+
+<details><summary>Under <code>degrade</code>, which ticket reaches the kitchen when the model asks for something else?</summary>
+
+The approved ticket, always. Degrade fires the approved object and records the
+clauses it refused. Firing the model's request — even partially — would make the
+gate decorative.</details>
+
+<details><summary>A live run never calls <code>fire_ticket</code>. Did the gate fail?</summary>
+
+No. The gate only acts on what it is given. A model that answers in prose instead
+of firing leaves the gate with nothing to hold, which is the honest shape of the
+path. Read `stop_reason` and `gate_log` before calling it a success or a failure.</details>
+
+<hr />
+<h2 id="what-this-unlocks">What this unlocks</h2>
+<p>You can now hold an irreversible action behind a check that runs before dispatch.
+But the gate only sees what it is <em>given</em>: an untrusted message still flows straight
+into the model. <strong><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">S06 — Layered detection</a></strong> puts an
+ordered pipeline in front of the model — a deterministic keyword floor before any
+model call, an allergen classifier, and a scope governor — with a real allergen as
+the stake.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html#the-theory-in-depth">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
+<footer>
+  Generated by <code>tools/build.py</code> from
+  <code>sessions/sessions/s05-consent-gate/lesson.md</code> — part of The Agent Harness Path.
+</footer>
+</main>
+</body>
+</html>

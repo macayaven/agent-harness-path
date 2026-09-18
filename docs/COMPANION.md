@@ -23,10 +23,10 @@ present (always-on learner rule).
 
 A session:
 
-1. Open `lessons/SNN-*.html` (preview or browser).
-2. Open `notebooks/sNN_*_toy.py` with `uv run marimo edit notebooks/sNN_*_toy.py`
-   and run it. The notebook runs **live** against your own OpenAI-compatible
-   endpoint (see §3).
+1. Open `sessions/sNN-slug/lesson.html` (preview or browser).
+2. Open `sessions/sNN-slug/toy.py` with `uv run marimo edit sessions/sNN-slug/toy.py`
+   and run it. The toy runs on the offline stub unless `COURSE_MODE=live`
+   points it at your own OpenAI-compatible endpoint (see §3).
 3. Predict-first: write your guess **before** asking the assistant to confirm.
 4. Optional hard path: open `labs/sNN_*.md` and `@bridges/sNN.md` in chat.
 
@@ -117,5 +117,5 @@ unless you say you are stuck; S13/S14 stay unaided.
 
 ## 5. Native route still works
 
-`uv run marimo edit notebooks/sNN_*_toy.py` and opening `lessons/index.html`
+`uv run marimo edit sessions/sNN-slug/toy.py` and opening `sessions/index.html`
 remain the zero-assistant path. This companion cut does not remove them.

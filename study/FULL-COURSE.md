@@ -1,8 +1,8 @@
 # Studying and giving feedback on S01–S14
 
 The public starting point is this clone: follow the root README, run
-`uv sync --frozen`, open [the course index](../lessons/index.html) in Cursor,
-and run the marimo notebooks with `uv run marimo edit notebooks/sNN_*_toy.py`.
+`uv sync --frozen`, open [the course index](../sessions/index.html) in Cursor,
+and run the marimo notebooks with `uv run marimo edit sessions/sNN-slug/toy.py`.
 
 Keep learner work on nonsynced local storage outside the Git checkout. Copy an
 edited notebook before a clean clone, branch switch or version change.
@@ -51,7 +51,7 @@ reflection or certify mastery.
 ## Assistance and optional material
 
 The Cursor companion stays on the same chat across lesson, notebook, and lab.
-Ground it with `@bridges/sNN.md` plus the HTML lesson you are on
+Ground it with `@sessions/sNN-slug/companion.md` plus the HTML lesson you are on
 (`docs/COMPANION.md`). Do not paste a whole notebook. Predict-first cells stay
 empty until you write them. The assistant has no authority to complete activities
 or execute copied commands. Authored hints and foldable self-checks live in the

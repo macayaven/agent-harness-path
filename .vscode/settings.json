@@ -1,6 +1,6 @@
 {
   "workbench.editorAssociations": {
-    "**/notebooks/*.py": "marimo-notebook",
+    "sessions/*/toy.py": "marimo-notebook",
     "**/labs/app.py": "marimo-notebook",
     "*.md": "vscode.markdown.preview.editor"
   }
