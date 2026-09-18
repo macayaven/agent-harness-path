@@ -2,6 +2,8 @@
 
 **Optional. After the notebook.**
 
+**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+
 **Read:** [S10-error-analysis](lesson.html).
 
 ## Build

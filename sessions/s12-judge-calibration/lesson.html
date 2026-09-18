@@ -203,13 +203,18 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
    vectors, every transcript gets exactly one verdict, and the calibrated rubric's
    false-positive rate does not worsen.</li>
+<li><strong>Price the twelve calls.</strong> Calibration cost two rubrics over six transcripts.
+   The cost cell rebuilds each call's messages exactly and projects them on S11's
+   route table — worth-it is a question with two numbers, and now you have both.</li>
 </ol>
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
 <p>Put this in one sentence and defend it: <strong>6 transcripts, 3 seeded defects, detection n/3,
 false positives n/3, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
-your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.</p>
+your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
+Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
+A verdict is worth what it measures minus what it cost to get.</p>
 <hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
 <table>

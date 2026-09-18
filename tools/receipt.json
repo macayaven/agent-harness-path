@@ -297,7 +297,7 @@
     },
     "S12-judge-calibration": {
       "inputs": {
-        "source_sha256": "55acac8099098c07b34e7e8f66b9a4cfbb7e44ebc534a00c4358822d6a8845b4",
+        "source_sha256": "a1692b4dd78379d617e39fe1c3bb864974188a5beabbf6c1c256037793769068",
         "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
         "options": {
           "startOnLoad": false,
@@ -317,7 +317,7 @@
         "config_sha256": "5a138b8bdb72bbea69949d1ff5ca3a8086cea56ca398984a77793fd8ca6e8c90",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
-      "svg_sha256": "c2d04ffbe64e903236df24ab838ed5a50654c2d7ec4184254a833aee18a51e30"
+      "svg_sha256": "c83299ce306057e85b4cfac45a359ecbd23f3724913f40b180d5ae8ab79185b3"
     },
     "S13-rebuild-from-memory": {
       "inputs": {

@@ -2,6 +2,8 @@
 
 **Optional. After the notebook.** The easy path is complete without this.
 
+**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+
 **Read:** [S01-agent-loop](lesson.html) — the loop is a `while`
 around a stateless API; append the assistant message verbatim; pair every
 `tool_call_id`.

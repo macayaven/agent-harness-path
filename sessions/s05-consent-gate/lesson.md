@@ -24,7 +24,8 @@ cannot live in the model's mouth.
 By the end of this session you will have watched a rejected plan leave the world
 untouched, an edited plan change what actually executes, and a drifting model get
 stopped *before* dispatch — and you will be able to say which of those three is the
-property that matters.
+property that matters. (It is the rule they share: the approved ticket is the
+only ticket in the building — reject, edit, and drift are its three faces.)
 
 ---
 
