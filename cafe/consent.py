@@ -124,19 +124,19 @@ def validate_ticket(ticket: Any) -> list[str]:
 
 def render_ticket(ticket: dict) -> str:
     """What the customer actually reads. Short enough to read is a safety property."""
-    lines = [f"=== TICKET · mesa {ticket['table']} · confirma, por favor ==="]
+    lines = [f"=== TICKET · table {ticket['table']} · please confirm ==="]
     for item in ticket["items"]:
         entry = domain.MENU.get(item)
         if entry is None:
-            lines.append(f"  - {item}   (no está en la carta)")
+            lines.append(f"  - {item}   (not on the menu)")
         else:
             lines.append(f"  - {item}   {entry['price']:.2f} EUR")
     total = ticket.get("total_eur")
     shown = f"{total:.2f}" if isinstance(total, (int, float)) and not isinstance(total, bool) else "?"
     lines.append(f"  total: {shown} EUR")
     lines.append(
-        "  [aprobar] mandar a cocina · [editar] cambiar y releer · "
-        "[rechazar] no se manda nada"
+        "  [approve] send to kitchen · [edit] change and re-read · "
+        "[reject] send nothing"
     )
     return "\n".join(lines)
 
@@ -385,4 +385,4 @@ def _assistant_message(message: dict) -> dict:
 
 def _system_prompt() -> str:
     rules = "\n".join(f"- {rule}" for rule in domain.SHIFT_RULES)
-    return f"{domain.PERSONA}\n\nReglas del turno:\n{rules}"
+    return f"{domain.PERSONA}\n\nShift rules:\n{rules}"

@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe.evals import GOLDEN, checkers, naive_vs_governed
     from cafe.evals.tasks import empty_record, reference_record
@@ -86,14 +92,7 @@ def s02_md_golden(mo):
     | `confirm_text` | the line that authorises firing, or `None` |
     | `expect_tools` | the tools the task cannot be done without |
 
-    ```mermaid
-    flowchart LR
-        G[golden set<br/>scripts + expectations] --> N[naive arm<br/>no rules, no tools]
-        G --> V[governed arm<br/>cafe.loop.run_shift]
-        N --> C[one deterministic<br/>checker]
-        V --> C
-        C --> D[naive rate vs<br/>governed rate]
-    ```
+    ![Same scripted user feeds naive and governed engines; both transcripts meet the same deterministic checks](public/diagrams/S02-golden-evals.svg)
     """)
     return
 
@@ -205,7 +204,7 @@ def s02_demo_compare():
                         "type": "function",
                         "function": {
                             "name": "fire_ticket",
-                            "arguments": '{"items": ["cortado"], "table": 1}',
+                            "arguments": '{"items": ["latte"], "table": 1}',
                         },
                     }
                 ],

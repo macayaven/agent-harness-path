@@ -86,14 +86,16 @@ The notebooks read `CAFE_*` before `OPENAI_*`. Point them at your endpoint and
 smoke-test the wiring:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama          # any non-empty string for a local server
 export CAFE_MODEL=llama3.2
 uv run python -m cafe.doctor
 ```
 
-Only CI is offline: it sets `COURSE_MODE=stub` (deterministic stub plus the
-socket guard). The learner path is live. Lab hard-path default is **`--replay`**
+Notebooks are offline by default (deterministic stub; CI additionally sets
+`COURSE_MODE=stub` explicitly and adds the socket guard). Export
+`COURSE_MODE=live` for the live learner path. Lab hard-path default is **`--replay`**
 (no keys); `--live` is never required to finish the S01–S12 core path, and never
 runs in CI.
 

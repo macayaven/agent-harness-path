@@ -1,0 +1,8 @@
+flowchart LR
+    H[history grows] --> B{over budget?}
+    B -- no --> S[send as-is]
+    B -- yes --> C[compact:<br/>truncate / summarize / pin]
+    C --> S
+    S --> L{over hard limit?}
+    L -- yes --> X[400: context_length_exceeded]
+    L -- no --> M[model call]

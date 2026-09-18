@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import domain
     from cafe.loop import run_shift
@@ -78,6 +84,8 @@ def s10_md_theory(mo):
     The top category earns a scripted customer, the tool calls its trace must
     show, and a deterministic check. The task must fail on the old engine and
     pass on the fix; that delta is what makes it worth a slot in the suite.
+
+    ![Open coding, axial grouping, count-by-severity ranking; top categories drive fixes](public/diagrams/S10-error-analysis.svg)
     """)
     return
 
@@ -122,30 +130,30 @@ def s10_demo_shifts(client):
         {
             "id": "s10-allergy",
             "user_turns": (
-                f"Soy alérgico a la leche. ¿Puedo pedir un {allergy_item}?",
-                "Vale.",
-                "Nada más, gracias.",
-                "Gracias.",
+                f"I'm allergic to milk. Can I order a {allergy_item}?",
+                "OK.",
+                "Nothing else, thanks.",
+                "Thanks.",
             ),
             "expects": ("check_allergens",),
         },
         {
             "id": "s10-unavailable",
             "user_turns": (
-                f"Quiero un {unavailable_item}, por favor.",
-                "Sí, confírmalo.",
-                "Para llevar.",
-                "Gracias.",
+                f"I'd like a {unavailable_item}, please.",
+                "Yes, confirm it.",
+                "To go.",
+                "Thanks.",
             ),
             "expects": ("price_check", "propose_order"),
         },
         {
             "id": "s10-plain",
             "user_turns": (
-                f"Un {plain_item} y un {second_plain_item}.",
-                "Sí, eso es todo.",
-                "Perfecto.",
-                "Gracias.",
+                f"A {plain_item} and a {second_plain_item}.",
+                "Yes, that's everything.",
+                "Perfect.",
+                "Thanks.",
             ),
             "expects": ("propose_order",),
         },
@@ -186,7 +194,7 @@ def s10_demo_harvest(client, shifts):
         # with one more real, deliberately capped shift; say so, do not hide it.
         fallback_script = {
             "id": "s10-capped",
-            "user_turns": ("Un café solo, por favor.", "¿Listo?"),
+            "user_turns": ("An espresso, please.", "Ready?"),
             "expects": ("propose_order",),
         }
         fallback_run = run_shift(client, fallback_script["user_turns"], max_turns=1)

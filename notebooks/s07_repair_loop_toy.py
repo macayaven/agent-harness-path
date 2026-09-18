@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe.model import get_client
     from cafe.repair import (
@@ -91,6 +97,8 @@ def s07_md_theory(mo):
 
     Every run ends with a `stop_reason` in `STOP_REASONS`, and a draft exists if
     and only if the reason is `passed`. That biconditional is the contract.
+
+    ![Score deterministically: accept, retry with a failure view, or withhold](public/diagrams/S07-repair-loop.svg)
     """)
     return
 
@@ -112,14 +120,14 @@ def s07_predict_contradiction(mo):
 def s07_demo_contradiction():
     contradiction_spec = {
         "table": 4,
-        "items": ["cortado", "napolitana"],
+        "items": ["latte", "chocolate croissant"],
         "avoid_allergens": ["milk"],
     }
     ping_pong = make_scripted_generator(
         [
-            {"table": 4, "items": ["cortado"]},
-            {"table": 4, "items": ["cortado", "napolitana", "leche merengada"]},
-            {"table": 4, "items": ["cortado"]},
+            {"table": 4, "items": ["latte"]},
+            {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
+            {"table": 4, "items": ["latte"]},
         ]
     )
     contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
@@ -191,7 +199,7 @@ def s07_reveal_source_failure_view(mo, reveal_failure_view):
 
 @app.cell
 def s07_demo_compare():
-    sample_failures = ["missing required item: napolitana", "contains banned allergen: milk"]
+    sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
     mine = attempt_failure_view(sample_failures, 2)
     if not mine.strip():
         print("Attempt pending: write the curated view before comparing the reference.")
@@ -218,7 +226,7 @@ def s07_predict_live(mo):
 
 @app.cell
 def s07_demo_live(client):
-    live_spec = {"table": 7, "items": ["cortado", "tostada con tomate"], "avoid_allergens": []}
+    live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
     live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
     print("brief      :", brief_for(live_spec)[:88])
     print("stop_reason:", live_run["stop_reason"])
@@ -264,7 +272,7 @@ def s07_md_checkpoint(mo):
 @app.cell
 def s07_demo_checkpoint(client):
     distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
-    for table, items in ((4, ["cortado"]), (5, ["croissant"]), (6, ["zumo de naranja"])):
+    for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
         run = repair_ticket(
             {"table": table, "items": items, "avoid_allergens": []},
             make_model_generator(client),

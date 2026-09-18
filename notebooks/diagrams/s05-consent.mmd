@@ -1,0 +1,10 @@
+flowchart LR
+    P[model proposes ticket as JSON] --> V{valid?}
+    V -- no --> R[never reaches a human]
+    V -- yes --> H[customer reads the render]
+    H -- approve --> A[approved ticket]
+    H -- edit --> V
+    H -- reject --> Z[nothing runs]
+    A --> C{request matches<br/>the approved ticket?}
+    C -- yes --> F[fire_ticket]
+    C -- no --> X[preflight: abort or degrade]

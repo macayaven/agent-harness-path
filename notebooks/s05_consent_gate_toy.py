@@ -6,6 +6,12 @@ app = marimo.App(width="medium")
 with app.setup:
     import inspect
     import json
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe.consent import (
         IRREVERSIBLE_ACTION,
@@ -41,7 +47,7 @@ def s05_md_hook(mo):
 
     ## The hook
 
-    A customer asks for a cortado, the model calls `propose_order`, then — without
+    A customer asks for a latte, the model calls `propose_order`, then — without
     waiting for anyone — it calls `fire_ticket`. A ticket is already in the
     kitchen before a human has read a word. `fire_ticket` is irreversible: you
     cannot un-make the coffee.
@@ -63,8 +69,8 @@ def s05_md_client(mo):
     mo.md(r"""
     ## Your model
 
-    Same seam as every session: `get_client()` returns a live client pointed at
-    **your** endpoint, unless `COURSE_MODE=stub`.
+    Same seam as every session: `get_client()` returns the offline stub unless
+    `COURSE_MODE=live` points it at **your** endpoint.
     """)
     return
 
@@ -86,19 +92,9 @@ def s05_md_theory(mo):
     action can be checked against the approved one mechanically. A prose plan
     cannot be checked at all.
 
-    ```mermaid
-    flowchart LR
-        P[model proposes a ticket] --> V{valid?}
-        V -- no --> R[never reaches a human]
-        V -- yes --> H[customer reads the render]
-        H -- approve --> A[approved ticket]
-        H -- edit --> V
-        H -- reject --> Z[nothing runs]
-        A --> C{request matches<br/>the approved ticket?}
-        C -- yes --> F[fire_ticket]
-        C -- no --> X[preflight: abort or degrade]
-    ```
-
+    ![Proposed ticket validates, renders for a human, and only fires on approval](public/diagrams/s05-consent.svg)
+    """)
+    mo.md(r"""
     Two properties carry the whole design:
 
     1. **The gate is the check, not the dialog.** The model can say anything; the
@@ -112,8 +108,8 @@ def s05_md_theory(mo):
 @app.cell(hide_code=True)
 def s05_predict_gate(mo):
     mo.md(r"""
-    **Predict first.** Below, the model proposes `cortado + tostada con tomate`
-    for table 4. The scripted customer edits it down to a single `café solo`,
+    **Predict first.** Below, the model proposes `latte + tomato toast`
+    for table 4. The scripted customer edits it down to a single `espresso`,
     then approves. Before you run: what does the customer read, and what exactly
     ends up in the approved ticket?
     """)
@@ -122,13 +118,13 @@ def s05_predict_gate(mo):
 
 @app.cell
 def s05_demo_gate():
-    proposal = {"items": ["cortado", "tostada con tomate"], "table": 4}
+    proposal = {"items": ["latte", "tomato toast"], "table": 4}
     print(render_ticket(enrich_ticket(proposal)))
     print()
     gate_approved, gate_log = consent_gate(
         proposal,
         make_responder(
-            [("edit", {"items": ["café solo"], "table": 4}), ("approve", None)]
+            [("edit", {"items": ["espresso"], "table": 4}), ("approve", None)]
         ),
     )
     for gate_entry in gate_log:
@@ -195,9 +191,9 @@ def s05_reveal_source_gate(mo, reveal_gate):
 @app.cell
 def s05_demo_compare():
     compare_state = OrderState()
-    compare_approved = {"items": ["café solo"], "table": 2}
+    compare_approved = {"items": ["espresso"], "table": 2}
     compare_record = attempt_gate(
-        compare_state, {"items": ["cortado"], "table": 2}, compare_approved
+        compare_state, {"items": ["latte"], "table": 2}, compare_approved
     )
     if compare_record is None:
         print("Attempt pending: return an enforcement record before comparing.")
@@ -212,12 +208,12 @@ def s05_demo_compare():
 def test_s05_reject_leaves_zero_side_effects():
     reject_state = OrderState()
     rejected, reject_log = consent_gate(
-        {"items": ["cortado"], "table": 2}, make_responder([("reject", None)])
+        {"items": ["latte"], "table": 2}, make_responder([("reject", None)])
     )
     assert rejected is None
     assert reject_log[-1]["decision"] == "reject"
     reject_record = fire_requested(
-        reject_state, {"items": ["cortado"], "table": 2}, rejected
+        reject_state, {"items": ["latte"], "table": 2}, rejected
     )
     assert reject_record["fired"] is False
     assert reject_state.fired == [], "a rejected plan must leave zero tickets"
@@ -228,32 +224,32 @@ def test_s05_reject_leaves_zero_side_effects():
 @app.cell
 def test_s05_edit_rebinds_what_executes():
     edit_state = OrderState()
-    edited = {"items": ["café solo"], "table": 2}
+    edited = {"items": ["espresso"], "table": 2}
     edit_approved, _ = consent_gate(
-        {"items": ["cortado"], "table": 2},
+        {"items": ["latte"], "table": 2},
         make_responder([("edit", edited), ("approve", None)]),
     )
     assert edit_approved["items"] == edited["items"], "the edited ticket is the one that binds"
     assert edit_approved["table"] == edited["table"]
     # The model asks for the ORIGINAL ticket: the edited one binds, nothing fires.
     blocked = fire_requested(
-        edit_state, {"items": ["cortado"], "table": 2}, edit_approved
+        edit_state, {"items": ["latte"], "table": 2}, edit_approved
     )
     assert blocked["action"] == "aborted" and edit_state.fired == []
     # The model asks for the EDITED ticket: that is what reaches the kitchen.
     fired = fire_requested(edit_state, dict(edited), edit_approved)
     assert fired["action"] == "fired"
-    assert edit_state.fired[0]["items"] == ["café solo"]
+    assert edit_state.fired[0]["items"] == ["espresso"]
     return
 
 
 @app.cell
 def test_s05_degrade_fires_exactly_the_approved_ticket():
     degrade_state = OrderState()
-    degrade_approved = {"items": ["café solo"], "table": 2}
+    degrade_approved = {"items": ["espresso"], "table": 2}
     degrade_record = fire_requested(
         degrade_state,
-        {"items": ["cortado", "café solo"], "table": 2},
+        {"items": ["latte", "espresso"], "table": 2},
         degrade_approved,
         on_violation="degrade",
     )
@@ -301,21 +297,21 @@ def s05_demo_shift():
         }
 
     scripted_script = [
-        stub_tool("call_a", "propose_order", {"items": ["cortado"], "table": 2}),
-        stub_tool("call_b", "fire_ticket", {"items": ["cortado"], "table": 2}),
+        stub_tool("call_a", "propose_order", {"items": ["latte"], "table": 2}),
+        stub_tool("call_b", "fire_ticket", {"items": ["latte"], "table": 2}),
         {
             "choices": [
                 {
                     "index": 0,
                     "finish_reason": "stop",
-                    "message": {"role": "assistant", "content": "Marchando, mesa 2."},
+                    "message": {"role": "assistant", "content": "Coming right up, table 2."},
                 }
             ]
         },
     ]
     scripted = run_shift(
         StubClient(script=scripted_script),
-        ["Ponme un cortado para la mesa 2."],
+        ["Get me a latte for table 2."],
         make_responder([("approve", None)]),
     )
     print("stop_reason:", scripted["stop_reason"])
@@ -340,7 +336,7 @@ def s05_md_live(mo):
 def s05_demo_live(client):
     live = run_shift(
         client,
-        ["Ponme un cortado para la mesa 2, y una napolitana."],
+        ["Get me a latte for table 2, and a chocolate croissant."],
         make_responder([("approve", None)]),
     )
     print("stop_reason:", live["stop_reason"])
@@ -375,7 +371,7 @@ def s05_demo_checkpoint(client):
     kept = 0
     for _ in range(3):
         run = run_shift(
-            client, ["Ponme un café solo."], make_responder([("reject", None)])
+            client, ["Get me an espresso."], make_responder([("reject", None)])
         )
         refused_everything = all(
             record["action"] == "refused" for record in run["fires"]

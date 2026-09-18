@@ -6,6 +6,12 @@ app = marimo.App(width="medium")
 with app.setup:
     import inspect
     import json
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import domain
     from cafe.evals import checkers
@@ -80,20 +86,9 @@ def s04_md_contract(mo):
     — because the checks *are* the lesson. A library is these same checks with more
     keywords.
 
-    ```mermaid
-    flowchart LR
-        N[customer note] --> M[model call]
-        M --> R[raw reply]
-        R --> P{parses as JSON?}
-        P -- no --> F[PARSE ERROR<br/>back into messages]
-        P -- yes --> S{valid against<br/>the schema?}
-        S -- no --> F
-        S -- yes --> D{matches the<br/>shift data?}
-        D -- no --> F
-        D -- yes --> T[ticket accepted]
-        F --> M
-    ```
-
+    ![Parse, validate, return specific errors for another bounded attempt; exhausted attempts escalate](public/diagrams/S04-structured-generation.svg)
+    """)
+    mo.md(r"""
     Two gates, not one. The first is *shape*: is this the object the contract
     describes? The second is *meaning*: does it agree with tonight's menu and
     prices? The second gate is S02's checker, doing exactly what a checker is for.
@@ -107,7 +102,7 @@ def s04_predict_validator(mo):
     **Predict first.** Before running: which of these two tickets does `validate`
     accept, and what exact error does it give the other one?
 
-    1. a ticket missing `total_eur`, with `"table": "cuatro"`;
+    1. a ticket missing `total_eur`, with `"table": "four"`;
     2. a ticket whose `items` are two dishes from tonight's menu, priced correctly.
     """)
     return
@@ -122,7 +117,7 @@ def s04_demo_validator():
         "total_eur": round(sum(domain.MENU[item]["price"] for item in _items), 2),
         "allergen_checked": True,
     }
-    _broken_ticket = {"table": "cuatro", "items": [_items[0]]}
+    _broken_ticket = {"table": "four", "items": [_items[0]]}
     print("reference ticket :", validate(_reference_ticket, TICKET_SCHEMA) or "valid")
     print("broken ticket    :")
     for _problem in validate(_broken_ticket, TICKET_SCHEMA):
@@ -177,7 +172,7 @@ def s04_reveal_source_semantic(mo, reveal_semantic):
 def s04_demo_semantic():
     _valid_but_wrong = {
         "table": 4,
-        "items": [sorted(domain.EIGHTY_SIXED)[0], "cortado"],
+        "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
         "total_eur": 99.0,
         "allergen_checked": True,
     }
@@ -225,9 +220,9 @@ def s04_predict_retry(mo):
 @app.cell
 def s04_demo_live(client):
     briefs = (
-        "Mesa 4: un cortado y una tostada con tomate, por favor.",
-        "Mesa 2 pide dos napolitanas y un zumo de naranja.",
-        "Soy Lucía, mesa 7. Quiero una tortilla, pero no sé si me sienta bien.",
+        "Table 4: a latte and tomato toast, please.",
+        "Table 2 wants two chocolate croissants and an orange juice.",
+        "I'm Lucia, table 7. I want a cheese omelette, but I'm not sure it'll sit well.",
     )
     print(f"{'brief':<6} {'outcome':<12} {'attempts':<9} detail")
     for _index, _brief in enumerate(briefs):
@@ -278,7 +273,7 @@ def test_s04_validator_accepts_reference_and_rejects_enum_miss():
 def test_s04_valid_is_not_correct():
     _valid_but_wrong = {
         "table": 4,
-        "items": [sorted(domain.EIGHTY_SIXED)[0], "cortado"],
+        "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
         "total_eur": 99.0,
         "allergen_checked": True,
     }
@@ -292,7 +287,7 @@ def test_s04_valid_is_not_correct():
 
 @app.cell
 def test_s04_retry_loop_stays_protocol_legal(client):
-    _, messages, attempts = ask_ticket(client, "Mesa 3: un café solo.")
+    _, messages, attempts = ask_ticket(client, "Table 3: an espresso.")
     check_pairing(messages)
     assert 1 <= attempts <= 3, attempts
     assert messages[0]["role"] == "system" and messages[1]["role"] == "user"

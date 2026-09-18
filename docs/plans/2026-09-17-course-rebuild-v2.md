@@ -61,8 +61,9 @@ every experiment hitting a real model that genuinely surprises them.
 6. **CI stays green with no key, no network, zero cost.** Enforced structurally
    by the stub client and a socket guard, not by policy text.
 7. **Sourced SOTA rows**, five status tags, unchanged.
-8. **English prose; Spanish for café dialogue** (the author works in Spanish and
-   the domain is a Spanish-speaking neighbourhood café).
+8. **English prose; English café dialogue** (amended after landing: the
+   original Spanish-dialogue rule was retired so learners read exercises, not a
+   theme; `AGENTS.md` non-negotiable 8 governs).
 
 ---
 
@@ -200,7 +201,7 @@ structurally deep enough for all fourteen concepts, and nowhere near a
 paste-ready production harness.
 
 Entities: customers, orders, tickets, the menu, allergens, the pass, the till,
-shift handover. Dialogue is Spanish; all prose, comments and docs are English.
+shift handover. Dialogue is English, like all prose, comments and docs.
 
 ### 5.2 Tool names (in-domain, fixed)
 

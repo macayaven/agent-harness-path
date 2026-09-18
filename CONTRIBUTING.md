@@ -104,9 +104,13 @@ without renaming or rewriting the existing named cells. Execute notebooks after
 edits as above.
 
 Every lesson diagram is a committed SVG, so offline clone-and-read and ordinary
-HTML builds need no browser or Node. S08 and S14 each contain two diagrams. To
-change any Mermaid source, diagram alternative, renderer, options, vendored
-Mermaid asset or Python lock:
+HTML builds need no browser or Node. S08 and S14 each contain two diagrams.
+Notebook diagrams are committed SVGs too: shared sessions inline the lesson
+asset, and the five notebook-only diagrams render from `notebooks/diagrams/`
+`.mmd` sources in the same command. Notebook cells inline bytes via
+`cafe.diagrams.inline` — never `mo.mermaid`, whose frontend island does not
+render in the Cursor extension. To change any Mermaid source, diagram
+alternative, renderer, options, vendored Mermaid asset or Python lock:
 
 ```bash
 uv sync --frozen --group diagrams

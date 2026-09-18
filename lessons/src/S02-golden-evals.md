@@ -12,11 +12,11 @@ These are planning estimates, not measured learner timings. **Prerequisites:** S
 
 ## The hook
 
-A customer says *"soy alérgico al huevo, ¿me pones una tortilla?"* Your agent
+A customer says *"I'm allergic to egg, can I get a cheese omelette?"* Your agent
 answers in fluent Spanish, quotes a price, and sounds exactly as confident as it
 did on the easy order. Nothing in the transcript flags a problem.
 
-The problem is real: the tortilla carries egg. Yesterday you replayed a shift three
+The problem is real: the cheese omelette carries egg. Yesterday you replayed a shift three
 times and called the result a number. A different customer, a declared allergy, a
 price that was never on the menu — any of them turns *looks fine to me* into a
 written complaint. You cannot defend three anecdotes to your own barista, let

@@ -122,4 +122,4 @@ def _assistant_message(message: dict) -> dict:
 
 def _system_prompt() -> str:
     rules = "\n".join(f"- {rule}" for rule in domain.SHIFT_RULES)
-    return f"{domain.PERSONA}\n\nReglas del turno:\n{rules}"
+    return f"{domain.PERSONA}\n\nShift rules:\n{rules}"

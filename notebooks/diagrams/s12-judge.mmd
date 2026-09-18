@@ -1,0 +1,10 @@
+flowchart LR
+    S[clean transcripts] --> M[seed known defects]
+    M --> K[answer key<br/>class or clean]
+    K --> H[you hand-label<br/>first, blind]
+    H --> J1[judge v1<br/>uncalibrated rubric]
+    J1 --> R1[detection + false positives<br/>as a PAIR]
+    R1 --> E[read the misses<br/>turn them into classes]
+    E --> J2[judge v2<br/>calibrated rubric]
+    J2 --> R2[re-measure on the SAME corpus]
+    R2 --> KK[Cohen's κ<br/>chance-corrected agreement]

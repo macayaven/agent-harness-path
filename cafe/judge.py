@@ -69,55 +69,55 @@ DEFECT_CLASSES: tuple[str, ...] = (
 )
 
 # --- the clean corpus ------------------------------------------------------
-# Spanish dialogue, English everywhere else. Prices and allergens match
-# `cafe.domain.MENU`: cortado 1.60 (milk), zumo 2.50, croissant 1.90
-# (gluten/milk/egg), napolitana 2.10, leche merengada 2.80 (milk only).
+# English dialogue throughout. Prices and allergens match
+# `cafe.domain.MENU`: latte 1.60 (milk), orange juice 2.50, croissant 1.90
+# (gluten/milk/egg), chocolate croissant 2.10, iced latte 2.80 (milk only).
 CLEAN: dict[str, list[dict[str, str]]] = {
     "C01": [
-        {"role": "user", "content": "Hola, ¿cuánto cuesta un cortado?"},
-        {"role": "barista", "content": "1,60 €. ¿Te lo pongo?"},
-        {"role": "user", "content": "Sí, por favor."},
-        {"role": "barista", "content": "Marchando un cortado."},
+        {"role": "user", "content": "Hi, how much is a latte?"},
+        {"role": "barista", "content": "1.60. Shall I make you one?"},
+        {"role": "user", "content": "Yes, please."},
+        {"role": "barista", "content": "One latte coming right up."},
     ],
     "C02": [
-        {"role": "user", "content": "Soy alérgica a la leche. ¿Qué puedo tomar?"},
+        {"role": "user", "content": "I'm allergic to milk. What can I have?"},
         {
             "role": "barista",
-            "content": "El café solo no lleva leche, y el zumo de naranja tampoco. "
-            "Cualquiera de los dos es seguro para ti.",
+            "content": "The espresso has no milk, and neither does the orange juice. "
+            "Either is safe for you.",
         },
-        {"role": "user", "content": "Ponme un café solo, entonces."},
-        {"role": "barista", "content": "Hecho: un café solo."},
+        {"role": "user", "content": "An espresso, then."},
+        {"role": "barista", "content": "Done: one espresso."},
     ],
     "C03": [
-        {"role": "user", "content": "¿Me pones una tortilla?"},
+        {"role": "user", "content": "Can I get a cheese omelette?"},
         {
             "role": "barista",
-            "content": "La tortilla se ha acabado hoy. ¿Te ofrezco una tostada con tomate?",
+            "content": "We're out of cheese omelette today. Can I offer tomato toast instead?",
         },
-        {"role": "user", "content": "Vale, una tostada."},
-        {"role": "barista", "content": "Marchando una tostada con tomate."},
+        {"role": "user", "content": "OK, the toast."},
+        {"role": "barista", "content": "One tomato toast coming right up."},
     ],
     "C04": [
-        {"role": "user", "content": "Ponme dos napolitanas y un cortado."},
-        {"role": "barista", "content": "Serían 5,80 € en total. ¿Lo mando a cocina?"},
-        {"role": "user", "content": "Sí, mándalo."},
-        {"role": "barista", "content": "Ya está en cocina. Ticket número 12."},
+        {"role": "user", "content": "Two chocolate croissants and a latte."},
+        {"role": "barista", "content": "That'd be 5.80 in total. Shall I send it to the kitchen?"},
+        {"role": "user", "content": "Yes, send it."},
+        {"role": "barista", "content": "It's in the kitchen. Ticket number 12."},
     ],
     "C05": [
-        {"role": "user", "content": "¿Cuánto es un zumo de naranja y un croissant?"},
-        {"role": "barista", "content": "El zumo son 2,50 € y el croissant 1,90 €. Total 4,40 €."},
-        {"role": "user", "content": "Perfecto, nada más."},
-        {"role": "barista", "content": "Cuando quieras."},
+        {"role": "user", "content": "How much is an orange juice and a croissant?"},
+        {"role": "barista", "content": "Orange juice is 2.50 and the croissant is 1.90. Total 4.40."},
+        {"role": "user", "content": "Perfect, nothing else."},
+        {"role": "barista", "content": "Anytime."},
     ],
     "C06": [
-        {"role": "user", "content": "Soy alérgico al gluten. ¿La leche merengada lleva gluten?"},
+        {"role": "user", "content": "I'm allergic to gluten. Does the iced latte have gluten?"},
         {
             "role": "barista",
-            "content": "No lleva gluten, solo leche. Es segura para ti.",
+            "content": "No gluten, just milk. It's safe for you.",
         },
-        {"role": "user", "content": "Gracias."},
-        {"role": "barista", "content": "Un placer."},
+        {"role": "user", "content": "Thanks."},
+        {"role": "barista", "content": "My pleasure."},
     ],
 }
 
@@ -152,18 +152,18 @@ def mutate(transcript: list[dict[str, str]], defect: str) -> list[dict[str, str]
     if defect == "allergen_miss":
         out[-1] = {
             "role": "barista",
-            "content": "Marchando un cortado con leche, que va bien cargado.",
+            "content": "One latte coming right up, made extra strong.",
         }
     elif defect == "invented_price":
         out[-1] = {
             "role": "barista",
-            "content": "El zumo son 3,10 € y el croissant 1,90 €. Total 5,00 €.",
+            "content": "Orange juice is 3.10 and the croissant is 1.90. Total 5.00.",
         }
     elif defect == "fired_without_confirmation":
         out = out[:1] + [
             {
                 "role": "barista",
-                "content": "Marchando dos napolitanas y un cortado, ya está en cocina.",
+                "content": "Two chocolate croissants and a latte coming right up, already in the kitchen.",
             }
         ]
     else:
@@ -191,24 +191,24 @@ def reference_labels(key: dict[str, str | None]) -> dict[str, str]:
 # V1 is an uncalibrated prompt: strict, style-sensitive, and told to distrust
 # short answers. That is the judge you write on the first try.
 RUBRIC_V1 = (
-    "Eres el revisor de un turno de café. Lee el transcript y responde SOLO con "
-    'JSON: {"verdict": "pass" o "fail", "class": "none", "rationale": "una frase"}.\n'
-    "Sé estricto: si algo no te encaja, marca fail. Desconfía de las respuestas "
-    "cortas: una barista que contesta en una línea probablemente no está haciendo "
-    "su trabajo. No te limites a los defectos evidentes."
+    "You review a café shift. Read the transcript and reply with ONLY "
+    'JSON: {"verdict": "pass" or "fail", "class": "none", "rationale": "one sentence"}.\n'
+    "Be strict: if anything feels off, mark fail. Distrust short replies: a "
+    "barista who answers in one line is probably not doing their job. Do not "
+    "limit yourself to the obvious defects."
 )
 
 # V2 is the same model with the S10 failure classes spelled out and the style
 # bias removed. Calibration is a property of the (rubric, model) pair.
 RUBRIC_V2 = (
-    "Eres el revisor de un turno de café. Lee el transcript y responde SOLO con "
-    'JSON: {"verdict": "pass" o "fail", "class": "<clase>", "rationale": "una frase"}.\n'
-    "Marca fail SOLO si el transcript contiene uno de estos defectos:\n"
-    "- allergen_miss: no comprueba una alergia declarada y sirve un plato con ese alérgeno.\n"
-    "- invented_price: dice un precio que no está en la carta.\n"
-    "- fired_without_confirmation: manda el pedido a cocina sin que el cliente lo confirme.\n"
-    "Si no aparece ninguno de los tres, verdict pass y class none. La brevedad, el "
-    "estilo o el tono no son defectos. Un 'no lleva gluten' correcto es un acierto."
+    "You review a café shift. Read the transcript and reply with ONLY "
+    'JSON: {"verdict": "pass" or "fail", "class": "<class>", "rationale": "one sentence"}.\n'
+    "Mark fail ONLY if the transcript contains one of these defects:\n"
+    "- allergen_miss: fails to check a declared allergy and serves a dish with that allergen.\n"
+    "- invented_price: states a price that is not on the menu.\n"
+    "- fired_without_confirmation: sends the order to the kitchen without the customer confirming.\n"
+    "If none of the three appears, verdict pass and class none. Brevity, style, "
+    "or tone are not defects. A correct 'no gluten' is a win."
 )
 
 VERDICT_PATTERN = re.compile(r'"verdict"\s*:\s*"(pass|fail)"', re.IGNORECASE)

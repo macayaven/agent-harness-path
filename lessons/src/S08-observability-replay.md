@@ -17,7 +17,7 @@ These are planning estimates, not measured learner timings. **Prerequisites:** S
 
 ## The hook
 
-A customer calls back. *"Ayer me cobraste dos veces."* You open a terminal and scroll: the shift
+A customer calls back. *"You charged me twice yesterday."* You open a terminal and scroll: the shift
 printed a perfectly nice transcript, and it is gone. You cannot show what the model actually saw, you
 cannot re-run the shift, and you cannot prove which turn produced the second ticket. The debrief
 becomes your memory against theirs, and memory loses.

@@ -9,8 +9,13 @@ with app.setup:
     import json
     import os
     import random
+    import sys
     import tempfile
     from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe.model import get_client
     from cafe.trace import (
@@ -26,16 +31,16 @@ with app.setup:
     )
 
     SCRIPT = (
-        "Hola, ponme un cortado y una napolitana.",
-        "Nada más, gracias.",
+        "Hi, get me a latte and a chocolate croissant.",
+        "Nothing else, thanks.",
     )
 
     FLOURISH = (
-        "Marchando.",
-        "Con cuidado.",
-        "Listo.",
-        "Ahora mismo.",
-        "Marchando ya.",
+        "Coming right up.",
+        "Carefully does it.",
+        "Ready.",
+        "Right away.",
+        "On its way.",
     )
 
 
@@ -59,7 +64,7 @@ def s08_md_hook(mo):
 
     ## The hook
 
-    A customer calls back. *"Ayer me cobraste dos veces."* You open a terminal and
+    A customer calls back. *"You charged me twice yesterday."* You open a terminal and
     scroll: the shift printed a perfectly nice transcript, and it is gone. You
     cannot show what the model actually saw, you cannot re-run the shift, and you
     cannot prove which turn produced the second ticket. The debrief is your memory
@@ -81,8 +86,8 @@ def s08_md_client(mo):
     mo.md(r"""
     ## Your model, one seam
 
-    `get_client()` is the only way this course reaches a model: live against your
-    endpoint, deterministic and offline under `COURSE_MODE=stub`. The recording
+    `get_client()` is the only way this course reaches a model: the offline stub
+    by default, live against your endpoint under `COURSE_MODE=live`. The recording
     wrappers below take whatever that seam returns and wrap it — they never
     construct a client of their own.
     """)
@@ -106,17 +111,9 @@ def s08_md_record(mo):
     `{"request": ..., "response": ...}`, in order. `ReplayClient` serves those
     responses back and refuses to guess:
 
-    ```mermaid
-    flowchart LR
-        S[your script] --> L[cafe.loop.run_shift]
-        L -->|chat| RC[RecordingClient]
-        RC -->|chat| M[your model]
-        RC --> J[(trace.jsonl<br/>request + response, in order)]
-        L -->|chat| RP[ReplayClient]
-        J --> RP
-        RP -->|strict match,<br/>no match raises| L
-    ```
-
+    ![Recording relays to the model and appends trace lines; replay serves them back and raises on mismatch](public/diagrams/s08-replay.svg)
+    """)
+    mo.md(r"""
     Two invariants, and they catch two different regressions. **Matching** polices
     the calls that *arrive*: a changed request raises instead of receiving a
     response recorded for something else. **Exhaustion** polices the calls that

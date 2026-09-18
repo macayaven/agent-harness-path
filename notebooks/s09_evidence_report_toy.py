@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe.loop import run_shift
     from cafe.model import get_client
@@ -61,9 +67,9 @@ def s09_demo_client():
     shift_run = run_shift(
         client,
         [
-            "Hola, soy alérgico a la leche. ¿El croissant lleva leche?",
-            "Entonces ponme un café solo y una tostada con tomate.",
-            "Nada más, gracias.",
+            "Hi, I'm allergic to milk. Does the croissant have milk?",
+            "Then get me an espresso and tomato toast.",
+            "Nothing else, thanks.",
         ],
     )
     events = log_events(shift_run)
@@ -102,6 +108,8 @@ def s09_md_theory(mo):
 
     A report that passes one and fails the other is still dishonest. Honesty is
     the conjunction.
+
+    ![Transcript and run record become evidence slots; validators compare before short human review](public/diagrams/S09-evidence-reports.svg)
     """)
     return
 
@@ -277,9 +285,9 @@ def s09_md_checkpoint(mo):
 def s09_demo_checkpoint(client):
     clean = 0
     scripts = (
-        ["Ponme un cortado.", "Nada más."],
-        ["Soy alérgico a la leche, ¿qué me recomiendas?", "Vale, gracias."],
-        ["Una tortilla, por favor.", "Nada más."],
+        ["Get me a latte.", "Nothing else."],
+        ["I'm allergic to milk, what do you recommend?", "OK, thanks."],
+        ["A cheese omelette, please.", "Nothing else."],
     )
     for script in scripts:
         run = run_shift(client, script)

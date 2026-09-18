@@ -61,6 +61,48 @@ ALTERNATIVES = {
     ),
 }
 STATIC_LESSONS = frozenset(ALTERNATIVES)
+# Notebook-only diagrams: sources are notebooks/diagrams/<asset>.mmd, rendered
+# by the same pinned stack into notebooks/public/diagrams/<asset>.svg. Notebook
+# cells embed them as markdown figures (`![...](public/diagrams/<asset>.svg)`):
+# marimo serves notebook-adjacent files only from a public/ directory, so this
+# one reference renders both statically (resolved against the notebook file)
+# and at runtime (served by the kernel). No mermaid runs at view time.
+PUBLIC_LESSON_ASSETS = frozenset({
+    'S01-agent-loop',
+    'S02-golden-evals',
+    'S04-structured-generation',
+    'S06-layered-detection',
+    'S07-repair-loop',
+    'S09-evidence-reports',
+    'S10-error-analysis',
+})
+NOTEBOOK_ALTERNATIVES = {
+    's03-window': (
+        'History grows until it crosses a budget, when truncation, summarization, '
+        'or pinning compacts it before sending; past a hard limit the call fails '
+        'instead of degrading.',
+    ),
+    's05-consent': (
+        'A proposed ticket validates, renders for a human decision, and only fires '
+        'on approval; edits re-validate, and anything outside the approved ticket '
+        'aborts or degrades at preflight.',
+    ),
+    's08-replay': (
+        'A recording client relays shift calls to the model while appending each '
+        'request and response to a trace file; a replay client later serves those '
+        'responses back in order and raises on any mismatch.',
+    ),
+    's11-budget': (
+        'A validated route table projects each call cost and refuses before spending '
+        'past budget; dispatched calls report usage and latency into a ledger of '
+        'real tokens and cost.',
+    ),
+    's12-judge': (
+        'Clean transcripts seed known defects and an answer key before blind '
+        'hand-labeling; an uncalibrated judge misses become classes for a '
+        'calibrated re-measurement scored by chance-corrected agreement.',
+    ),
+}
 
 
 def sha(data):

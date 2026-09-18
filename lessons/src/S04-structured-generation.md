@@ -86,7 +86,7 @@ different feedback:
   the menu disagreement, not a schema lecture.
 
 Specific errors are the whole mechanism. A model cannot act on "invalid"; it can act
-on "`$.table`: expected integer, got `\"cuatro\"`".
+on "`$.table`: expected integer, got `\"four\"`".
 
 ### The loop is capped, and the transcript stays legal
 
@@ -113,7 +113,7 @@ Open [`notebooks/s04_structured_generation_toy.py`](../notebooks/s04_structured_
 with your endpoint already exported.
 
 1. **Predict the validator.** Before running: which of a ticket missing `total_eur`
-   with `"table": "cuatro"`, and a correct two-item ticket, does `validate` accept —
+   with `"table": "four"`, and a correct two-item ticket, does `validate` accept —
    and what exact error does it hand the other one? Then run the cell.
 2. **Predict the semantic gap.** A ticket below is *schema-valid*. Write down how
    many semantic violations it should earn and name them. Then implement

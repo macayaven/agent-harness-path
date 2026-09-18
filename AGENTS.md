@@ -27,10 +27,11 @@ These survive every rewrite, restyle, and re-theme. Breaking one is a defect.
    drifts close enough to be a drop-in harness, rewrite it *further away*. A
    paste-ready generic harness in `notebooks/` or `labs/` is a defect. All domain
    strings live in `cafe/domain.py` so re-theming stays a one-module change.
-2. **CI is zero network, zero keys, zero cost — the learner path is live.**
+2. **CI is zero network, zero keys, zero cost — notebooks are offline by default.**
    `COURSE_MODE=stub` plus the socket guard in `tests/no_network_site/` makes this
-   structural, not a promise. The learner default is a real OpenAI-compatible
-   endpoint of their choosing; a local model costs nothing. Course logic is
+   structural, not a promise. Unset `COURSE_MODE` means the deterministic stub on
+   every platform; `COURSE_MODE=live` plus `CAFE_*` selects the learner's own
+   OpenAI-compatible endpoint — a local model costs nothing. Course logic is
    stdlib-only Python (3.11+); the only permitted non-stdlib imports are `marimo`
    (notebook runtime) and the course's own `cafe` package. No provider SDK, ever —
    the client is `urllib` against `/chat/completions`. No key is committed,
@@ -51,8 +52,8 @@ These survive every rewrite, restyle, and re-theme. Breaking one is a defect.
 7. **Sourced claims.** SOTA rows link a URL and use exactly these tags:
    **already in this path**, **recognize**, **adopt**, **newer than this session**,
    **ignore**.
-8. **English** for all prose, comments, and docs. Spanish only for toy dialogue
-   where noted.
+8. **English everywhere**, including toy dialogue and fixtures. No Spanish in
+   any course surface. (`café` stays as the ordinary English word for the shop.)
 
 ---
 
@@ -98,14 +99,18 @@ tree.
 - marimo hoists a pure single-function cell to `@app.function` and strips setup
   globals from cell signatures. Attempt/solution are therefore top-level
   `attempt_<topic>` / `solution_<topic>` units, never cells.
+- Notebook diagrams are committed SVGs inlined with `mo.Html` via
+  `cafe.diagrams` — never `mo.mermaid`, whose island the Cursor extension does
+  not render. New notebook-only diagrams go in `notebooks/diagrams/*.mmd` and
+  render through the pinned pipeline like lesson diagrams.
 - The hard path uses the same surface: `labs/run.py` stays the CI/terminal path
   and `labs/app.py` renders it.
 
 ### One model seam
 
 A notebook never constructs a client. It calls `get_client()` from `cafe.model`,
-which returns a live client for the learner and a deterministic `StubClient` when
-`COURSE_MODE=stub`. Identical notebook source, both paths. Adding a second way to
+which returns a deterministic `StubClient` unless `COURSE_MODE=live` selects the
+learner's live client. Identical notebook source, both paths. Adding a second way to
 reach a model is a defect.
 
 ### One spine

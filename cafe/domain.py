@@ -1,7 +1,7 @@
 """Every domain string in one place, so re-theming stays a one-module change.
 
-Dialogue is Spanish (the café is a Spanish-speaking neighbourhood place); all
-prose, comments and identifiers are English.
+All dialogue is English (the café is an English-speaking neighbourhood place);
+prose, comments and identifiers are English too.
 """
 
 from __future__ import annotations
@@ -9,18 +9,18 @@ from __future__ import annotations
 # --- the menu -------------------------------------------------------------
 # price in euros; allergens use the EU 14-allergen short names.
 MENU: dict[str, dict] = {
-    "cortado": {"price": 1.60, "allergens": ["milk"], "station": "bar"},
-    "café solo": {"price": 1.30, "allergens": [], "station": "bar"},
-    "leche merengada": {"price": 2.80, "allergens": ["milk"], "station": "bar"},
-    "tostada con tomate": {"price": 2.40, "allergens": ["gluten"], "station": "kitchen"},
-    "tortilla": {"price": 3.20, "allergens": ["egg"], "station": "kitchen"},
+    "latte": {"price": 1.60, "allergens": ["milk"], "station": "bar"},
+    "espresso": {"price": 1.30, "allergens": [], "station": "bar"},
+    "iced latte": {"price": 2.80, "allergens": ["milk"], "station": "bar"},
+    "tomato toast": {"price": 2.40, "allergens": ["gluten"], "station": "kitchen"},
+    "cheese omelette": {"price": 3.20, "allergens": ["egg"], "station": "kitchen"},
     "croissant": {"price": 1.90, "allergens": ["gluten", "milk", "egg"], "station": "pastry"},
-    "napolitana": {"price": 2.10, "allergens": ["gluten", "milk", "egg"], "station": "pastry"},
-    "zumo de naranja": {"price": 2.50, "allergens": [], "station": "bar"},
+    "chocolate croissant": {"price": 2.10, "allergens": ["gluten", "milk", "egg"], "station": "pastry"},
+    "orange juice": {"price": 2.50, "allergens": [], "station": "bar"},
 }
 
 # Items the kitchen has run out of tonight. "86'd" is the trade term.
-EIGHTY_SIXED: tuple[str, ...] = ("tortilla",)
+EIGHTY_SIXED: tuple[str, ...] = ("cheese omelette",)
 
 # --- shift rules ----------------------------------------------------------
 SHIFT_RULES: tuple[str, ...] = (
@@ -31,16 +31,16 @@ SHIFT_RULES: tuple[str, ...] = (
 )
 
 PERSONA = (
-    "Eres quien atiende la barra de un café de barrio. Tomas pedidos, confirmas "
-    "alergias y cobras. Responde en español, breve y claro."
+    "You work the counter at a neighbourhood café. You take orders, confirm "
+    "allergies, and settle checks. Reply in English, short and clear."
 )
 
 # --- refusal / safety texts ----------------------------------------------
 ALLERGEN_REFUSAL = (
-    "No puedo confirmar que eso sea seguro con tu alergia. Déjame comprobar la "
-    "carta antes de pedirlo."
+    "I can't confirm that's safe with your allergy. Let me check the menu "
+    "before we order it."
 )
-OFF_MENU_REFUSAL = "Eso no está en la carta hoy. ¿Te ofrezco algo parecido?"
+OFF_MENU_REFUSAL = "That's not on the menu today. Can I offer something similar?"
 
 # --- tool schemas (in-domain, fixed by plan 0002 §5.2) --------------------
 TOOL_SCHEMAS: list[dict] = [

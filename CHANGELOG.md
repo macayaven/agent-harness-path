@@ -4,6 +4,18 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- Notebooks embed committed SVGs as markdown figures from
+  `notebooks/public/diagrams/` (served by marimo at runtime, resolved
+  statically against the notebook file); no `mo.mermaid`, no `cafe.diagrams`.
+  The five notebook-only diagrams live in `notebooks/diagrams/*.mmd` and render
+  through the same pinned pipeline and receipt.
+- `get_client()` is offline by default: unset `COURSE_MODE` returns the
+  deterministic stub on every platform; `COURSE_MODE=live` opts into the
+  learner's endpoint. Notebook setups put the repo root on `sys.path` so
+  `import cafe` works in any kernel.
+- Retire Spanish toy dialogue: the café menu, customer lines, model prompts,
+  refusal texts, detection policy, and judge corpus are English throughout.
+  `AGENTS.md` non-negotiable 8 now requires English everywhere.
 - Rewrite leftover CourseWeave application wording in `study/` (Use this lesson,
   Continue, Course assistant, guide records) so study protocols match the Cursor
   companion path.

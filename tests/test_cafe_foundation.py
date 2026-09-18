@@ -44,8 +44,12 @@ class Seam(unittest.TestCase):
         os.environ["COURSE_MODE"] = "stub"
         self.assertIsInstance(get_client(), StubClient)
 
-    def test_live_is_the_default_mode(self):
+    def test_stub_is_the_default_mode(self):
+        self.assertIsInstance(get_client(), StubClient)
+
+    def test_live_needs_an_explicit_opt_in(self):
         os.environ.update(
+            COURSE_MODE="live",
             CAFE_BASE_URL="http://127.0.0.1:11434/v1",
             CAFE_API_KEY="local",
             CAFE_MODEL="test-model",
@@ -53,15 +57,17 @@ class Seam(unittest.TestCase):
         self.assertIsInstance(get_client(), LiveClient)
 
     def test_unconfigured_live_names_every_missing_variable(self):
+        os.environ["COURSE_MODE"] = "live"
         with self.assertRaises(MissingConfig) as caught:
             get_client()
         message = str(caught.exception)
         for name in ("CAFE_BASE_URL", "CAFE_API_KEY", "CAFE_MODEL"):
             self.assertIn(name, message)
-        self.assertIn("COURSE_MODE=stub", message)
+        self.assertIn("COURSE_MODE", message)
 
     def test_cafe_variables_win_over_openai_variables(self):
         os.environ.update(
+            COURSE_MODE="live",
             OPENAI_BASE_URL="http://production.invalid/v1",
             OPENAI_API_KEY="prod",
             OPENAI_MODEL="prod-model",
@@ -126,7 +132,7 @@ class Safety(unittest.TestCase):
         script = (
             "from cafe.model import get_client\n"
             "c = get_client()\n"
-            "c.chat([{'role':'user','content':'un cortado'}])\n"
+            "c.chat([{'role':'user','content':'a latte'}])\n"
             "print('ok', c.mode)\n"
         )
         env = dict(
@@ -184,20 +190,20 @@ class Domain(unittest.TestCase):
 
 class Tools(unittest.TestCase):
     def test_price_check_reports_availability_for_an_eighty_sixed_item(self):
-        result = tools.price_check(tools.OrderState(), "tortilla")
+        result = tools.price_check(tools.OrderState(), "cheese omelette")
         self.assertTrue(result["on_menu"])
         self.assertFalse(result["available"])
 
     def test_allergen_check_is_data_driven_not_guessed(self):
         state = tools.OrderState()
         self.assertFalse(tools.check_allergens(state, "croissant", "milk")["safe"])
-        self.assertTrue(tools.check_allergens(state, "café solo", "milk")["safe"])
+        self.assertTrue(tools.check_allergens(state, "espresso", "milk")["safe"])
 
     def test_propose_does_not_fire_and_fire_records_a_side_effect(self):
         state = tools.OrderState()
-        tools.propose_order(state, ["cortado"], 4)
+        tools.propose_order(state, ["latte"], 4)
         self.assertEqual(state.fired, [], "proposing must not fire a ticket")
-        tools.fire_ticket(state, ["cortado"], 4)
+        tools.fire_ticket(state, ["latte"], 4)
         self.assertEqual(len(state.fired), 1)
 
     def test_dispatch_turns_a_bad_call_into_a_tool_result(self):
@@ -210,7 +216,7 @@ class Tools(unittest.TestCase):
     def test_dispatch_executes_a_real_call(self):
         state = tools.OrderState()
         call = {"function": {"name": "price_check",
-                             "arguments": json.dumps({"item": "cortado"})}}
+                             "arguments": json.dumps({"item": "latte"})}}
         self.assertEqual(tools.dispatch(state, call)["price_eur"], 1.60)
         self.assertEqual(state.tool_log, ["price_check"])
 

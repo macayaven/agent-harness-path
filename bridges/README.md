@@ -27,10 +27,11 @@ small and the lab feels too sudden.
 | S13 | `lessons/S13-rebuild-from-memory.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s13.md](s13.md) |
 | S14 | `lessons/S14-ship-and-pilot.html` | — | `cafe/` whole package (hard path) | protocol in the lesson | [s14.md](s14.md) |
 
-Notebooks are **marimo** files run live against the learner's own
-OpenAI-compatible endpoint (single seam `get_client()` in `cafe/model.py`,
-configured by `CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL`). Open one with
-`uv run marimo edit notebooks/sNN_…_toy.py`; only CI uses `COURSE_MODE=stub`.
+Notebooks are **marimo** files, offline by default (deterministic stub via the
+single seam `get_client()` in `cafe/model.py`). Set `COURSE_MODE=live` plus
+`CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL` to run against the learner's own
+OpenAI-compatible endpoint. Open one with
+`uv run marimo edit notebooks/sNN_…_toy.py`.
 
 How to take the course in Cursor, including a **local** OpenAI-compatible
 model: [docs/COMPANION.md](../docs/COMPANION.md).

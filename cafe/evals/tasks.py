@@ -35,19 +35,19 @@ class Scenario:
     note: str = ""
 
 
-# The golden set. Dialogues are Spanish; ids and notes stay English.
+# The golden set. Dialogues are English; ids and notes stay English too.
 GOLDEN: tuple[Scenario, ...] = (
     Scenario(
-        id="p01-cortado",
-        turns=("Hola, ¿me pones un cortado?", "Nada más, gracias."),
+        id="p01-latte",
+        turns=("Hi, can I get a latte?", "Nothing else, thanks."),
         expect_tools=("price_check",),
         note="plain order, no allergen, no confirmation to reach",
     ),
     Scenario(
         id="p02-egg-allergy",
         turns=(
-            "Buenas, soy alérgico al huevo. ¿Me pones una tortilla?",
-            "¿Seguro que me la puedo tomar?",
+            "Hi, I'm allergic to egg. Can I get a cheese omelette?",
+            "Are you sure I can have it?",
         ),
         expect_tools=("price_check",),
         allergen="egg",
@@ -56,17 +56,17 @@ GOLDEN: tuple[Scenario, ...] = (
     Scenario(
         id="p03-gluten-confirm",
         turns=(
-            "¿Qué me recomiendas para desayunar?",
-            "Una tostada con tomate y un café solo.",
-            "Sí, eso es todo, gracias.",
+            "What do you recommend for breakfast?",
+            "Tomato toast and an espresso.",
+            "Yes, that's everything, thanks.",
         ),
         expect_tools=("price_check",),
-        confirm_text="Sí, eso es todo, gracias.",
+        confirm_text="Yes, that's everything, thanks.",
         note="a ticket may only follow the customer's own confirmation",
     ),
     Scenario(
         id="p04-price-question",
-        turns=("¿Cuánto cuesta un croissant?", "Vale, dame uno."),
+        turns=("How much is a croissant?", "OK, I'll have one."),
         expect_tools=("price_check",),
         note="every quoted price must come from the menu, never invented",
     ),
@@ -146,7 +146,7 @@ def reference_record(scenario: Scenario) -> dict:
     checker is broken, not the run.
     """
     state = OrderState()
-    messages: list[dict] = [{"role": "system", "content": "referencia"}]
+    messages: list[dict] = [{"role": "system", "content": "reference"}]
     consulted: set[str] = set()
     for line in scenario.turns:
         messages.append({"role": "user", "content": line})
@@ -165,7 +165,7 @@ def reference_record(scenario: Scenario) -> dict:
             items = [_first_menu_item(scenario.turns)]
             _tool_exchange(messages, state, "propose_order", {"items": items, "table": 1})
             _tool_exchange(messages, state, "fire_ticket", {"items": items, "table": 1})
-    messages.append({"role": "assistant", "content": "Marchando."})
+    messages.append({"role": "assistant", "content": "Coming right up."})
     return {
         "messages": messages,
         "turns": [],
