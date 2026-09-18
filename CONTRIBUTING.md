@@ -20,8 +20,8 @@ material, local filesystem paths or a learner's full work product.
 
 ## Setup
 
-Python 3.11+, `uv`, Git. Preview videos stream from the public bucket; Git LFS
-only if you are replacing an mp4.
+Python 3.11+, `uv`, Git. The course overview streams from the public bucket; Git LFS
+only if you are replacing that mp4.
 
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
@@ -35,7 +35,7 @@ uv sync
    (protocols and Python). Never hand-edit generated `sessions/*/lesson.html`.
    Learners read the generated HTML from a clone
    (`sessions/index.html`). GitHub's file view of `sessions/` is not a
-   supported reader — relative `video.mp4` paths are rewritten to the public
+   supported reader — the overview's relative mp4 path is rewritten to the public
    bucket at build time.
    Edits to `sessions/study-plan.md` must preserve its authoritative external
    links and workload honesty, then rebuild `sessions/study-plan.html`.
@@ -55,7 +55,7 @@ uv sync
    uv run python labs/run.py --all --replay
    ```
 
-   Adding or replacing an mp4 needs a maintainer re-publish of the video CDN.
+   Replacing the overview mp4 needs a maintainer re-publish of the video CDN.
 5. Execute any notebook you touched (and its neighbours if you changed a shared
    claim) headless, then check canonical form:
 

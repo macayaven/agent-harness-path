@@ -14,7 +14,7 @@ from pathlib import Path
 
 import markdown
 
-from site_urls import rewrite_video_hrefs
+from site_urls import rewrite_overview_href
 from static_diagrams import STATIC_LESSONS, static_image
 
 HERE = Path(__file__).resolve().parent  # tools/
@@ -62,14 +62,6 @@ LOCAL_LESSON_HREF_RE = re.compile(
     r'(?P<prefix>href=")(?P<path>(?:\.\./)*'
     r'(?P<session>s[0-9]{2}-[a-z0-9-]+)/lesson\.html)(?P<suffix>")'
 )
-
-# Bucket object per page: the session video, or the overview for the index.
-# The study plan carries no video, so it has no entry.
-VIDEO_ASSET = {
-    slug: f"{slug}.mp4" for _, slug, _ in PAGES if slug.startswith("S")
-}
-VIDEO_ASSET["index"] = "S00-course-overview.mp4"
-
 
 def page_source(directory: str, slug: str) -> Path:
     if directory == ".":
@@ -200,8 +192,8 @@ def main() -> int:
         out_path = SESSIONS / directory / out
         html, n_mermaid = render(
             source, slug, out_path, build_nav(directory, order, titles))
-        if slug in VIDEO_ASSET:
-            html = rewrite_video_hrefs(html, VIDEO_ASSET[slug])
+        if slug == "index":
+            html = rewrite_overview_href(html)
         if n_mermaid == 0 and slug != "index":
             print(f"build.py: WARNING {source.relative_to(ROOT)}: "
                   "no mermaid diagram found")

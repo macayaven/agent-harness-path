@@ -12,7 +12,6 @@ the course's own `cafe/` package. **This session is optional.** Completing S01�
 require S14.
 **Hands-on:** no notebook — the hands-on is your own system (easy) or the
 `cafe/` package (hard), run through the protocol below.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
 

@@ -5,7 +5,6 @@
 **What this teaches:** cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose *projected* cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
 
 ---
 

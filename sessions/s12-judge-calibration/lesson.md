@@ -5,7 +5,6 @@
 **What this teaches:** how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus *before* you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
 
 ---
 

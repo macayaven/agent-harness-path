@@ -5,7 +5,6 @@
 **What this teaches:** error analysis as a method — open coding a pile of real traces into free-form notes, axial coding those notes into categories narrow enough to be wrong, ranking by frequency × severity, and promoting the top category into a permanent eval task that fails on the engine that produced the pile and passes on the fix.
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (checker tiers and the fixture invariant); S08 (traces you can pull); S09 (the event log that already flags what the harness noticed).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
 
 ---
 

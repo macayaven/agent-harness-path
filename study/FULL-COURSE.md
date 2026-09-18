@@ -58,8 +58,8 @@ or execute copied commands. Authored hints and foldable self-checks live in the
 lesson HTML and work without a provider. Record assistance and premature answer
 exposure honestly.
 
-The videos are optional Google Gemini Notebook previews/reviews, and may lag the
-lesson. Hard labs remain optional and build a trivia host with their own scopes,
+The course overview video is an optional Google Gemini Notebook preview, and may lag the
+lessons. Hard labs remain optional and build a trivia host with their own scopes,
 prerequisites and replay/live distinctions. S06's hard lab is pub-quiz policy only;
 S09's real round stays private; S12's replay does not perform critic calibration.
 Reference replay and real-provider evidence are different categories.

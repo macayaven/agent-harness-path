@@ -10,11 +10,10 @@ guarantee.
 
 **New here?** Watch the 9-minute [course overview](S00-course-overview.mp4)
 for the whole arc — core mechanics → context & boundaries → safety & governance →
-observability → production — then start at S01. The videos are Google Gemini
-Notebook overviews (formerly NotebookLM; generated 14 Aug 2026) and may lag the
+observability → production — then start at S01. The overview is a Google Gemini
+Notebook overview (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
-files is Google's. Click ▶: the mp4 streams in the browser. Clone the repo to
-run the notebooks.
+file is Google's. Clone the repo to run the notebooks.
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
 a system you already own — or, if you walked the hard path in `labs/`, against
@@ -62,31 +61,31 @@ standard library only; `marimo` is the runtime.
 
 ## The sessions
 
-| # | Session | Teaches | Notebook | Lab | Video |
-|---|---|---|---|---|---|
-| 1 | [The agent loop](s01-agent-loop/lesson.html) | A client-side loop around a stateless API; append-verbatim and tool-pairing invariants | [toy.py](s01-agent-loop/toy.py) | [lab.md](s01-agent-loop/lab.md) | [▶](s01-agent-loop/video.mp4) |
-| 2 | [Golden sets & baselines](s02-golden-evals/lesson.html) | Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline | [toy.py](s02-golden-evals/toy.py) | [lab.md](s02-golden-evals/lab.md) | [▶](s02-golden-evals/video.mp4) |
-| 3 | [Context engineering](s03-context-engineering/lesson.html) | Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary | [toy.py](s03-context-engineering/toy.py) | [lab.md](s03-context-engineering/lab.md) | [▶](s03-context-engineering/video.mp4) |
-| 4 | [Structured generation](s04-structured-generation/lesson.html) | Schema as contract; validate-and-retry; valid ≠ correct | [toy.py](s04-structured-generation/toy.py) | [lab.md](s04-structured-generation/lab.md) | [▶](s04-structured-generation/video.mp4) |
-| 5 | [The consent gate](s05-consent-gate/lesson.html) | Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade | [toy.py](s05-consent-gate/toy.py) | [lab.md](s05-consent-gate/lab.md) | [▶](s05-consent-gate/video.mp4) |
-| 6 | [Layered detection](s06-layered-detection/lesson.html) | Keyword-floor + classifier pipeline; policy as data; the false-trigger counter | [toy.py](s06-layered-detection/toy.py) | [lab.md](s06-layered-detection/lab.md) | [▶](s06-layered-detection/video.mp4) |
-| 7 | [The repair loop](s07-repair-loop/lesson.html) | Bounded regeneration; the curated failure view; what context a retry gets | [toy.py](s07-repair-loop/toy.py) | [lab.md](s07-repair-loop/lab.md) | [▶](s07-repair-loop/video.mp4) |
-| 8 | [Observability & replay](s08-observability-replay/lesson.html) | Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism | [toy.py](s08-observability-replay/toy.py) | [lab.md](s08-observability-replay/lab.md) | [▶](s08-observability-replay/video.mp4) |
-| 9 | [Evidence reports](s09-evidence-reports/lesson.html) | Reports a depleted reader can trust; citation and coverage validators; the 30-second test | [toy.py](s09-evidence-reports/toy.py) | [lab.md](s09-evidence-reports/lab.md) | [▶](s09-evidence-reports/video.mp4) |
-| 10 | [Error analysis](s10-error-analysis/lesson.html) | Failure logs → taxonomy → new evals; open and axial coding on real traces | [toy.py](s10-error-analysis/toy.py) | [lab.md](s10-error-analysis/lab.md) | [▶](s10-error-analysis/video.mp4) |
-| 11 | [Budgets & routing](s11-budgets-routing/lesson.html) | Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math | [toy.py](s11-budgets-routing/toy.py) | [lab.md](s11-budgets-routing/lab.md) | [▶](s11-budgets-routing/video.mp4) |
-| 12 | [Judge calibration](s12-judge-calibration/lesson.html) | Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy | [toy.py](s12-judge-calibration/toy.py) | [lab.md](s12-judge-calibration/lab.md) | [▶](s12-judge-calibration/video.mp4) |
-| 13 | [Rebuild from memory](s13-rebuild-from-memory/lesson.html) | Optional lab: closed-book audit of a system you own | — (the audit is the exercise) | hard path: `trivia_host/`; else BYO | [▶](s13-rebuild-from-memory/video.mp4) |
-| 14 | [Ship & pilot](s14-ship-and-pilot/lesson.html) | Optional lab: cold acceptance run, first real user, public artifact | — (protocol, not notebook) | hard path: fixture run of the host; else BYO | [▶](s14-ship-and-pilot/video.mp4) |
+| # | Session | Teaches | Notebook | Lab |
+|---|---|---|---|---|
+| 1 | [The agent loop](s01-agent-loop/lesson.html) | A client-side loop around a stateless API; append-verbatim and tool-pairing invariants | [toy.py](s01-agent-loop/toy.py) | [lab.md](s01-agent-loop/lab.md) |
+| 2 | [Golden sets & baselines](s02-golden-evals/lesson.html) | Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline | [toy.py](s02-golden-evals/toy.py) | [lab.md](s02-golden-evals/lab.md) |
+| 3 | [Context engineering](s03-context-engineering/lesson.html) | Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary | [toy.py](s03-context-engineering/toy.py) | [lab.md](s03-context-engineering/lab.md) |
+| 4 | [Structured generation](s04-structured-generation/lesson.html) | Schema as contract; validate-and-retry; valid ≠ correct | [toy.py](s04-structured-generation/toy.py) | [lab.md](s04-structured-generation/lab.md) |
+| 5 | [The consent gate](s05-consent-gate/lesson.html) | Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade | [toy.py](s05-consent-gate/toy.py) | [lab.md](s05-consent-gate/lab.md) |
+| 6 | [Layered detection](s06-layered-detection/lesson.html) | Keyword-floor + classifier pipeline; policy as data; the false-trigger counter | [toy.py](s06-layered-detection/toy.py) | [lab.md](s06-layered-detection/lab.md) |
+| 7 | [The repair loop](s07-repair-loop/lesson.html) | Bounded regeneration; the curated failure view; what context a retry gets | [toy.py](s07-repair-loop/toy.py) | [lab.md](s07-repair-loop/lab.md) |
+| 8 | [Observability & replay](s08-observability-replay/lesson.html) | Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism | [toy.py](s08-observability-replay/toy.py) | [lab.md](s08-observability-replay/lab.md) |
+| 9 | [Evidence reports](s09-evidence-reports/lesson.html) | Reports a depleted reader can trust; citation and coverage validators; the 30-second test | [toy.py](s09-evidence-reports/toy.py) | [lab.md](s09-evidence-reports/lab.md) |
+| 10 | [Error analysis](s10-error-analysis/lesson.html) | Failure logs → taxonomy → new evals; open and axial coding on real traces | [toy.py](s10-error-analysis/toy.py) | [lab.md](s10-error-analysis/lab.md) |
+| 11 | [Budgets & routing](s11-budgets-routing/lesson.html) | Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math | [toy.py](s11-budgets-routing/toy.py) | [lab.md](s11-budgets-routing/lab.md) |
+| 12 | [Judge calibration](s12-judge-calibration/lesson.html) | Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy | [toy.py](s12-judge-calibration/toy.py) | [lab.md](s12-judge-calibration/lab.md) |
+| 13 | [Rebuild from memory](s13-rebuild-from-memory/lesson.html) | Optional lab: closed-book audit of a system you own | — (the audit is the exercise) | hard path: `trivia_host/`; else BYO |
+| 14 | [Ship & pilot](s14-ship-and-pilot/lesson.html) | Optional lab: cold acceptance run, first real user, public artifact | — (protocol, not notebook) | hard path: fixture run of the host; else BYO |
 
 S13 and S14 have no notebook by design. Easy path: optional *bring your own
 system* labs. Hard path: the audit/ship target is `labs/trivia_host/` if you
 built it. Completing S01–S12 does not require them, and does not require `labs/`.
 
-The videos are Google Gemini Notebook overviews of the lessons (formerly
-NotebookLM; one `video.mp4` per session directory; generated 14 Aug 2026).
-Use them as preview or review — the learning happens in the notebook (S01–S12)
-or the protocol (S13/S14), not the video. Google branding in the files is Google's.
+Per-session videos were removed in September 2026: they lagged the lessons and
+cost more to re-record than they taught. The learning happens in the notebook
+(S01–S12) or the protocol (S13/S14). The single course overview above stays as
+an optional preview of the arc.
 
 ## The pedagogical commitments
 
@@ -103,6 +102,6 @@ or the protocol (S13/S14), not the video. Google branding in the files is Google
 ## License
 
 Apache-2.0 for notebooks, labs Python, and tooling; CC BY 4.0 for lessons,
-videos, docs, and lab protocols. Cited sources remain their authors'. Google
-branding in the Video Overviews is Google's. See `LICENSE` in the repository
-root.
+the course overview video, docs, and lab protocols. Cited sources remain their
+authors'. Google branding in the course overview is Google's. See `LICENSE`
+in the repository root.

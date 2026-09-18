@@ -11,7 +11,6 @@ hunt the nondeterminism a replay exposes by injecting the clock and the RNG.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop and its
 `stop_reason`), S07 (the runs you now record).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
 
 ---
 

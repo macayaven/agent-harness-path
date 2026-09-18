@@ -9,7 +9,6 @@ One directory per session holds everything that session needs:
 | `toy.py` | Marimo toy (stdlib + `cafe`, live model) |
 | `lab.md` | Optional hard-path protocol (S01–S12 only) |
 | `companion.md` | Cursor companion rung |
-| `video.mp4` | Video Overview preview (Git LFS) |
 | `public/diagrams/` | Committed figures: the lesson SVG plus any toy-only `.mmd`/`.svg` |
 
 `index.md` / `study-plan.md` at this root build to the course index and the

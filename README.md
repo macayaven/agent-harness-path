@@ -36,11 +36,10 @@ model with real tool-calling support.
 then start `sessions/s01-agent-loop/lesson.html` with
 `@sessions/s01-agent-loop/companion.md` in chat.
 
-**Start here (HTML):** [`sessions/index.html`](sessions/index.html). Click ▶ to
-watch an optional preview (streams from a public bucket). A 9-minute
+**Start here (HTML):** [`sessions/index.html`](sessions/index.html). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
-covers the arc first (the videos lag the lessons; they are Google Gemini Notebook
-overviews; the lesson + notebook are canonical).
+covers the arc first (it may lag the lessons; it is a Google Gemini Notebook
+overview; the lesson + notebook are canonical).
 
 S01–S12 are the core path and they **do** accumulate: the capstone is the `cafe/`
 package you finish with. S13 and S14 are optional unaided protocols — rebuild
@@ -133,7 +132,7 @@ See [sessions/README.md](sessions/README.md).
 
 | Path | Role |
 | --- | --- |
-| `sessions/sNN-slug/` | One session: lesson, toy, lab, companion, video, figures |
+| `sessions/sNN-slug/` | One session: lesson, toy, lab, companion, figures |
 | `sessions/sNN-slug/lesson.md` → `lesson.html` | Authoring source → learner lesson |
 | `sessions/sNN-slug/toy.py` | Marimo toy driving `cafe/` (S01–S12) |
 | `sessions/sNN-slug/lab.md` | Optional hard-path protocol, not lesson text |
@@ -183,9 +182,9 @@ remains historical evidence about named artifacts.
 Split license, 2026 Carlos Crespo Macaya:
 
 - **Apache-2.0** — session toys (`sessions/*/toy.py`), labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
-- **CC BY 4.0** — lessons, videos, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
+- **CC BY 4.0** — lessons, the course overview video, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
 
-Vendored Mermaid.js remains MIT; see `NOTICE`. Video Overviews were generated with
-Google Gemini Notebook; Google's marks in those files are not part of the CC BY
+Vendored Mermaid.js remains MIT; see `NOTICE`. The course overview was generated with
+Google Gemini Notebook; Google's marks in that file are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
 while following the path are yours. See `LICENSE` for the file-by-file split.

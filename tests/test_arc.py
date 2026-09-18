@@ -158,10 +158,6 @@ class Domain(unittest.TestCase):
     def test_no_pre_cafe_domain_nouns_survive(self):
         for slug in rebuilt_slugs():
             text = lesson_path(slug).read_text(encoding="utf-8").lower()
-            # the Video line legitimately explains that the recording predates the rebuild
-            text = "\n".join(
-                line for line in text.splitlines() if not line.startswith("**video:**")
-            )
             for noun in STALE_DOMAIN:
                 with self.subTest(lesson=slug, noun=noun):
                     self.assertNotIn(noun, text)

@@ -14,7 +14,7 @@ project rule. marimo is the notebook tooling, not the product.
 ```bash
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-GIT_LFS_SKIP_SMUDGE=1           # optional: skip archived preview videos
+GIT_LFS_SKIP_SMUDGE=1           # optional: skip the archived overview video
 uv sync --frozen                # notebooks + lesson build tooling
 ```
 

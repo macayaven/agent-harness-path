@@ -10,7 +10,6 @@ every run must end on a named `stop_reason`.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop),
 S02 (deterministic checks and the fixture invariant), S06 (the detection layers you now feed).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); recorded against an earlier cut of this path, so it still uses the previous toy domain. Preview or review, never a substitute for the notebook.
 
 ---
 

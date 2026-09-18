@@ -13,7 +13,6 @@ defeat it. Hard path: the audit target is `cafe/loop.py` against the café suite
 `cafe/evals` (score it from `sessions/s02-golden-evals/toy.py` with
 `uv run marimo edit sessions/s02-golden-evals/toy.py`). Easy path: a project of yours.
 The protocol below is the hands-on.
-**Video:** [Gemini Notebook overview](video.mp4) — generated with Google Gemini Notebook (formerly NotebookLM); preview or review, never a substitute for the protocol.
 
 ---
 

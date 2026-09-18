@@ -1,7 +1,7 @@
 # AGENTS.md — Repository Guidelines: The Agent Harness Path
 
 A self-contained course on building, evaluating, and governing LLM agents:
-14 sessions in `sessions/` (lesson, toy, lab, companion, video, figures per
+14 sessions in `sessions/` (lesson, toy, lab, companion, figures per
 directory), an optional hard path in `labs/`. There is **no product code and no
 product test suite**. Entry point: `sessions/index.html`.
 
@@ -135,7 +135,7 @@ first" as terms of art — reuse, never paraphrase. Prefer concrete payoffs
 
 ```
 sessions/sNN-slug/        one session: lesson.md → lesson.html (in place),
-                          toy.py, lab.md, companion.md, video.mp4, public/diagrams/
+                          toy.py, lab.md, companion.md, public/diagrams/
 tools/build.py            md → html, injects prev/index/next nav
 tools/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
 labs/                     hard path: run.py + cassettes + trivia_host/ (protocols live in sessions/)
@@ -162,7 +162,7 @@ uv run python labs/run.py --all --replay      # never --live
 
 Toys must execute top-to-bottom on 3.11 and 3.12 before you commit them.
 If you rename a session slug, update all of: its `sessions/sNN-slug/` directory,
-the `DIAGRAMS` map in `tests/test_lesson_build.py`, `docs/`, and any GCS video path.
+the `DIAGRAMS` map in `tests/test_lesson_build.py`, `docs/`, and the GCS overview path.
 
 ## Coding style and naming
 
