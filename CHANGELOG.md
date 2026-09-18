@@ -2,6 +2,17 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## Unreleased
+
+- S12 judge calibration: fix the theory diagram to the toy's corpus (6 transcripts,
+  3 seeded + 3 clean, rates n/3); price all twelve judge calls on S11's route table
+  in a new notebook cell so the carried-in routing ledger is actually used.
+- S05 promise names the property that matters (the approved ticket is the only
+  ticket in the building). Every hard-path `lab.md` orients the reader to the
+  trivia host and the companion mapping. S13 audit names the deleted file instead
+  of `core.py`. S01 states the blocking-loop scope cut (no streaming, steering,
+  or cancellation) up front.
+
 ## 0.4.0 — 2026-09-18
 
 - One directory per session: `sessions/sNN-slug/` holds `lesson.md` (builds to

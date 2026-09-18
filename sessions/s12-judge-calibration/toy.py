@@ -12,7 +12,7 @@ with app.setup:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
-    from cafe import judge
+    from cafe import judge, routing
     from cafe.model import get_client
 
 
@@ -315,6 +315,44 @@ def s12_demo_scores_v2(key, verdicts_v1, verdicts_v2):
     print("the calibrated rubric does not produce MORE false alarms than the")
     print("uncalibrated one on the same corpus. It makes no promise about detection:")
     print("a better rubric, not a better model, is all you changed.")
+    return
+
+
+@app.cell(hide_code=True)
+def s12_md_cost(mo):
+    mo.md(r"""
+    ## What the verdicts cost
+
+    Calibration is twelve model calls: two rubrics over six transcripts. S11's
+    route table prices a call before it is made, so rebuild each call's messages
+    exactly — rubric plus rendered transcript — and project both passes. The
+    reference route is `local-large`, the lesson's own suggested model; your
+    endpoint bills differently, but the shape of the question does not change.
+    """)
+    return
+
+
+@app.cell
+def s12_demo_cost(transcripts, verdicts_v1, verdicts_v2):
+    cost_route = routing.ROUTES["local-large"]
+    cost_total = 0.0
+    for cost_rubric, cost_verdicts in (
+        (judge.RUBRIC_V1, verdicts_v1),
+        (judge.RUBRIC_V2, verdicts_v2),
+    ):
+        for cost_tid in cost_verdicts:
+            cost_messages = [
+                {"role": "system", "content": cost_rubric},
+                {
+                    "role": "user",
+                    "content": judge.render_transcript(transcripts[cost_tid]),
+                },
+            ]
+            cost_total += routing.projected_usd(cost_route, cost_messages)
+    cost_calls = len(verdicts_v1) + len(verdicts_v2)
+    print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
+    print(f"projected cost     : ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
+    print("Worth it is a question with two numbers: this cost, and the κ above.")
     return
 
 

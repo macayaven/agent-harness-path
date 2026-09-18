@@ -264,7 +264,7 @@ project's own.</p>
 <li><strong>Rebuild.</strong> Blank file at the same path, from memory. When stuck, write what
    you think it should be and mark it <code># UNSURE</code> — unsure marks are data. They
    become honestly-labeled forgot-list items instead of hiding inside a lucky diff.</li>
-<li><strong>Diff and classify.</strong> <code>git diff HEAD -- core.py</code>. Label every
+<li><strong>Diff and classify.</strong> <code>git diff HEAD -- &lt;the file you deleted&gt;</code>. Label every
    hunk: cosmetic, behavior-preserving, or behavioral gap. Only the third bucket
    feeds the forgot-list.</li>
 <li><strong>Run the suite.</strong> The rebuilt component runs the full eval suite. Pass: the

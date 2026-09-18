@@ -51,11 +51,11 @@ garbage. A judge that only catches the blatant is useless.
 
 ```mermaid
 flowchart LR
-    T[10 transcripts<br/>5 seeded defects + 5 clean] --> C[critic route<br/>finds defects]
+    T[6 transcripts<br/>3 seeded defects + 3 clean] --> C[critic route<br/>finds defects]
     T --> J[rubric judge<br/>pass/fail]
     H[hand labels<br/>written BEFORE judge output] --> K[agreement + κ<br/>stratified clean vs defective]
     J --> K
-    C --> R[detection n/5<br/>false positives n/5]
+    C --> R[detection n/3<br/>false positives n/3]
     R --> P[policy: what a finding<br/>is allowed to trigger]
     K --> P
 ```
@@ -132,6 +132,9 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
    vectors, every transcript gets exactly one verdict, and the calibrated rubric's
    false-positive rate does not worsen.
+7. **Price the twelve calls.** Calibration cost two rubrics over six transcripts.
+   The cost cell rebuilds each call's messages exactly and projects them on S11's
+   route table — worth-it is a question with two numbers, and now you have both.
 
 ---
 
@@ -141,6 +144,8 @@ Put this in one sentence and defend it: **6 transcripts, 3 seeded defects, detec
 false positives n/3, κ = …** for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
+Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
+A verdict is worth what it measures minus what it cost to get.
 
 ---
 
