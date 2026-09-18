@@ -57,15 +57,15 @@ POLICY: dict[str, dict] = {
         "patterns": (
             "ignore all previous",
             "ignore previous",
-            "ignora las instrucciones anteriores",
-            "ignora todas las instrucciones",
+            "ignore your instructions",
+            "disregard previous",
             "previous instructions",
             "system prompt",
             "forward this",
             "bank details",
             "card data",
-            "datos de la tarjeta",
-            "número de tarjeta",
+            "card number",
+            "credit card",
             IRREVERSIBLE_ACTION,
         ),
     },
@@ -74,38 +74,38 @@ POLICY: dict[str, dict] = {
         # was declared; the surface words below only map to canonical allergens.
         "threshold": 0.5,
         "surface": {
-            "leche": "milk",
-            "lácteos": "milk",
-            "lactosa": "milk",
+            "milk": "milk",
+            "dairy": "milk",
+            "lactose": "milk",
             "gluten": "gluten",
-            "trigo": "gluten",
-            "huevo": "egg",
-            "huevos": "egg",
-            "frutos secos": "nuts",
-            "nuez": "nuts",
-            "nueces": "nuts",
-            "pescado": "fish",
-            "marisco": "shellfish",
-            "soja": "soy",
-            "sésamo": "sesame",
+            "wheat": "gluten",
+            "egg": "egg",
+            "eggs": "egg",
+            "tree nuts": "nuts",
+            "peanut": "nuts",
+            "walnut": "nuts",
+            "fish": "fish",
+            "shellfish": "shellfish",
+            "soy": "soy",
+            "sesame": "sesame",
         },
     },
     "scope": {
         "markers": (
-            "devolv",
-            "reembolso",
+            "chargeback",
             "refund",
-            "abogado",
-            "denuncia",
+            "lawyer",
+            "lawsuit",
             "legal",
-            "hacienda",
-            "propina",
+            "court",
+            "tax",
+            "tip",
         ),
         # words for things this café plainly does not serve tonight
-        "off_menu_words": ("hamburguesa", "pizza", "cerveza", "sushi"),
+        "off_menu_words": ("burger", "pizza", "beer", "sushi"),
         "refusal_text": (
-            "Eso no es cosa de la barra: para devoluciones, temas legales o datos "
-            "de pago habla con el encargado del turno. ¿Te ayudo con la carta?"
+            "That's not counter business: for refunds, legal matters, or payment "
+            "data, talk to the shift lead. Can I help with the menu?"
         ),
     },
 }
@@ -156,10 +156,10 @@ def lexical_classifier(norm_text: str) -> dict:
     Returns an API-shaped payload: label + confidence + the cues that fired. A
     real classifier is semantic; that difference is the lesson, not a defect.
     """
-    strong = [c for c in ("alergia", "alérgic", "alergico", "intoleran", "celiac")
+    strong = [c for c in ("allerg", "intoleran", "celiac")
               if c in norm_text]
-    weak = [c for c in ("leche", "gluten", "huevo", "frutos secos", "lactosa",
-                        "sin gluten", "sin lactosa")
+    weak = [c for c in ("milk", "gluten", "egg", "tree nuts", "lactose",
+                        "gluten-free", "lactose-free")
             if c in norm_text]
     confidence = min(1.0, 0.5 * len(strong) + 0.2 * len(weak))
     return {
@@ -359,10 +359,10 @@ def mock_assistant(text: str) -> str:
     before it ever sees the message.
     """
     low = text.lower()
-    if "tarjeta" in low or "card" in low or "datos" in low or "bank details" in low:
+    if "card" in low or "bank details" in low:
         # Placeholder digits only: a fixture must never carry a real-looking PAN.
-        return ("Claro, sin problema: la tarjeta del cliente es 0000 0000 0000 0000 "
-                "y el teléfono 000 000 000.")
-    if "alergi" in low or "alérgic" in low or "seguro" in low:
-        return "Sí, tranquila, eso es seguro para tu alergia."
-    return "¡Marchando! ¿Algo más?"
+        return ("Sure, no problem: the customer's card is 0000 0000 0000 0000 "
+                "and the phone 000 000 000.")
+    if "allerg" in low or "safe for" in low:
+        return "Yes, don't worry, that's safe for your allergy."
+    return "Coming right up! Anything else?"

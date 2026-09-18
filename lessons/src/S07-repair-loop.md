@@ -61,7 +61,7 @@ actionable — moved outcomes more than swapping the model ([arXiv:2405.15793](h
 Your scorer's failures become prompt content, so they follow the same rules:
 
 - **Name the check that failed.** One line per failure, not the whole rubric.
-- **Quote the offending span.** `'cortado' contiene milk` beats "allergen problem".
+- **Quote the offending span.** `'latte' contains milk` beats "allergen problem".
 - **State the constraint as a fix target.** What a correct draft would say, not just the crime.
 - **Change-nothing-else framing.** Without it, the model fixes the named defect and introduces a
   fresh one elsewhere. `failure_view` opens with exactly that.

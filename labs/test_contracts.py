@@ -225,7 +225,7 @@ class SerializationTests(unittest.TestCase):
                 },
             ]
         )
-        result = {"z": "España", "a": [2, 1]}
+        result = {"z": "naïve", "a": [2, 1]}
 
         messages, stop = run_loop(
             client,
@@ -236,7 +236,7 @@ class SerializationTests(unittest.TestCase):
 
         self.assertEqual(stop, "completed")
         self.assertEqual(messages[2]["content"], canonicalize(result))
-        self.assertEqual(messages[2]["content"], '{"a":[2,1],"z":"España"}')
+        self.assertEqual(messages[2]["content"], '{"a":[2,1],"z":"naïve"}')
 
 
 if __name__ == "__main__":

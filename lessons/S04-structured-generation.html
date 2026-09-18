@@ -166,7 +166,7 @@ different feedback:</p>
   the menu disagreement, not a schema lecture.</li>
 </ul>
 <p>Specific errors are the whole mechanism. A model cannot act on "invalid"; it can act
-on "<code>$.table</code>: expected integer, got <code>\"cuatro\"</code>".</p>
+on "<code>$.table</code>: expected integer, got <code>\"four\"</code>".</p>
 <h3 id="the-loop-is-capped-and-the-transcript-stays-legal">The loop is capped, and the transcript stays legal</h3>
 <p><code>ask_ticket</code> gives the model at most three attempts. An uncapped retry loop is a
 non-terminating agent holding your budget. Each attempt appends the assistant turn
@@ -186,7 +186,7 @@ exhausted, the honest next move is to suspect the schema as much as the model.</
 with your endpoint already exported.</p>
 <ol>
 <li><strong>Predict the validator.</strong> Before running: which of a ticket missing <code>total_eur</code>
-   with <code>"table": "cuatro"</code>, and a correct two-item ticket, does <code>validate</code> accept —
+   with <code>"table": "four"</code>, and a correct two-item ticket, does <code>validate</code> accept —
    and what exact error does it hand the other one? Then run the cell.</li>
 <li><strong>Predict the semantic gap.</strong> A ticket below is <em>schema-valid</em>. Write down how
    many semantic violations it should earn and name them. Then implement

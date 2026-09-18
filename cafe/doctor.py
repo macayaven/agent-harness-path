@@ -21,7 +21,7 @@ def main() -> int:
     print(f"url   : {getattr(client, 'base_url', 'n/a')}")
     try:
         body = client.chat(
-            [{"role": "user", "content": "Responde solo con: listo"}],
+            [{"role": "user", "content": "Reply with only: ready"}],
             temperature=0.0,
         )
     except ModelError as exc:

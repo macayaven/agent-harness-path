@@ -46,8 +46,8 @@ STOP_REASONS = frozenset({"passed", "retries_exhausted", "policy_violation"})
 CAP_DEFAULT = 3
 
 TICKET_SYSTEM = (
-    "Eres quien atiende la barra. Devuelve SOLO un objeto JSON con las claves "
-    '"items" (lista de strings de la carta) y "table" (entero). Sin texto extra.'
+    "You work the counter. Return ONLY a JSON object with the keys "
+    '"items" (list of menu strings) and "table" (integer). No extra text.'
 )
 
 
@@ -57,13 +57,13 @@ def brief_for(spec: dict) -> str:
     ``spec["request"]`` carries the customer's own words when they matter (S06's
     untrusted text); otherwise the brief is built from the structured spec.
     """
-    order = spec.get("request") or f"Pedido para la mesa {spec['table']}: {', '.join(spec['items'])}."
+    order = spec.get("request") or f"Order for table {spec['table']}: {', '.join(spec['items'])}."
     allergy = (
-        f" Aviso: el cliente ha declarado alergia a {spec['allergen']}."
+        f" Heads-up: the customer declared an allergy to {spec['allergen']}."
         if spec.get("allergen")
         else ""
     )
-    return f"{order}{allergy} Devuelve el ticket."
+    return f"{order}{allergy} Return the ticket."
 
 
 def contract_errors(ticket: Any) -> list[str]:
@@ -92,8 +92,8 @@ def score_ticket(ticket: Any, spec: dict) -> dict:
                 "check": "allergen_checked",
                 "span": None,
                 "constraint": (
-                    "allergen_checked debe ser true: el cliente declaró una "
-                    "alergia, así que la carta se comprobó (S04's field, enforced)"
+                    "allergen_checked must be true: the customer declared an "
+                    "allergy, so the menu was checked (S04's field, enforced)"
                 ),
             })
         for item in items:
@@ -102,8 +102,8 @@ def score_ticket(ticket: Any, spec: dict) -> dict:
                     "check": "allergen",
                     "span": item,
                     "constraint": (
-                        f"'{item}' contiene {allergen}: el cliente lo ha declarado "
-                        "- sustitúyelo por algo de la carta que no lo lleve"
+                        f"'{item}' contains {allergen}: the customer declared it "
+                        "- swap it for something on the menu that doesn't"
                     ),
                 })
             if item in domain.EIGHTY_SIXED:
@@ -111,8 +111,8 @@ def score_ticket(ticket: Any, spec: dict) -> dict:
                     "check": "availability",
                     "span": item,
                     "constraint": (
-                        f"'{item}' está agotado (86'd) esta noche - ofrece la "
-                        "alternativa más cercana"
+                        f"'{item}' is 86'd tonight - offer the closest "
+                        "alternative"
                     ),
                 })
     return {"passed": not failures, "failures": failures}
@@ -121,8 +121,8 @@ def score_ticket(ticket: Any, spec: dict) -> dict:
 def failure_view(failures: Iterable[dict], attempt: int) -> str:
     """The retry's only new information: name the check, quote the span, state it."""
     lines = [
-        f"[feedback] ticket {attempt} rechazado - corrige exactamente esto, "
-        "no cambies nada más:"
+        f"[feedback] ticket {attempt} rejected - fix exactly this, "
+        "change nothing else:"
     ]
     lines += [f"- {failure['constraint']}" for failure in failures]
     return "\n".join(lines)

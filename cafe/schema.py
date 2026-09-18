@@ -51,15 +51,15 @@ TYPE_CHECKS = {
 
 TICKET_SYSTEM = (
     domain.PERSONA
-    + "\n\nReglas del turno:\n"
+    + "\n\nShift rules:\n"
     + "\n".join(f"- {rule}" for rule in domain.SHIFT_RULES)
-    + "\n\nDevuelve SOLO un objeto JSON del ticket, sin texto ni vallas de código."
+    + "\n\nReturn ONLY one JSON ticket object, no prose, no code fences."
 )
 
 TICKET_PROMPT = (
-    "Lee la nota del cliente y responde con UN objeto JSON con esta forma: "
+    "Read the customer note and reply with ONE JSON object shaped like this: "
     '{"table": int, "items": [str], "total_eur": number, "allergen_checked": bool, '
-    '"notes": str (opcional)}. Los precios salen de la carta.\n\nNota del cliente:\n'
+    '"notes": str (optional)}. Prices come from the menu.\n\nCustomer note:\n'
 )
 
 

@@ -26,11 +26,11 @@ HARD_LIMIT_DEFAULT = 260
 
 # The pinned thing. Kept short: it is rent on every single call.
 ALLERGEN_RULE = domain.SHIFT_RULES[0]
-RULE_PREFIX = "Recordatorio del turno: "
+RULE_PREFIX = "Shift reminder: "
 
 _TOPICS = (
-    "café", "cortado", "tostada", "croissant", "tortilla", "zumo", "napolitana",
-    "leche merengada", "cuenta", "terraza",
+    "coffee", "latte", "tomato toast", "croissant", "cheese omelette",
+    "orange juice", "chocolate croissant", "iced latte", "check", "patio",
 )
 
 
@@ -80,9 +80,9 @@ def summarize_turns(messages: list[dict]) -> str:
     """
     text = " ".join(str(m.get("content") or "") for m in messages).lower()
     topics = sorted({topic for topic in _TOPICS if topic in text})
-    return "Resumen de la conversación: el cliente preguntó por " + (
-        ", ".join(topics) or "varias cosas"
-    ) + ". Todo quedó atendido."
+    return "Conversation summary: the customer asked about " + (
+        ", ".join(topics) or "several things"
+    ) + ". Everything was handled."
 
 
 def policy_summarize(history: list[dict], budget: int) -> tuple[list[dict], bool]:
@@ -115,19 +115,19 @@ POLICIES: dict[str, Callable[[list[dict], int], tuple[list[dict], bool]]] = {
 # --- the long shift -------------------------------------------------------
 
 _QUESTIONS = (
-    "¿Me pones un cortado?",
-    "¿Tienen tostada con tomate?",
-    "¿Cuánto cuesta un croissant?",
-    "¿Me traes un zumo de naranja?",
-    "¿Qué tal está la leche merengada?",
-    "¿Me pones una napolitana?",
-    "¿Tienen terraza libre?",
-    "¿Me traes la cuenta?",
-    "¿Un café solo, por favor?",
-    "¿Y algo dulce?",
+    "Can I get a latte?",
+    "Do you have tomato toast?",
+    "How much is a croissant?",
+    "Can I get an orange juice?",
+    "How is the iced latte?",
+    "Can I get a chocolate croissant?",
+    "Is the patio free?",
+    "Can I get the check?",
+    "An espresso, please?",
+    "And something sweet?",
 )
 
-PROBE = "Por cierto, soy alérgico al huevo, ¿me puedo tomar la tortilla?"
+PROBE = "By the way, I'm allergic to egg, can I have the cheese omelette?"
 
 
 def guest_script(n_turns: int) -> list[str]:
@@ -139,7 +139,7 @@ def guest_script(n_turns: int) -> list[str]:
 
 
 def is_probe(line: str) -> bool:
-    return "alérgico" in line.lower()
+    return "allerg" in line.lower()
 
 
 def probe_scenario(line: str) -> Scenario:

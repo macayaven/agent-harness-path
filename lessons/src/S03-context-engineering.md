@@ -12,9 +12,9 @@ These are planning estimates, not measured learner timings. **Prerequisites:** S
 
 ## The hook
 
-The shift runs long. A regular orders, asks about the terrace, asks the price of
-three things, then says *"por cierto, soy alérgico al huevo, ¿me puedo tomar la
-tortilla?"* Your conversation outgrew the budget two turns ago, so your compaction
+The shift runs long. A regular orders, asks about the patio, asks the price of
+three things, then says *"By the way, I'm allergic to egg, can I have the
+cheese omelette?"* Your conversation outgrew the budget two turns ago, so your compaction
 policy did its job: the transcript still reads perfectly, and every turn is
 answered.
 

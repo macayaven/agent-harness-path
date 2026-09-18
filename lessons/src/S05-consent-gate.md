@@ -12,7 +12,7 @@ These are planning estimates, not measured learner timings. **Prerequisites:** S
 
 ## The hook
 
-A customer asks for a cortado. The model calls `propose_order`, and then — without
+A customer asks for a latte. The model calls `propose_order`, and then — without
 waiting for anyone — it calls `fire_ticket`. A ticket is already in the kitchen
 before a human has read a word. The coffee is on the pass; you cannot un-make it.
 
@@ -85,7 +85,7 @@ leaves no ticket, no log entry, no order — by construction, not by good behavi
 
 `check_fire(requested, approved)` compares one requested ticket against the approved
 one, and the request is never the authority — `approved` is. The model can drift, or
-a customer can edit the order down to a single `café solo`, and the request that
+a customer can edit the order down to a single `espresso`, and the request that
 fires must match what was approved. `fire_requested` is the only caller of
 `fire_ticket` that this module allows, and it has two violation semantics:
 
@@ -112,8 +112,8 @@ stop reason set is still the harness's: `answered`, `script_done`, `turn_cap`,
 Open [`notebooks/s05_consent_gate_toy.py`](../notebooks/s05_consent_gate_toy.py)
 with your endpoint already exported.
 
-1. **Predict the render.** A model proposes `cortado + tostada con tomate` for table
-   4; the scripted customer edits it down to a single `café solo` and approves.
+1. **Predict the render.** A model proposes `latte + tomato toast` for table
+   4; the scripted customer edits it down to a single `espresso` and approves.
    Before running: what does the customer read, and what exactly ends up in the
    approved ticket? Then run the cell and compare the log against your answer.
 2. **Write the enforcement point.** Implement `attempt_gate(state, requested,

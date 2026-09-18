@@ -400,7 +400,7 @@ def capped_shift_trace() -> dict:
                 "on_menu": True, "safe": False}
     messages = [
         {"role": "system", "content": domain.PERSONA},
-        {"role": "user", "content": "Mira, soy alérgica a la leche. ¿Me pones un croissant?"},
+        {"role": "user", "content": "Look, I'm allergic to milk. Can I get a croissant?"},
         {
             "role": "assistant",
             "content": None,
@@ -420,10 +420,10 @@ def capped_shift_trace() -> dict:
             "tool_call_id": "call_1",
             "content": json.dumps(allergen, sort_keys=True, separators=(",", ":")),
         },
-        {"role": "assistant", "content": "Lleva leche, no te lo puedo dar."},
-        {"role": "user", "content": "Vale, ¿y una tostada de tomate?"},
-        {"role": "assistant", "content": "¿Seguro que no quieres algo dulce?"},
-        {"role": "user", "content": "Ponme la tostada, gracias."},
+        {"role": "assistant", "content": "It's got milk in it, I can't give you that."},
+        {"role": "user", "content": "OK, what about tomato toast?"},
+        {"role": "assistant", "content": "Sure you don't want something sweet?"},
+        {"role": "user", "content": "Get me the toast, thanks."},
     ]
     return {
         "session_id": "capped-001",

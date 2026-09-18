@@ -14,7 +14,7 @@ These are planning estimates, not measured learner timings. **Prerequisites:** n
 
 ## The hook
 
-A customer at table 4 says *"ponme un cortado y una napolitana"*. Your model
+A customer at table 4 says *"get me a latte and a chocolate croissant"*. Your model
 replies with two tool calls. You look up both prices, send the results back — and
 the endpoint rejects the entire conversation with a `400`.
 
