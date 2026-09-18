@@ -1,0 +1,9 @@
+flowchart LR
+    P[phase + messages] --> V{route table<br/>valid?}
+    V -- no --> R[RouteRefused<br/>before any call]
+    V -- yes --> E[project cost<br/>estimate]
+    E --> G{spent + projected<br/>&gt; budget?}
+    G -- yes --> X[refused<br/>cost never lands]
+    G -- no --> C[dispatch to the route's model]
+    C --> U[read usage + last_latency_ms]
+    U --> L[ledger: real tokens, real cost]

@@ -190,7 +190,8 @@ class LiveClient:
                 "  export CAFE_BASE_URL=http://127.0.0.1:11434/v1\n"
                 "  export CAFE_API_KEY=ollama        # any non-empty string\n"
                 "  export CAFE_MODEL=qwen2.5:14b-instruct\n"
-                "Or set COURSE_MODE=stub to run offline without a model."
+                "  export COURSE_MODE=live\n"
+                "Or unset COURSE_MODE to run offline without a model (stub is the default)."
             )
 
     def chat(
@@ -269,13 +270,13 @@ class StubClient:
             return self.script.pop(0)
         last = messages[-1]
         if last.get("role") == "tool":
-            return self._text("Marchando. ¿Algo más?")
+            return self._text("Coming right up. Anything else?")
         text = str(last.get("content") or "").lower()
         if tools:
             for item in domain.MENU:
                 if item.split()[0] in text:
                     return self._call("price_check", {"item": item})
-        return self._text("Dime qué te pongo.")
+        return self._text("What can I get you?")
 
     def _text(self, content: str) -> dict:
         return {
@@ -316,7 +317,7 @@ class StubClient:
 
 
 def get_client(**kwargs: Any):
-    """The seam. COURSE_MODE=stub gives the offline client; anything else is live."""
-    if (os.environ.get("COURSE_MODE") or "live").strip().lower() == "stub":
-        return StubClient()
-    return LiveClient(**kwargs)
+    """The seam. COURSE_MODE=live reaches your endpoint; unset means the offline stub."""
+    if (os.environ.get("COURSE_MODE") or "stub").strip().lower() == "live":
+        return LiveClient(**kwargs)
+    return StubClient()

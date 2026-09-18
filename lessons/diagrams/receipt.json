@@ -25,8 +25,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "46145a46d46fd0afa3b5aa8d24a84f1665fd17189037a0a9518afc2eef93add3"
+    },
+    "public/S01-agent-loop": {
+      "inputs": {
+        "source_sha256": "f93eed1ca13f5a1646fc817786c523a87d80422bd5d627441550b58c9d6160b4",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "46145a46d46fd0afa3b5aa8d24a84f1665fd17189037a0a9518afc2eef93add3"
@@ -49,8 +73,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "11d2ebc31564f3a171804543e5304d7c6e423d191cb6476bc9e2591c24be4d89"
+    },
+    "public/S02-golden-evals": {
+      "inputs": {
+        "source_sha256": "409e6f482b3c44cd501188169f83724b4c7d00dd77b58fe808c20ed319b7c5e0",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "11d2ebc31564f3a171804543e5304d7c6e423d191cb6476bc9e2591c24be4d89"
@@ -73,8 +121,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "45c7bd1e47abf773557b7455f0dc5d3730786ae78216b483adc75e61757c9b26"
@@ -97,8 +145,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "76d4966567a7c6644ce5250e20630c1daa779a7c2c79e57a510432b70e38a558"
+    },
+    "public/S04-structured-generation": {
+      "inputs": {
+        "source_sha256": "352bc84dd4583c445da5227c5277bdf038a1853d6f52447d13ae99b3f43f88dd",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "76d4966567a7c6644ce5250e20630c1daa779a7c2c79e57a510432b70e38a558"
@@ -121,8 +193,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "7b62f9b5d07235fed7c48d5e709e932a0263175497c905141c5bf221adf1fe7a"
@@ -145,8 +217,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "e09e3e42fb1b45afcef02fbba99504531d7c25bb3181841d17dc317d60fdc8ff"
+    },
+    "public/S06-layered-detection": {
+      "inputs": {
+        "source_sha256": "97d689403f06931657c98e86508f22a34addcf56f31a5eefe65341470386ea8a",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "e09e3e42fb1b45afcef02fbba99504531d7c25bb3181841d17dc317d60fdc8ff"
@@ -169,8 +265,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "420dc4f00020d2164597dadda6bdc2b8ea054c2b04c0937d4fe9943604d8bca2"
+    },
+    "public/S07-repair-loop": {
+      "inputs": {
+        "source_sha256": "d171bb263c7162d546f58d841ca1f492a2d757edd63d053306a7fe59a1c90307",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "420dc4f00020d2164597dadda6bdc2b8ea054c2b04c0937d4fe9943604d8bca2"
@@ -193,8 +313,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "224c1840a7bac9568b65e0050288d4d1fd10e091cb334694189b64f7eb43ae50"
@@ -217,8 +337,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "19a4323db0ff2ab7526b618f7c67f95f5ff071b8dd32fcde18c45540024c6511"
@@ -241,8 +361,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "28ca97d9280268f5be94f4e8d871972a4d668aca0e5fdfeb8fb3154cd6089fa0"
+    },
+    "public/S09-evidence-reports": {
+      "inputs": {
+        "source_sha256": "63c84b40b34032cb406756102ff7e1e4f2ebcad9c566836299e607c50d077c2f",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "28ca97d9280268f5be94f4e8d871972a4d668aca0e5fdfeb8fb3154cd6089fa0"
@@ -265,8 +409,32 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "27732659dc10d418ea40ce1e22393db495c362d20033d2a29dc49a35952762c9"
+    },
+    "public/S10-error-analysis": {
+      "inputs": {
+        "source_sha256": "831fd7e7ac7606ecfa60698a7934be965f6fc1aeb3713e0e95d1bb833445c9e9",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "27732659dc10d418ea40ce1e22393db495c362d20033d2a29dc49a35952762c9"
@@ -289,8 +457,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "afe44a02641ab50fa0bc4b0ca0fa277823c2e4081ee304af5b8604915771e8c3"
@@ -313,8 +481,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "c2d04ffbe64e903236df24ab838ed5a50654c2d7ec4184254a833aee18a51e30"
@@ -337,8 +505,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "9ef7a95d832fdb20b018b00b37443bf2f0431f99a76251c82864bfdb93aeaa14"
@@ -361,8 +529,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "c1bd95eaafcb421a6fb6a1b01b1eaf241e7b4ca41a767c3056c74e67509d0a55"
@@ -385,8 +553,8 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "d3b63a94ac5693c3ce3fcdf04e56866fcc31a888619417aa89ea85039d0019a2"
@@ -409,11 +577,131 @@
           "width": 1440,
           "height": 900
         },
-        "renderer_sha256": "4f9cca88672d9d0ae47fefe85fd8bd71896be85fb17fdad720af08b5c70a0478",
-        "config_sha256": "4d7d36cc630b6a030d915f569ba1ae33e9e36a13e657936fb96073c4b148bec6",
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
         "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
       },
       "svg_sha256": "4eaffe2f4c82b42219c9fd4a796b7137d15a7a2c854f6a20672cfe8af0de4680"
+    },
+    "s03-window": {
+      "inputs": {
+        "source_sha256": "8c5c4b1c74573603850f23737f8bed28b5a56ca68a84bfb7dfd1b8ea8ab159b0",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "22c68e62cdc9adb6a95626ff60f5f7afbcc698af70c493c27ad693380dd960b4"
+    },
+    "s05-consent": {
+      "inputs": {
+        "source_sha256": "d77841863cb463414f5a53ff72a2731dfc6bce646886a895edca6f5a06ddeec7",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "6b7b145b35f01bf2b36dde94a38da1bb70b032c7b94ce8233eb6d9d8f38e9319"
+    },
+    "s08-replay": {
+      "inputs": {
+        "source_sha256": "97c82842fdeefbe3d463a484e120aafbb55d98654d8ad812c474eb924fa4d2dc",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "a9cd0ba443a2c4ffc59a7596f5c3dde50b63e9574d6709023da8387973c64bb3"
+    },
+    "s11-budget": {
+      "inputs": {
+        "source_sha256": "bded5616fc1fce55d0977826314c7ed6d910ff8097502677b51a39ec29caf3dd",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "2bb26b8bbec20cba636ce36544b4612ca40d42bcb01d6db1898e9b8789a9e27f"
+    },
+    "s12-judge": {
+      "inputs": {
+        "source_sha256": "3f9b63dd475a2a07561954535cb1445908d8ebf1549f14e2e6e755810a43aab2",
+        "vendor_sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
+        "options": {
+          "startOnLoad": false,
+          "theme": "dark",
+          "securityLevel": "strict",
+          "deterministicIds": true,
+          "flowchart": {
+            "htmlLabels": false
+          },
+          "fontFamily": "Arial, sans-serif"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "renderer_sha256": "b9ca44ca5b64047e2b04d10efdf4e39723b610fa4ff779fc50eeee62444a8514",
+        "config_sha256": "867c17303bc97c4910a24945d0b56d746004a8257cc723c32c90065d549e131e",
+        "lock_sha256": "dc7aa7cdc57ec6e10d1a4c6951010495390e45d98611366b50deba6feb431123"
+      },
+      "svg_sha256": "90bc07c495fde0fe729977b21da8b3c2c01c59e06507dc437cf76c5cf7e07424"
     }
   }
 }

@@ -6,6 +6,12 @@ app = marimo.App(width="medium")
 with app.setup:
     import inspect
     import json
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import domain
     from cafe.loop import run_shift
@@ -31,7 +37,7 @@ def s01_md_hook(mo):
 
     ## The hook
 
-    A customer says *"ponme un cortado y una napolitana"*. Your model replies with
+    A customer says *"get me a latte and a chocolate croissant"*. Your model replies with
     a tool call. You run the tool. You send the result back — and the endpoint
     rejects the whole conversation with a `400`.
 
@@ -52,10 +58,11 @@ def s01_md_client(mo):
     mo.md(r"""
     ## Your model
 
-    `get_client()` is the only seam between this course and a model. It returns a
-    live client pointed at **your** endpoint, unless `COURSE_MODE=stub`.
+    `get_client()` is the only seam between this course and a model. It returns
+    the offline stub unless `COURSE_MODE=live` points it at **your** endpoint.
 
-    Run the cell. If it fails, the error tells you exactly which variable to set —
+    Run the cell: `mode: stub` means offline and deterministic. To run against
+    a real model, set `COURSE_MODE=live` plus the three `CAFE_*` variables —
     and `uv run python -m cafe.doctor` proves the endpoint before you continue.
     """)
     return
@@ -78,16 +85,9 @@ def s01_md_api_shape(mo):
     `messages` list — the endpoint remembers nothing. Two response shapes matter:
     a final answer (`content`, no `tool_calls`), or a request to run a tool.
 
-    ```mermaid
-    flowchart LR
-        M[messages list<br/>the only state] --> C[call model]
-        C --> D{asked for<br/>a tool?}
-        D -- no --> E[final answer<br/>loop exits]
-        D -- yes --> X[run tool locally]
-        X --> A[append assistant message<br/>AND tool result verbatim]
-        A --> C
-    ```
-
+    ![Client-owned loop: answers end the loop, tool calls execute locally and persist before the next call](public/diagrams/S01-agent-loop.svg)
+    """)
+    mo.md(r"""
     The arrow back to the model carries **history**, not an invocation of the tool
     inside the model. Trace that with your finger before reading the code.
     """)
@@ -110,7 +110,7 @@ def s01_demo_first_call(client):
     first = client.chat(
         [
             {"role": "system", "content": domain.PERSONA},
-            {"role": "user", "content": "Ponme un cortado, por favor."},
+            {"role": "user", "content": "Get me a latte, please."},
         ],
         tools=domain.TOOL_SCHEMAS,
         temperature=0.0,
@@ -167,7 +167,7 @@ def s01_demo_broken(client):
     broken_state = OrderState()
     broken_messages = [
         {"role": "system", "content": domain.PERSONA},
-        {"role": "user", "content": "Ponme un cortado, por favor."},
+        {"role": "user", "content": "Get me a latte, please."},
     ]
     broken_body = client.chat(broken_messages, tools=domain.TOOL_SCHEMAS, temperature=0.0)
     broken_reply = broken_body["choices"][0]["message"]
@@ -246,9 +246,9 @@ def s01_reveal_source_tool_results(mo, reveal_tool_results):
 def s01_demo_compare():
     pending_calls = [
         {"id": "call_a", "type": "function",
-         "function": {"name": "price_check", "arguments": '{"item": "cortado"}'}},
+         "function": {"name": "price_check", "arguments": '{"item": "latte"}'}},
         {"id": "call_b", "type": "function",
-         "function": {"name": "price_check", "arguments": '{"item": "napolitana"}'}},
+         "function": {"name": "price_check", "arguments": '{"item": "chocolate croissant"}'}},
     ]
     supplied = attempt_tool_results(pending_calls, OrderState())
     if not supplied:
@@ -276,7 +276,7 @@ def s01_md_whole_loop(mo):
 def s01_demo_shift(client):
     shift = run_shift(
         client,
-        ["Hola, ponme un cortado y una napolitana.", "Nada más, gracias."],
+        ["Hi, get me a latte and a chocolate croissant.", "Nothing else, thanks."],
     )
     print("stop_reason:", shift["stop_reason"])
     print("turns_used :", shift["turns_used"], "| model calls:", shift["model_calls"])
@@ -308,10 +308,10 @@ def test_s01_turn_cap_is_a_harness_property():
             {"choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
                 "role": "assistant", "content": None,
                 "tool_calls": [{"id": f"c{i}", "type": "function", "function": {
-                    "name": "price_check", "arguments": '{"item": "cortado"}'}}]}}]}
+                    "name": "price_check", "arguments": '{"item": "latte"}'}}]}}]}
             for i in range(20)
         ]),
-        ["Ponme algo."],
+        ["Get me something."],
         max_turns=3,
     )
     assert capped["stop_reason"] == "turn_cap"
@@ -341,7 +341,7 @@ def s01_md_checkpoint(mo):
 def s01_demo_checkpoint(client):
     legal = 0
     for _ in range(3):
-        run = run_shift(client, ["Ponme un cortado.", "Nada más."])
+        run = run_shift(client, ["Get me a latte.", "Nothing else."])
         try:
             check_pairing(run["messages"])
             legal += 1

@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import judge
     from cafe.model import get_client
@@ -100,19 +106,9 @@ def s12_md_theory(mo):
 
     ### 3. The order of operations is the protocol
 
-    ```mermaid
-    flowchart LR
-        S[clean transcripts] --> M[seed known defects]
-        M --> K[answer key<br/>class or clean]
-        K --> H[you hand-label<br/>first, blind]
-        H --> J1[judge v1<br/>uncalibrated rubric]
-        J1 --> R1[detection + false positives<br/>as a PAIR]
-        R1 --> E[read the misses<br/>turn them into classes]
-        E --> J2[judge v2<br/>calibrated rubric]
-        J2 --> R2[re-measure on the SAME corpus]
-        R2 --> KK[Cohen's κ<br/>chance-corrected agreement]
-    ```
-
+    ![Seed defects, hand-label blind, calibrate the rubric, re-measure with chance-corrected agreement](public/diagrams/s12-judge.svg)
+    """)
+    mo.md(r"""
     Hand labels come **before** judge output, because a seen verdict anchors your
     label and the measurement dies quietly. Detection reported without false
     positives is half a number: a judge that fails everything detects everything.

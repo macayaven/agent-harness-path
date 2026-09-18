@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import domain, routing
     from cafe.model import get_client
@@ -99,18 +105,9 @@ def s11_md_theory(mo):
     and validatable without touching the engine — and your endpoint choice cites a
     measured number rather than a preference.
 
-    ```mermaid
-    flowchart LR
-        P[phase + messages] --> V{route table<br/>valid?}
-        V -- no --> R[RouteRefused<br/>before any call]
-        V -- yes --> E[project cost<br/>estimate]
-        E --> G{spent + projected<br/>&gt; budget?}
-        G -- yes --> X[refused<br/>cost never lands]
-        G -- no --> C[dispatch to the route's model]
-        C --> U[read usage + last_latency_ms]
-        U --> L[ledger: real tokens, real cost]
-    ```
-
+    ![Validated route table projects cost, refuses past budget, ledgers real usage](public/diagrams/s11-budget.svg)
+    """)
+    mo.md(r"""
     ### 3. The privacy boundary refuses; it does not warn
 
     Every phase carries a **classification**; every route carries a **location**.
@@ -231,7 +228,7 @@ def s11_demo_metered_call(client):
     routing.validate_policy(local_table)
     _draft = [
         {"role": "system", "content": domain.PERSONA},
-        {"role": "user", "content": "Ponme un cortado y una napolitana, por favor."},
+        {"role": "user", "content": "Get me a latte and a chocolate croissant, please."},
     ]
     _record = routing.metered_call(client, local_table, "draft_reply", _draft)
     _usage = _record["response"].get("usage") or {}
@@ -329,7 +326,7 @@ def test_s11_projected_over_budget_is_never_dispatched():
         _probe,
         _table,
         "draft_reply",
-        [{"role": "user", "content": "Ponme un cortado."}],
+        [{"role": "user", "content": "Get me a latte."}],
         budget=_ledger,
     )
     assert _record["dispatched"] is False
@@ -377,7 +374,7 @@ def test_s11_metered_tokens_match_the_endpoint_usage():
         _probe,
         _table,
         "draft_reply",
-        [{"role": "user", "content": "¿Cuánto cuesta un croissant?"}],
+        [{"role": "user", "content": "How much is a croissant?"}],
     )
     assert _record["dispatched"] is True
     _usage = _record["response"].get("usage") or {}
@@ -423,9 +420,9 @@ def s11_demo_checkpoint(client):
     }
     _ledger = routing.Budget(budget_usd=0.50)
     _prompts = [
-        "¿Qué me recomiendas para desayunar?",
-        "Soy alérgica a la leche, ¿qué puedo tomar?",
-        "Ponme dos cafés solos, por favor.",
+        "What do you recommend for breakfast?",
+        "I'm allergic to milk, what can I have?",
+        "Two espressos, please.",
     ]
     for _line in _prompts:
         routing.metered_call(

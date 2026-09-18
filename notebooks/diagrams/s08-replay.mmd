@@ -1,0 +1,8 @@
+flowchart LR
+    S[your script] --> L[cafe.loop.run_shift]
+    L -->|chat| RC[RecordingClient]
+    RC -->|chat| M[your model]
+    RC --> J[(trace.jsonl<br/>request + response, in order)]
+    L -->|chat| RP[ReplayClient]
+    J --> RP
+    RP -->|strict match,<br/>no match raises| L

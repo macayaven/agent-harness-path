@@ -5,6 +5,12 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import sys
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parent.parent
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
 
     from cafe import context, domain
     from cafe.model import get_client
@@ -31,9 +37,9 @@ def s03_md_hook(mo):
 
     ## The hook
 
-    The shift runs long. A regular orders, asks about the terrace, asks the price
-    of three things, then says *soy alérgico al huevo, ¿me puedo tomar la
-    tortilla?* Your conversation outgrew the window two turns ago, so your
+    The shift runs long. A regular orders, asks about the patio, asks the price
+    of three things, then says *I'm allergic to egg, can I have the cheese
+    omelette?* Your conversation outgrew the window two turns ago, so your
     compaction policy did its job — the transcript still reads perfectly.
 
     The allergen rule you wrote on the first line is gone. Nothing announced it.
@@ -83,16 +89,7 @@ def s03_md_window(mo):
     stored history** — what gets dropped is gone from every later turn too, not
     just from this request. That is what makes it dangerous.
 
-    ```mermaid
-    flowchart LR
-        H[history grows] --> B{over budget?}
-        B -- no --> S[send as-is]
-        B -- yes --> C[compact:<br/>truncate / summarize / pin]
-        C --> S
-        S --> L{over hard limit?}
-        L -- yes --> X[400: context_length_exceeded]
-        L -- no --> M[model call]
-    ```
+    ![Over budget, compact; past the hard limit the call fails instead of degrading](public/diagrams/s03-window.svg)
     """)
     return
 
@@ -112,7 +109,7 @@ def s03_predict_boundary(mo):
 def s03_demo_boundary():
     _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
     _history += [
-        {"role": "user", "content": f"Pregunta {index} sobre la carta y el servicio de hoy."}
+        {"role": "user", "content": f"Question {index} about the menu and today's service."}
         for index in range(20)
     ]
     print(f"before compaction: {context.tokens(_history)} tokens, "
@@ -130,7 +127,7 @@ def s03_demo_boundary():
 def test_s03_buried_rule_dies_pinned_rule_survives():
     _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
     _history += [
-        {"role": "user", "content": f"Pregunta {index} sobre la carta y el servicio de hoy."}
+        {"role": "user", "content": f"Question {index} about the menu and today's service."}
         for index in range(20)
     ]
     _buried, _compacted = context.policy_truncate(_history, context.BUDGET_DEFAULT)
@@ -217,7 +214,7 @@ def s03_reveal_source_keep_rule(mo, reveal_keep_rule):
 def s03_demo_compare():
     _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
     _history += [
-        {"role": "user", "content": f"Pregunta {index} sobre la carta y el servicio de hoy."}
+        {"role": "user", "content": f"Question {index} about the menu and today's service."}
         for index in range(20)
     ]
     mine = attempt_keep_rule(_history, context.BUDGET_DEFAULT)
