@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: false
+      - uses: astral-sh/setup-uv@v5
       - name: Validate devcontainer surface
         run: uv run python tools/check_devcontainer.py
       - name: Build container and run offline suite inside
