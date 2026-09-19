@@ -2,7 +2,7 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
-## Unreleased
+## 0.5.0 — 2026-09-19
 
 - Lessons: `toy.py` / `lab.md` references build to plain code, not links — the
   preview server hands source files out as plain text outside the marimo and
