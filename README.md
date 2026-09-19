@@ -1,5 +1,7 @@
 # The Agent Harness Path
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/macayaven/agent-harness-path)
+
 A self-contained course on **building, evaluating, and governing LLM agents** —
 twelve build sessions plus two optional apply-to-your-system protocols (S13
 rebuild audit, S14 ship & pilot).
@@ -35,6 +37,28 @@ model with real tool-calling support.
 **Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
 then start `sessions/s01-agent-loop/lesson.html` with
 `@sessions/s01-agent-loop/companion.md` in chat.
+
+**Take it in GitHub Codespaces (no local install):** click the badge above.
+Setup (interpreter, pinned deps, marimo extension) runs itself; when the
+terminal returns, prove it and start:
+
+```bash
+uv run python -m unittest discover -s tests   # green baseline, no keys needed
+uv run marimo edit sessions/s01-agent-loop/toy.py
+```
+
+The Codespace is created under *your* GitHub account, so usage bills to you,
+not the maintainer — the free tier (120 core-hours + 15 GB/month) covers this
+course several times over. Stop it when you stop (`Ctrl+Shift+P` → "Codespaces:
+Stop Current Codespace") and delete it when done; an idle machine burns hours,
+a kept one burns storage. The default path runs offline on the deterministic
+stub. For a live model, point `CAFE_*` at a network endpoint — a Codespace
+cannot reach Ollama on your laptop. Never commit keys.
+
+Editor defaults (local and Codespaces): Markdown opens as preview, session
+notebooks open as marimo notebooks. For `lesson.html` files there is no
+default to set — right-click → Open Preview reads them in the embedded
+browser.
 
 **Start here (HTML):** [`sessions/index.html`](sessions/index.html). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)

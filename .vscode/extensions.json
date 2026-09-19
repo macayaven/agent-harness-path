@@ -1,5 +1,5 @@
 {
-  "recommendations": [
-    "marimo-team.vscode-marimo"
-  ]
+  // Install prompt in VS Code / Cursor. Codespaces installs these anyway
+  // via .devcontainer/devcontainer.json.
+  "recommendations": ["marimo-team.vscode-marimo", "ms-vscode.live-server"]
 }

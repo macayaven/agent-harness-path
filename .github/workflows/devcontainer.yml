@@ -1,0 +1,39 @@
+# Devcontainer smoke: does a student container actually build and run?
+#
+# Path-filtered on purpose. The learner verify workflow stays zero-network;
+# this job pulls public images, so it only runs when the container surface
+# (.devcontainer/, .vscode/) changes. No keys, nothing pushed.
+name: devcontainer
+on:
+  pull_request:
+    paths: [".devcontainer/**", ".vscode/**"]
+  push:
+    branches: [main]
+    paths: [".devcontainer/**", ".vscode/**"]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Validate devcontainer JSONC
+        run: >-
+          python3 -c "
+          import json;
+          lines = [l for l in open('.devcontainer/devcontainer.json') if not l.strip().startswith('//')];
+          d = json.loads(''.join(lines));
+          assert d['image'].startswith('mcr.microsoft.com/devcontainers/python:');
+          assert 'uv sync --frozen' in d['postCreateCommand'];
+          assert 'marimo-team.vscode-marimo' in str(d['customizations']);
+          print('devcontainer.json ok')
+          "
+      - name: Build container and run offline suite inside
+        uses: devcontainers/ci@v0.3
+        env:
+          COURSE_MODE: stub
+        with:
+          push: never
+          runCmd: uv run python -m unittest discover -s tests
