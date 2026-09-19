@@ -4,6 +4,15 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- Lessons: `toy.py` / `lab.md` references build to plain code, not links — the
+  preview server hands source files out as plain text outside the marimo and
+  markdown-preview surface. Open toys from the Explorer; lesson-to-lesson
+  bridges still navigate (covered by a build regression test).
+- Codespaces: Copilot loads the companion instructions
+  (`useInstructionFiles`), `ty` joins the extension set, and the `toy.py`
+  glob opens notebooks on first click. Agentic edit mode may still fill a
+  predict-first cell when asked directly — tutor enforcement there is
+  best-effort, not a guardrail.
 - S12 judge calibration: fix the theory diagram to the toy's corpus (6 transcripts,
   3 seeded + 3 clean, rates n/3); price all twelve judge calls on S11's route table
   in a new notebook cell so the carried-in routing ledger is actually used.
