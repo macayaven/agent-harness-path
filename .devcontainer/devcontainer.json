@@ -14,7 +14,8 @@
       "extensions": [
         "marimo-team.vscode-marimo",
         "ms-python.python",
-        "ms-vscode.live-server"
+        "ms-vscode.live-server",
+        "astral-sh.ty"
       ]
     }
   },
