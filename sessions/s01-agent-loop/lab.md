@@ -1,8 +1,8 @@
-# S01 lab — the trivia-host loop
+# S01 lab — the café-host loop
 
 **Optional. After the notebook.** The easy path is complete without this.
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S01-agent-loop](lesson.html) — the loop is a `while`
 around a stateless API; append the assistant message verbatim; pair every
@@ -10,17 +10,17 @@ around a stateless API; append the assistant message verbatim; pair every
 
 ## Build
 
-In `trivia_host/`:
+In `cafe_host/`:
 
-1. `tools.py` — `new_state` and `dispatch` for `draw_clue`, `score_answer`,
-   `end_round` (and `propose_round_spec` if you wire it now; S04 tightens it).
-   Use `labs/deck.py`. Do not fork `labs/schemas.py`.
+1. `tools.py` — `new_state` and `dispatch` for `pull_item`, `settle_item`,
+   `close_shift` (and `propose_order` if you wire it now; S04 tightens it).
+   Use `labs/menu.py`. Do not fork `labs/schemas.py`.
 2. `loop.py` — `run_loop(client, messages, tools, dispatch, max_turns=8)`.
    Append the assistant message (protocol fields only). If `tool_calls` is
    empty, stop. Else dispatch, append `role=tool` results, repeat. Turn cap is
    the harness's, not the model's.
 3. `engine.py` — `run_engine` that starts from `house_rules.PINNED_RULES` then
-   `STARTER_PERSONA` and drives one scripted user line through the loop.
+   `STARTER_PERSONA` and drives one scripted customer line through the loop.
 
 The client is `labs.client.Client`. It already rejects an orphaned tool result
 (the S01 failure class) before any network or cassette lookup. Before coding,
@@ -44,5 +44,5 @@ A row in `labs/PROGRESS.md`.
 
 ## Done when
 
-One scripted round completes (a tool actually ran) **and** the pairing check
+One scripted shift completes (a tool actually ran) **and** the pairing check
 prints that an orphaned tool result is rejected.

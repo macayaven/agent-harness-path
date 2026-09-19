@@ -1,4 +1,4 @@
-"""Shipped trivia-host loop (companion cut). Same contract as labs/reference/loop.py."""
+"""Shipped café-host loop (companion cut). Same contract as labs/reference/loop.py."""
 
 from __future__ import annotations
 

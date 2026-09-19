@@ -2,7 +2,7 @@
 
 This tree is **v0.3.0**, which supersedes v0.2.0. Lessons and notebooks are the
 rebuilt café course, one `cafe/` package grown across S01–S12; `labs/` ships a
-complete trivia host as an optional separate hard path; **session bridges** let a
+complete café host as an optional separate hard path; **session bridges** let a
 Cursor (or other OpenAI-compatible) assistant stand in the gap between a tiny
 toy and the lab.
 
@@ -80,7 +80,7 @@ Do not mix these up.
 | --- | --- | --- |
 | **Tutor** | Cursor model settings (base URL + key) | Explains lessons/labs |
 | **Notebooks (`cafe/`)** | shell `CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL` | Your own endpoint the café notebooks run against |
-| **Lab `--live`** | shell `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional trivia-host against a real/local chat API |
+| **Lab `--live`** | shell `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional café-host against a real/local chat API |
 
 The notebooks read `CAFE_*` before `OPENAI_*`. Point them at your endpoint and
 smoke-test the wiring:
@@ -107,7 +107,7 @@ export OPENAI_MODEL=llama3.2
 uv run python labs/run.py --session s01 --live
 ```
 
-Never put keys in `bridges/`, notebooks, `labs/trivia_host/`, or issues.
+Never put keys in `bridges/`, notebooks, `labs/cafe_host/`, or issues.
 
 ## 4. What the assistant is allowed to do
 

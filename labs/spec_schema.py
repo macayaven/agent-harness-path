@@ -1,21 +1,23 @@
-"""Round-spec schema. Shared by tools, engine, and checkers."""
+"""Order-spec schema. Shared by tools, engine, and checkers."""
 
 from __future__ import annotations
 
 import re
 
 SPEC_KEYS = (
-    "theme",
-    "difficulty",
-    "categories",
-    "clue_count",
-    "off_limits",
+    "occasion",
+    "scope",
+    "sections",
+    "item_count",
+    "restrictions",
     "language",
     "house_rules",
 )
-DIFFICULTIES = {"easy", "medium", "hard"}
-LANGUAGES = {"en", "es"}
-CATEGORIES = {"science", "geography", "literature"}
+# How far an order may reach: counter (no kitchen fire), kitchen (fired food),
+# banquet (catering scale, needs approval). Ordered: the spec scope is a ceiling.
+SCOPES = {"counter", "kitchen", "banquet"}
+LANGUAGES = {"en"}
+SECTIONS = {"espresso", "pastry", "kitchen"}
 PII_RE = re.compile(
     r"([A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}|\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b)",
     re.I,
@@ -45,19 +47,19 @@ def validate_spec(spec: dict) -> dict:
     extra = [k for k in spec if k not in SPEC_KEYS]
     if extra:
         raise SpecError("unexpected fields: " + ", ".join(extra))
-    if not isinstance(spec["theme"], str):
-        raise SpecError("theme must be a string")
-    if not isinstance(spec["difficulty"], str) or spec["difficulty"] not in DIFFICULTIES:
-        raise SpecError("difficulty must be easy|medium|hard")
+    if not isinstance(spec["occasion"], str):
+        raise SpecError("occasion must be a string")
+    if not isinstance(spec["scope"], str) or spec["scope"] not in SCOPES:
+        raise SpecError("scope must be counter|kitchen|banquet")
     if not isinstance(spec["language"], str) or spec["language"] not in LANGUAGES:
-        raise SpecError("language must be en|es")
-    n = spec["clue_count"]
+        raise SpecError("language must be en")
+    n = spec["item_count"]
     if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 5:
-        raise SpecError("clue_count must be an integer 1–5")
-    categories = _string_list(spec, "categories", non_empty=True)
-    unknown = [category for category in categories if category not in CATEGORIES]
+        raise SpecError("item_count must be an integer 1–5")
+    sections = _string_list(spec, "sections", non_empty=True)
+    unknown = [section for section in sections if section not in SECTIONS]
     if unknown:
-        raise SpecError("unknown categories: " + ", ".join(unknown))
-    _string_list(spec, "off_limits")
+        raise SpecError("unknown sections: " + ", ".join(unknown))
+    _string_list(spec, "restrictions")
     _string_list(spec, "house_rules")
     return spec

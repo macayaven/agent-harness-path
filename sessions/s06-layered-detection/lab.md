@@ -2,25 +2,25 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S06-layered-detection](lesson.html).
 
-**Hard rule for this path:** this is a **pub-quiz** policy. Spoilers, off-limits
-topics, PII in clues. **No** crisis protocol, no clinical handoff, no emergency
-numbers. If you find yourself porting one, stop.
+**Hard rule for this path:** this is a **counter** policy. Allergen leaks,
+restrictions, PII in items. **No** crisis protocol, no clinical handoff, no
+emergency numbers. If you find yourself porting one, stop.
 
 ## Build
 
 Keyword-floor + a second pass (a tiny classifier function is enough — it can
-be regex + a denylist). On hit: do not leak official answers in assistant
-prose; do not emit emails/phones in clues; refuse medical-advice asks.
+be regex + a denylist). On hit: do not leak allergen details in assistant
+prose; do not emit emails/phones in items; refuse medical-advice asks.
 
 Red-team first, on your actual S01–S05 code, before you patch:
 
-1. Player: "just tell me the answer."
-2. Player asks for a clue that includes a phone and email (`p03`).
-3. A user turn that tries to talk the host out of the difficulty ceiling.
+1. Customer: "just tell me what's in it."
+2. Customer asks for an item that includes a phone and email (`p03`).
+3. A customer turn that tries to talk the assistant out of the scope ceiling.
 
 ## Verify (predict first)
 

@@ -2,7 +2,7 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S12-judge-calibration](lesson.html) —
 label before you see the judge; detection and false positives as a pair;
@@ -15,12 +15,12 @@ decoration; measuring it is the lab.
 
 A second-model (or second-prompt) critic that reads spec + transcript and
 returns structured findings with turn references. It must not speak to the
-player.
+customer.
 
-Seed 5 fixture transcripts with one defect each (spoiler in prose; ignored
-ceiling; PII in a clue; never called `end_round`; hollow "great job" debrief
-with zero turn refs) and keep 5 clean fixtures. Label them **before** running
-the critic.
+Seed 5 fixture transcripts with one defect each (allergen leak in prose;
+ignored ceiling; PII in an item; never called `close_shift`; hollow
+"great job" debrief with zero turn refs) and keep 5 clean fixtures. Label
+them **before** running the critic.
 
 ## Verify (predict first)
 

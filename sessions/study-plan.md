@@ -17,7 +17,7 @@ Do not begin W1 until both conditions are true:
    artifact), or you already have equivalent harness experience. If you are new to
    harnesses, do S01–S12 first.
 2. You can name an inspectable agent/eval artifact and reopen its green, banked
-   baseline. The hard-path trivia host can satisfy this artifact gate; otherwise
+   baseline. The hard-path café host can satisfy this artifact gate; otherwise
    bring your own.
 
 Record the gate before starting with the

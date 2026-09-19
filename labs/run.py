@@ -54,8 +54,8 @@ def load_impl(name: str):
         engine = importlib.import_module("reference.engine")
         loop = importlib.import_module("reference.loop")
     elif name == "student":
-        engine = importlib.import_module("trivia_host.engine")
-        loop = importlib.import_module("trivia_host.loop")
+        engine = importlib.import_module("cafe_host.engine")
+        loop = importlib.import_module("cafe_host.loop")
     else:
         raise SystemExit(f"unknown --impl {name}")
     return engine, loop
@@ -96,7 +96,7 @@ def run_s01_pairing() -> str:
                     {
                         "id": "c1",
                         "type": "function",
-                        "function": {"name": "end_round", "arguments": "{}"},
+                        "function": {"name": "close_shift", "arguments": "{}"},
                     }
                 ],
             },
@@ -144,17 +144,17 @@ def run_medical_gate(engine) -> str:
 
 def run_s01_round(client: Client, engine) -> dict:
     spec = {
-        "theme": "science",
-        "difficulty": "easy",
-        "categories": ["science"],
-        "clue_count": 1,
-        "off_limits": ["medical advice"],
+        "occasion": "regulars",
+        "scope": "counter",
+        "sections": ["espresso"],
+        "item_count": 1,
+        "restrictions": ["medical advice"],
         "language": "en",
-        "house_rules": ["clues from tools only"],
+        "house_rules": ["items from tools only"],
     }
     return engine.run_engine(
         client,
-        ["Draw an easy science clue, wait, then end the round."],
+        ["Pull a counter espresso item, wait, then close the shift."],
         spec=spec,
         generate_from_brief=False,
     )
@@ -213,7 +213,9 @@ def maybe_write_report(
         path = REPORTS / "REFERENCE-p0-baseline.md"
         banner = (
             "# Course cassette-era baseline (reference implementation)\n\n"
-            "Not a student bank. Regenerated only with `--all --record`.\n\n"
+            "Not a student bank. Regenerated only with `--all --record`.\n"
+            "Recorded against a local OpenAI-compatible endpoint; "
+            "CI verifies with `--replay`.\n\n"
         )
         path.write_text(banner + text, encoding="utf-8")
         return
@@ -222,7 +224,7 @@ def maybe_write_report(
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Trivia-host lab runner")
+    p = argparse.ArgumentParser(description="Café-host lab runner")
     p.add_argument("--session", choices=[f"s{i:02d}" for i in range(1, 13)])
     p.add_argument("--all", action="store_true", help="CI path: reference + full suite")
     p.add_argument("--replay", action="store_true", help="default if no mode flag")
@@ -260,15 +262,15 @@ def main(argv: list[str] | None = None) -> int:
             used_tools = bool((round_result.get("state") or {}).get("tool_log"))
             if mode == "replay":
                 client.assert_exhausted()
-            print("PASS s01 round" if used_tools else "FAIL s01 round: no tools")
+            print("PASS s01 shift" if used_tools else "FAIL s01 shift: no tools")
             if not used_tools and impl == "reference":
                 exit_code = 1
         except NotImplementedError as exc:
-            print(f"s01 round skipped (not implemented): {exc}")
+            print(f"s01 shift skipped (not implemented): {exc}")
             if impl == "reference":
                 exit_code = 1
         except (ReplayMismatch, RouteRefused) as exc:
-            print(f"FAIL s01 round: {exc}")
+            print(f"FAIL s01 shift: {exc}")
             exit_code = 1
         if args.session == "s01" and not args.all:
             return exit_code

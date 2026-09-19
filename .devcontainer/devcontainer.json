@@ -1,0 +1,24 @@
+{
+  // Student-owned Codespace: compute and storage bill to whoever clicks
+  // "Open in Codespaces", never to the course maintainer. Default 2-core
+  // machine is plenty — course logic is stdlib-only, models run elsewhere.
+  "name": "Agent Harness Path",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "remoteUser": "vscode",
+  // uv from PyPI, version-pinned like everything else (uv.lock).
+  // System-wide (/usr/local/bin) on purpose: no HOME or remoteEnv PATH
+  // involved, so every shell — terminal, exec, CI — finds the same uv.
+  "postCreateCommand": "sudo pip install --break-system-packages uv==0.12.17 && uv --version && uv sync --frozen",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "marimo-team.vscode-marimo",
+        "ms-python.python",
+        "ms-vscode.live-server",
+        "astral-sh.ty"
+      ]
+    }
+  },
+  // `uv run marimo edit ...` serves here; Codespaces forwards it automatically.
+  "forwardPorts": [2717]
+}

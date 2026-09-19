@@ -2,7 +2,7 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S08-observability-replay](lesson.html).
 
@@ -11,11 +11,11 @@ entry, full match key, exhaustion as a separate invariant. Do not weaken it.
 
 ## Build
 
-1. Write per-phase spans (intake / spec / play / debrief) as JSONL under
+1. Write per-phase spans (intake / spec / serve / debrief) as JSONL under
    `labs/work/traces/` (gitignored). No timestamps in the **transcript**
    messages — clocks make "identical" a flake. Langfuse is optional and
    **not** required.
-2. Confirm `--replay` on a recorded round reproduces the assistant/tool
+2. Confirm `--replay` on a recorded shift reproduces the assistant/tool
    sequence. `Client.assert_exhausted()` must run at the end of each cassette
    file.
 

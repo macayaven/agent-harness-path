@@ -1,8 +1,8 @@
 # Session bridges
 
 Each `sNN.md` is the **authored rung** between the inspectable toy notebook
-and the optional trivia-host lab. In the core path the artifact is the `cafe/`
-package the learner grows session by session; the trivia lab is a separate,
+and the optional café-host lab. In the core path the artifact is the `cafe/`
+package the learner grows session by session; the café-host lab is a separate,
 optional hard path. The Cursor companion rule tells the assistant to read the
 current bridge before explaining a lab.
 

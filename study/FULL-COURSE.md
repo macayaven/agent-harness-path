@@ -59,9 +59,9 @@ lesson HTML and work without a provider. Record assistance and premature answer
 exposure honestly.
 
 The course overview video is an optional Google Gemini Notebook preview, and may lag the
-lessons. Hard labs remain optional and build a trivia host with their own scopes,
-prerequisites and replay/live distinctions. S06's hard lab is pub-quiz policy only;
-S09's real round stays private; S12's replay does not perform critic calibration.
+lessons. Hard labs remain optional and build a café host with their own scopes,
+prerequisites and replay/live distinctions. S06's hard lab is counter policy only;
+S09's real shift stays private; S12's replay does not perform critic calibration.
 Reference replay and real-provider evidence are different categories.
 
 S13/S14 have **no notebooks**. Read their prerequisites before choosing to perform

@@ -1,6 +1,6 @@
 # S14 — cold acceptance and holdout card
 
-Follow the [authored S14 protocol](../sessions/s14-ship-and-pilot/lesson.html#the-protocol) on a non-trivial system you own, or your completed trivia host. This session is optional and has no notebook. Its prerequisites remain S01–S13 vocabulary and mechanisms plus the actual system and evidence instruments. Reading the card does not establish those prerequisites.
+Follow the [authored S14 protocol](../sessions/s14-ship-and-pilot/lesson.html#the-protocol) on a non-trivial system you own, or your completed café host. This session is optional and has no notebook. Its prerequisites remain S01–S13 vocabulary and mechanisms plus the actual system and evidence instruments. Reading the card does not establish those prerequisites.
 
 ## Freeze before running
 
@@ -14,9 +14,9 @@ Start cold, with clean state and traces enabled. No warmup, narration or assista
 
 If acceptance fails, retain the failure trace and original criteria, amend the system and rerun. The diagnosed fixture is now a tuning case. Its green rerun is regression evidence; it does not become unseen again. The final gate is one cold run on the still-untouched holdout. If that gate fails, record the failure and stop claiming acceptance. Do not quietly recycle an exposed fixture as a new holdout.
 
-The supplied trivia cassettes and reference suite are useful regression material. They are already published and do not supply new unseen acceptance scenarios for your own finished host.
+The supplied café cassettes and reference suite are useful regression material. They are already published and do not supply new unseen acceptance scenarios for your own finished host.
 
-For published-fixture regression on your completed trivia host, use
+For published-fixture regression on your completed café host, use
 `uv run python labs/run.py --all --impl student --replay`. Confirm **`impl=student`**
 in the report and inspect task results and skipped/not-implemented notices; an
 exit code alone is insufficient. `--all` without `--impl student` runs the reference.

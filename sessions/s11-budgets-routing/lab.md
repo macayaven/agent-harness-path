@@ -2,7 +2,7 @@
 
 **Optional. After the notebook.**
 
-**Hard-path note:** this lab works on the trivia host in `labs/trivia_host/`, not the café toy — the lesson's mechanism mapped onto the round engine. The session's `companion.md` gives the exact mapping.
+**Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
 **Read:** [S11-budgets-routing](lesson.html).
 
@@ -13,7 +13,7 @@ check: session-content phases refuse `OPENAI_ROUTE_KIND=cloud`.
 
 1. Turn cap and an approximate token budget (`len(json)/4` is enough). Breach
    → `stop_reason=budget_exceeded`.
-2. Optional: send spec-generation vs play to different `OPENAI_MODEL` values
+2. Optional: send spec vs serve to different `OPENAI_MODEL` values
    if you have two. Defaults may be the same model.
 3. `run_engine(..., route_kind="cloud")` must raise before any POST.
 

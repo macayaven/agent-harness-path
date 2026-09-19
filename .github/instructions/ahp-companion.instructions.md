@@ -1,6 +1,6 @@
 ---
+applyTo: "**"
 description: Learner companion for The Agent Harness Path — tutor, do not take the course for the student
-alwaysApply: true
 ---
 
 # AHP companion (learner mode)

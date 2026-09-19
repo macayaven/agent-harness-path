@@ -8,7 +8,7 @@ The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
 - `sessions/*/toy.py` (toy notebooks)
-- `labs/**/*.py` (optional hard-path client, runner, trivia host, evals, reference)
+- `labs/**/*.py` (optional hard-path client, runner, café host, evals, reference)
 - `tools/*.py` (build, validation and static diagram tooling),
   `tools/template.html`, `tools/receipt.json`
 - `pyproject.toml`, `uv.lock`

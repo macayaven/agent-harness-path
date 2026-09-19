@@ -205,10 +205,16 @@ class Client:
         response = _slim_response(response)
         if write:
             assert self.cassette_path is not None
+            # Never persist the live route alias: cassettes are committed, and
+            # the match key is {messages, tools, temperature, tool_choice}.
             with self.cassette_path.open("a", encoding="utf-8") as fh:
                 fh.write(
                     json.dumps(
-                        {"model": self.model, "request": key, "response": response},
+                        {
+                            "model": "openai-compatible",
+                            "request": key,
+                            "response": response,
+                        },
                         ensure_ascii=False,
                     )
                     + "\n"

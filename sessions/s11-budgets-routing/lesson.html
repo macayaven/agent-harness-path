@@ -113,7 +113,7 @@
 <strong>Today you ship:</strong> <code>cafe/routing.py</code> — the budget gate, the route table, and the boundary that refuses a leak.
 <strong>What this teaches:</strong> cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose <em>projected</em> cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
 <strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
-<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>Last Thursday the till showed <strong>€0.42</strong> of model spend on a task the shift prices at
@@ -168,7 +168,7 @@ the call, not by a formula in this notebook. A refused call is never sent, so
 call — which is exactly how the notebook proves the refusal happened before the wire.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
-<p>Open <a href="toy.py"><code>toy.py</code></a>.
+<p>Open <code>toy.py</code>.
 Configure your endpoint first:</p>
 <pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama

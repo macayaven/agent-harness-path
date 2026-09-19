@@ -1,5 +1,7 @@
 # The Agent Harness Path
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/macayaven/agent-harness-path)
+
 A self-contained course on **building, evaluating, and governing LLM agents** —
 twelve build sessions plus two optional apply-to-your-system protocols (S13
 rebuild audit, S14 ship & pilot).
@@ -35,6 +37,30 @@ model with real tool-calling support.
 **Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
 then start `sessions/s01-agent-loop/lesson.html` with
 `@sessions/s01-agent-loop/companion.md` in chat.
+
+**Take it in GitHub Codespaces (no local install):** click the badge above.
+Setup (interpreter, pinned deps, marimo extension) runs itself; when the
+terminal returns, prove it and start:
+
+```bash
+uv run python -m unittest discover -s tests   # green baseline, no keys needed
+uv run marimo edit sessions/s01-agent-loop/toy.py
+```
+
+The Codespace is created under *your* GitHub account, so usage bills to you,
+not the maintainer — see [about billing for Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces).
+The free tier (120 core-hours + 15 GB/month) is ample here: the full suite
+runs in about a minute and notebooks idle cheaply, but watch your usage at
+account billing settings. Stop the machine when you stop (`Ctrl+Shift+P` →
+"Codespaces: Stop Current Codespace") and delete it when done; an idle machine
+burns hours, a kept one burns storage. The default path runs offline on the deterministic
+stub. For a live model, point `CAFE_*` at a network endpoint — a Codespace
+cannot reach Ollama on your laptop. Never commit keys.
+
+Editor defaults (local and Codespaces): Markdown opens as preview, session
+notebooks open as marimo notebooks. For `lesson.html` files there is no
+default to set — right-click → Open Preview reads them in the embedded
+browser.
 
 **Start here (HTML):** [`sessions/index.html`](sessions/index.html). A 9-minute
 [course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
@@ -77,7 +103,7 @@ product.
    `sessions/sNN-slug/companion.md` is what the Cursor companion should read first.
 5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a
    ship/pilot protocol. Easy path: a system you own. Hard path:
-   `labs/trivia_host/`. The assistant must not do these for you.
+   `labs/cafe_host/`. The assistant must not do these for you.
 
 The curriculum: agent loop → golden sets & baselines → context engineering →
 structured generation → consent gate → layered detection → repair loop →
@@ -104,7 +130,7 @@ uv run python -m cafe.doctor
 uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
-Optional hard path (complete host already in `labs/trivia_host/`):
+Optional hard path (complete host already in `labs/cafe_host/`):
 
 ```bash
 uv run python labs/run.py --session s01 --replay
@@ -148,8 +174,8 @@ Everything in the core path is **one toy from one familiar domain** — a
 neighbourhood-café counter assistant (orders, tickets, allergens, the till) —
 never a paste-ready production harness. Toy code is for reading, running,
 and breaking. The numbers you print in a notebook do not substitute for a banked
-eval baseline on a system you own. The optional labs are a **separate** trivia-host
-spine — still a toy domain. If either spine grows file/shell tools, rewrite it back.
+eval baseline on a system you own. The optional labs are a **separate** café-host
+spine — same toy domain, different artifact. If either spine grows file/shell tools, rewrite it back.
 
 ## Contributing
 

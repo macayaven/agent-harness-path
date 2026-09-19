@@ -2,15 +2,31 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
-## Unreleased
+## 0.5.0 — 2026-09-19
 
+- Lessons: `toy.py` / `lab.md` references build to plain code, not links — the
+  preview server hands source files out as plain text outside the marimo and
+  markdown-preview surface. Open toys from the Explorer; lesson-to-lesson
+  bridges still navigate (covered by a build regression test).
+- Codespaces: Copilot loads the companion instructions
+  (`useInstructionFiles`), `ty` joins the extension set, and the `toy.py`
+  glob opens notebooks on first click. Agentic edit mode may still fill a
+  predict-first cell when asked directly — tutor enforcement there is
+  best-effort, not a guardrail.
 - S12 judge calibration: fix the theory diagram to the toy's corpus (6 transcripts,
   3 seeded + 3 clean, rates n/3); price all twelve judge calls on S11's route table
   in a new notebook cell so the carried-in routing ledger is actually used.
 - S05 promise names the property that matters (the approved ticket is the only
   ticket in the building). Every hard-path `lab.md` orients the reader to the
-  trivia host and the companion mapping. S13 audit names the deleted file instead
-  of `core.py`. S01 states the blocking-loop scope cut (no streaming, steering,
+  café host and the companion mapping. S13 audit names the deleted file instead
+  of `core.py`.
+- Hard-path labs re-skinned trivia → café, one domain everywhere:
+  `labs/trivia_host/` → `labs/cafe_host/` with `propose_order`, `pull_item`,
+  `settle_item`, `close_shift` over a 12-item menu (`labs/menu.py` replaces
+  `labs/deck.py`); order spec fields renamed (occasion, sections, item_count,
+  restrictions, en-only); allergen leaks replace spoilers; all 12 `lab.md`
+  protocols, 14 companions, and the docs follow. Cassettes re-recorded
+  (`--all --record`); the tutor's throwaway examples stay out-of-domain. S01 states the blocking-loop scope cut (no streaming, steering,
   or cancellation) up front.
 
 ## 0.4.0 — 2026-09-18

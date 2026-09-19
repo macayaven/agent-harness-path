@@ -4,8 +4,8 @@
 
 Core: `lesson.html`,
 `toy.py`, `cafe/context.py` (`policy_summarize`,
-`summarize_turns`, the compaction policies). Optional trivia lab:
-`sessions/s03-context-engineering/lab.md`, `labs/trivia_host/engine.py` (`compact`, `run_engine`
+`summarize_turns`, the compaction policies). Optional café-host lab:
+`sessions/s03-context-engineering/lab.md`, `labs/cafe_host/engine.py` (`compact`, `run_engine`
 message prefix), `labs/house_rules.py`.
 
 Wire table: `sessions/s01-agent-loop/companion.md`. Eval suite: `sessions/s02-golden-evals/companion.md`.
@@ -13,7 +13,7 @@ Wire table: `sessions/s01-agent-loop/companion.md`. Eval suite: `sessions/s02-go
 ## The gap
 
 The core toy runs live and shows instructions dying under compaction;
-`cafe/context.py` is the four-policy answer. The optional trivia host already
+`cafe/context.py` is the four-policy answer. The optional café host already
 pins **two** leading system messages:
 
 1. `PINNED_RULES` — never drop (index 0).
@@ -23,8 +23,8 @@ pins **two** leading system messages:
 short, return as-is. Else keep `messages[0]`, insert a system note that N
 messages were compacted, keep the tail of length `keep-1`. Governors
 (ceiling, PII) are **code** in `tools.py` / `engine.py`, not only the pin.
-The pin is a copy the model sees; enforcement is `draw_clue` returning
-`difficulty_ceiling` and `policy_hit`.
+The pin is a copy the model sees; enforcement is `pull_item` returning
+`scope_ceiling` and `policy_hit`.
 
 ## Replay hazard
 
@@ -38,7 +38,7 @@ into `labs/work/`.
 ```bash
 # core path: run the notebook live against your own endpoint
 uv run marimo edit sessions/s03-context-engineering/toy.py
-# optional hard path: the separate trivia lab
+# optional hard path: the separate café-host lab
 uv run python labs/run.py --session s03 --replay
 ```
 
@@ -53,4 +53,4 @@ After `keep=6` on a long list, is `messages[0]` still `PINNED_RULES`?
 
 Do: walk `compact` line by line next to the notebook compaction experiment.
 Don't: rewrite `PINNED_RULES` to be “safer.” Don't drop the pin to save
-tokens. Don't claim the pin alone stops hard clues (that's `draw_clue`).
+tokens. Don't claim the pin alone stops banquet-scope pulls (that's `pull_item`).
