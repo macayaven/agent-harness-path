@@ -116,7 +116,7 @@ around a stateless API — and the two invariants that keep a tool-calling conve
 legal: message-list preservation and tool-call/tool-result pairing.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> none beyond Python.
-<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>A customer at table 4 says <em>"get me a latte and a chocolate croissant"</em>. Your model
@@ -187,7 +187,7 @@ reason is a run you cannot report on, so <code>run_shift</code> always returns a
 <code>stop_reason</code>. You will reuse that field in S07, S08 and S09.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
-<p>Open <a href="toy.py"><code>toy.py</code></a>.
+<p>Open <code>toy.py</code>.
 Configure your endpoint first:</p>
 <pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server

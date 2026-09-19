@@ -63,6 +63,28 @@ LOCAL_LESSON_HREF_RE = re.compile(
     r'(?P<session>s[0-9]{2}-[a-z0-9-]+)/lesson\.html)(?P<suffix>")'
 )
 
+# Source-file links (toy.py, lab.md, ...) must not stay clickable in the
+# built lesson: the preview server hands them out as plain text, outside
+# the marimo / markdown-preview surface the course teaches. Unlink them at
+# build time; the .md sources keep their links for GitHub rendering.
+SOURCE_HREF_RE = re.compile(
+    r'<a\s+href="(?P<target>[^"]+)">(?P<inner>.*?)</a>', re.DOTALL
+)
+
+
+def unlink_source_hrefs(rendered: str) -> str:
+    """Replace <a> wrappers around local .py/.md targets with inner HTML."""
+    def replace(match: re.Match[str]) -> str:
+        target = match.group("target")
+        if "://" in target or target.startswith(("mailto:", "data:")):
+            return match.group(0)
+        path = target.split("#", 1)[0].split("?", 1)[0]
+        if path.endswith((".py", ".md")):
+            return match.group("inner")
+        return match.group(0)
+
+    return SOURCE_HREF_RE.sub(replace, rendered)
+
 def page_source(directory: str, slug: str) -> Path:
     if directory == ".":
         return SESSIONS / f"{slug}.md"
@@ -164,7 +186,7 @@ def render(source: Path, slug: str, out: Path, nav: str) -> tuple[str, int]:
         .replace("{{ body }}", body)
         .replace("{{ source }}", str(source.relative_to(ROOT)))
     )
-    return canonical_lesson_hrefs(rendered), n
+    return unlink_source_hrefs(canonical_lesson_hrefs(rendered)), n
 
 
 def main() -> int:

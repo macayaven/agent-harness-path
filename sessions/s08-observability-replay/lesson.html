@@ -119,7 +119,7 @@ hunt the nondeterminism a replay exposes by injecting the clock and the RNG.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop and its
 <code>stop_reason</code>), S07 (the runs you now record).
-<strong>Hands-on:</strong> <a href="toy.py"><code>toy.py</code></a> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>A customer calls back. <em>"You charged me twice yesterday."</em> You open a terminal and scroll: the shift
@@ -179,7 +179,7 @@ between two runs inside one process — the trap is subtler than it looks.</p>
 not one <code>.jsonl</code> landed in it.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
-<p>Open <a href="toy.py"><code>toy.py</code></a>.
+<p>Open <code>toy.py</code>.
 Same endpoint configuration as S06, plus the <code>SCRIPT</code> of two customer lines the notebook replays.</p>
 <ol>
 <li><strong>Record your own shift.</strong> <code>record_shift(client, SCRIPT, path, tracer=Tracer(clock=TickClock()))</code>

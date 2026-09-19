@@ -95,4 +95,46 @@ class StaticReaderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'no static diagram configuration'):
                 build.render_body(source,'new-lesson')
 
+class SourceLinkTests(unittest.TestCase):
+    def test_py_and_md_hrefs_are_unlinked_but_text_survives(self):
+        html = build.unlink_source_hrefs(
+            '<p>Open <a href="toy.py"><code>toy.py</code></a> and '
+            '<a href="../s02-golden-evals/toy.py">the toy</a>; '
+            'read <a href="lab.md"><code>lab.md</code></a>.</p>'
+        )
+        self.assertNotIn('<a', html)
+        self.assertIn('<code>toy.py</code>', html)
+        self.assertIn('the toy', html)
+        self.assertIn('<code>lab.md</code>', html)
+
+    def test_lesson_and_external_hrefs_survive(self):
+        html = build.unlink_source_hrefs(
+            '<a href="../s02-golden-evals/lesson.html#the-theory-in-depth">'
+            'S02</a> <a href="https://example.com/x.py">docs</a>'
+        )
+        self.assertIn('href="../s02-golden-evals/lesson.html#the-theory-in-depth"', html)
+        self.assertIn('href="https://example.com/x.py"', html)
+
+    def test_built_pages_carry_no_local_source_hrefs(self):
+        seen = []
+        for directory, slug, out in build.PAGES:
+            rendered, _ = build.render(
+                build.page_source(directory, slug), slug,
+                ROOT / 'sessions' / directory / out, '<nav></nav>',
+            )
+            seen += re.findall(r'href="([^"]+)"', rendered)
+        local_source = [
+            href for href in seen
+            if '://' not in href
+            and href.split('#', 1)[0].split('?', 1)[0].endswith(('.py', '.md'))
+        ]
+        self.assertEqual(local_source, [])
+        s01, _ = build.render(
+            build.page_source('s01-agent-loop', 'S01-agent-loop'),
+            'S01-agent-loop',
+            ROOT / 'sessions/s01-agent-loop/lesson.html', '<nav></nav>',
+        )
+        self.assertIn('<code>toy.py</code>', s01)
+        self.assertIn('../s02-golden-evals/lesson.html#the-theory-in-depth', s01)
+
 if __name__=='__main__':unittest.main()
