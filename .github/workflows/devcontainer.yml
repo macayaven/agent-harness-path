@@ -28,8 +28,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: Validate devcontainer surface
         run: uv run python tools/check_devcontainer.py
+      # remoteEnv PATH covers VS Code terminals, not `exec`: re-export here.
       - name: Build container and run offline suite inside
         uses: devcontainers/ci@v0.3
         with:
           push: never
-          runCmd: COURSE_MODE=stub uv run python -m unittest discover -s tests
+          runCmd: export PATH="$HOME/.local/bin:$PATH" && COURSE_MODE=stub uv run python -m unittest discover -s tests
