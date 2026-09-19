@@ -3,5 +3,8 @@
     "**/sessions/*/toy.py": "marimo-notebook",
     "**/labs/app.py": "marimo-notebook",
     "*.md": "vscode.markdown.preview.editor"
-  }
+  },
+  // Without this, Copilot never loads .github/instructions/ and tutors
+  // nothing — verified by a live probe that filled an attempt cell.
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true
 }
