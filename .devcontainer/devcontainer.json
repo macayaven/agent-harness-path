@@ -4,7 +4,10 @@
   // machine is plenty — course logic is stdlib-only, models run elsewhere.
   "name": "Agent Harness Path",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
-  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && uv sync --frozen",
+  "remoteUser": "vscode",
+  // uv comes from PyPI, version-pinned like everything else (uv.lock).
+  // --user lands in ~/.local/bin, which remoteEnv keeps on PATH.
+  "postCreateCommand": "pip install --user uv==0.12.17 && export PATH=\"$HOME/.local/bin:$PATH\" && uv --version && uv sync --frozen",
   "remoteEnv": {
     "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:PATH}"
   },

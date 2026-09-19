@@ -48,10 +48,12 @@ uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
 The Codespace is created under *your* GitHub account, so usage bills to you,
-not the maintainer — the free tier (120 core-hours + 15 GB/month) covers this
-course several times over. Stop it when you stop (`Ctrl+Shift+P` → "Codespaces:
-Stop Current Codespace") and delete it when done; an idle machine burns hours,
-a kept one burns storage. The default path runs offline on the deterministic
+not the maintainer — see [about billing for Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces).
+The free tier (120 core-hours + 15 GB/month) is ample here: the full suite
+runs in about a minute and notebooks idle cheaply, but watch your usage at
+account billing settings. Stop the machine when you stop (`Ctrl+Shift+P` →
+"Codespaces: Stop Current Codespace") and delete it when done; an idle machine
+burns hours, a kept one burns storage. The default path runs offline on the deterministic
 stub. For a live model, point `CAFE_*` at a network endpoint — a Codespace
 cannot reach Ollama on your laptop. Never commit keys.
 
