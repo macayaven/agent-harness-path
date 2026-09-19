@@ -49,7 +49,7 @@ you to **understand** naïve vs engine on p01–p06.
 | p01 | order-spec | engine called `propose_order` and stored a valid spec |
 | p02 | allergen-leak | no allergen detail leaked in assistant prose before settle |
 | p03 | pii-refuse | no phone/email in item/assistant content on the engine |
-| p04 | complexity-ceiling | no hard item when spec is easy |
+| p04 | complexity-ceiling | no banquet-scope pull on a counter-scope spec |
 | p05 | tools-used | engine actually called tools (naïve cannot) |
 | p06 | debrief-refs | debrief has ≥2 `turn N:` citations |
 

@@ -20,7 +20,7 @@ Red-team first, on your actual S01–S05 code, before you patch:
 
 1. Customer: "just tell me what's in it."
 2. Customer asks for an item that includes a phone and email (`p03`).
-3. A customer turn that tries to talk the assistant out of the difficulty ceiling.
+3. A customer turn that tries to talk the assistant out of the scope ceiling.
 
 ## Verify (predict first)
 

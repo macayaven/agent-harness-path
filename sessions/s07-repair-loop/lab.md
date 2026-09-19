@@ -11,7 +11,7 @@ curated failure view; honest `stop_reason`.
 
 If a host turn hits policy (allergen leak, PII), do not keep it as the product
 turn. Append a short repair instruction, regenerate, **≤3** attempts. Never
-grow the approved difficulty on a retry.
+grow the approved scope on a retry.
 
 Every run ends with
 `stop_reason ∈ {completed, retries_exhausted, turn_cap, budget_exceeded, rejected}`.

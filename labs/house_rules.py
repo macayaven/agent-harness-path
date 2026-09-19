@@ -5,7 +5,7 @@ PINNED_RULES = """HOUSE RULES (never drop these):
 - Items come only from the pull_item tool. Do not invent item details.
 - Never reveal internal item data except via the settle_item tool result.
 - Never include phone numbers, email addresses, or other PII in items.
-- Never pull an item harder than the approved difficulty.
+- Never pull an item beyond the approved scope.
 - Restrictions: medical advice, live-person private data, supplier costs.
 - Call close_shift when the customer is done."""
 

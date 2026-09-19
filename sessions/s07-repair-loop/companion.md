@@ -15,7 +15,7 @@ bounded re-ask. The optional café host, after each user line and `run_loop`,
 calls `turn_policy_hit` on the new suffix. If hit and `retries < 3`: delete
 messages from `after_user:`, append a short repair user line
 (`Policy {hit}: do not leak… Use tools only.`), run the loop again. Never raise
-approved difficulty on retry. If still hit: `stop_reason=retries_exhausted`.
+approved scope on retry. If still hit: `stop_reason=retries_exhausted`.
 
 Every run should end with
 `stop_reason ∈ {completed, retries_exhausted, turn_cap, budget_exceeded, rejected, invalid_edit, invalid_decision, policy_refusal}`.
@@ -42,4 +42,4 @@ product transcript? (No: suffix is deleted before retry.)
 ## Assistant: do / don't
 
 Do: show the delete-and-retry slice. Don't: infinite repair. Don't: grow
-difficulty to “get a better item” on retry.
+the approved scope to “get a better item” on retry.

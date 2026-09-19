@@ -13,14 +13,15 @@ Wire `propose_order` (schema in `labs/schemas.py`). On invalid arguments,
 the tool returns `{"error": ...}` — that is the retry context, not a crash.
 Cap retries by the loop's turn cap. Persist a valid spec on `state["spec"]`.
 
-Fields that earn their place at the consent gate (S05): `occasion`, `difficulty`,
-`sections`, `item_count` (1–5), `restrictions`, `language` (`en`),
+Fields that earn their place at the consent gate (S05): `occasion`, `scope`
+(counter, kitchen, banquet — how far the order may reach), `sections`,
+`item_count` (1–5), `restrictions`, `language` (`en`),
 `house_rules`. Do not add fields a customer cannot say yes/no to in a minute.
 
 ## Verify (predict first)
 
 Five briefs (mix specific / vague / overloaded).
-Write your expected occasion / difficulty / restrictions **before** generation.
+Write your expected occasion / scope / restrictions **before** generation.
 Then:
 
 ```bash

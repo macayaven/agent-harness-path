@@ -21,7 +21,7 @@ from spec_schema import SpecError, validate_spec
 
 VALID_SPEC = {
     "occasion": "birthday",
-    "difficulty": "easy",
+    "scope": "counter",
     "sections": ["pastry"],
     "item_count": 2,
     "restrictions": ["medical advice"],
@@ -113,7 +113,7 @@ class ConsentAndPolicyTests(unittest.TestCase):
         )
 
         self.assertEqual(result["spec"], replacement)
-        self.assertEqual(result["state"]["approved_difficulty"], "easy")
+        self.assertEqual(result["state"]["approved_scope"], "counter")
         self.assertEqual(result["state"]["allowed_sections"], ["espresso"])
         self.assertEqual(client.calls, 1)
 
@@ -159,7 +159,7 @@ class ConsentAndPolicyTests(unittest.TestCase):
         result = run_engine(
             client,
             [
-                "Call propose_order for an easy pastry order; "
+                "Call propose_order for a counter pastry order; "
                 "restrictions medical advice."
             ],
             spec=VALID_SPEC,

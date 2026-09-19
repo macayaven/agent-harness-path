@@ -26,6 +26,14 @@ STALE_HARDPATH = re.compile(
     re.I,
 )
 
+# The trivia-style approval tiers (easy|medium|hard) were re-skinned to the
+# café scope scale (counter|kitchen|banquet) in the 2026-09 review pass.
+# Underscores are word characters, so each identifier needs its own branch.
+STALE_TIERS = re.compile(
+    r"(?<!\w)(difficulty|approved_difficulty|difficulty_ceiling|DIFFICULTIES)"
+    r"(?!\w)",
+)
+
 # `s01-round.jsonl` is a frozen cassette filename, not prose.
 ROUND_OK = re.compile(r"\bround\b", re.I)
 
@@ -57,6 +65,13 @@ class HardPathDomain(unittest.TestCase):
             with self.subTest(file=str(path.relative_to(ROOT))):
                 bad = STALE_HARDPATH.findall(text)
                 self.assertEqual(bad, [], f"stale hard-path terms: {sorted(set(bad))}")
+
+    def test_no_trivia_tier_identifiers_survive(self):
+        for path in hardpath_sources():
+            text = path.read_text(encoding="utf-8")
+            with self.subTest(file=str(path.relative_to(ROOT))):
+                bad = STALE_TIERS.findall(text)
+                self.assertEqual(bad, [], f"stale tier identifiers: {sorted(set(bad))}")
 
     def test_round_means_the_cassette_filename_only(self):
         for path in hardpath_sources():

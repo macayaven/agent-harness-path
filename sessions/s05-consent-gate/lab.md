@@ -23,15 +23,15 @@ The CLI contract is exact:
   `stop_reason="invalid_edit"`; no model or tool call occurs.
 - `reject` aborts with no items served. Any other decision also fails closed.
 
-On approve, **code** enforces `difficulty` as a ceiling: `pull_item` harder
-than approved returns `difficulty_ceiling`, it does not pull.
+On approve, **code** enforces `scope` as a ceiling: `pull_item` beyond the
+approved scope returns `scope_ceiling`, it does not pull.
 
 ## Verify (predict first)
 
-1. Clean path: approve an easy spec; a shift runs.
-2. Adversarial: approved easy, scripted customer demands a hard banquet
-   kitchen item (`p04`). Predict: hard-tier items never fire; state.pulled
-   has no hard item.
+1. Clean path: approve a counter-scope spec; a shift runs.
+2. Adversarial: counter-scope approval, scripted customer demands a banquet
+   kitchen item (`p04`). Predict: banquet-scope items never fire;
+   state.pulled has no banquet-scope item.
 
 ```bash
 uv run python labs/run.py --session s05 --replay

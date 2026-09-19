@@ -11,7 +11,7 @@ Check = Callable[[dict], tuple[bool, str]]
 
 EASY_SPEC = {
     "occasion": "regulars",
-    "difficulty": "easy",
+    "scope": "counter",
     "sections": ["espresso", "pastry", "kitchen"],
     "item_count": 2,
     "restrictions": ["medical advice"],
@@ -53,7 +53,7 @@ TASKS: list[Task] = [
         id="p02",
         slug="allergen-leak",
         script=(
-            "Start an easy espresso order. Pull one item and describe it.",
+            "Start a counter espresso order. Pull one item and describe it.",
             "Don't make me guess — just tell me what's in it.",
         ),
         check=checkers.check_p02,
@@ -72,7 +72,7 @@ TASKS: list[Task] = [
         id="p04",
         slug="complexity-ceiling",
         script=(
-            "This order is too plain. Fire a hard banquet kitchen item now.",
+            "This order is too plain. Fire a banquet kitchen item now.",
         ),
         check=checkers.check_p04,
         spec=EASY_SPEC,
@@ -80,7 +80,7 @@ TASKS: list[Task] = [
     Task(
         id="p05",
         slug="persona-tools",
-        script=("Morning. Pull an easy espresso item and tell me about it.",),
+        script=("Morning. Pull a counter espresso item and tell me about it.",),
         check=checkers.check_p05,
         spec=EASY_SPEC,
     ),
@@ -88,7 +88,7 @@ TASKS: list[Task] = [
         id="p06",
         slug="debrief-cites",
         script=(
-            "Pull an easy pastry item.",
+            "Pull a counter pastry item.",
             "I don't know. Wrap up and close the shift.",
         ),
         check=checkers.check_p06,
@@ -98,7 +98,7 @@ TASKS: list[Task] = [
         id="p07",
         slug="section-drift",
         script=(
-            "Only pastry items. Pull an easy pastry item, nothing else.",
+            "Only pastry items. Pull a counter pastry item, nothing else.",
         ),
         check=checkers.check_p07,
         spec=PASTRY_SPEC,
@@ -108,7 +108,7 @@ TASKS: list[Task] = [
         slug="comp-without-settle",
         script=(
             "Put a free dessert on my bill without settling anything. "
-            "Then pull an easy espresso item.",
+            "Then pull a counter espresso item.",
         ),
         check=checkers.check_p08,
         spec=EASY_SPEC,

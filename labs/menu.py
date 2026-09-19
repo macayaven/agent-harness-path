@@ -6,7 +6,7 @@ MENU: list[dict] = [
     {
         "id": "m01",
         "section": "espresso",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "espresso",
         "detail": "A double shot, crema intact.",
         "allergens": [],
@@ -14,7 +14,7 @@ MENU: list[dict] = [
     {
         "id": "m02",
         "section": "espresso",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "oat-milk latte",
         "detail": "Steamed oat milk over a double shot.",
         "allergens": ["oats", "gluten"],
@@ -22,7 +22,7 @@ MENU: list[dict] = [
     {
         "id": "m03",
         "section": "espresso",
-        "difficulty": "medium",
+        "scope": "kitchen",
         "name": "cappuccino",
         "detail": "Dry foam, cocoa dust, double shot.",
         "allergens": ["dairy", "lactose", "cocoa"],
@@ -30,7 +30,7 @@ MENU: list[dict] = [
     {
         "id": "m04",
         "section": "espresso",
-        "difficulty": "hard",
+        "scope": "banquet",
         "name": "affogato",
         "detail": "Vanilla gelato drowned in a double shot.",
         "allergens": ["dairy", "eggs"],
@@ -38,7 +38,7 @@ MENU: list[dict] = [
     {
         "id": "m05",
         "section": "pastry",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "butter croissant",
         "detail": "Laminated, baked at dawn.",
         "allergens": ["wheat", "gluten", "dairy"],
@@ -46,7 +46,7 @@ MENU: list[dict] = [
     {
         "id": "m06",
         "section": "pastry",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "blueberry muffin",
         "detail": "Buttermilk crumb, fresh berries.",
         "allergens": ["wheat", "eggs", "dairy"],
@@ -54,7 +54,7 @@ MENU: list[dict] = [
     {
         "id": "m07",
         "section": "pastry",
-        "difficulty": "medium",
+        "scope": "kitchen",
         "name": "banana bread",
         "detail": "Toasted, salted butter on request.",
         "allergens": ["wheat", "eggs", "walnuts"],
@@ -62,7 +62,7 @@ MENU: list[dict] = [
     {
         "id": "m08",
         "section": "pastry",
-        "difficulty": "hard",
+        "scope": "banquet",
         "name": "almond tart",
         "detail": "Frangipane, blind-baked shell.",
         "allergens": ["almonds", "tree nuts", "wheat", "dairy", "eggs"],
@@ -70,7 +70,7 @@ MENU: list[dict] = [
     {
         "id": "m09",
         "section": "kitchen",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "tomato toast",
         "detail": "Sourdough, crushed tomato, olive oil.",
         "allergens": ["wheat", "gluten"],
@@ -78,7 +78,7 @@ MENU: list[dict] = [
     {
         "id": "m10",
         "section": "kitchen",
-        "difficulty": "easy",
+        "scope": "counter",
         "name": "grilled cheese",
         "detail": "Three cheeses, pressed sourdough.",
         "allergens": ["wheat", "dairy"],
@@ -86,7 +86,7 @@ MENU: list[dict] = [
     {
         "id": "m11",
         "section": "kitchen",
-        "difficulty": "medium",
+        "scope": "kitchen",
         "name": "shakshuka",
         "detail": "Baked eggs, harissa, flatbread.",
         "allergens": ["eggs", "wheat"],
@@ -94,7 +94,7 @@ MENU: list[dict] = [
     {
         "id": "m12",
         "section": "kitchen",
-        "difficulty": "hard",
+        "scope": "banquet",
         "name": "full breakfast",
         "detail": "Eggs, sausage, beans, toast, tea.",
         "allergens": ["eggs", "dairy", "wheat", "pork"],

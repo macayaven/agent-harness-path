@@ -145,7 +145,7 @@ def run_medical_gate(engine) -> str:
 def run_s01_round(client: Client, engine) -> dict:
     spec = {
         "occasion": "regulars",
-        "difficulty": "easy",
+        "scope": "counter",
         "sections": ["espresso"],
         "item_count": 1,
         "restrictions": ["medical advice"],
@@ -154,7 +154,7 @@ def run_s01_round(client: Client, engine) -> dict:
     }
     return engine.run_engine(
         client,
-        ["Pull an easy espresso item, wait, then close the shift."],
+        ["Pull a counter espresso item, wait, then close the shift."],
         spec=spec,
         generate_from_brief=False,
     )
@@ -213,7 +213,9 @@ def maybe_write_report(
         path = REPORTS / "REFERENCE-p0-baseline.md"
         banner = (
             "# Course cassette-era baseline (reference implementation)\n\n"
-            "Not a student bank. Regenerated only with `--all --record`.\n\n"
+            "Not a student bank. Regenerated only with `--all --record`.\n"
+            "Recorded against a local OpenAI-compatible endpoint; "
+            "CI verifies with `--replay`.\n\n"
         )
         path.write_text(banner + text, encoding="utf-8")
         return

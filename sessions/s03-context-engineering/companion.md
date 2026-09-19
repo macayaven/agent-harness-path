@@ -24,7 +24,7 @@ short, return as-is. Else keep `messages[0]`, insert a system note that N
 messages were compacted, keep the tail of length `keep-1`. Governors
 (ceiling, PII) are **code** in `tools.py` / `engine.py`, not only the pin.
 The pin is a copy the model sees; enforcement is `pull_item` returning
-`difficulty_ceiling` and `policy_hit`.
+`scope_ceiling` and `policy_hit`.
 
 ## Replay hazard
 
@@ -53,4 +53,4 @@ After `keep=6` on a long list, is `messages[0]` still `PINNED_RULES`?
 
 Do: walk `compact` line by line next to the notebook compaction experiment.
 Don't: rewrite `PINNED_RULES` to be “safer.” Don't drop the pin to save
-tokens. Don't claim the pin alone stops hard items (that's `pull_item`).
+tokens. Don't claim the pin alone stops banquet-scope pulls (that's `pull_item`).

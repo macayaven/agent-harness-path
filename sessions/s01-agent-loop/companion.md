@@ -91,8 +91,8 @@ recipe.
 
 | Tool | Success | Errors |
 | --- | --- | --- |
-| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
-| `pull_item` | `item_id, section, difficulty, name, detail` | `difficulty_ceiling`, `section_not_allowed`, `no_item` |
+| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "scope_ceiling", "approved": LEVEL}` |
+| `pull_item` | `item_id, section, scope, name, detail` | `scope_ceiling`, `section_not_allowed`, `no_item` |
 | `settle_item` | `served, line_total, item_id` | `unknown_item` |
 | `close_shift` | `total, items_served, stop_reason` | none |
 | unknown name | — | `{"error": "unknown_tool", "name": NAME}` |

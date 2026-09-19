@@ -41,6 +41,13 @@ This cut **ships a complete host** in `cafe_host/` so `--replay` runs without
 filling stubs. `reference/` is the same spine for CI `--impl reference`. Open
 it only if stuck; peeking makes S13 a recognition test.
 
+Domain strings live in two places on purpose. `cafe/domain.py` owns the
+notebook spine's menu and tools (`price_check`, `fire_ticket`,
+`close_check`). `labs/menu.py` + `labs/house_rules.py` own the hard path's
+fixture menu and wire strings (`pull_item`, `settle_item`, `close_shift`),
+pinned so committed cassettes keep matching. A re-skin updates both and
+keeps the tool names on their own surface.
+
 Two bars, do not conflate:
 
 1. **Your session done-when** (each `sNN_*.md`): bank a number you can explain.
@@ -65,8 +72,8 @@ The reference tool return envelopes are exact replay-facing shapes:
 
 | Tool | Success envelope | Error envelope(s) |
 |---|---|---|
-| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "difficulty_ceiling", "approved": LEVEL}` |
-| `pull_item` | `{"item_id": ID, "section": SECTION, "difficulty": LEVEL, "name": NAME, "detail": TEXT}` | `{"error": "difficulty_ceiling", "approved": LEVEL}`, `{"error": "section_not_allowed", "allowed": SECTIONS}`, or `{"error": "no_item", "section": SECTION, "difficulty": LEVEL}` |
+| `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "scope_ceiling", "approved": LEVEL}` |
+| `pull_item` | `{"item_id": ID, "section": SECTION, "scope": LEVEL, "name": NAME, "detail": TEXT}` | `{"error": "scope_ceiling", "approved": LEVEL}`, `{"error": "section_not_allowed", "allowed": SECTIONS}`, or `{"error": "no_item", "section": SECTION, "scope": LEVEL}` |
 | `settle_item` | `{"served": BOOL, "line_total": INT, "item_id": ID}` | `{"error": "unknown_item", "item_id": ID}` |
 | `close_shift` | `{"total": INT, "items_served": INT, "stop_reason": REASON}` | none |
 | unknown dispatch name | none | `{"error": "unknown_tool", "name": NAME}` |

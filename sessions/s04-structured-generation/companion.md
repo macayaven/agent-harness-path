@@ -17,13 +17,13 @@ The core toy runs live, validates a ticket, and retries. The café host’s
 - Builds a spec dict from tool arguments.
 - `validate_spec` → on `SpecError` returns `{"error": str(exc)}` (retry
   context, not a crash).
-- If requested difficulty exceeds `state["approved_difficulty"]`, returns
-  `{"error": "difficulty_ceiling", "approved": LEVEL}` and increments
-  `ceiling_hits`.
-- Else stores `state["spec"]`, updates approved difficulty and allowed
+- If the requested scope reaches past `state["approved_scope"]` (counter <
+  kitchen < banquet), returns `{"error": "scope_ceiling", "approved": LEVEL}`
+  and increments `ceiling_hits`.
+- Else stores `state["spec"]`, updates the approved scope and allowed
   sections, returns `{"ok": True, "spec": spec}`.
 
-Fields (must be approvable in a minute at S05): `occasion`, `difficulty`,
+Fields (must be approvable in a minute at S05): `occasion`, `scope`,
 `sections`, `item_count` (1–5), `restrictions`, `language` (`en`),
 `house_rules`. No extra keys.
 
@@ -45,7 +45,7 @@ agreement n/5 if measuring with `--live` / `--record`. Replay cannot score
 
 ## Predict-first
 
-For each brief: expected occasion, difficulty, restrictions **before** generation.
+For each brief: expected occasion, scope, restrictions **before** generation.
 
 ## Assistant: do / don't
 

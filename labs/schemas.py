@@ -10,9 +10,9 @@ TOOLS = [
                 "type": "object",
                 "properties": {
                     "occasion": {"type": "string"},
-                    "difficulty": {
+                    "scope": {
                         "type": "string",
-                        "enum": ["easy", "medium", "hard"],
+                        "enum": ["counter", "kitchen", "banquet"],
                     },
                     "sections": {
                         "type": "array",
@@ -28,7 +28,7 @@ TOOLS = [
                 },
                 "required": [
                     "occasion",
-                    "difficulty",
+                    "scope",
                     "sections",
                     "item_count",
                     "restrictions",
@@ -51,12 +51,12 @@ TOOLS = [
                         "type": "string",
                         "enum": ["espresso", "pastry", "kitchen"],
                     },
-                    "difficulty": {
+                    "scope": {
                         "type": "string",
-                        "enum": ["easy", "medium", "hard"],
+                        "enum": ["counter", "kitchen", "banquet"],
                     },
                 },
-                "required": ["section", "difficulty"],
+                "required": ["section", "scope"],
             },
         },
     },

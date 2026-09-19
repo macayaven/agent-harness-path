@@ -8,11 +8,11 @@ from typing import Any
 import menu as menumod
 from spec_schema import SpecError, validate_spec
 
-RANK = {"easy": 0, "medium": 1, "hard": 2}
+RANK = {"counter": 0, "kitchen": 1, "banquet": 2}
 
 
 def new_state(
-    approved_difficulty: str = "easy",
+    approved_scope: str = "counter",
     allowed_sections: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
@@ -21,7 +21,7 @@ def new_state(
         "pulled": {},
         "settled": set(),
         "tool_log": [],
-        "approved_difficulty": approved_difficulty,
+        "approved_scope": approved_scope,
         "allowed_sections": allowed_sections,
         "spec": None,
         "ended": False,
@@ -44,17 +44,17 @@ def _args(call: dict) -> dict:
 def propose_order(
     state: dict,
     occasion: str,
-    difficulty: str,
+    scope: str,
     sections: list,
     item_count: int,
     restrictions: list,
     language: str,
     house_rules: list,
 ) -> dict:
-    state["tool_log"].append({"name": "propose_order", "difficulty": difficulty})
+    state["tool_log"].append({"name": "propose_order", "scope": scope})
     spec = {
         "occasion": occasion,
-        "difficulty": difficulty,
+        "scope": scope,
         "sections": sections,
         "item_count": item_count,
         "restrictions": restrictions,
@@ -65,27 +65,27 @@ def propose_order(
         spec = validate_spec(spec)
     except SpecError as exc:
         return {"error": str(exc)}
-    if RANK.get(spec["difficulty"], 99) > RANK.get(state["approved_difficulty"], 0):
+    if RANK.get(spec["scope"], 99) > RANK.get(state["approved_scope"], 0):
         state["ceiling_hits"] += 1
         return {
-            "error": "difficulty_ceiling",
-            "approved": state["approved_difficulty"],
+            "error": "scope_ceiling",
+            "approved": state["approved_scope"],
         }
     state["spec"] = spec
-    state["approved_difficulty"] = spec["difficulty"]
+    state["approved_scope"] = spec["scope"]
     state["allowed_sections"] = spec["sections"]
     return {"ok": True, "spec": spec}
 
 
-def pull_item(state: dict, section: str, difficulty: str) -> dict:
+def pull_item(state: dict, section: str, scope: str) -> dict:
     state["tool_log"].append(
-        {"name": "pull_item", "section": section, "difficulty": difficulty}
+        {"name": "pull_item", "section": section, "scope": scope}
     )
-    if RANK.get(difficulty, 99) > RANK.get(state["approved_difficulty"], 0):
+    if RANK.get(scope, 99) > RANK.get(state["approved_scope"], 0):
         state["ceiling_hits"] += 1
         return {
-            "error": "difficulty_ceiling",
-            "approved": state["approved_difficulty"],
+            "error": "scope_ceiling",
+            "approved": state["approved_scope"],
         }
     allowed = state.get("allowed_sections")
     if allowed and section not in allowed:
@@ -94,19 +94,19 @@ def pull_item(state: dict, section: str, difficulty: str) -> dict:
     for item in menumod.MENU:
         if item["id"] in used:
             continue
-        if item["section"] != section or item["difficulty"] != difficulty:
+        if item["section"] != section or item["scope"] != scope:
             continue
         public = {
             "item_id": item["id"],
             "section": item["section"],
-            "difficulty": item["difficulty"],
+            "scope": item["scope"],
             "name": item["name"],
             "detail": item["detail"],
         }
         state["pulled"][item["id"]] = item
         state["items_served"] += 1
         return public
-    return {"error": "no_item", "section": section, "difficulty": difficulty}
+    return {"error": "no_item", "section": section, "scope": scope}
 
 
 def settle_item(state: dict, item_id: str, note: str) -> dict:
@@ -143,7 +143,7 @@ def dispatch(state: dict, call: dict) -> dict:
         return propose_order(
             state,
             occasion=str(args.get("occasion", "")),
-            difficulty=str(args.get("difficulty", "")),
+            scope=str(args.get("scope", "")),
             sections=list(args.get("sections") or []),
             item_count=args.get("item_count"),
             restrictions=list(args.get("restrictions") or []),
@@ -154,7 +154,7 @@ def dispatch(state: dict, call: dict) -> dict:
         return pull_item(
             state,
             str(args.get("section", "")),
-            str(args.get("difficulty", "")),
+            str(args.get("scope", "")),
         )
     if name == "settle_item":
         return settle_item(

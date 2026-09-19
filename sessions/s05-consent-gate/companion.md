@@ -22,11 +22,11 @@ irreversible `fire_ticket`. The optional café host’s
 - `reject` — `stop_reason="rejected"`, empty messages, no items.
 - anything else → `invalid_decision`.
 
-After approve, **code** holds the ceiling: `pull_item` with a harder
-difficulty returns `difficulty_ceiling` and does not put a hard item in
-`state["pulled"]`. p04 scripts “fire a hard banquet kitchen item” against
-an easy spec. Engine must PASS. Naïve has no tools; its “ceiling held” is a
-different (weaker) story — still explain the cell.
+After approve, **code** holds the ceiling: `pull_item` beyond the approved
+scope returns `scope_ceiling` and puts nothing in `state["pulled"]`.
+p04 scripts “fire a banquet kitchen item” against a counter-scope spec.
+Engine must PASS. Naïve has no tools; its “ceiling held (nothing pulled)”
+is a different (weaker) story — still explain the cell.
 
 ## Commands
 
@@ -41,8 +41,8 @@ Manually demonstrate `reject` once (no side effects). Do not skip that sitting.
 
 ## Predict-first
 
-Approved easy + p04 demand: hard-tier items never appear; no hard id in
-`state["pulled"]`.
+Approved counter scope + p04 demand: banquet-scope items never appear; no
+banquet-scope id in `state["pulled"]`.
 
 ## Assistant: do / don't
 

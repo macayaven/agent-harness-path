@@ -6,14 +6,16 @@ import re
 
 SPEC_KEYS = (
     "occasion",
-    "difficulty",
+    "scope",
     "sections",
     "item_count",
     "restrictions",
     "language",
     "house_rules",
 )
-DIFFICULTIES = {"easy", "medium", "hard"}
+# How far an order may reach: counter (no kitchen fire), kitchen (fired food),
+# banquet (catering scale, needs approval). Ordered: the spec scope is a ceiling.
+SCOPES = {"counter", "kitchen", "banquet"}
 LANGUAGES = {"en"}
 SECTIONS = {"espresso", "pastry", "kitchen"}
 PII_RE = re.compile(
@@ -47,8 +49,8 @@ def validate_spec(spec: dict) -> dict:
         raise SpecError("unexpected fields: " + ", ".join(extra))
     if not isinstance(spec["occasion"], str):
         raise SpecError("occasion must be a string")
-    if not isinstance(spec["difficulty"], str) or spec["difficulty"] not in DIFFICULTIES:
-        raise SpecError("difficulty must be easy|medium|hard")
+    if not isinstance(spec["scope"], str) or spec["scope"] not in SCOPES:
+        raise SpecError("scope must be counter|kitchen|banquet")
     if not isinstance(spec["language"], str) or spec["language"] not in LANGUAGES:
         raise SpecError("language must be en")
     n = spec["item_count"]

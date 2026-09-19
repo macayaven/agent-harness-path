@@ -36,7 +36,7 @@ def medical_advice_hit(text: str | None) -> bool:
 
 
 def _stopped_result(spec: dict, stop_reason: str, debrief: str) -> dict[str, Any]:
-    state = toolsmod.new_state(spec["difficulty"], spec["sections"])
+    state = toolsmod.new_state(spec["scope"], spec["sections"])
     state["stop_reason"] = stop_reason
     return {
         "messages": [],
@@ -67,14 +67,14 @@ def policy_hit(text: str | None, state: dict) -> str | None:
         return None
     if PII_RE.search(text):
         return "pii"
-    rank = {"easy": 0, "medium": 1, "hard": 2}
-    approved = rank.get(state.get("approved_difficulty") or "easy", 0)
+    rank = {"counter": 0, "kitchen": 1, "banquet": 2}
+    approved = rank.get(state.get("approved_scope") or "counter", 0)
     norm = menumod.normalize_answer(text)
     for item in menumod.MENU:
         if item["detail"] in text:
             if item["id"] not in state["pulled"]:
                 return "invented_item"
-            if rank.get(item["difficulty"], 0) > approved:
+            if rank.get(item["scope"], 0) > approved:
                 return "ceiling"
         if item["id"] in state["pulled"] and item["id"] not in state["settled"]:
             name_norm = menumod.normalize_answer(item["name"])
@@ -151,7 +151,7 @@ def run_engine(
         raise RouteRefused("session-content phase refuses OPENAI_ROUTE_KIND=cloud")
     spec = spec or {
         "occasion": "regulars",
-        "difficulty": "easy",
+        "scope": "counter",
         "sections": ["espresso"],
         "item_count": 2,
         "restrictions": ["medical advice"],
@@ -165,7 +165,7 @@ def run_engine(
         if decision == "reject":
             return {
                 "messages": [],
-                "state": toolsmod.new_state(spec["difficulty"]),
+                "state": toolsmod.new_state(spec["scope"]),
                 "spec": spec,
                 "debrief": "rejected",
                 "mode": "engine",
@@ -183,7 +183,7 @@ def run_engine(
                 "invalid_decision",
                 "invalid consent decision: expected approve, edit, or reject",
             )
-    state = toolsmod.new_state(spec["difficulty"], spec["sections"])
+    state = toolsmod.new_state(spec["scope"], spec["sections"])
     messages: list[dict] = [
         {"role": "system", "content": house_rules.PINNED_RULES},
         {"role": "system", "content": house_rules.STARTER_PERSONA},
