@@ -1,8 +1,8 @@
 """Codespace surface contract: container config, extension parity, rules mirror.
 
-The README extension list, .vscode/extensions.json and
-.devcontainer/devcontainer.json must agree, and the VS Code instructions
-must stay a verbatim mirror (past frontmatter) of the Cursor companion rule.
+.vscode/extensions.json and .devcontainer/devcontainer.json must agree, and
+the VS Code instructions must stay a verbatim mirror (past frontmatter) of
+the Cursor companion rule.
 """
 
 from __future__ import annotations
@@ -30,6 +30,34 @@ class StripJsoncTests(unittest.TestCase):
     def test_trailing_and_full_line_comments_stripped(self) -> None:
         src = '{\n// lead\n"a": 1, // trail\n"b": "x // not a comment"\n}\n'
         self.assertEqual(json.loads(strip_jsonc(src)), {"a": 1, "b": "x // not a comment"})
+
+
+class NegativeTests(unittest.TestCase):
+    def test_bad_configs_are_rejected(self) -> None:
+        dev = load_jsonc(ROOT / ".devcontainer" / "devcontainer.json")
+        cases = {
+            "root user": {**dev, "remoteUser": "root"},
+            "unpinned uv": {
+                **dev,
+                "postCreateCommand": "pip install uv && uv sync --frozen",
+            },
+            "curl pipe": {
+                **dev,
+                "postCreateCommand": "curl https://astral.sh/uv/install.sh | sh",
+            },
+            "home dependent": {
+                **dev,
+                "postCreateCommand": "pip install --user uv==0.12.17",
+            },
+        }
+        for name, bad in cases.items():
+            with self.subTest(name=name):
+                self.assertNotEqual(check_devcontainer(bad), [])
+        recs = load_jsonc(ROOT / ".vscode" / "extensions.json")["recommendations"]
+        with self.subTest(name="drifted recommendations"):
+            self.assertNotEqual(
+                check_extension_parity(dev, [*recs, "someone.else-ext"]), []
+            )
 
 
 class DevcontainerTests(unittest.TestCase):

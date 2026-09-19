@@ -64,8 +64,13 @@ def check_devcontainer(dev: dict) -> list[str]:
         problems.append("unpinned curl|sh installer in postCreateCommand")
     if "uv==" not in post:
         problems.append("uv install must be version-pinned (uv==X.Y.Z)")
-    if ".local/bin" in post or "containerEnv" in json.dumps(dev):
+    blob = json.dumps(dev)
+    if any(
+        token in post or token in blob for token in (".local/bin", "$HOME", "~/", "--user")
+    ):
         problems.append("uv install must not depend on HOME resolution")
+    if "containerEnv" in blob or "remoteEnv" in blob:
+        problems.append("uv install must not depend on remoteEnv")
     return problems
 
 
