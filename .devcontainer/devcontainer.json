@@ -5,12 +5,10 @@
   "name": "Agent Harness Path",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "remoteUser": "vscode",
-  // uv comes from PyPI, version-pinned like everything else (uv.lock).
-  // --user lands in ~/.local/bin, which remoteEnv keeps on PATH.
-  "postCreateCommand": "pip install --user uv==0.12.17 && export PATH=\"$HOME/.local/bin:$PATH\" && uv --version && uv sync --frozen",
-  "remoteEnv": {
-    "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:PATH}"
-  },
+  // uv from PyPI, version-pinned like everything else (uv.lock).
+  // System-wide (/usr/local/bin) on purpose: no HOME or remoteEnv PATH
+  // involved, so every shell — terminal, exec, CI — finds the same uv.
+  "postCreateCommand": "sudo pip install --break-system-packages uv==0.12.17 && uv --version && uv sync --frozen",
   "customizations": {
     "vscode": {
       "extensions": [

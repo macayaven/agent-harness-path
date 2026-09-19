@@ -55,25 +55,28 @@ def check_devcontainer(dev: dict) -> list[str]:
     image = dev.get("image", "")
     if not image.startswith("mcr.microsoft.com/devcontainers/python:"):
         problems.append(f"unexpected base image {image!r}")
+    if dev.get("remoteUser") != "vscode":
+        problems.append("remoteUser must be vscode (image default is root)")
     post = dev.get("postCreateCommand", "")
     if "uv sync --frozen" not in post:
         problems.append("postCreateCommand must run uv sync --frozen")
     if "astral.sh" in post or "| sh" in post:
         problems.append("unpinned curl|sh installer in postCreateCommand")
-    exts = (dev.get("customizations", {}).get("vscode", {}).get("extensions") or [])
-    for want in ("marimo-team.vscode-marimo", "ms-vscode.live-server"):
-        if want not in exts:
-            problems.append(f"container extension missing: {want}")
+    if "uv==" not in post:
+        problems.append("uv install must be version-pinned (uv==X.Y.Z)")
+    if ".local/bin" in post or "containerEnv" in json.dumps(dev):
+        problems.append("uv install must not depend on HOME resolution")
     return problems
 
 
 def check_extension_parity(dev: dict, recommended: list[str]) -> list[str]:
-    problems: list[str] = []
     exts = (dev.get("customizations", {}).get("vscode", {}).get("extensions") or [])
-    for want in recommended:
-        if want not in exts:
-            problems.append(f"recommended {want} not installed by devcontainer")
-    return problems
+    if sorted(exts) != sorted(recommended):
+        return [
+            "container extensions and recommendations diverged: "
+            f"{sorted(exts)} vs {sorted(recommended)}"
+        ]
+    return []
 
 
 def check_instructions_mirror(mdc: str, instructions: str) -> list[str]:

@@ -37,7 +37,7 @@ class DevcontainerTests(unittest.TestCase):
         dev = load_jsonc(ROOT / ".devcontainer" / "devcontainer.json")
         self.assertEqual(check_devcontainer(dev), [])
 
-    def test_recommendations_installed_by_container(self) -> None:
+    def test_container_and_recommendations_match_exactly(self) -> None:
         dev = load_jsonc(ROOT / ".devcontainer" / "devcontainer.json")
         recs = load_jsonc(ROOT / ".vscode" / "extensions.json")["recommendations"]
         self.assertEqual(check_extension_parity(dev, recs), [])

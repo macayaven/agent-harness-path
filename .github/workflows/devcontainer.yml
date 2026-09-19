@@ -1,21 +1,22 @@
 # Devcontainer smoke: does a student container actually build and run?
 #
 # Path-filtered on purpose. The learner verify workflow stays zero-network;
-# this job pulls public images, so it only runs when the container surface
-# (.devcontainer/, .vscode/, or this file) changes. No keys, nothing pushed.
+# this job pulls public images, so it only runs when the container surface,
+# its validator, or the tutored-rules mirror changes. No keys, nothing pushed.
 name: devcontainer
 on:
   pull_request:
-    paths:
+    paths: &smoke_paths
       - ".devcontainer/**"
       - ".vscode/**"
+      - ".github/instructions/**"
+      - ".cursor/rules/**"
       - ".github/workflows/devcontainer.yml"
+      - "tools/check_devcontainer.py"
+      - "tests/test_codespaces.py"
   push:
     branches: [main]
-    paths:
-      - ".devcontainer/**"
-      - ".vscode/**"
-      - ".github/workflows/devcontainer.yml"
+    paths: *smoke_paths
   workflow_dispatch:
 
 jobs:
@@ -28,9 +29,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - name: Validate devcontainer surface
         run: uv run python tools/check_devcontainer.py
-      # remoteEnv PATH covers VS Code terminals, not `exec`: re-export here.
+      # No PATH export: uv is system-wide, so this proves a plain shell
+      # (student terminal included) finds it.
       - name: Build container and run offline suite inside
         uses: devcontainers/ci@v0.3
         with:
           push: never
-          runCmd: export PATH="$HOME/.local/bin:$PATH" && COURSE_MODE=stub uv run python -m unittest discover -s tests
+          runCmd: COURSE_MODE=stub uv run python -m unittest discover -s tests

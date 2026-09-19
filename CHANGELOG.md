@@ -9,7 +9,7 @@ All notable changes to The Agent Harness Path are documented here.
   in a new notebook cell so the carried-in routing ledger is actually used.
 - S05 promise names the property that matters (the approved ticket is the only
   ticket in the building). Every hard-path `lab.md` orients the reader to the
-  trivia host and the companion mapping. S13 audit names the deleted file instead
+  café host and the companion mapping. S13 audit names the deleted file instead
   of `core.py`.
 - Hard-path labs re-skinned trivia → café, one domain everywhere:
   `labs/trivia_host/` → `labs/cafe_host/` with `propose_order`, `pull_item`,

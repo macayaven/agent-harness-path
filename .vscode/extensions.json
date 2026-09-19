@@ -1,5 +1,10 @@
 {
   // Install prompt in VS Code / Cursor. Codespaces installs these anyway
-  // via .devcontainer/devcontainer.json.
-  "recommendations": ["marimo-team.vscode-marimo", "ms-vscode.live-server"]
+  // via .devcontainer/devcontainer.json; the sets must match exactly
+  // (tests/test_codespaces.py enforces it).
+  "recommendations": [
+    "marimo-team.vscode-marimo",
+    "ms-python.python",
+    "ms-vscode.live-server"
+  ]
 }
