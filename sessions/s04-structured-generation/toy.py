@@ -16,7 +16,7 @@ with app.setup:
     from cafe import domain
     from cafe.evals import checkers
     from cafe.model import check_pairing, get_client
-    from cafe.schema import TICKET_SCHEMA, ask_ticket, parse_json, validate
+    from cafe.schema import TICKET_SCHEMA, ask_ticket, ask_ticket_run, parse_json, validate
 
 
 @app.cell
@@ -31,8 +31,8 @@ def s04_md_hook(mo):
     mo.md(r"""
     # S04 — Structured generation: the ticket contract
 
-    **Carried in:** `cafe/context.py` — the compacted context still governs, and
-    the governed arm still scores. Now the *reply* has to cross a boundary: the
+    **Carried in:** `cafe/context.py` — retained rules and measured behavior after
+    compaction. Now the *reply* has to cross a boundary: the
     kitchen's ticket system eats JSON and nothing else.
 
     **Today you ship:** `cafe/schema.py` — the ticket contract, a hand-rolled
@@ -61,9 +61,8 @@ def s04_md_client(mo):
     mo.md(r"""
     ## Your model
 
-    Same seam: `get_client()`. A small local model is genuinely bad at this session
-    — that is the point, not a bug. You are about to build the machinery that
-    catches it.
+    Same seam: `get_client()`. Measure your model's results; the validator and
+    retry log distinguish shape errors, meaning errors and accepted tickets.
     """)
     return
 
@@ -123,7 +122,7 @@ def s04_demo_validator():
     for _problem in validate(_broken_ticket, TICKET_SCHEMA):
         print("  -", _problem)
     print("\nfenced reply parses too:",
-          parse_json('Claro:\n```json\n{"table": 1}\n```'))
+          parse_json('Here it is:\n```json\n{"table": 1}\n```'))
     return
 
 
@@ -169,7 +168,7 @@ def s04_reveal_source_semantic(mo, reveal_semantic):
 
 
 @app.cell
-def s04_demo_semantic():
+def s04_demo_semantic(reveal_semantic):
     _valid_but_wrong = {
         "table": 4,
         "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
@@ -185,7 +184,8 @@ def s04_demo_semantic():
         )
     else:
         print("your violations    :", mine)
-        print("reference          :", solution_semantic(_valid_but_wrong))
+        if reveal_semantic.value:
+            print("reference          :", solution_semantic(_valid_but_wrong))
     return
 
 
@@ -225,18 +225,22 @@ def s04_demo_live(client):
         "I'm Lucia, table 7. I want a cheese omelette, but I'm not sure it'll sit well.",
     )
     print(f"{'brief':<6} {'outcome':<12} {'attempts':<9} detail")
+    ticket_runs = []
     for _index, _brief in enumerate(briefs):
-        _ticket, _messages, _attempts = ask_ticket(client, _brief)
+        _run = ask_ticket_run(client, _brief)
+        ticket_runs.append(_run)
+        _ticket, _attempts = _run["ticket"], _run["attempts"]
         if _ticket is None:
             _outcome, _detail = "no ticket", "loop hit the cap"
-        elif checkers.ticket_matches_menu(_ticket):
-            _outcome, _detail = "semantic", checkers.ticket_matches_menu(_ticket)[0]
         else:
             _outcome, _detail = "accepted", str(_ticket.get("items"))
         print(f"{_index:<6} {_outcome:<12} {_attempts:<9} {_detail[:52]}")
+        for _step in _run["outcomes"]:
+            print("  attempt", _step["attempt"], "parsed:", _step["parsed"],
+                  "shape:", _step["shape_ok"], "meaning:", _step["semantic_ok"])
     print("\nRead the failures: a repeated identical error is the contract talking, "
           "\nnot the model.")
-    return
+    return (ticket_runs,)
 
 
 @app.cell(hide_code=True)
@@ -301,10 +305,10 @@ def s04_md_checkpoint(mo):
     mo.md(r"""
     ## Checkpoint — the number you bank
 
-    Two numbers from the run above: **how many of the three briefs produced a valid
-    ticket**, and **how many of those valid tickets were also correct**. The gap
-    between the two is the whole session. A small model usually shows the first
-    number comfortably above the second.
+    Compare **first attempts**: how many were schema-valid, and how many of those
+    also matched the menu? Then separately count final accepted tickets after
+    retries. A final accepted ticket passed both gates; it cannot show the errors
+    that the retry loop repaired. A zero gap is a valid observation too.
 
     ## What this unlocks
 
@@ -313,6 +317,15 @@ def s04_md_checkpoint(mo):
     `fire_ticket` is irreversible. **S05-consent-gate** puts a human confirmation
     between the two, and asks what your harness does when the customer says no.
     """)
+    return
+
+
+@app.cell
+def s04_demo_checkpoint(ticket_runs):
+    _first = [run["outcomes"][0] for run in ticket_runs if run["outcomes"]]
+    print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
+          f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
+    print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
     return
 
 

@@ -11,7 +11,10 @@ lab: `sessions/s04-structured-generation/lab.md`, `labs/cafe_host/tools.py`
 
 ## The gap
 
-The core toy runs live, validates a ticket, and retries. The café host’s
+The core toy validates a ticket and retries through the model seam. Its checkpoint
+compares first-attempt shape and meaning, then final acceptance separately;
+`ask_ticket_run` retains the errors a successful repair would otherwise hide.
+The café host’s
 `propose_order` already:
 
 - Builds a spec dict from tool arguments.

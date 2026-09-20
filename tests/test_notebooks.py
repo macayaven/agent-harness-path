@@ -34,6 +34,32 @@ EXPECTED = {
 CELL_NAME = re.compile(r"^(test_)?s(0[1-9]|1[0-2])_[a-z0-9]+(_[a-z0-9]+)*$")
 STALE_DOMAIN = ("trivia", "pub quiz", "mopbot", "concierge", "weather_bot")
 
+# Reviewed empty forms. Checking only function names allowed completed answers
+# to slip into the learner's first run. Ignore docstrings, never executable code.
+ATTEMPT_BODIES = {
+    "attempt_tool_results": "proposed_results = []\nreturn proposed_results",
+    "attempt_premature_fire": "return None",
+    "attempt_keep_rule": "return None",
+    "attempt_semantic": "return None",
+    "attempt_gate": "return None",
+    "attempt_route": "return None",
+    "attempt_failure_view": "lines = []\nreturn '\\n'.join(lines)",
+    "attempt_handover_note": "lines = []\nreturn lines",
+    "attempt_thirty_second_test": "missing = []\nreturn missing",
+    "attempt_open_code": "labels = {}\nreturn labels",
+    "attempt_budget_gate": "refusal = None\nreturn refusal",
+    "attempt_route_table": "table = {'read_note': None, 'draft_reply': None, 'till_summary': None}\nreturn table",
+    "attempt_hand_labels": "return {tid: None for tid in transcripts}",
+}
+
+
+def unanswered_attempt(fn: ast.FunctionDef) -> bool:
+    body = list(fn.body)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]
+    expected = ATTEMPT_BODIES.get(fn.name)
+    return expected is not None and ast.dump(ast.Module(body=body, type_ignores=[])) == ast.dump(ast.parse(expected))
+
 
 def notebooks() -> list[Path]:
     return sorted(SESSIONS.glob("*/toy.py"))
@@ -187,6 +213,7 @@ class Pedagogy(unittest.TestCase):
 
     def test_attempt_skeletons_are_unanswered(self):
         """An attempt unit must not contain the reference answer."""
+        found = set()
         for path in notebooks():
             tree = ast.parse(source(path))
             attempts = [
@@ -194,7 +221,15 @@ class Pedagogy(unittest.TestCase):
             ]
             for fn in attempts:
                 with self.subTest(notebook=session_of(path), unit=fn.name):
-                    self.assertNotIn("solution", fn.name)
+                    found.add(fn.name)
+                    self.assertTrue(unanswered_attempt(fn), "executable body is no longer an empty attempt")
+        self.assertEqual(found, set(ATTEMPT_BODIES))
+
+    def test_attempt_guard_rejects_prefilled_and_reference_call_mutations(self):
+        for body in ("return {'a': 'pass'}", "return solution_hand_labels(key)",
+                     "labels = {}\nlabels['a'] = 'pass'\nreturn labels"):
+            fn = ast.parse("def attempt_hand_labels(transcripts):\n" + "\n".join("    " + line for line in body.splitlines())).body[0]
+            self.assertFalse(unanswered_attempt(fn))
 
     def test_each_solution_is_gated_behind_a_reveal(self):
         for path in notebooks():

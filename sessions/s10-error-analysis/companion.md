@@ -9,6 +9,8 @@ ranked taxonomy → new eval task). Optional café-host lab: `sessions/s10-error
 
 The core keeps the S05 consent gate while collecting evidence. A scripted
 customer is an explicit fixture; a refused fire is not a served ticket.
+Core taxonomy and promotion wait for complete learner labels. An empty pile
+produces no calibration evidence, and reference labels never fill missing work.
 
 ## The gap
 

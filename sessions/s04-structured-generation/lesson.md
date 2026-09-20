@@ -1,6 +1,6 @@
 # S04-structured-generation — The ticket contract
 
-**Carried in:** `cafe/context.py` — compaction policies and the proof that the pinned allergen rule still governs after the boundary. The conversation is now under control; the *reply* is not.
+**Carried in:** `cafe/context.py` — compaction policies, retained-rule evidence, and measured compliance after the boundary. Now the *reply* must cross a contract boundary too.
 **Today you ship:** `cafe/schema.py` — the ticket contract, a hand-rolled stdlib validator, and a bounded validate-and-retry loop.
 **What this teaches:** structured generation as a contract with two gates — shape against a schema, meaning against tonight's data — plus error-feedback retries, a cap you choose, and why a valid ticket is not automatically a correct one.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
@@ -94,8 +94,11 @@ non-terminating agent holding your budget. Each attempt appends the assistant tu
 **verbatim** before the feedback — the S01 invariant, reused, so a model that
 answered with a tool call still has its message and every result paired. The
 returned message list is the receipt: it shows exactly what the model was told
-after each failure. The function returns `(ticket_or_None, messages, attempts)` and
-never raises on a bad reply.
+after each failure. `ask_ticket` retains its `(ticket_or_None, messages, attempts)`
+interface. `ask_ticket_run` also returns every attempt's `parsed`, `shape_ok`,
+`semantic_ok` and error lists. Meaning is not evaluated when shape fails;
+`semantic_ok=None` records that distinction. Final acceptance never erases an
+earlier error.
 
 ### Escalation is a decision
 
@@ -120,11 +123,11 @@ with your endpoint already exported.
    reference is `checkers.ticket_matches_menu` behind a switch.
 3. **Predict the live run.** For each of the three briefs, write down parse error,
    schema invalid, semantically wrong, or accepted — and on which attempt. Then run
-   `ask_ticket` against your endpoint. A small local model is genuinely bad at this;
-   briefs that fail all three attempts are data, not a broken notebook.
+   `ask_ticket_run` against your endpoint. Briefs that fail all three attempts
+   are data; your model's results may vary.
 4. **Read the assertions.** They do not claim your model produces valid tickets.
    They claim the machinery: the validator accepts a hand-built reference and
-   rejects an off-menu item on the enum; a valid-but-wrong ticket fails the schema
+   rejects an off-menu item on the enum; a valid-but-wrong ticket passes the schema
    and fails the semantic checker; and the retry loop keeps the conversation
    protocol-legal across every attempt.
 
@@ -132,10 +135,10 @@ with your endpoint already exported.
 
 ## Checkpoint — the number you bank
 
-Two numbers from the live run: **how many of the three briefs produced a valid
-ticket**, and **how many of those valid tickets were also correct**. The gap between
-them is the session. Small local models usually show the first comfortably above
-the second, and this page will not tell you the values — your endpoint decides.
+Compare **first attempts**: how many of the three were schema-valid, and how many
+also matched the menu? Separately count final accepted tickets after retries.
+Every accepted ticket already passed both gates; comparing only final tickets
+hides the errors the loop repaired. A zero first-attempt gap is a valid result.
 
 Bank both numbers with the model name. When you report them, keep the distinction
 intact: "valid" is a claim about shape, "correct" is a claim about agreement with
@@ -190,8 +193,8 @@ tonight's data.
 
 <details><summary>Why does the validator reject a boolean for <code>table</code> instead of accepting it as an integer?</summary>
 
-Because `bool` subclasses `int` in Python, so `type(True) is int` is misleadingly
-true. A table number of `True` is nonsense, and a contract that accepts it is
+Because `bool` subclasses `int` in Python: `isinstance(True, int)` is true, while
+`type(True) is int` is false. A table number of `True` is nonsense, and a contract that accepts it is
 weaker than it reads. The validator excludes bool explicitly.</details>
 
 <details><summary>A ticket passes the schema but names an 86'd item. Which gate failed, and who catches it?</summary>

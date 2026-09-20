@@ -119,16 +119,17 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 ```
 
 1. **Read the corpus.** Six clean café transcripts in a fixed, mixed order; three of them
-   carry exactly one seeded defect. The key stays out of the notebook until the labeling
-   section. Read a couple before you go on.
-2. **Judge v1.** One pass/fail verdict per transcript, JSON out. This rubric is deliberately
-   uncalibrated: strict, style-sensitive, told to distrust short answers.
-3. **Hand-label first — this is the protocol, not a warm-up.** Before you see more judge
-   output, label all six transcripts yourself in `attempt_hand_labels` against the rubric.
-   Then flip the reveal switch for the seed-derived reference. A verdict you have already
-   seen anchors your label, and an anchored label measures the judge's influence on you,
-   not the judge.
-4. **Predict the pair.** Before the calibration cell, write down how many defective
+   carry exactly one seeded defect. All six are displayed for your
+   independent reading. Key-derived results stay hidden until labels are complete
+   and the separate reveal switch is on.
+2. **Hand-label first — this is the protocol, not a warm-up.** Fill
+   `attempt_hand_labels` with pass/fail for every ID against the three factual
+   defects. Use the menu facts; brevity and style are not defects. Blank, partial,
+   invalid or cleared labels pause every judge call and its dependent results.
+3. **Judge v1, then reveal separately.** Once labels are complete, the deliberately
+   strict, style-sensitive rubric can run. The seed key, missed-ID lists and
+   key-derived comparisons remain hidden until you also turn on the reveal switch.
+4. **Predict the pair.** Before completing the label cell, write down how many defective
    transcripts judge v1 will catch and how many clean ones it will fail. Detection and
    false positives are reported together, because either alone is half a number.
 5. **Read the misses, then judge v2.** The v1 misses are not mysteries; they are classes.

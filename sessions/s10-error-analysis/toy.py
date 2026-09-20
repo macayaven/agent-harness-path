@@ -26,6 +26,7 @@ with app.setup:
         guarded_engine,
         rank,
         shift_summary,
+        labels_ready,
     )
 
 
@@ -187,22 +188,11 @@ def s10_md_harvest(mo):
 
 
 @app.cell
-def s10_demo_harvest(client, shifts):
+def s10_demo_harvest(shifts):
     pile = harvest(shifts)
-    if not pile:
-        # A small model can be unexpectedly well behaved. Keep the method alive
-        # with one more real, deliberately capped shift; say so, do not hide it.
-        fallback_script = {
-            "id": "s10-capped",
-            "user_turns": ("An espresso, please.", "Ready?"),
-            "expects": ("propose_order",),
-        }
-        fallback_run = run_shift(client, fallback_script["user_turns"], make_responder([]), max_turns=1)
-        shifts.append({"script": fallback_script, "run": fallback_run})
-        pile = harvest(shifts)
-        print("The first pass produced no failures; one deliberately capped shift was added.")
-
     print("harvested failures:", len(pile))
+    if not pile:
+        print("No failures to label in this run; no taxonomy or calibration evidence.")
     for record in pile:
         print(
             f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
@@ -262,10 +252,10 @@ def solution_open_code(records):
 
 
 @app.cell(hide_code=True)
-def s10_reveal_source_open_code(mo, reveal_open_code):
+def s10_reveal_source_open_code(mo, open_code_ready, reveal_open_code):
     mo.stop(
-        not reveal_open_code.value,
-        mo.md("*Solution hidden. Flip the switch once you have run your attempt.*"),
+        not (open_code_ready and reveal_open_code.value),
+        mo.md("*Reference hidden. Complete your own labels, then reveal.*"),
     )
     mo.md("```python\n" + inspect.getsource(solution_open_code) + "```")
     return
@@ -274,26 +264,27 @@ def s10_reveal_source_open_code(mo, reveal_open_code):
 @app.cell
 def s10_demo_attempt(pile):
     mine = attempt_open_code(pile)
-    reference = solution_open_code(pile)
-    if not mine:
-        print("Attempt pending: implement attempt_open_code before revealing the reference.")
+    open_code_ready = labels_ready(mine, {record["id"] for record in pile})
+    if not open_code_ready:
+        print("Attempt pending: supply one nonempty category per record before continuing.")
     else:
         print("your labels    :", mine)
-        print("reference labels:", reference)
-    return mine, reference
+    return mine, open_code_ready
 
 
 @app.cell
-def s10_demo_labels(mine, pile, reference):
-    expected_ids = {record["id"] for record in pile}
-    attempt_is_complete = bool(mine) and set(mine) == expected_ids
-    if attempt_is_complete:
-        labels = mine
-        print("Using your complete labels for the taxonomy.")
-    else:
-        labels = reference
-        print("Attempt pending: using the reference labels so the tour can continue.")
+def s10_demo_labels(mine, mo, open_code_ready):
+    mo.stop(not open_code_ready, mo.md("*Taxonomy paused until your labels are complete.*"))
+    labels = mine
+    print("Using your complete labels for the taxonomy.")
     return (labels,)
+
+
+@app.cell
+def s10_demo_reference(mo, open_code_ready, pile, reveal_open_code):
+    mo.stop(not (open_code_ready and reveal_open_code.value), mo.md("*Reference labels hidden.*"))
+    print("reference labels:", solution_open_code(pile))
+    return
 
 
 @app.cell

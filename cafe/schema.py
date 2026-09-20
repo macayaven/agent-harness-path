@@ -115,24 +115,25 @@ def _assistant_message(message: dict) -> dict:
     return out
 
 
-def ask_ticket(
+def ask_ticket_run(
     client: Any,
     brief: str,
     *,
     schema: dict = TICKET_SCHEMA,
     max_attempts: int = 3,
     system: str = TICKET_SYSTEM,
-) -> tuple[Any, list[dict], int]:
+) -> dict:
     """Ask for a ticket, validate, feed the errors back, retry. Always capped.
 
-    Returns `(ticket_or_None, messages, attempts)`. The message list is the
-    receipt: it shows exactly what the model was told after each failure.
+    Retain every outcome before retrying: final acceptance must not hide a
+    schema-valid but semantically wrong first attempt.
     """
     messages: list[dict] = [
         {"role": "system", "content": system},
         {"role": "user", "content": TICKET_PROMPT + brief},
     ]
     state = OrderState()
+    outcomes = []
     for attempt in range(1, max_attempts + 1):
         body = client.chat(list(messages), tools=domain.TOOL_SCHEMAS, temperature=0.0)
         message = body["choices"][0]["message"]
@@ -148,19 +149,34 @@ def ask_ticket(
                 }
             )
         ticket = parse_json(message.get("content"))
+        shape_errors = validate(ticket, schema) if ticket is not None else []
+        meaning_errors = checkers.ticket_matches_menu(ticket) if ticket is not None and not shape_errors else []
+        outcomes.append({
+            "attempt": attempt, "parsed": ticket is not None,
+            "shape_ok": ticket is not None and not shape_errors,
+            "semantic_ok": (not meaning_errors) if ticket is not None and not shape_errors else None,
+            "shape_errors": shape_errors, "semantic_errors": meaning_errors,
+        })
         if ticket is None:
             feedback = (
                 "PARSE ERROR: reply with the raw JSON ticket object only - "
                 "no prose, no code fences."
             )
         else:
-            shape_errors = validate(ticket, schema)
-            meaning_errors = checkers.ticket_matches_menu(ticket) if not shape_errors else []
             if not shape_errors and not meaning_errors:
-                return ticket, messages, attempt
+                return {"ticket": ticket, "messages": messages, "attempts": attempt, "outcomes": outcomes}
             if shape_errors:
                 feedback = "VALIDATION ERRORS:\n" + "\n".join(f"- {e}" for e in shape_errors)
             else:
                 feedback = "SEMANTIC ERRORS:\n" + "\n".join(f"- {e}" for e in meaning_errors)
         messages.append({"role": "user", "content": feedback})
-    return None, messages, max_attempts
+    return {"ticket": None, "messages": messages, "attempts": len(outcomes), "outcomes": outcomes}
+
+
+def ask_ticket(
+    client: Any, brief: str, *, schema: dict = TICKET_SCHEMA,
+    max_attempts: int = 3, system: str = TICKET_SYSTEM,
+) -> tuple[Any, list[dict], int]:
+    """Compatibility view: accepted ticket, full transcript and attempt count."""
+    run = ask_ticket_run(client, brief, schema=schema, max_attempts=max_attempts, system=system)
+    return run["ticket"], run["messages"], run["attempts"]

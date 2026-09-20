@@ -189,16 +189,17 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 </code></pre>
 <ol>
 <li><strong>Read the corpus.</strong> Six clean café transcripts in a fixed, mixed order; three of them
-   carry exactly one seeded defect. The key stays out of the notebook until the labeling
-   section. Read a couple before you go on.</li>
-<li><strong>Judge v1.</strong> One pass/fail verdict per transcript, JSON out. This rubric is deliberately
-   uncalibrated: strict, style-sensitive, told to distrust short answers.</li>
-<li><strong>Hand-label first — this is the protocol, not a warm-up.</strong> Before you see more judge
-   output, label all six transcripts yourself in <code>attempt_hand_labels</code> against the rubric.
-   Then flip the reveal switch for the seed-derived reference. A verdict you have already
-   seen anchors your label, and an anchored label measures the judge's influence on you,
-   not the judge.</li>
-<li><strong>Predict the pair.</strong> Before the calibration cell, write down how many defective
+   carry exactly one seeded defect. All six are displayed for your
+   independent reading. Key-derived results stay hidden until labels are complete
+   and the separate reveal switch is on.</li>
+<li><strong>Hand-label first — this is the protocol, not a warm-up.</strong> Fill
+   <code>attempt_hand_labels</code> with pass/fail for every ID against the three factual
+   defects. Use the menu facts; brevity and style are not defects. Blank, partial,
+   invalid or cleared labels pause every judge call and its dependent results.</li>
+<li><strong>Judge v1, then reveal separately.</strong> Once labels are complete, the deliberately
+   strict, style-sensitive rubric can run. The seed key, missed-ID lists and
+   key-derived comparisons remain hidden until you also turn on the reveal switch.</li>
+<li><strong>Predict the pair.</strong> Before completing the label cell, write down how many defective
    transcripts judge v1 will catch and how many clean ones it will fail. Detection and
    false positives are reported together, because either alone is half a number.</li>
 <li><strong>Read the misses, then judge v2.</strong> The v1 misses are not mysteries; they are classes.

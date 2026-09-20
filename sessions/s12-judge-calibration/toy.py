@@ -12,8 +12,9 @@ with app.setup:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
-    from cafe import judge, routing
+    from cafe import domain, judge, routing
     from cafe.model import get_client
+    from cafe.taxonomy import labels_ready
 
 
 @app.cell
@@ -136,62 +137,21 @@ def s12_md_corpus(mo):
 
     Six clean café transcripts, three of them mutated with exactly one seeded
     defect each. The order is fixed and mixed, so "the defective ones are first"
-    never becomes a habit. Read a couple before you go on — the key stays out of
-    the notebook until the labeling section.
+    never becomes a habit. Read all six before labeling — key-derived results
+    require complete labels and a separate reveal switch.
     """)
     return
 
 
 @app.cell
 def s12_demo_corpus():
-    transcripts, key = judge.seeded_corpus()
+    transcripts = judge.seeded_corpus()[0]
+    print("menu facts for your labels:", domain.MENU)
     print("corpus size:", len(transcripts), list(transcripts))
-    print("defects seeded:", sum(1 for value in key.values() if value), "of", len(key))
-    print()
-    print("--- a sample transcript ---")
-    print(judge.render_transcript(transcripts[list(transcripts)[0]]))
-    return key, transcripts
-
-
-@app.cell(hide_code=True)
-def s12_md_judge_v1(mo):
-    mo.md(r"""
-    ## Judge v1 — the rubric you write on the first try
-
-    One pass/fail verdict per transcript, returned as JSON. This rubric is
-    deliberately uncalibrated: strict, style-sensitive, and told to distrust short
-    answers. It is the judge most people ship.
-
-    The parser requires one object with `verdict`, `class` and a nonempty
-    `rationale`. Ambiguous prose, extra objects and contradictory fields become
-    `unparseable`. Menu facts are sent separately; transcript instructions are
-    evidence. V1 uses `other` for its intentionally poor style criterion.
-    """)
-    return
-
-
-@app.cell
-def s12_demo_judge_v1(client, transcripts):
-    verdicts_v1 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V1)
-    _sample = list(verdicts_v1)[0]
-    print(f"sample {_sample}:", verdicts_v1[_sample])
-    print("one verdict per transcript:", len(verdicts_v1) == len(transcripts))
-    return (verdicts_v1,)
-
-
-@app.cell
-def s12_demo_scores_v1(key, verdicts_v1):
-    _det = judge.detection_rate(key, verdicts_v1)
-    _fp = judge.false_positive_rate(key, verdicts_v1)
-    _unreadable = [tid for tid, verdict in verdicts_v1.items() if verdict["verdict"] == "unparseable"]
-    print("v1 detection       :", judge.fmt_rate(_det))
-    print("v1 false positives :", judge.fmt_rate(_fp))
-    print("v1 unparseable     :", f"{len(_unreadable)}/{len(verdicts_v1)}", _unreadable)
-    print("v1 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)))
-    print()
-    print("Both numbers or neither. A judge that fails everything detects everything.")
-    print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
-    return
+    for _tid, _transcript in transcripts.items():
+        print(f"\n--- {_tid} ---")
+        print(judge.render_transcript(_transcript))
+    return (transcripts,)
 
 
 @app.cell(hide_code=True)
@@ -199,10 +159,10 @@ def s12_md_hand_labels(mo):
     mo.md(r"""
     ## Hand-label first — this is the protocol, not a warm-up
 
-    Before the key and before any more judge output, label all six transcripts
-    yourself against the rubric: does the barista answer the actual question,
-    respect declared constraints, stay consistent, and not abandon a correct
-    answer under pressure?
+    Before the key and before any judge output, label all six transcripts
+    yourself against the three factual defects: allergen served despite the
+    declared allergy, wrong item price or total, or firing without confirmation.
+    Read the supplied menu facts; do not infer defects from brevity or style.
 
     A verdict you have already seen anchors your label, and an anchored label
     measures the judge's influence on you, not the judge.
@@ -242,9 +202,9 @@ def solution_hand_labels(key):
 
 
 @app.cell(hide_code=True)
-def s12_reveal_source_hand_labels(mo, reveal_hand_labels):
+def s12_reveal_source_hand_labels(hand_labels_ready, mo, reveal_hand_labels):
     mo.stop(
-        not reveal_hand_labels.value,
+        not (hand_labels_ready and reveal_hand_labels.value),
         mo.md("*Reference hidden. Label the transcripts yourself first.*"),
     )
     mo.md("```python\n" + inspect.getsource(solution_hand_labels) + "```")
@@ -252,20 +212,76 @@ def s12_reveal_source_hand_labels(mo, reveal_hand_labels):
 
 
 @app.cell
-def s12_demo_hand_labels(key, transcripts):
-    _labels = attempt_hand_labels(transcripts)
-    _unfilled = [tid for tid, label in _labels.items() if label is None]
-    if _unfilled:
-        print("Attempt pending: label every transcript before scoring yourself.")
-        print("still unlabeled:", _unfilled)
+def s12_demo_hand_labels(transcripts):
+    hand_labels = attempt_hand_labels(transcripts)
+    hand_labels_ready = labels_ready(hand_labels, set(transcripts), {"pass", "fail"})
+    if not transcripts:
+        print("No transcripts to label; no calibration evidence.")
+    elif not hand_labels_ready:
+        print("Attempt pending: supply pass/fail for every transcript before judging.")
     else:
-        _reference = judge.reference_labels(key)
-        _ids = list(transcripts)
-        _agree = sum(_labels[tid] == _reference[tid] for tid in _ids)
-        _mine = [_labels[tid] for tid in _ids]
-        _ref = [_reference[tid] for tid in _ids]
-        print(f"you vs the seed key: {_agree}/{len(_ids)} agreement")
-        print(f"your κ vs the key  : {judge.fmt_kappa(judge.cohens_kappa(_ref, _mine))}")
+        print("Independent labels complete:", hand_labels)
+    return hand_labels, hand_labels_ready
+
+
+@app.cell
+def s12_demo_reference_key(hand_labels_ready, mo, reveal_hand_labels):
+    mo.stop(not (hand_labels_ready and reveal_hand_labels.value), mo.md("*Seed key hidden.*"))
+    key = judge.seeded_corpus()[1]
+    return (key,)
+
+
+@app.cell
+def s12_demo_compare_hand_labels(hand_labels, key, transcripts):
+    _reference = judge.reference_labels(key)
+    _ids = list(transcripts)
+    _agree = sum(hand_labels[tid] == _reference[tid] for tid in _ids)
+    _mine = [hand_labels[tid] for tid in _ids]
+    _ref = [_reference[tid] for tid in _ids]
+    print(f"you vs the seed key: {_agree}/{len(_ids)} agreement")
+    print(f"your κ vs the key  : {judge.fmt_kappa(judge.cohens_kappa(_ref, _mine))}")
+    return
+
+
+@app.cell(hide_code=True)
+def s12_md_judge_v1(mo):
+    mo.md(r"""
+    ## Judge v1 — the rubric you write on the first try
+
+    One pass/fail verdict per transcript, returned as JSON. This rubric is
+    deliberately uncalibrated: strict, style-sensitive, and told to distrust short
+    answers. It is the judge most people ship.
+
+    The parser requires one object with `verdict`, `class` and a nonempty
+    `rationale`. Ambiguous prose, extra objects and contradictory fields become
+    `unparseable`. Menu facts are sent separately; transcript instructions are
+    evidence. V1 uses `other` for its intentionally poor style criterion.
+    """)
+    return
+
+
+@app.cell
+def s12_demo_judge_v1(client, hand_labels_ready, mo, transcripts):
+    mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
+    verdicts_v1 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V1)
+    _sample = list(verdicts_v1)[0]
+    print(f"sample {_sample}:", verdicts_v1[_sample])
+    print("one verdict per transcript:", len(verdicts_v1) == len(transcripts))
+    return (verdicts_v1,)
+
+
+@app.cell
+def s12_demo_scores_v1(key, verdicts_v1):
+    _det = judge.detection_rate(key, verdicts_v1)
+    _fp = judge.false_positive_rate(key, verdicts_v1)
+    _unreadable = [tid for tid, verdict in verdicts_v1.items() if verdict["verdict"] == "unparseable"]
+    print("v1 detection       :", judge.fmt_rate(_det))
+    print("v1 false positives :", judge.fmt_rate(_fp))
+    print("v1 unparseable     :", f"{len(_unreadable)}/{len(verdicts_v1)}", _unreadable)
+    print("v1 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)))
+    print()
+    print("Both numbers or neither. A judge that fails everything detects everything.")
+    print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
     return
 
 
@@ -303,7 +319,8 @@ def s12_md_judge_v2(mo):
 
 
 @app.cell
-def s12_demo_judge_v2(client, transcripts):
+def s12_demo_judge_v2(client, hand_labels_ready, mo, transcripts):
+    mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
     verdicts_v2 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V2)
     print("sample v2 verdict:", verdicts_v2[list(verdicts_v2)[0]])
     return (verdicts_v2,)

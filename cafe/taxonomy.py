@@ -37,9 +37,17 @@ __all__ = [
     "check_task",
     "naive_engine",
     "guarded_engine",
+    "labels_ready",
 ]
 
 SEVERITY_WEIGHT: dict[str, int] = {"high": 3, "medium": 2, "low": 1}
+
+
+def labels_ready(labels: dict, expected_ids: set[str], allowed: set[str] | None = None) -> bool:
+    """Only a complete independent attempt unlocks comparison; empty is not done."""
+    return (bool(expected_ids) and isinstance(labels, dict) and set(labels) == expected_ids
+            and all(isinstance(label, str) and bool(label.strip()) and label == label.strip()
+                    and (allowed is None or label in allowed) for label in labels.values()))
 
 # The taxonomy the pile earns. `cafe.judge` (S12) reads these names, so the
 # vocabulary the learner invented here is the one the judge calibrates against.

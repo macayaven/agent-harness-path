@@ -109,7 +109,7 @@
 <main>
 <nav class="lesson-nav"><span class="nav-prev"><a href="../s03-context-engineering/lesson.html#the-theory-in-depth">&larr; Prev: S03-context-engineering — What survives compaction</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s05-consent-gate/lesson.html#the-theory-in-depth">Next: S05-consent-gate — The gate before the irreversible action &rarr;</a></span></nav>
 <h1 id="s04-structured-generation-the-ticket-contract">S04-structured-generation — The ticket contract</h1>
-<p><strong>Carried in:</strong> <code>cafe/context.py</code> — compaction policies and the proof that the pinned allergen rule still governs after the boundary. The conversation is now under control; the <em>reply</em> is not.
+<p><strong>Carried in:</strong> <code>cafe/context.py</code> — compaction policies, retained-rule evidence, and measured compliance after the boundary. Now the <em>reply</em> must cross a contract boundary too.
 <strong>Today you ship:</strong> <code>cafe/schema.py</code> — the ticket contract, a hand-rolled stdlib validator, and a bounded validate-and-retry loop.
 <strong>What this teaches:</strong> structured generation as a contract with two gates — shape against a schema, meaning against tonight's data — plus error-feedback retries, a cap you choose, and why a valid ticket is not automatically a correct one.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
@@ -172,8 +172,11 @@ non-terminating agent holding your budget. Each attempt appends the assistant tu
 <strong>verbatim</strong> before the feedback — the S01 invariant, reused, so a model that
 answered with a tool call still has its message and every result paired. The
 returned message list is the receipt: it shows exactly what the model was told
-after each failure. The function returns <code>(ticket_or_None, messages, attempts)</code> and
-never raises on a bad reply.</p>
+after each failure. <code>ask_ticket</code> retains its <code>(ticket_or_None, messages, attempts)</code>
+interface. <code>ask_ticket_run</code> also returns every attempt's <code>parsed</code>, <code>shape_ok</code>,
+<code>semantic_ok</code> and error lists. Meaning is not evaluated when shape fails;
+<code>semantic_ok=None</code> records that distinction. Final acceptance never erases an
+earlier error.</p>
 <h3 id="escalation-is-a-decision">Escalation is a decision</h3>
 <p>Three failures on the same brief is data, not noise. A repeated identical error is
 the contract talking: either the model cannot produce this shape, or the schema is
@@ -193,20 +196,20 @@ with your endpoint already exported.</p>
    reference is <code>checkers.ticket_matches_menu</code> behind a switch.</li>
 <li><strong>Predict the live run.</strong> For each of the three briefs, write down parse error,
    schema invalid, semantically wrong, or accepted — and on which attempt. Then run
-   <code>ask_ticket</code> against your endpoint. A small local model is genuinely bad at this;
-   briefs that fail all three attempts are data, not a broken notebook.</li>
+   <code>ask_ticket_run</code> against your endpoint. Briefs that fail all three attempts
+   are data; your model's results may vary.</li>
 <li><strong>Read the assertions.</strong> They do not claim your model produces valid tickets.
    They claim the machinery: the validator accepts a hand-built reference and
-   rejects an off-menu item on the enum; a valid-but-wrong ticket fails the schema
+   rejects an off-menu item on the enum; a valid-but-wrong ticket passes the schema
    and fails the semantic checker; and the retry loop keeps the conversation
    protocol-legal across every attempt.</li>
 </ol>
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
-<p>Two numbers from the live run: <strong>how many of the three briefs produced a valid
-ticket</strong>, and <strong>how many of those valid tickets were also correct</strong>. The gap between
-them is the session. Small local models usually show the first comfortably above
-the second, and this page will not tell you the values — your endpoint decides.</p>
+<p>Compare <strong>first attempts</strong>: how many of the three were schema-valid, and how many
+also matched the menu? Separately count final accepted tickets after retries.
+Every accepted ticket already passed both gates; comparing only final tickets
+hides the errors the loop repaired. A zero first-attempt gap is a valid result.</p>
 <p>Bank both numbers with the model name. When you report them, keep the distinction
 intact: "valid" is a claim about shape, "correct" is a claim about agreement with
 tonight's data.</p>
@@ -281,8 +284,8 @@ tonight's data.</p>
 <h2 id="self-check">Self-check</h2>
 <details><summary>Why does the validator reject a boolean for <code>table</code> instead of accepting it as an integer?</summary>
 
-Because `bool` subclasses `int` in Python, so `type(True) is int` is misleadingly
-true. A table number of `True` is nonsense, and a contract that accepts it is
+Because `bool` subclasses `int` in Python: `isinstance(True, int)` is true, while
+`type(True) is int` is false. A table number of `True` is nonsense, and a contract that accepts it is
 weaker than it reads. The validator excludes bool explicitly.</details>
 
 <details><summary>A ticket passes the schema but names an 86'd item. Which gate failed, and who catches it?</summary>

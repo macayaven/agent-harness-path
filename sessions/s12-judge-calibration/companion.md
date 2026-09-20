@@ -41,3 +41,7 @@ If the critic flags all 10 transcripts, what happens to FP and κ?
 Do: refuse to fill labels after seeing critic output. Don't: run the critic
 then “help” relabel. Don't: let the critic talk to the customer. Don't: quote
 κ as quality without the four rates.
+
+The core notebook makes no judge call until every independent pass/fail label
+is complete. The seed key and key-derived results need the separate reveal too.
+Clearing labels pauses both; do not fill them to keep the tour running.

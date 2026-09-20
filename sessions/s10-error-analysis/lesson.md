@@ -134,13 +134,16 @@ uv run marimo edit sessions/s10-error-analysis/toy.py
    script and returns one record per failure — a missing expected tool, a refused consent attempt, an actually fired ticket
    with no prior `propose_order` in an explicitly permissive baseline, an 86'd item sent to the kitchen, a turn cap — each with
    an id, a severity, and a verbatim quote from the conversation. If the trace does not
-   show it, it is not in the pile. A well-behaved model can produce an empty pile; the
-   notebook then adds one deliberately capped shift and says so rather than hiding it.
+   show it, it is not in the pile. An empty pile pauses labeling and promotion;
+   there is no taxonomy evidence to bank from that run.
 3. **Predict first: the categories.** Before you read closely, write down the two or three
    category names you expect this pile to contain. Then fill `attempt_open_code` — one
    category per record — and flip the reveal switch only after your attempt. The reference
    solution names four; yours may differ, and that is fine as long as each name is narrow
    enough to be wrong.
+   Every record needs your own nonempty label before ranking continues. Incomplete
+   attempts never borrow reference labels; reference source and results require
+   both a complete attempt and the reveal switch. Clearing labels pauses results.
 4. **Rank and file.** `rank` turns your labels into a frequency × severity table with trace
    references; `agreed` scores your reading against `classify_naive`. Predict the agreement
    count before you run it, then look at *which* records the auto-filer misfiled.
