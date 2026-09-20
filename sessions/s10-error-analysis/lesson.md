@@ -12,7 +12,7 @@
 
 Three shifts, three transcripts, and a suite that says everything is fine. Then you read
 the traces. One shift never checked an allergy the customer declared by name. Another
-fired a ticket before the customer confirmed it. A third ran out of turns with the
+tried to fire a ticket before confirmation; the consent gate refused it. A third ran out of turns with the
 customer still waiting for an answer.
 
 The aggregate said 6/9. It could not say *which* six, or why. A number tells you there is
@@ -127,12 +127,12 @@ uv run marimo edit sessions/s10-error-analysis/toy.py
 ```
 
 1. **Drive the pile.** Three live shifts run through `run_shift` under a deliberately tight
-   turn cap (`max_turns=3`). Each script declares what the customer asked for and which
+   turn cap (`max_turns=3`), retaining S05's consent gate and an explicit synthetic customer. Each script declares what the customer asked for and which
    tool the shift must call. The cap is a harness choice, not a model-quality score: a
    shift that runs out of turns before the customer is answered is a real failure.
 2. **Harvest only what the trace shows.** `harvest` reads each recorded run against its
-   script and returns one record per failure — a missing expected tool, a ticket fired
-   with no prior `propose_order`, an 86'd item sent to the kitchen, a turn cap — each with
+   script and returns one record per failure — a missing expected tool, a refused consent attempt, an actually fired ticket
+   with no prior `propose_order` in an explicitly permissive baseline, an 86'd item sent to the kitchen, a turn cap — each with
    an id, a severity, and a verbatim quote from the conversation. If the trace does not
    show it, it is not in the pile. A well-behaved model can produce an empty pile; the
    notebook then adds one deliberately capped shift and says so rather than hiding it.

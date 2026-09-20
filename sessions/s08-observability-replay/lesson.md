@@ -34,7 +34,7 @@ the two things that quietly break it — the wall clock and the RNG.
 
 ### A transcript is a printout; a trace is a structure
 
-`run_shift` returns a run record: the message list, the turns, the stop reason, the counters. That
+`run_shift` returns a run record: the message list, the consent decisions, the stop reason, the counters. That
 tells you *what* the conversation said, not *where the time and tokens went*. `Tracer` builds a tree
 instead. Each span carries a name, a kind, attributes, children, a start time and a rounded duration.
 A **generation** is a span that also carries a model call:
@@ -81,6 +81,10 @@ flowchart LR
     end
 ```
 
+Both recording and replay use S05's protected executor. The synthetic customer explicitly
+approves the first valid proposal; an exhausted decision queue rejects. Each replay needs
+a fresh responder with the same decisions. Tracing never substitutes for consent.
+
 Two invariants, and they catch two different regressions. **Matching** polices the calls that
 *arrive*: the next recorded request must equal the incoming one exactly, otherwise `ReplayMismatch`
 raises instead of serving a response recorded for something else. **Exhaustion** polices the calls
@@ -121,7 +125,7 @@ not one `.jsonl` landed in it.
 Open [`toy.py`](toy.py).
 Same endpoint configuration as S06, plus the `SCRIPT` of two customer lines the notebook replays.
 
-1. **Record your own shift.** `record_shift(client, SCRIPT, path, tracer=Tracer(clock=TickClock()))`
+1. **Record your own shift.** `record_shift(client, SCRIPT, path, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))`
    runs the real loop through a recording client and prints the rendered tree, the tools that ran and
    the usage totals.
 2. **Predict the replay.** Before running it: how many times will your live model fire during a

@@ -17,6 +17,7 @@ with app.setup:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    from cafe.consent import make_responder
     from cafe.model import get_client
     from cafe.trace import (
         ReplayMismatch,
@@ -30,6 +31,7 @@ with app.setup:
         usage_of,
     )
 
+    # A synthetic customer approves the first valid proposal; exhaustion rejects.
     SCRIPT = (
         "Hi, get me a latte and a chocolate croissant.",
         "Nothing else, thanks.",
@@ -132,7 +134,7 @@ def s08_demo_record(client):
     trace_path = Path(workdir.name) / "shift.jsonl"
     repo_root = Path(__file__).resolve().parents[1]
     repo_before = repo_files(repo_root)
-    recording = record_shift(client, SCRIPT, trace_path, tracer=Tracer(clock=TickClock()))
+    recording = record_shift(client, SCRIPT, trace_path, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
     repo_after = repo_files(repo_root)
     run = recording["run"]
     print("trace    :", trace_path)
@@ -169,8 +171,8 @@ def s08_predict_replay(mo):
 @app.cell
 def s08_demo_replay(client, recording, trace_path):
     live_calls_before = client.calls
-    first = replay_shift(trace_path, SCRIPT, tracer=Tracer(clock=TickClock()))
-    second = replay_shift(trace_path, SCRIPT, tracer=Tracer(clock=TickClock()))
+    first = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
+    second = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
     live_calls_after = client.calls
     print("recording       :", len(load_records(trace_path)), "JSONL lines")
     print("replay 1        : stop", first["run"]["stop_reason"], "| calls",
@@ -203,7 +205,7 @@ def test_s08_replay_is_content_identical_and_makes_no_model_calls(
 def test_s08_stale_recording_is_refused(trace_path):
     stale = SCRIPT[1:]  # the customer's first line changed; the recording is stale
     try:
-        replay_shift(trace_path, stale)
+        replay_shift(trace_path, stale, responder=make_responder([("approve", None)]))
     except ReplayMismatch:
         pass
     else:
@@ -247,7 +249,7 @@ def dead_exporter(payload):
 
 @app.cell
 def s08_demo_fail_soft(trace_path):
-    doomed = replay_shift(trace_path, SCRIPT, tracer=Tracer(exporter=dead_exporter))
+    doomed = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(exporter=dead_exporter))
     problem = export_fail_soft(doomed["tracer"])
     print("the shift still ran to:", doomed["run"]["stop_reason"])
     print("export_fail_soft returned:", problem)

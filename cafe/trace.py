@@ -1,6 +1,6 @@
 """S08 - observability & replay.
 
-`cafe/loop.run_shift` drives one shift. This module makes that shift observable
+`cafe/consent.run_shift` drives one protected shift. This module makes it observable
 and repeatable:
 
 * `Tracer` builds a tree of spans; a *generation* is a span that also carries the
@@ -29,7 +29,8 @@ import time
 from pathlib import Path
 from typing import Any, Iterator
 
-from cafe.loop import run_shift
+from cafe.consent import run_shift
+from collections.abc import Callable
 
 __all__ = [
     "ReplayMismatch",
@@ -318,6 +319,7 @@ def record_shift(
     user_turns: list[str] | tuple[str, ...],
     path: str | Path,
     *,
+    responder: Callable[[str], tuple[str, Any]],
     tracer: Tracer | None = None,
     span_name: str = "shift",
     **kwargs: Any,
@@ -332,7 +334,7 @@ def record_shift(
     recorder = RecordingClient(client, path)
     traced = TracingClient(recorder, tracer)
     with tracer.span(span_name, script=list(user_turns)):
-        run = run_shift(traced, user_turns, **kwargs)
+        run = run_shift(traced, user_turns, responder, **kwargs)
     return {
         "run": run,
         "tracer": tracer,
@@ -346,6 +348,7 @@ def replay_shift(
     path: str | Path,
     user_turns: list[str] | tuple[str, ...],
     *,
+    responder: Callable[[str], tuple[str, Any]],
     tracer: Tracer | None = None,
     span_name: str = "replay",
     **kwargs: Any,
@@ -355,7 +358,7 @@ def replay_shift(
     player = ReplayClient(path)
     traced = TracingClient(player, tracer)
     with tracer.span(span_name, script=list(user_turns)):
-        run = run_shift(traced, user_turns, **kwargs)
+        run = run_shift(traced, user_turns, responder, **kwargs)
     player.assert_exhausted()
     return {"run": run, "tracer": tracer, "player": player, "traced": traced}
 

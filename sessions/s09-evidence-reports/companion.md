@@ -7,6 +7,9 @@ Core: `lesson.html`,
 citation validators). Optional café-host lab: `sessions/s09-evidence-reports/lab.md`,
 `build_debrief` in `labs/cafe_host/engine.py`, p06 checker.
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+
 ## The gap
 
 The core toy builds a depleted-reader café debrief with turn citations. The

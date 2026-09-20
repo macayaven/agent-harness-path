@@ -180,7 +180,11 @@ def consent_gate(
         return None, log
     for _ in range(max_rounds):
         rendered = render_ticket(current)
-        decision, payload = responder(rendered)
+        answer = responder(rendered)
+        if not isinstance(answer, (tuple, list)) or len(answer) != 2:
+            log.append({"decision": "malformed", "ticket": None})
+            return None, log
+        decision, payload = answer
         if decision == "approve":
             log.append({"decision": "approve", "ticket": dict(current)})
             return dict(current), log
@@ -319,7 +323,10 @@ def run_shift(
 
         for call in calls:
             name = call.get("function", {}).get("name", "")
-            if name == "propose_order":
+            if aborted:
+                # Finish the wire exchange without performing the rest of the batch.
+                result = {"canceled": True, "reason": "consent violation"}
+            elif name == "propose_order":
                 proposal = _parse_arguments(call)
                 approved, log = consent_gate(proposal, responder)
                 gate_log.extend(log)
@@ -331,7 +338,7 @@ def run_shift(
                 )
                 fires.append(record)
                 result = record
-                if record["action"] == "aborted":
+                if record["action"] in {"aborted", "refused"}:
                     stop_reason = "consent_violation"
                     aborted = True
             else:
@@ -345,8 +352,6 @@ def run_shift(
                     ),
                 }
             )
-            if aborted:
-                break
     else:
         if not aborted:
             stop_reason = "turn_cap"

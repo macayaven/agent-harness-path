@@ -8,6 +8,9 @@ shift record, exact replay). Optional café-host lab: `sessions/s08-observabilit
 `labs/client.py` (`match_key`, `ReplayMismatch`, `assert_exhausted` /
 leftover entries), `labs/cassettes/*.jsonl`.
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+
 ## The gap
 
 The core toy records a real café shift and replays it exactly; `cafe/trace.py`

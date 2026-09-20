@@ -7,6 +7,9 @@ Core: `lesson.html`,
 ranked taxonomy → new eval task). Optional café-host lab: `sessions/s10-error-analysis/lab.md`,
 `labs/evals/tasks.py` p07–p09, `labs/run.py` `S10_IDS` (denominator **9**).
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+
 ## The gap
 
 The core toy open-codes a handful of real café failures into buckets. The

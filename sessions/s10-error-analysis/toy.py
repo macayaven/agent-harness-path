@@ -13,7 +13,7 @@ with app.setup:
         sys.path.insert(0, str(ROOT))
 
     from cafe import domain
-    from cafe.loop import run_shift
+    from cafe.consent import make_responder, run_shift
     from cafe.model import get_client
     from cafe.report import log_events
     from cafe.taxonomy import (
@@ -161,7 +161,7 @@ def s10_demo_shifts(client):
 
     shifts = []
     for script in shift_scripts:
-        run = run_shift(client, script["user_turns"], max_turns=3)
+        run = run_shift(client, script["user_turns"], make_responder([("approve", None)]), max_turns=3)
         shifts.append({"script": script, "run": run})
         summary = shift_summary(run)
         print(
@@ -197,7 +197,7 @@ def s10_demo_harvest(client, shifts):
             "user_turns": ("An espresso, please.", "Ready?"),
             "expects": ("propose_order",),
         }
-        fallback_run = run_shift(client, fallback_script["user_turns"], max_turns=1)
+        fallback_run = run_shift(client, fallback_script["user_turns"], make_responder([]), max_turns=1)
         shifts.append({"script": fallback_script, "run": fallback_run})
         pile = harvest(shifts)
         print("The first pass produced no failures; one deliberately capped shift was added.")

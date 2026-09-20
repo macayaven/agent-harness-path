@@ -21,7 +21,7 @@ from __future__ import annotations
 from typing import Any
 
 from cafe import domain
-from cafe.report import log_events, tool_calls_of
+from cafe.report import fired_ticket, log_events, tool_calls_of
 from cafe.trace import cited_turns
 
 __all__ = [
@@ -59,11 +59,15 @@ def shift_summary(run: dict) -> dict:
         "checked_allergens": False,
     }
     for item in tool_calls_of(run):
+        if item["result"].get("canceled"):
+            continue
+        fired = fired_ticket(item["result"]) if item["name"] == "fire_ticket" else None
+        if item["name"] == "fire_ticket" and fired is None:
+            continue
         summary["tool_log"].append(item["name"])
         if item["name"] == "check_allergens":
             summary["checked_allergens"] = True
         if item["name"] == "fire_ticket":
-            fired = item["result"].get("fired") or {}
             summary["fired"].append(
                 {"items": list(fired.get("items") or []), "table": fired.get("table")}
             )
@@ -79,7 +83,8 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
     """
     summary = shift_summary(run)
     turns = cited_turns(run)
-    fired_calls = [item for item in tool_calls_of(run) if item["name"] == "fire_ticket"]
+    fired_calls = [item for item in tool_calls_of(run)
+                   if item["name"] == "fire_ticket" and fired_ticket(item["result"]) is not None]
     records: list[dict] = []
 
     for expected in dict.fromkeys(script.get("expects", ())):
@@ -102,7 +107,7 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
         )
 
     for item in fired_calls:
-        fired = (item["result"].get("fired") or {}).get("items") or []
+        fired = fired_ticket(item["result"]).get("items") or []
         unavailable = [name for name in fired if name in domain.EIGHTY_SIXED]
         if unavailable:
             _add(
@@ -114,6 +119,9 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
                 _pick_turn(turns, index=item["tool_turn"]),
             )
 
+    if run.get("stop_reason") == "consent_violation":
+        _add(records, script, "high", "the consent gate refused an unapproved action",
+             _pick_turn(turns, last_spoken=True))
     if run.get("stop_reason") == "turn_cap":
         _add(
             records,

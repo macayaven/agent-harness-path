@@ -134,7 +134,7 @@ the two things that quietly break it — the wall clock and the RNG.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="a-transcript-is-a-printout-a-trace-is-a-structure">A transcript is a printout; a trace is a structure</h3>
-<p><code>run_shift</code> returns a run record: the message list, the turns, the stop reason, the counters. That
+<p><code>run_shift</code> returns a run record: the message list, the consent decisions, the stop reason, the counters. That
 tells you <em>what</em> the conversation said, not <em>where the time and tokens went</em>. <code>Tracer</code> builds a tree
 instead. Each span carries a name, a kind, attributes, children, a start time and a rounded duration.
 A <strong>generation</strong> is a span that also carries a model call:</p>
@@ -151,6 +151,9 @@ interface while doing nothing, so instrumentation never costs you an <code>if tr
 "response": ...}</code>, in order. It never constructs a client of its own; it takes whatever
 <code>get_client()</code> returned. <code>ReplayClient</code> serves those responses back and refuses to guess:</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S08-observability-replay-2.svg" alt="During recording, a recorder relays host requests to the live model and stores responses in a cassette; during replay, the unchanged host receives content-equal recorded responses without a live call." style="--diagram-width: 1113px" /></div>
+<p>Both recording and replay use S05's protected executor. The synthetic customer explicitly
+approves the first valid proposal; an exhausted decision queue rejects. Each replay needs
+a fresh responder with the same decisions. Tracing never substitutes for consent.</p>
 <p>Two invariants, and they catch two different regressions. <strong>Matching</strong> polices the calls that
 <em>arrive</em>: the next recorded request must equal the incoming one exactly, otherwise <code>ReplayMismatch</code>
 raises instead of serving a response recorded for something else. <strong>Exhaustion</strong> polices the calls
@@ -182,7 +185,7 @@ not one <code>.jsonl</code> landed in it.</p>
 <p>Open <code>toy.py</code>.
 Same endpoint configuration as S06, plus the <code>SCRIPT</code> of two customer lines the notebook replays.</p>
 <ol>
-<li><strong>Record your own shift.</strong> <code>record_shift(client, SCRIPT, path, tracer=Tracer(clock=TickClock()))</code>
+<li><strong>Record your own shift.</strong> <code>record_shift(client, SCRIPT, path, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))</code>
    runs the real loop through a recording client and prints the rendered tree, the tools that ran and
    the usage totals.</li>
 <li><strong>Predict the replay.</strong> Before running it: how many times will your live model fire during a

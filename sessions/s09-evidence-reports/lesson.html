@@ -180,8 +180,8 @@ conversation</strong>, and <strong>the outcome is read from the run record</stro
 message felt.</p>
 <h3 id="a-claim-carries-a-turn-and-a-verbatim-quote">A claim carries a turn and a verbatim quote</h3>
 <p><code>log_events</code> reads events off the trace rather than off a vibe: an allergen check that reported
-<code>contains: true</code> is a <code>safety</code> event, a check that cleared an item is an <code>observation</code>, a fired
-ticket is a <code>milestone</code>, an item priced while sold out is a <code>safety</code> event, and a shift the turn cap
+<code>contains: true</code> is a <code>safety</code> event, a check that cleared an item is an <code>observation</code>, an actually fired
+ticket is a <code>milestone</code>, a refused fire is a <code>safety</code> event, an item priced while sold out is a <code>safety</code> event, and a shift the turn cap
 cut short is a <code>setback</code> carrying the last spoken turn. Each event quotes the raw tool result — the
 same string the loop wrote into the message list — so the quote resolves verbatim to its turn by
 construction. For the two free-text slots, <code>_first_sentence</code> and <code>_last_sentence</code> take a prefix and a
@@ -221,6 +221,8 @@ reach the <code>safety</code> slot. That is the only way to catch a lie that lea
 page. A report that passes one validator and fails the other is still dishonest — honesty is the
 conjunction. Neither validator is a judge: they check provenance, not quality, and inventing a
 quality score here is S12's problem, not this module's.</p>
+<p>S05's consent gate remains active. These examples use an explicitly scripted customer,
+not approval inferred from the model's prose. A refused action stays refused when reported.</p>
 <h3 id="a-failed-run-still-gets-a-report">A failed run still gets a report</h3>
 <p>A shift that hit the turn cap is not an excuse to write nothing. <code>capped_shift_trace()</code> is one such
 trace kept as teaching material: the allergen check found milk in the croissant, the model asked a

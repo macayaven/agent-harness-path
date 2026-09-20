@@ -12,7 +12,7 @@ with app.setup:
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
-    from cafe.loop import run_shift
+    from cafe.consent import make_responder, run_shift
     from cafe.model import get_client
     from cafe.report import (
         capped_shift_trace,
@@ -71,6 +71,7 @@ def s09_demo_client():
             "Then get me an espresso and tomato toast.",
             "Nothing else, thanks.",
         ],
+        make_responder([("approve", None)]),
     )
     events = log_events(shift_run)
     print("mode        :", client.mode)
@@ -290,7 +291,7 @@ def s09_demo_checkpoint(client):
         ["A cheese omelette, please.", "Nothing else."],
     )
     for script in scripts:
-        run = run_shift(client, script)
+        run = run_shift(client, script, make_responder([("approve", None)]))
         run_events = log_events(run)
         report = write_report(run, run_events)
         if not validate_citations(report, run) and not validate_coverage(report, run_events):
