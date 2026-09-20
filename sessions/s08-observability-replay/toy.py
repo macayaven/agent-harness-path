@@ -13,10 +13,13 @@ with app.setup:
     import tempfile
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    from cafe.consent import make_responder
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.trace import (
         ReplayMismatch,
@@ -30,6 +33,7 @@ with app.setup:
         usage_of,
     )
 
+    # A synthetic customer approves the first valid proposal; exhaustion rejects.
     SCRIPT = (
         "Hi, get me a latte and a chocolate croissant.",
         "Nothing else, thanks.",
@@ -95,16 +99,18 @@ def s08_md_client(mo):
 
 
 @app.cell
-def s08_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s08_demo_client(mo):
+    with mo.capture_stdout() as _output:
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
 @app.cell(hide_code=True)
 def s08_md_record(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## A recording is a contract, not a printout
 
     `RecordingClient` wraps any client and appends one JSONL line per call:
@@ -112,8 +118,7 @@ def s08_md_record(mo):
     responses back and refuses to guess:
 
     ![Recording relays to the model and appends trace lines; replay serves them back and raises on mismatch](public/diagrams/s08-replay.svg)
-    """)
-    mo.md(r"""
+
     Two invariants, and they catch two different regressions. **Matching** polices
     the calls that *arrive*: a changed request raises instead of receiving a
     response recorded for something else. **Exhaustion** polices the calls that
@@ -122,25 +127,27 @@ def s08_md_record(mo):
 
     Everything below writes inside a `tempfile.TemporaryDirectory()`. Nothing —
     not one `.jsonl` — lands under the repo root.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 
 @app.cell
-def s08_demo_record(client):
-    workdir = tempfile.TemporaryDirectory()
-    trace_path = Path(workdir.name) / "shift.jsonl"
-    repo_root = Path(__file__).resolve().parents[1]
-    repo_before = repo_files(repo_root)
-    recording = record_shift(client, SCRIPT, trace_path, tracer=Tracer(clock=TickClock()))
-    repo_after = repo_files(repo_root)
-    run = recording["run"]
-    print("trace    :", trace_path)
-    print("calls    :", run["model_calls"], "| stop:", run["stop_reason"])
-    print("tools run:", run["state"].tool_log)
-    print("usage    :", usage_of(recording["tracer"]))
-    print()
-    print(recording["tracer"].render())
+def s08_demo_record(client, mo):
+    with mo.capture_stdout() as _output:
+        workdir = tempfile.TemporaryDirectory()
+        trace_path = Path(workdir.name) / "shift.jsonl"
+        repo_root = Path(__file__).resolve().parents[1]
+        repo_before = repo_files(repo_root)
+        recording = record_shift(client, SCRIPT, trace_path, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
+        repo_after = repo_files(repo_root)
+        run = recording["run"]
+        print("trace    :", trace_path)
+        print("calls    :", run["model_calls"], "| stop:", run["stop_reason"])
+        print("tools run:", run["state"].tool_log)
+        print("usage    :", usage_of(recording["tracer"]))
+        print()
+        print(recording["tracer"].render())
+    mo.plain_text(_output.getvalue())
     return recording, repo_after, repo_before, repo_root, trace_path
 
 
@@ -167,19 +174,21 @@ def s08_predict_replay(mo):
 
 
 @app.cell
-def s08_demo_replay(client, recording, trace_path):
-    live_calls_before = client.calls
-    first = replay_shift(trace_path, SCRIPT, tracer=Tracer(clock=TickClock()))
-    second = replay_shift(trace_path, SCRIPT, tracer=Tracer(clock=TickClock()))
-    live_calls_after = client.calls
-    print("recording       :", len(load_records(trace_path)), "JSONL lines")
-    print("replay 1        : stop", first["run"]["stop_reason"], "| calls",
-          first["run"]["model_calls"])
-    print("live == replay 1:", transcript(recording["run"]) == transcript(first["run"]))
-    print("replay 1 == 2   :", transcript(first["run"]) == transcript(second["run"]))
-    print("live model calls during the replays:", live_calls_after - live_calls_before)
-    print()
-    print(first["tracer"].render())
+def s08_demo_replay(client, mo, recording, trace_path):
+    with mo.capture_stdout() as _output:
+        live_calls_before = client.calls
+        first = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
+        second = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
+        live_calls_after = client.calls
+        print("recording       :", len(load_records(trace_path)), "JSONL lines")
+        print("replay 1        : stop", first["run"]["stop_reason"], "| calls",
+              first["run"]["model_calls"])
+        print("live == replay 1:", transcript(recording["run"]) == transcript(first["run"]))
+        print("replay 1 == 2   :", transcript(first["run"]) == transcript(second["run"]))
+        print("live model calls during the replays:", live_calls_after - live_calls_before)
+        print()
+        print(first["tracer"].render())
+    mo.plain_text(_output.getvalue())
     return first, live_calls_after, live_calls_before, second
 
 
@@ -203,7 +212,7 @@ def test_s08_replay_is_content_identical_and_makes_no_model_calls(
 def test_s08_stale_recording_is_refused(trace_path):
     stale = SCRIPT[1:]  # the customer's first line changed; the recording is stale
     try:
-        replay_shift(trace_path, stale)
+        replay_shift(trace_path, stale, responder=make_responder([("approve", None)]))
     except ReplayMismatch:
         pass
     else:
@@ -246,12 +255,14 @@ def dead_exporter(payload):
 
 
 @app.cell
-def s08_demo_fail_soft(trace_path):
-    doomed = replay_shift(trace_path, SCRIPT, tracer=Tracer(exporter=dead_exporter))
-    problem = export_fail_soft(doomed["tracer"])
-    print("the shift still ran to:", doomed["run"]["stop_reason"])
-    print("export_fail_soft returned:", problem)
-    print("telemetry degrades; the shift does not.")
+def s08_demo_fail_soft(mo, trace_path):
+    with mo.capture_stdout() as _output:
+        doomed = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(exporter=dead_exporter))
+        problem = export_fail_soft(doomed["tracer"])
+        print("the shift still ran to:", doomed["run"]["stop_reason"])
+        print("export_fail_soft returned:", problem)
+        print("telemetry degrades; the shift does not.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -282,7 +293,7 @@ def time_stamped_note(run):
     process-wide RNG is not an input either.
     """
     return [
-        f"FICHA DEL TURNO - {datetime.datetime.now().isoformat()}",
+        f"SHIFT NOTE - {datetime.datetime.now().isoformat()}",
         f"cerrado: {run['stop_reason']} | turnos: {run['turns_used']}",
         f"tickets: {len(run['state'].fired)}",
         random.choice(FLOURISH),
@@ -321,7 +332,7 @@ def s08_reveal_handover_note(mo):
 @app.function(hide_code=True)
 def solution_handover_note(run, *, clock, rng):
     return [
-        f"FICHA DEL TURNO - {clock()}",
+        f"SHIFT NOTE - {clock()}",
         f"cerrado: {run['stop_reason']} | turnos: {run['turns_used']}",
         f"tickets: {len(run['state'].fired)}",
         rng.choice(FLOURISH),
@@ -339,22 +350,24 @@ def s08_reveal_source_handover_note(mo, reveal_handover_note):
 
 
 @app.cell
-def s08_demo_handover_note(first, second):
-    injected_clock = lambda: "2026-09-17T21:00:00Z"  # noqa: E731 - a fixture literal
-    attempt = attempt_handover_note(
-        first["run"], clock=injected_clock, rng=random.Random(7)
-    )
-    reference = solution_handover_note(
-        first["run"], clock=injected_clock, rng=random.Random(7)
-    )
-    print("teammate's version, lines 1 and 4, two replays of one recording:")
-    print("  ", time_stamped_note(first["run"])[0])
-    print("  ", time_stamped_note(second["run"])[0])
-    print("  ", time_stamped_note(first["run"])[3], "|", time_stamped_note(second["run"])[3])
-    if not attempt:
-        print("Attempt pending: fill in the note before comparing the reference.")
-    else:
-        print("your note matches the reference:", attempt == reference)
+def s08_demo_handover_note(first, mo, second):
+    with mo.capture_stdout() as _output:
+        injected_clock = lambda: "2026-09-17T21:00:00Z"  # noqa: E731 - a fixture literal
+        attempt = attempt_handover_note(
+            first["run"], clock=injected_clock, rng=random.Random(7)
+        )
+        reference = solution_handover_note(
+            first["run"], clock=injected_clock, rng=random.Random(7)
+        )
+        print("teammate's version, lines 1 and 4, two replays of one recording:")
+        print("  ", time_stamped_note(first["run"])[0])
+        print("  ", time_stamped_note(second["run"])[0])
+        print("  ", time_stamped_note(first["run"])[3], "|", time_stamped_note(second["run"])[3])
+        if not attempt:
+            print("Attempt pending: fill in the note before comparing the reference.")
+        else:
+            print("your note matches the reference:", attempt == reference)
+    mo.plain_text(_output.getvalue())
     return
 
 

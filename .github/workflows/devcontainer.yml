@@ -10,6 +10,8 @@ on:
       - ".devcontainer/**"
       - ".vscode/**"
       - ".github/instructions/**"
+      - ".github/agents/**"
+      - "AGENTS.md"
       - ".cursor/rules/**"
       - ".github/workflows/devcontainer.yml"
       - "tools/check_devcontainer.py"
@@ -35,4 +37,10 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           push: never
-          runCmd: COURSE_MODE=stub uv run python -m unittest discover -s tests
+          runCmd: |
+            set -eu
+            export COURSE_MODE=stub
+            export PYTHONPATH="$PWD/tests/no_network_site:$PWD"
+            uv run python -m unittest discover -s tests
+            uv run python -m unittest labs/test_contracts.py
+            uv run python labs/run.py --all --replay

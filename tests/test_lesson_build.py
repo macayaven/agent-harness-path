@@ -96,6 +96,19 @@ class StaticReaderTests(unittest.TestCase):
                 build.render_body(source,'new-lesson')
 
 class SourceLinkTests(unittest.TestCase):
+    def test_first_session_navigation_starts_at_s01_before_the_post_core_overlay(self):
+        titles = {(directory, out): build.render_body(build.page_source(directory, slug), slug)[1]
+                  for directory, slug, out in build.PAGES}
+        nav = build.build_nav('.', build.PAGES, titles)
+        self.assertIn('href="s01-agent-loop/lesson.html"', nav)
+        self.assertNotIn('study-plan.html', nav)
+
+    def test_session_entry_links_do_not_skip_the_hook_and_promise(self):
+        rendered, _ = build.render(build.page_source('.', 'index'), 'index',
+                                    ROOT / 'sessions/index.html', '<nav></nav>')
+        self.assertIn('href="s01-agent-loop/lesson.html"', rendered)
+        self.assertNotIn('lesson.html#the-theory-in-depth', rendered)
+
     def test_py_and_md_hrefs_are_unlinked_but_text_survives(self):
         html = build.unlink_source_hrefs(
             '<p>Open <a href="toy.py"><code>toy.py</code></a> and '
@@ -135,6 +148,6 @@ class SourceLinkTests(unittest.TestCase):
             ROOT / 'sessions/s01-agent-loop/lesson.html', '<nav></nav>',
         )
         self.assertIn('<code>toy.py</code>', s01)
-        self.assertIn('../s02-golden-evals/lesson.html#the-theory-in-depth', s01)
+        self.assertIn('href="../s02-golden-evals/lesson.html"', s01)
 
 if __name__=='__main__':unittest.main()

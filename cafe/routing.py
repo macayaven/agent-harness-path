@@ -1,23 +1,18 @@
-"""S11 - budgets as runtime invariants, routing as policy-as-data.
+"""S11 - a routing-policy and cost simulation over one injected client.
 
-Two rules this module makes mechanical:
-
-  * a call whose *projected* cost would cross the run budget is REFUSED before
-    dispatch, so that cost never lands. The gate reads ahead with an estimate;
-    the ledger records what the endpoint actually reported;
-  * customer card/phone content never routes off-local. A misconfigured table
-    raises before any model call. It never falls back silently.
-
-Nothing here simulates a model. Tokens come from `response["usage"]` and latency
-from `client.last_latency_ms`, both measured on the client the notebook was
-handed. `cafe.evals` (S02) and `cafe.trace` (S08) are imported when present and
-degraded politely when absent, so this session can land before its neighbours.
+Route labels do not select endpoints or guarantee locality. All calls use the
+same configured client. Illustrative rate cards turn reported usage into cost
+estimates, not invoices. A projected overage stops dispatch; missing usage makes
+accounting incomplete, and a budgeted run stops before its next call. A known
+post-call overrun stops later phases but cannot undo the completed call.
 """
 
 from __future__ import annotations
 
 import math
 from typing import Any
+
+from cafe.model import usage_tokens
 
 try:
     from cafe import evals as _evals
@@ -45,6 +40,7 @@ __all__ = [
     "publish",
     "run_phases",
     "validate_policy",
+    "usage_tokens",
 ]
 
 CONTENT = "content"
@@ -60,8 +56,7 @@ PHASES: dict[str, str] = {
 }
 
 # Policy-as-data: a diffable table, reviewable without touching the engine.
-# `model` is the label you booked, `location` is the boundary that cannot move,
-# `usd_per_1k` is what the call costs if it is dispatched.
+# All three fields are illustrative policy data, not transport configuration.
 ROUTES: dict[str, dict] = {
     "local-small": {
         "location": "local",
@@ -87,11 +82,11 @@ ASSUMED_COMPLETION_TOKENS = 120
 
 
 class RouteRefused(RuntimeError):
-    """A route table that would leak content or name an unknown route."""
+    """A table violates the simulated classification policy or names no route."""
 
 
 def validate_policy(route_table: dict[str, str], routes: dict[str, dict] | None = None) -> None:
-    """Refuse a table that sends content off-local, before any model call.
+    """Refuse a simulated content-to-cloud mapping before a model call.
 
     Validated against the SAME mapping the run will use - validating one table
     while running another is no validation. Raises; it does not warn and does
@@ -113,23 +108,24 @@ def validate_policy(route_table: dict[str, str], routes: dict[str, dict] | None 
 
 
 def estimate_prompt_tokens(messages: list[dict]) -> int:
-    """A character-count estimate. The estimate is the gate, the usage is the truth."""
+    """A character-count proxy for a pre-call estimate, not a tokenizer."""
     chars = sum(len(str(message.get("content") or "")) for message in messages)
     return max(1, math.ceil(chars / CHARS_PER_TOKEN))
 
 
 def projected_usd(route: dict, messages: list[dict]) -> float:
-    """What the next call on this route is expected to cost before it is made."""
+    """Pre-call cost estimate using the illustrative rate card."""
     tokens = estimate_prompt_tokens(messages) + ASSUMED_COMPLETION_TOKENS
     return tokens / 1000.0 * route["usd_per_1k"]
 
 
 class Budget:
-    """The run's money: the gate reads it, the post-call meter writes it."""
+    """Known cost estimates; usage_complete distinguishes a full sum from a partial one."""
 
     def __init__(self, budget_usd: float | None = None) -> None:
         self.budget_usd = budget_usd
         self.spent_usd = 0.0
+        self.usage_complete = True
         self.calls: list[dict] = []
 
     def would_exceed(self, projected: float) -> bool:
@@ -155,47 +151,53 @@ def metered_call(
     proves the refusal happened before the wire.
     """
     routes = ROUTES if routes is None else routes
+    validate_policy(route_table, routes)
     budget = budget if budget is not None else Budget()
     name = route_table[phase]
     route = routes[name]
     projected = projected_usd(route, messages)
 
-    if budget.would_exceed(projected):
-        record = {
-            "phase": phase,
-            "route": name,
-            "model": route["model"],
-            "dispatched": False,
-            "refusal": "projected_over_budget",
-            "projected_usd": round(projected, 6),
-            "spent_usd": round(budget.spent_usd, 6),
-            "tokens": None,
-            "cost_usd": None,
-            "latency_ms": None,
-        }
+    record = {
+        "phase": phase, "simulation": True, "route": name, "route_model": route["model"],
+        "client_model": getattr(client, "model", getattr(client, "mode", "unknown")),
+        "dispatched": False, "refusal": None, "projected_usd": round(projected, 6),
+        "spent_usd": budget.spent_usd, "tokens": None, "estimated_cost_usd": None,
+        "usage_known": False, "usage_complete": budget.usage_complete, "estimate_overrun": False,
+        "latency_ms": None,
+    }
+    if budget.budget_usd is not None and not budget.usage_complete:
+        record["refusal"] = "usage_unknown"
+    elif budget.would_exceed(projected):
+        record["refusal"] = "projected_over_budget"
+    if record["refusal"]:
         budget.calls.append(record)
         return record
 
     response = client.chat(messages, tools=tools, temperature=temperature)
-    usage = response.get("usage") or {}
-    tokens = int(usage.get("total_tokens") or 0)
-    cost = round(tokens / 1000.0 * route["usd_per_1k"], 6)
-    budget.spent_usd = round(budget.spent_usd + cost, 6)
-    record = {
-        "phase": phase,
-        "route": name,
-        "model": route["model"],
+    usage = response.get("usage")
+    tokens = usage_tokens(usage)
+    cost = None if tokens is None else round(tokens / 1000.0 * route["usd_per_1k"], 6)
+    if cost is None:
+        budget.usage_complete = False
+    else:
+        budget.spent_usd = round(budget.spent_usd + cost, 6)
+    record.update({
         "dispatched": True,
         "refusal": None,
         "projected_usd": round(projected, 6),
-        "prompt_tokens": usage.get("prompt_tokens"),
-        "completion_tokens": usage.get("completion_tokens"),
+        "prompt_tokens": usage.get("prompt_tokens") if isinstance(usage, dict) else None,
+        "completion_tokens": usage.get("completion_tokens") if isinstance(usage, dict) else None,
         "tokens": tokens,
-        "cost_usd": cost,
+        "estimated_cost_usd": cost,
+        "usage_known": tokens is not None,
+        "usage_complete": budget.usage_complete,
+        "estimate_overrun": cost is not None and cost > projected,
         "latency_ms": getattr(client, "last_latency_ms", None),
         "spent_usd": budget.spent_usd,
         "response": response,
-    }
+    })
+    if isinstance(response.get("model"), str):
+        record["reported_model"] = response["model"]
     budget.calls.append(record)
     return record
 
@@ -208,7 +210,7 @@ def run_phases(
     budget_usd: float | None = None,
     routes: dict[str, dict] | None = None,
 ) -> dict:
-    """Validate, then run `(phase, messages)` pairs until one call is refused."""
+    """Run phases until a refusal, unknown budget accounting, or observed overrun."""
     routes = ROUTES if routes is None else routes
     validate_policy(route_table, routes)
     budget = Budget(budget_usd)
@@ -218,7 +220,13 @@ def run_phases(
             client, route_table, phase, messages, budget=budget, routes=routes
         )
         if not record["dispatched"]:
-            stop_reason = "budget_exceeded"
+            stop_reason = "usage_unknown" if record["refusal"] == "usage_unknown" else "budget_exceeded"
+            break
+        if budget_usd is not None and not budget.usage_complete:
+            stop_reason = "usage_unknown"
+            break
+        if budget_usd is not None and budget.spent_usd > budget_usd:
+            stop_reason = "budget_overrun"
             break
     return {"stop_reason": stop_reason, "budget": budget, "records": list(budget.calls)}
 
@@ -226,7 +234,7 @@ def run_phases(
 def describe_routes(routes: dict[str, dict] | None = None) -> list[str]:
     routes = ROUTES if routes is None else routes
     return [
-        f"{name:14s} {route['location']:5s} ${route['usd_per_1k']:.2f}/1k  {route['model']}"
+        f"simulated {name:14s} {route['location']:5s} illustrative ${route['usd_per_1k']:.2f}/1k  {route['model']}"
         for name, route in routes.items()
     ]
 
@@ -283,6 +291,10 @@ def publish(run: dict, tracer: Any = None) -> Any:
                     record["phase"],
                     kind="generation",
                     route=record["route"],
+                    simulation=True,
+                    client_model=record["client_model"],
+                    route_model=record["route_model"],
+                    usage_known=record["usage_known"],
                     usage={"total_tokens": record["tokens"]},
                 ) as attrs:
                     attrs["latency_ms"] = record["latency_ms"]

@@ -2,6 +2,40 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## 0.6.0-rc.1 — 2026-09-20
+
+Release candidate for maintainer testing and early testers. Full cross-editor
+tutor evaluation and the real learner pilot remain pending; this is not a broad
+public-readiness claim.
+
+Known limitation: the selected VS Code AHP Tutor with Auto (GPT-5.6 Luna) still
+over-explained the S01 answer after refusing code in the focused smoke recheck.
+Tutor enforcement is not verified; see [companion guidance](docs/COMPANION.md).
+
+- Restore consent enforcement through traces, reports and taxonomy; assemble
+  the context actually sent and count only completed compaction probes.
+- Ground price checks in item/quantity evidence, validate judge verdicts, keep
+  schema retry outcomes, and preserve independent labels before answer reveals.
+- Describe S11 as one-client routing simulation with illustrative prices and
+  explicit missing usage; correct lab Run selections and failure statuses.
+- Separate public allergen information from synthetic private supplier
+  references in the hard-path confidentiality exercise.
+- Add the read/search-only AHP Tutor role and remove completion exceptions from
+  the shared Cursor/Copilot policy. Editor behavior needs configuration-specific
+  verification; instructions are not an access-control system.
+- Make offline onboarding and doctor results explicit, test student code in the
+  S06 command, separate networked source checks from guarded runtime CI, and
+  ignore environment files.
+- Update the dated source context for compaction, simulated users, evaluation
+  provenance, retry/idempotency boundaries, MCP tool trust and OTel telemetry.
+  Assign the S02 decision log and clarify artifact-specific S13 prerequisites
+  and the existing code/content license inventory.
+- Re-record all 19 hard-path cassettes for the corrected confidentiality contract;
+  strict replay reproduces the observed naive 2/9 and reference 9/9 baseline.
+- Restore lesson entry navigation, complete notebook text and reactive output
+  clearing. Embed committed notebook SVGs reliably and keep wide lesson tables
+  inside keyboard-accessible scrolling regions.
+
 ## 0.5.0 — 2026-09-19
 
 - Lessons: `toy.py` / `lab.md` references build to plain code, not links — the

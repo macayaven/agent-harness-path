@@ -7,6 +7,7 @@ Copyright 2026 Carlos Crespo Macaya
 The following are licensed under the Apache License 2.0
 (`LICENSES/Apache-2.0.txt`):
 
+- `cafe/**/*.py` (the cumulative course artifact)
 - `sessions/*/toy.py` (toy notebooks)
 - `labs/**/*.py` (optional hard-path client, runner, café host, evals, reference)
 - `tools/*.py` (build, validation and static diagram tooling),
@@ -27,6 +28,8 @@ The following are licensed under Creative Commons Attribution 4.0 International
 - `sessions/README.md`
 - `sessions/*/lesson.html`, `sessions/index.html`, `sessions/study-plan.html`
   (generated lessons), `sessions/*/public/diagrams/*.svg` (rendered diagrams)
+- `sessions/*/public/diagrams/*.mmd` (educational Mermaid source; lesson
+  Mermaid blocks share the lesson's content license)
 - `sessions/*/video.mp4`, `sessions/S00-course-overview.mp4` (Video Overviews
   generated with Google Gemini Notebook, formerly NotebookLM — see
   Third-party below)

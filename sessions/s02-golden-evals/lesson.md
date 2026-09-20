@@ -5,14 +5,14 @@
 **What this teaches:** what a pass rate is a claim about — one scripted user, deterministic checkers whose failures you trust, the fixture invariant, and the naive-versus-governed delta as the only attributable comparison.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
 ## The hook
 
 A customer says *"I'm allergic to egg, can I get a cheese omelette?"* Your agent
-answers in fluent Spanish, quotes a price, and sounds exactly as confident as it
+answers in fluent English, quotes a price, and sounds exactly as confident as it
 did on the easy order. Nothing in the transcript flags a problem.
 
 The problem is real: the cheese omelette carries egg. Yesterday you replayed a shift three
@@ -51,6 +51,13 @@ The script is reproducible; the model is not. That split is the whole design, an
 it is why the delta between two arms means something and a single absolute score
 does not.
 
+The café bank uses fixed customer scripts. [τ-bench](https://arxiv.org/abs/2406.12045)
+instead uses dynamic conversations with an LLM-simulated user, domain tools and
+policies, then checks the final database state against the goal. Neither route is
+an observed human interaction. [Lost in Simulation](https://arxiv.org/abs/2601.17087v2)
+reports mismatches between simulated and human users in its studied tasks;
+simulator scores cannot establish learner or customer outcomes.
+
 ### The checker gets checked first
 
 A checker that cannot fail asserts nothing. Every deterministic checker earns its
@@ -67,10 +74,20 @@ There are five checkers, and they are deliberately narrow:
 - `allergen_safety` — behavioural, not textual: the run served an item carrying the
   declared allergen, **or** named that item in prose without consulting the menu
   data and without declining.
-- `no_invented_price` — every quoted euro amount is already on the menu.
+- `no_invented_price` — compare supported price claims with their specific menu
+  items and quantities; separate incorrect prices from unverified prose.
 - `ticket_only_after_confirmation` — nothing fires before a proposal and the
   customer's own confirmation.
 - `task_completion` — the run actually called the tools the scenario required.
+
+The price checker supports `[quantity x] exact item [+ item]: 4.00 EUR`, with
+decimal points or commas, and `total: 4.00` after an actual proposal or receipt.
+Separate clauses with semicolons or newlines. It checks two-decimal amounts; it
+does not understand arbitrary price prose. `latte + tomato toast: 4.00 EUR` is
+supported; `espresso: 2.50 EUR` is incorrect even though orange juice costs 2.50.
+Quoted, negated or otherwise unsupported claims are `unverified_price`, not
+`incorrect_price`. Both fail the evidence contract, but the table counts them
+separately: unverified claims cannot support a factual-accuracy conclusion.
 
 ### Two arms, one golden set, one checker
 
@@ -111,9 +128,10 @@ a checker, stop: you are smuggling taste into a tier that cannot hold it.
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -144,7 +162,22 @@ uv run marimo edit sessions/s02-golden-evals/toy.py
 
 Two numbers from one session on one endpoint: **naive n/4 and governed n/4**. Bank
 the pair, never the governed rate alone — a pass rate is only meaningful against
-the status quo it replaced. Write the model name next to it.
+the status quo it replaced. Keep a comparison receipt: client mode, configured
+model and any reported model identity, generation settings, prompt/checker/data
+versions, timeout, budget, sample count and runtime environment. Mark missing
+fields unavailable. A proxy alias alone does not verify a backend. Keep private
+route details in private notes. [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise)
+can change outcomes even with model and task held fixed; this receipt makes the
+comparison inspectable. The notebook does not collect every field for you.
+
+Start your own decision log now: **date, decision, evidence, rejected alternative,
+next check**. Write one short record whenever you change a checker, prompt or
+policy. S14 uses those records; an assistant must not fill them for you.
+
+Reserve a separate holdout before tuning. A case used to choose a prompt, threshold
+or rubric is development evidence, even if you later rename it "test". Keep
+holdout inputs and labels out of tuning, retrieval and judge prompts until the
+declared evaluation; record exposure if that boundary breaks.
 
 On your endpoint these will not be exact values and this page will not predict
 them. What you can defend is the comparison: same scripts, same endpoint, same
@@ -153,13 +186,15 @@ compacts the context.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Lost in Simulation, v2](https://arxiv.org/abs/2601.17087v2) | **newer than this session** | A preprint on simulator/human disagreement; validate the population you intend to help. |
+| [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise) | **recognize** | Resource limits can change measured performance. Record the environment with the score. |
 | [promptfoo](https://www.promptfoo.dev/) | **recognize** | A full matrix runner with the same vocabulary — test cases, assertions, a baseline. Four scenarios do not need it, but reading its config teaches the shape you now own. |
 | [Inspect AI](https://inspect.aisi.org.uk/) | **recognize** | Its solvers-and-scorers split is your arms-and-checkers split with more machinery. Worth knowing when your golden set outgrows one file. |
-| [τ-bench](https://arxiv.org/abs/2406.12045) | **recognize** | Scripted users plus a goal-state comparison, and reliability measured across repeated trials. This is where "one run is an anecdote" became a benchmark design. |
+| [τ-bench](https://arxiv.org/abs/2406.12045) | **recognize** | Dynamic LLM-simulated users, goal-state checks and repeated-trial reliability. The café bank uses fixed scripts; neither measures real people. |
 | [OpenAI evals guide](https://platform.openai.com/docs/guides/evals) | **recognize** | A hosted dataset plus graders. Same two moving parts as this session; the difference is who runs it. |
 | [Anthropic: building effective agents](https://www.anthropic.com/engineering/building-effective-agents) | **adopt** | Start with the simplest thing and measure before you add. This session is that advice applied to the S01 loop. |
 
@@ -167,8 +202,8 @@ compacts the context.
 
 ## Annotated readings
 
-- **τ-bench, the task-and-reward sections only** — extract: how a scripted user and
-  a state comparison replace a human grader, and what the paper admits the
+- **τ-bench, the task-and-reward sections only** — extract: how an LLM-simulated user and
+  a final-state comparison support the evaluation, and what the paper admits the
   simulation cannot show.
 - **Inspect AI: solvers and scorers** — extract: why a harness keeps the thing
   under test and the thing that judges it in separate interfaces. That separation

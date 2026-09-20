@@ -1,7 +1,8 @@
 # Documentation map
 
-The course has one public repository. **v0.3.0** supersedes v0.2.0: take it from
-a clone in Cursor ([companion guide](COMPANION.md)).
+The course has one public repository. Take it from a clone in VS Code/Copilot,
+Cursor or native marimo ([companion guide](COMPANION.md)). See
+[the changelog](../CHANGELOG.md) for released versions and pending changes.
 
 ## Start and contribute
 

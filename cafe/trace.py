@@ -1,6 +1,6 @@
 """S08 - observability & replay.
 
-`cafe/loop.run_shift` drives one shift. This module makes that shift observable
+`cafe/consent.run_shift` drives one protected shift. This module makes it observable
 and repeatable:
 
 * `Tracer` builds a tree of spans; a *generation* is a span that also carries the
@@ -29,7 +29,9 @@ import time
 from pathlib import Path
 from typing import Any, Iterator
 
-from cafe.loop import run_shift
+from cafe.consent import run_shift
+from cafe.model import usage_tokens
+from collections.abc import Callable
 
 __all__ = [
     "ReplayMismatch",
@@ -139,7 +141,8 @@ class Tracer:
             extra = ""
             usage = node["attrs"].get("usage")
             if node["kind"] == "generation" and isinstance(usage, dict):
-                extra = f"  ({usage.get('total_tokens')} tok)"
+                count = usage_tokens(usage)
+                extra = f"  ({count} tok)" if count is not None else "  (usage unknown)"
             lines.append(
                 "  " * depth
                 + f"{node['name']} [{node['kind']}] {node['duration_s']:.1f}s{extra}"
@@ -318,6 +321,7 @@ def record_shift(
     user_turns: list[str] | tuple[str, ...],
     path: str | Path,
     *,
+    responder: Callable[[str], tuple[str, Any]],
     tracer: Tracer | None = None,
     span_name: str = "shift",
     **kwargs: Any,
@@ -332,7 +336,7 @@ def record_shift(
     recorder = RecordingClient(client, path)
     traced = TracingClient(recorder, tracer)
     with tracer.span(span_name, script=list(user_turns)):
-        run = run_shift(traced, user_turns, **kwargs)
+        run = run_shift(traced, user_turns, responder, **kwargs)
     return {
         "run": run,
         "tracer": tracer,
@@ -346,6 +350,7 @@ def replay_shift(
     path: str | Path,
     user_turns: list[str] | tuple[str, ...],
     *,
+    responder: Callable[[str], tuple[str, Any]],
     tracer: Tracer | None = None,
     span_name: str = "replay",
     **kwargs: Any,
@@ -355,7 +360,7 @@ def replay_shift(
     player = ReplayClient(path)
     traced = TracingClient(player, tracer)
     with tracer.span(span_name, script=list(user_turns)):
-        run = run_shift(traced, user_turns, **kwargs)
+        run = run_shift(traced, user_turns, responder, **kwargs)
     player.assert_exhausted()
     return {"run": run, "tracer": tracer, "player": player, "traced": traced}
 
@@ -386,15 +391,20 @@ def cited_turns(run: dict) -> list[dict]:
 
 
 def usage_of(tracer: Any) -> dict:
-    """Tokens and seconds summed over a tracer's generations."""
+    """Known tokens and seconds; never silently turn missing usage into zero."""
     tokens = 0
+    complete = True
     latency = 0.0
     for node in tracer.generations():
         usage = node["attrs"].get("usage")
-        if isinstance(usage, dict):
-            tokens += int(usage.get("total_tokens") or 0)
+        count = usage_tokens(usage)
+        if count is not None:
+            tokens += count
+        else:
+            complete = False
         latency += float(node.get("duration_s") or 0.0)
-    return {"total_tokens": tokens, "latency_s": round(latency, 3)}
+    return {"total_tokens": tokens if complete else None, "known_total_tokens": tokens,
+            "usage_complete": complete, "latency_s": round(latency, 3)}
 
 
 def export_fail_soft(tracer: Any) -> str | None:

@@ -21,7 +21,7 @@ from __future__ import annotations
 from typing import Any
 
 from cafe import domain
-from cafe.report import log_events, tool_calls_of
+from cafe.report import fired_ticket, log_events, tool_calls_of
 from cafe.trace import cited_turns
 
 __all__ = [
@@ -37,9 +37,17 @@ __all__ = [
     "check_task",
     "naive_engine",
     "guarded_engine",
+    "labels_ready",
 ]
 
 SEVERITY_WEIGHT: dict[str, int] = {"high": 3, "medium": 2, "low": 1}
+
+
+def labels_ready(labels: dict, expected_ids: set[str], allowed: set[str] | None = None) -> bool:
+    """Only a complete independent attempt unlocks comparison; empty is not done."""
+    return (bool(expected_ids) and isinstance(labels, dict) and set(labels) == expected_ids
+            and all(isinstance(label, str) and bool(label.strip()) and label == label.strip()
+                    and (allowed is None or label in allowed) for label in labels.values()))
 
 # The taxonomy the pile earns. `cafe.judge` (S12) reads these names, so the
 # vocabulary the learner invented here is the one the judge calibrates against.
@@ -59,11 +67,15 @@ def shift_summary(run: dict) -> dict:
         "checked_allergens": False,
     }
     for item in tool_calls_of(run):
+        if item["result"].get("canceled"):
+            continue
+        fired = fired_ticket(item["result"]) if item["name"] == "fire_ticket" else None
+        if item["name"] == "fire_ticket" and fired is None:
+            continue
         summary["tool_log"].append(item["name"])
         if item["name"] == "check_allergens":
             summary["checked_allergens"] = True
         if item["name"] == "fire_ticket":
-            fired = item["result"].get("fired") or {}
             summary["fired"].append(
                 {"items": list(fired.get("items") or []), "table": fired.get("table")}
             )
@@ -79,7 +91,8 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
     """
     summary = shift_summary(run)
     turns = cited_turns(run)
-    fired_calls = [item for item in tool_calls_of(run) if item["name"] == "fire_ticket"]
+    fired_calls = [item for item in tool_calls_of(run)
+                   if item["name"] == "fire_ticket" and fired_ticket(item["result"]) is not None]
     records: list[dict] = []
 
     for expected in dict.fromkeys(script.get("expects", ())):
@@ -102,7 +115,7 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
         )
 
     for item in fired_calls:
-        fired = (item["result"].get("fired") or {}).get("items") or []
+        fired = fired_ticket(item["result"]).get("items") or []
         unavailable = [name for name in fired if name in domain.EIGHTY_SIXED]
         if unavailable:
             _add(
@@ -114,6 +127,9 @@ def detect_failures(run: dict, script: dict) -> list[dict]:
                 _pick_turn(turns, index=item["tool_turn"]),
             )
 
+    if run.get("stop_reason") == "consent_violation":
+        _add(records, script, "high", "the consent gate refused an unapproved action",
+             _pick_turn(turns, last_spoken=True))
     if run.get("stop_reason") == "turn_cap":
         _add(
             records,

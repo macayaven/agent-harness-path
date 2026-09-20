@@ -8,12 +8,14 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import domain
-    from cafe.loop import run_shift
+    from cafe.consent import make_responder, run_shift
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.report import log_events
     from cafe.taxonomy import (
@@ -26,6 +28,7 @@ with app.setup:
         guarded_engine,
         rank,
         shift_summary,
+        labels_ready,
     )
 
 
@@ -63,7 +66,7 @@ def s10_md_hook(mo):
 
 @app.cell(hide_code=True)
 def s10_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### Open coding, then axial coding
@@ -86,15 +89,17 @@ def s10_md_theory(mo):
     pass on the fix; that delta is what makes it worth a slot in the suite.
 
     ![Open coding, axial grouping, count-by-severity ranking; top categories drive fixes](public/diagrams/S10-error-analysis.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 
 @app.cell
-def s10_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s10_demo_client(mo):
+    with mo.capture_stdout() as _output:
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -112,64 +117,66 @@ def s10_md_shifts(mo):
 
 
 @app.cell
-def s10_demo_shifts(client):
-    allergy_item = next(
-        item for item, details in domain.MENU.items() if "milk" in details["allergens"]
-    )
-    unavailable_item = domain.EIGHTY_SIXED[0]
-    plain_item = next(
-        item for item, details in domain.MENU.items() if not details["allergens"]
-    )
-    second_plain_item = next(
-        item
-        for item, details in domain.MENU.items()
-        if not details["allergens"] and item != plain_item
-    )
-
-    shift_scripts = (
-        {
-            "id": "s10-allergy",
-            "user_turns": (
-                f"I'm allergic to milk. Can I order a {allergy_item}?",
-                "OK.",
-                "Nothing else, thanks.",
-                "Thanks.",
-            ),
-            "expects": ("check_allergens",),
-        },
-        {
-            "id": "s10-unavailable",
-            "user_turns": (
-                f"I'd like a {unavailable_item}, please.",
-                "Yes, confirm it.",
-                "To go.",
-                "Thanks.",
-            ),
-            "expects": ("price_check", "propose_order"),
-        },
-        {
-            "id": "s10-plain",
-            "user_turns": (
-                f"A {plain_item} and a {second_plain_item}.",
-                "Yes, that's everything.",
-                "Perfect.",
-                "Thanks.",
-            ),
-            "expects": ("propose_order",),
-        },
-    )
-
-    shifts = []
-    for script in shift_scripts:
-        run = run_shift(client, script["user_turns"], max_turns=3)
-        shifts.append({"script": script, "run": run})
-        summary = shift_summary(run)
-        print(
-            script["id"],
-            "| stop:", run["stop_reason"],
-            "| tools:", ",".join(summary["tool_log"]) or "none",
-            "| events:", len(log_events(run)),
+def s10_demo_shifts(client, mo):
+    with mo.capture_stdout() as _output:
+        allergy_item = next(
+            item for item, details in domain.MENU.items() if "milk" in details["allergens"]
         )
+        unavailable_item = domain.EIGHTY_SIXED[0]
+        plain_item = next(
+            item for item, details in domain.MENU.items() if not details["allergens"]
+        )
+        second_plain_item = next(
+            item
+            for item, details in domain.MENU.items()
+            if not details["allergens"] and item != plain_item
+        )
+
+        shift_scripts = (
+            {
+                "id": "s10-allergy",
+                "user_turns": (
+                    f"I'm allergic to milk. Can I order a {allergy_item}?",
+                    "OK.",
+                    "Nothing else, thanks.",
+                    "Thanks.",
+                ),
+                "expects": ("check_allergens",),
+            },
+            {
+                "id": "s10-unavailable",
+                "user_turns": (
+                    f"I'd like a {unavailable_item}, please.",
+                    "Yes, confirm it.",
+                    "To go.",
+                    "Thanks.",
+                ),
+                "expects": ("price_check", "propose_order"),
+            },
+            {
+                "id": "s10-plain",
+                "user_turns": (
+                    f"A {plain_item} and a {second_plain_item}.",
+                    "Yes, that's everything.",
+                    "Perfect.",
+                    "Thanks.",
+                ),
+                "expects": ("propose_order",),
+            },
+        )
+
+        shifts = []
+        for script in shift_scripts:
+            run = run_shift(client, script["user_turns"], make_responder([("approve", None)]), max_turns=3)
+            shifts.append({"script": script, "run": run})
+            summary = shift_summary(run)
+            print(
+                script["id"],
+                "| stop:", run["stop_reason"],
+                "| tools:", ",".join(summary["tool_log"]) or "none",
+                "| events:", len(log_events(run)),
+            )
+    mo.plain_text(_output.getvalue())
     return (shifts,)
 
 
@@ -187,26 +194,17 @@ def s10_md_harvest(mo):
 
 
 @app.cell
-def s10_demo_harvest(client, shifts):
-    pile = harvest(shifts)
-    if not pile:
-        # A small model can be unexpectedly well behaved. Keep the method alive
-        # with one more real, deliberately capped shift; say so, do not hide it.
-        fallback_script = {
-            "id": "s10-capped",
-            "user_turns": ("An espresso, please.", "Ready?"),
-            "expects": ("propose_order",),
-        }
-        fallback_run = run_shift(client, fallback_script["user_turns"], max_turns=1)
-        shifts.append({"script": fallback_script, "run": fallback_run})
+def s10_demo_harvest(mo, shifts):
+    with mo.capture_stdout() as _output:
         pile = harvest(shifts)
-        print("The first pass produced no failures; one deliberately capped shift was added.")
-
-    print("harvested failures:", len(pile))
-    for record in pile:
-        print(
-            f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
-        )
+        print("harvested failures:", len(pile))
+        if not pile:
+            print("No failures to label in this run; no taxonomy or calibration evidence.")
+        for record in pile:
+            print(
+                f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
+            )
+    mo.plain_text(_output.getvalue())
     return (pile,)
 
 
@@ -262,53 +260,63 @@ def solution_open_code(records):
 
 
 @app.cell(hide_code=True)
-def s10_reveal_source_open_code(mo, reveal_open_code):
+def s10_reveal_source_open_code(mo, open_code_ready, reveal_open_code):
     mo.stop(
-        not reveal_open_code.value,
-        mo.md("*Solution hidden. Flip the switch once you have run your attempt.*"),
+        not (open_code_ready and reveal_open_code.value),
+        mo.md("*Reference hidden. Complete your own labels, then reveal.*"),
     )
     mo.md("```python\n" + inspect.getsource(solution_open_code) + "```")
     return
 
 
 @app.cell
-def s10_demo_attempt(pile):
-    mine = attempt_open_code(pile)
-    reference = solution_open_code(pile)
-    if not mine:
-        print("Attempt pending: implement attempt_open_code before revealing the reference.")
-    else:
-        print("your labels    :", mine)
-        print("reference labels:", reference)
-    return mine, reference
+def s10_demo_attempt(mo, pile):
+    # Cell outputs are replaced on invalidation; console history is retained.
+    with mo.capture_stdout() as _output:
+        mine = attempt_open_code(pile)
+        open_code_ready = labels_ready(mine, {record["id"] for record in pile})
+        if not open_code_ready:
+            print("Attempt pending: supply one nonempty category per record before continuing.")
+        else:
+            print("your labels    :", mine)
+    mo.plain_text(_output.getvalue())
+    return mine, open_code_ready
 
 
 @app.cell
-def s10_demo_labels(mine, pile, reference):
-    expected_ids = {record["id"] for record in pile}
-    attempt_is_complete = bool(mine) and set(mine) == expected_ids
-    if attempt_is_complete:
+def s10_demo_labels(mine, mo, open_code_ready):
+    with mo.capture_stdout() as _output:
+        mo.stop(not open_code_ready, mo.md("*Taxonomy paused until your labels are complete.*"))
         labels = mine
         print("Using your complete labels for the taxonomy.")
-    else:
-        labels = reference
-        print("Attempt pending: using the reference labels so the tour can continue.")
+    mo.plain_text(_output.getvalue())
     return (labels,)
 
 
 @app.cell
-def s10_demo_ranking(labels, pile):
-    ranked = rank(labels, pile)
-    agreement = agreed(labels, pile, classify=classify_naive)
-    print(f"agreement with the auto-filer: {agreement}/{len(pile)}")
-    print(f"{'category':<28}{'n':<4}{'freq × sev':<12}refs")
-    for row in ranked:
-        print(
-            f"{row['category']:<28}{row['count']:<4}{row['weight']:<12}"
-            + ",".join(row["refs"])
-        )
-    top_category = ranked[0]["category"] if ranked else None
-    print("top category:", top_category or "none")
+def s10_demo_reference(mo, open_code_ready, pile, reveal_open_code):
+    with mo.capture_stdout() as _output:
+        mo.stop(not (open_code_ready and reveal_open_code.value), mo.md("*Reference labels hidden.*"))
+        print("reference labels:", solution_open_code(pile))
+    mo.plain_text(_output.getvalue())
+    return
+
+
+@app.cell
+def s10_demo_ranking(labels, mo, pile):
+    with mo.capture_stdout() as _output:
+        ranked = rank(labels, pile)
+        agreement = agreed(labels, pile, classify=classify_naive)
+        print(f"agreement with the auto-filer: {agreement}/{len(pile)}")
+        print(f"{'category':<28}{'n':<4}{'freq × sev':<12}refs")
+        for row in ranked:
+            print(
+                f"{row['category']:<28}{row['count']:<4}{row['weight']:<12}"
+                + ",".join(row["refs"])
+            )
+        top_category = ranked[0]["category"] if ranked else None
+        print("top category:", top_category or "none")
+    mo.plain_text(_output.getvalue())
     return (top_category,)
 
 
@@ -323,31 +331,35 @@ def s10_predict_promotion(mo):
 
 
 @app.cell
-def s10_demo_promotion(labels, pile, top_category):
-    if top_category is None:
-        task = None
-        print("No category to promote: the pile is empty.")
-    else:
-        task = promote(top_category, pile, labels)
-        print("promoted:", task["id"])
-        print("expects :", ", ".join(task["expects"]))
-        print("refs    :", ", ".join(task["refs"]))
+def s10_demo_promotion(labels, mo, pile, top_category):
+    with mo.capture_stdout() as _output:
+        if top_category is None:
+            task = None
+            print("No category to promote: the pile is empty.")
+        else:
+            task = promote(top_category, pile, labels)
+            print("promoted:", task["id"])
+            print("expects :", ", ".join(task["expects"]))
+            print("refs    :", ", ".join(task["refs"]))
+    mo.plain_text(_output.getvalue())
     return (task,)
 
 
 @app.cell
-def s10_demo_engines(task):
-    if task is None:
-        naive_shift = guarded_shift = None
-        naive_result = guarded_result = None
-        print("No promoted task, so no engine comparison.")
-    else:
-        naive_shift = naive_engine(task)
-        guarded_shift = guarded_engine(task)
-        naive_result = check_task(task, naive_shift)
-        guarded_result = check_task(task, guarded_shift)
-        print("naive  :", "PASS" if naive_result[0] else "FAIL", naive_result[1])
-        print("guarded:", "PASS" if guarded_result[0] else "FAIL", guarded_result[1])
+def s10_demo_engines(mo, task):
+    with mo.capture_stdout() as _output:
+        if task is None:
+            naive_shift = guarded_shift = None
+            naive_result = guarded_result = None
+            print("No promoted task, so no engine comparison.")
+        else:
+            naive_shift = naive_engine(task)
+            guarded_shift = guarded_engine(task)
+            naive_result = check_task(task, naive_shift)
+            guarded_result = check_task(task, guarded_shift)
+            print("naive  :", "PASS" if naive_result[0] else "FAIL", naive_result[1])
+            print("guarded:", "PASS" if guarded_result[0] else "FAIL", guarded_result[1])
+    mo.plain_text(_output.getvalue())
     return guarded_result, guarded_shift, naive_result, naive_shift
 
 
@@ -391,8 +403,8 @@ def s10_md_checkpoint(mo):
     ## What this unlocks
 
     You now know which failures recur and have a task that proves the fix. But a
-    taxonomy does not tell you what each check should cost. **[S11 — Budgets &
-    routing](S11-budgets-routing.html)** turns those categories into spending
+    taxonomy does not tell you what each check should cost. **S11 — Budgets &
+    routing** turns those categories into spending
     limits and routing choices.
     """)
     return

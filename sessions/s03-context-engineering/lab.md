@@ -4,9 +4,8 @@
 
 **Hard-path note:** this lab builds the café host in `labs/cafe_host/` — a separate system from the notebook's `cafe/` toy. The session's `companion.md` gives the exact mapping.
 
-**Read:** [S03-context-engineering](lesson.html) and
-the Governance Decay result the lesson cites: in-context constraints die
-across compaction unless they are pinned **and** enforced in code.
+**Read:** [S03-context-engineering](lesson.html) and its distinction between retaining a constraint and enforcing it.
+Pinning preserves text; mandatory boundaries also need code enforcement.
 
 ## Build
 

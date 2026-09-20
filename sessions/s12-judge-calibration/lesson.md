@@ -1,10 +1,10 @@
 # S12-judge-calibration — A judge you have not calibrated is an opinion
 
-**Carried in:** `cafe/routing.py` — S11's route table, its budget gate, and the token and latency numbers it measured on your endpoint. You now know what a call costs; tonight you find out whether the verdict it returns is worth anything.
+**Carried in:** `cafe/routing.py` — S11's route table, its budget gate, and reported usage, accounting completeness and client latency. You now have an illustrative cost estimate; tonight you find out whether the verdict it returns is worth anything.
 **Today you ship:** `cafe/judge.py` — the seeded-defect game, the detection and false-positive rates, and the agreement math.
 **What this teaches:** how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus *before* you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -23,9 +23,9 @@ reported a detection rate, a false-positive rate, and Cohen's κ — with the pa
 uncalibrated rubric next to the pair for a calibrated one, so the change is attributable.
 You will be able to say exactly what that κ licenses and what it does not.
 
-One thing to read before the numbers: **a small local model is often a poor judge.** That is
-the expected finding, not a bug in the notebook — and it is the reason calibration exists
-rather than trust.
+The six-case corpus is an arithmetic demonstration, not release calibration. Measure
+your model rather than assuming it will be good or bad; a release decision needs a larger,
+independently labeled corpus that you did not use to tune the rubric.
 
 ---
 
@@ -83,27 +83,35 @@ gate on.
 
 The harness guarantees the mechanical part: `run_judge_all` returns exactly one verdict per
 transcript, in a fixed, mixed corpus order, so "the defective ones are first" never becomes
-a habit. `parse_verdict` reads whatever the model actually said; output it cannot read
-becomes `unparseable`, which counts as neither a detection nor a clean pass and must never
-be silently turned into "pass".
+a habit. `parse_verdict` requires one JSON object with `verdict`, `class`, and a nonempty
+`rationale`. It rejects extra prose, duplicate keys, unknown classes and contradictions:
+pass requires `none`; fail requires a defect class or `other`. V1 uses `other` for its
+intentionally poor style criterion. Invalid output becomes `unparseable`, never pass.
+
+The request includes menu facts separately from the transcript and treats transcript
+instructions as evidence. Add approval/tool facts for each real run when available.
+Report valid-output coverage alongside detection and false positives, which retain
+the full defective/clean denominators. Zero alarms with zero valid outputs is no
+evidence of quality.
 
 ### Calibration is a property of the pair
 
 The rubric and the model are one instrument. v1 of the rubric is strict, style-sensitive,
 and told to distrust short answers — the judge most people ship on the first try. v2 spells
 out S10's failure classes and deletes the style bias, with the same model and the same
-corpus. The claim this session makes is deliberately narrow: the calibrated rubric does not
-produce **more** false alarms than the uncalibrated one on the same corpus. It promises
-nothing about detection, because a better rubric is not a better model.
+corpus. Compare both rates and coverage on the same corpus. Either rubric can perform worse;
+the direction is an observation, not an assertion. Changing a rubric does not prove
+that its model improved.
 
 ---
 
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -112,16 +120,17 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 ```
 
 1. **Read the corpus.** Six clean café transcripts in a fixed, mixed order; three of them
-   carry exactly one seeded defect. The key stays out of the notebook until the labeling
-   section. Read a couple before you go on.
-2. **Judge v1.** One pass/fail verdict per transcript, JSON out. This rubric is deliberately
-   uncalibrated: strict, style-sensitive, told to distrust short answers.
-3. **Hand-label first — this is the protocol, not a warm-up.** Before you see more judge
-   output, label all six transcripts yourself in `attempt_hand_labels` against the rubric.
-   Then flip the reveal switch for the seed-derived reference. A verdict you have already
-   seen anchors your label, and an anchored label measures the judge's influence on you,
-   not the judge.
-4. **Predict the pair.** Before the calibration cell, write down how many defective
+   carry exactly one seeded defect. All six are displayed for your
+   independent reading. Key-derived results stay hidden until labels are complete
+   and the separate reveal switch is on.
+2. **Hand-label first — this is the protocol, not a warm-up.** Fill
+   `attempt_hand_labels` with pass/fail for every ID against the three factual
+   defects. Use the menu facts; brevity and style are not defects. Blank, partial,
+   invalid or cleared labels pause every judge call and its dependent results.
+3. **Judge v1, then reveal separately.** Once labels are complete, the deliberately
+   strict, style-sensitive rubric can run. The seed key, missed-ID lists and
+   key-derived comparisons remain hidden until you also turn on the reveal switch.
+4. **Predict the pair.** Before completing the label cell, write down how many defective
    transcripts judge v1 will catch and how many clean ones it will fail. Detection and
    false positives are reported together, because either alone is half a number.
 5. **Read the misses, then judge v2.** The v1 misses are not mysteries; they are classes.
@@ -130,32 +139,39 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 6. **κ both ways.** `cohens_kappa` compares the judge vectors with the reference labels. If
    both vectors are constant, it returns `None` and the notebook prints "undefined" — the
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
-   vectors, every transcript gets exactly one verdict, and the calibrated rubric's
-   false-positive rate does not worsen.
+   vectors, every transcript gets exactly one verdict, and the rates and coverage retain their denominators.
 7. **Price the twelve calls.** Calibration cost two rubrics over six transcripts.
-   The cost cell rebuilds each call's messages exactly and projects them on S11's
-   route table — worth-it is a question with two numbers, and now you have both.
+   The cost cell rebuilds each call's messages exactly and estimates them using S11's illustrative
+   rate card, without changing the actual client — worth-it is a question with two numbers, and now you have both.
 
 ---
 
 ## Checkpoint — the number you bank
 
 Put this in one sentence and defend it: **6 transcripts, 3 seeded defects, detection n/3,
-false positives n/3, κ = …** for the calibrated rubric — with the uncalibrated pair next to
+false positives n/3, valid outputs n/6, κ = …** for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
-Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
+Bank the projected calibration cost next to the κ: twelve calls estimated with S11's illustrative table.
 A verdict is worth what it measures minus what it cost to get.
+Keep [S02's comparison receipt](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank),
+including model/configuration, prompt/checker/data versions, timeout, budget,
+sample count and environment. Tune on development examples, then freeze the
+rubric before an independently labeled holdout. The six teaching transcripts
+cannot serve both roles. If you generated a wider corpus with simulated users,
+label that provenance: [Lost in Simulation](https://arxiv.org/abs/2601.17087v2)
+shows why simulator evidence should not stand in for observations from people.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Lost in Simulation, v2](https://arxiv.org/abs/2601.17087v2) | **newer than this session** | Separate synthetic-corpus calibration from evidence about human users; protect an independently labeled holdout. |
 | [Hamel Husain — Creating a LLM-as-a-Judge that drives business results](https://hamel.dev/blog/posts/llm-judge/) | **already in this path** | The method behind this session: label your own corpus first, report agreement as a pair, and never trust a judge you have not measured. |
 | [Cohen's κ — overview](https://en.wikipedia.org/wiki/Cohen%27s_kappa) | **recognize** | Chance-corrected agreement. Note the degenerate case: κ is undefined, not 1.0, when the chance term is 1. |
-| [Cohen 1960 — A Coefficient of Agreement for Nominal Scales](https://doi.org/10.2307/2529310) | **recognize** | The original definition your helper implements. Read the assumption your constant-vector guard protects. |
+| [Cohen 1960 — A Coefficient of Agreement for Nominal Scales](https://doi.org/10.1177/001316446002000104) | **recognize** | The original definition your helper implements. Read the assumption your constant-vector guard protects. |
 | [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685) | **recognize** | Documents the judge's known biases — position, verbosity, self-enhancement. Small models are more susceptible, which is why this session expects a poor judge. |
 | [Anthropic — Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) | **adopt** | Judged criteria stay labeled uncalibrated until you have the rates. This session is the calibration that lets a judged tier count. |
 
@@ -191,7 +207,7 @@ Detection 3/3 and false positives 3/3. It detects everything and flags everythin
 When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. `None` means "undefined", and the notebook prints it that way.</details>
 
 <details><summary>The calibrated rubric holds the false-positive rate but the detection rate drops. Did calibration fail?</summary>
-No — and the session only claims what it measured. The claim is relative and inside one session: the calibrated rubric does not produce more false alarms than the uncalibrated one on the same corpus. It promises nothing about detection, because you changed the rubric, not the model.</details>
+It is a tradeoff to inspect, not an automatic success. Compare detection, false positives and valid-output coverage on both rubrics. Either rubric can perform worse; six cases do not establish release quality.</details>
 
 ---
 

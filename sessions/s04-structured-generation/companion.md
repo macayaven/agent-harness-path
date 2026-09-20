@@ -11,7 +11,10 @@ lab: `sessions/s04-structured-generation/lab.md`, `labs/cafe_host/tools.py`
 
 ## The gap
 
-The core toy runs live, validates a ticket, and retries. The café host’s
+The core toy validates a ticket and retries through the model seam. Its checkpoint
+compares first-attempt shape and meaning, then final acceptance separately;
+`ask_ticket_run` retains the errors a successful repair would otherwise hide.
+The café host’s
 `propose_order` already:
 
 - Builds a spec dict from tool arguments.
@@ -33,7 +36,7 @@ shipped host, p01 engine already PASSes.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s04-structured-generation/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s04 --replay   # includes p01

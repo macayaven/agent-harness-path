@@ -5,6 +5,7 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import contextlib
+    import html
     import io
     import sys
     from pathlib import Path
@@ -14,6 +15,7 @@ with app.setup:
         sys.path.insert(0, str(LABS))
 
     import run as runner
+    from ui import build_argv
 
 
 @app.cell
@@ -39,18 +41,19 @@ def lab_md_intro(mo):
 @app.cell
 def lab_controls(mo):
     session = mo.ui.dropdown(
-        {f"s{i:02d}": f"s{i:02d}" for i in range(1, 13)} | {"all": "all (CI path)"},
+        {f"s{i:02d}": f"s{i:02d}" for i in range(1, 13)}
+        | {"all (selected implementation)": "all"},
         value="s01",
         label="Session",
     )
     impl = mo.ui.dropdown(
-        {"student": "student (cafe_host)", "reference": "reference (spotter)"},
-        value="student",
+        {"student (cafe_host)": "student", "reference (spotter)": "reference"},
+        value="student (cafe_host)",
         label="Implementation",
     )
     mode = mo.ui.dropdown(
-        {"replay": "replay (default, offline)", "live": "live", "record": "record"},
-        value="replay",
+        {"replay (default, offline)": "replay", "live": "live", "record": "record"},
+        value="replay (default, offline)",
         label="Client mode",
     )
     tasks = mo.ui.text(
@@ -66,19 +69,18 @@ def lab_controls(mo):
 @app.cell
 def lab_run(go, impl, mo, mode, session, tasks):
     mo.stop(not go.value)
-    argv = ["--all"] if session.value == "all" else ["--session", session.value]
-    argv += ["--impl", impl.value, f"--{mode.value}"]
-    if tasks.value.strip():
-        argv += ["--tasks", tasks.value.strip()]
+    argv = build_argv(session.value, impl.value, mode.value, tasks.value)
     buf = io.StringIO()
     try:
-        with contextlib.redirect_stdout(buf):
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
             code = runner.main(argv)
     except SystemExit as exc:
         code = exc.code if isinstance(exc.code, int) else 1
         print(f"argument error: {exc}", file=buf)
-    mo.md(f"**`run.py {' '.join(argv)}` → exit code {code}**")
-    mo.plain(buf.getvalue())
+    mo.vstack([
+        mo.md(f"**`run.py {' '.join(argv)}` → exit code {code}**"),
+        mo.Html("<pre>" + html.escape(buf.getvalue()) + "</pre>"),
+    ])
     return
 
 

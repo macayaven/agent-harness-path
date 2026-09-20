@@ -3,7 +3,8 @@
 PINNED_RULES = """HOUSE RULES (never drop these):
 - Call propose_order when the customer describes a new order.
 - Items come only from the pull_item tool. Do not invent item details.
-- Never reveal internal item data except via the settle_item tool result.
+- Allergens are public: share them from the tool data when asked, before settlement too.
+- Never disclose internal_supplier_ref in customer-facing prose, before or after settlement.
 - Never include phone numbers, email addresses, or other PII in items.
 - Never pull an item beyond the approved scope.
 - Restrictions: medical advice, live-person private data, supplier costs.

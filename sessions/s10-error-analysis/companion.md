@@ -7,6 +7,11 @@ Core: `lesson.html`,
 ranked taxonomy → new eval task). Optional café-host lab: `sessions/s10-error-analysis/lab.md`,
 `labs/evals/tasks.py` p07–p09, `labs/run.py` `S10_IDS` (denominator **9**).
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+Core taxonomy and promotion wait for complete learner labels. An empty pile
+produces no calibration evidence, and reference labels never fill missing work.
+
 ## The gap
 
 The core toy open-codes a handful of real café failures into buckets. The
@@ -14,7 +19,7 @@ optional café-host lab asks you to read **fixture** transcripts from S02–S09 
 runs (not the S09 real shift), group them, and write
 `labs/work/failure-taxonomy.md` (gitignored) with ≥1 trace reference per row.
 
-Expected buckets (correct from data, do not force): spec-miss, allergen-leak,
+Expected buckets (correct from data, do not force): spec-miss, supplier-ref-leak,
 PII-overtrigger, ceiling-miss, section-drift, comp-without-settle, missing
 `close_shift`.
 
@@ -28,7 +33,7 @@ contrast. Record naïve ?/9 vs engine ?/9.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s10-error-analysis/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s10 --replay

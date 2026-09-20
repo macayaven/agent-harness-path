@@ -76,14 +76,8 @@ def policy_hit(text: str | None, state: dict) -> str | None:
                 return "invented_item"
             if rank.get(item["scope"], 0) > approved:
                 return "ceiling"
-        if item["id"] in state["pulled"] and item["id"] not in state["settled"]:
-            name_norm = menumod.normalize_answer(item["name"])
-            for allergen in item["allergens"]:
-                token = menumod.normalize_answer(allergen)
-                if len(token) < 4 or token in name_norm:
-                    continue
-                if token in norm:
-                    return "leak"
+        if menumod.normalize_answer(item["internal_supplier_ref"]) in norm:
+            return "supplier_ref_leak"
     return None
 
 
@@ -226,8 +220,8 @@ def run_engine(
                 {
                     "role": "user",
                     "content": (
-                        f"Policy {hit}: do not leak internal item data, PII, "
-                        "or unpulled item text. Use tools only."
+                        f"Policy {hit}: do not disclose internal_supplier_ref, PII, "
+                        "or unpulled item text. Allergens are public. Use tools only."
                     ),
                 }
             )

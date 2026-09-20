@@ -8,11 +8,13 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import context, domain
+    from cafe.figures import embed_figures
     from cafe.model import get_client
 
 
@@ -67,30 +69,32 @@ def s03_md_client(mo):
 
 
 @app.cell
-def s03_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s03_demo_client(mo):
+    with mo.capture_stdout() as _output:
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
 @app.cell(hide_code=True)
 def s03_md_window(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## A window you have to fit, and a wall you cannot cross
 
     Two numbers, and they are different kinds of number.
 
     - `BUDGET` is what the harness *aims* to stay under. It is yours to set.
-    - `HARD_LIMIT` is the model's real window. Cross it and the API answers a
-      `400`, not a degradation. No policy saves you from that one.
+    - `HARD_LIMIT` is a teaching limit over a word-count proxy. The guard stops
+      before dispatch; it is not a measurement of the endpoint's token window.
 
     Compaction happens when the conversation outgrows the budget. **It rewrites the
     stored history** — what gets dropped is gone from every later turn too, not
     just from this request. That is what makes it dangerous.
 
     ![Over budget, compact; past the hard limit the call fails instead of degrading](public/diagrams/s03-window.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 
@@ -106,51 +110,57 @@ def s03_predict_boundary(mo):
 
 
 @app.cell
-def s03_demo_boundary():
-    _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
-    _history += [
-        {"role": "user", "content": f"Question {index} about the menu and today's service."}
-        for index in range(20)
-    ]
-    print(f"before compaction: {context.tokens(_history)} tokens, "
-          f"rule present: {context.rule_is_present(_history)}\n")
-    print(f"{'policy':<11} {'compacted':<11} {'tokens':<8} rule survives")
-    for _name, _policy in context.POLICIES.items():
-        _new, _compacted = _policy(_history, context.BUDGET_DEFAULT)
-        print(f"{_name:<11} {str(_compacted):<11} {context.tokens(_new):<8} "
-              f"{context.rule_is_present(_new)}")
-    print("\nThe transcript reads fine for every row. Only one row still governs.")
+def s03_demo_boundary(mo):
+    with mo.capture_stdout() as _output:
+        _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
+        _history += [
+            {"role": "user", "content": f"Question {index} about the menu and today's service."}
+            for index in range(20)
+        ]
+        print(f"before compaction: {context.tokens(_history)} words (proxy), "
+              f"rule present: {context.rule_is_present(_history)}\n")
+        print(f"{'policy':<11} {'compacted':<11} {'words':<8} rule survives")
+        for _name, _policy in context.POLICIES.items():
+            _new, _compacted = _policy(_history, context.BUDGET_DEFAULT)
+            print(f"{_name:<11} {str(_compacted):<11} {context.tokens(_new):<8} "
+                  f"{context.rule_is_present(_new)}")
+        print("\nRetained text is visible here. Whether it governs requires the behavioral probe.")
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
-def test_s03_buried_rule_dies_pinned_rule_survives():
-    _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
-    _history += [
-        {"role": "user", "content": f"Question {index} about the menu and today's service."}
-        for index in range(20)
-    ]
-    _buried, _compacted = context.policy_truncate(_history, context.BUDGET_DEFAULT)
-    _kept, _ = context.policy_pinned(_history, context.BUDGET_DEFAULT)
-    assert _compacted, "the fixture must be long enough to compact"
-    assert not context.rule_is_present(_buried), "the unpinned rule should have died"
-    assert context.rule_is_present(_kept), "the pinned rule must survive"
-    print(f"buried: {context.tokens(_buried)} tokens, rule gone | "
-          f"pinned: {context.tokens(_kept)} tokens, rule kept")
+def test_s03_buried_rule_dies_pinned_rule_survives(mo):
+    with mo.capture_stdout() as _output:
+        _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
+        _history += [
+            {"role": "user", "content": f"Question {index} about the menu and today's service."}
+            for index in range(20)
+        ]
+        _buried, _compacted = context.policy_truncate(_history, context.BUDGET_DEFAULT)
+        _kept, _ = context.policy_pinned(_history, context.BUDGET_DEFAULT)
+        assert _compacted, "the fixture must be long enough to compact"
+        assert not context.rule_is_present(_buried), "the unpinned rule should have died"
+        assert context.rule_is_present(_kept), "the pinned rule must survive"
+        print(f"buried: {context.tokens(_buried)} words (proxy), rule gone | "
+              f"pinned: {context.tokens(_kept)} words (proxy), rule kept")
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
-def test_s03_keep_all_overflows_the_window(client):
+def test_s03_keep_all_overflows_the_window(client, mo):
     # hard_limit=1 trips the guard before the first model call, so this cell
     # costs nothing no matter which endpoint is behind the seam.
-    try:
-        context.drive(client, context.POLICIES["keep_all"], 1, hard_limit=1)
-    except context.ContextWindowExceeded as exc:
-        assert "context_length_exceeded" in str(exc)
-    else:
-        raise AssertionError("keep_all was allowed past the hard limit")
-    print("keep_all cannot dodge the window: the 400 is structural, not probabilistic")
+    with mo.capture_stdout() as _output:
+        try:
+            context.drive(client, context.POLICIES["keep_all"], 1, hard_limit=1)
+        except context.ContextWindowExceeded as exc:
+            assert "context_length_exceeded" in str(exc)
+        else:
+            raise AssertionError("keep_all was allowed past the hard limit")
+        print("keep_all exceeds the teaching limit before any endpoint call")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -180,7 +190,7 @@ def attempt_keep_rule(history, budget):
 def s03_predict_keep_rule(mo):
     mo.md(r"""
     **Predict first:** what is the cheapest thing you can change that keeps the rule
-    across the boundary? Guess the token cost it adds to *every* request — then run
+    across the boundary? Guess the word-count cost it adds to *every* request — then run
     the fixture and check whether the surviving history fits the budget at all.
     """)
     return
@@ -211,27 +221,29 @@ def s03_reveal_source_keep_rule(mo, reveal_keep_rule):
 
 
 @app.cell
-def s03_demo_compare():
-    _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
-    _history += [
-        {"role": "user", "content": f"Question {index} about the menu and today's service."}
-        for index in range(20)
-    ]
-    mine = attempt_keep_rule(_history, context.BUDGET_DEFAULT)
-    if mine is None:
-        print(
-            "Attempt pending: write attempt_keep_rule, then compare it with the "
-            "reference on the same fixture."
-        )
-    else:
-        _new, _compacted = mine
-        print("your policy  : compacted", _compacted, "| tokens", context.tokens(_new),
-              "| rule present", context.rule_is_present(_new))
-        _ref, _ref_compacted = solution_keep_rule(_history, context.BUDGET_DEFAULT)
-        print("reference    : compacted", _ref_compacted, "| tokens", context.tokens(_ref),
-              "| rule present", context.rule_is_present(_ref))
-        print("rule rent    :", context.tokens([context.rule_message()]),
-              "tokens on every request, forever")
+def s03_demo_compare(mo):
+    with mo.capture_stdout() as _output:
+        _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
+        _history += [
+            {"role": "user", "content": f"Question {index} about the menu and today's service."}
+            for index in range(20)
+        ]
+        mine = attempt_keep_rule(_history, context.BUDGET_DEFAULT)
+        if mine is None:
+            print(
+                "Attempt pending: write attempt_keep_rule, then compare it with the "
+                "reference on the same fixture."
+            )
+        else:
+            _new, _compacted = mine
+            print("your policy  : compacted", _compacted, "| words (proxy)", context.tokens(_new),
+                  "| rule present", context.rule_is_present(_new))
+            _ref, _ref_compacted = solution_keep_rule(_history, context.BUDGET_DEFAULT)
+            print("reference    : compacted", _ref_compacted, "| words (proxy)", context.tokens(_ref),
+                  "| rule present", context.rule_is_present(_ref))
+            print("rule rent    :", context.tokens([context.rule_message()]),
+                  "tokens on every request, forever")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -246,10 +258,11 @@ def s03_md_measure(mo):
     same endpoint, in the same session — the only difference is what survived
     compaction.
 
-    The honest assertion here is relative: pinning never does *worse* than burying.
-    With a live model both rates move; the ordering should not. We print the spread
-    instead of asserting an absolute score, because a live endpoint is allowed to
-    have a bad day.
+    Pinning guarantees retained text, not a better observed rate. Report the
+    ordering you measured, including reversals and sample counts. A policy that
+    reaches the teaching limit reports its stop. Rates use answered probes;
+    capped probes are counted separately, without inventing a safety violation.
+    An answered turn reached a final reply; that alone does not prove usefulness.
     """)
     return
 
@@ -266,27 +279,33 @@ def s03_predict_survival(mo):
 
 
 @app.cell
-def s03_demo_survival(client):
-    survival = context.survival_table(client)
-    print(f"{'policy':<11} {'boundary':<10} {'before':<10} {'after':<10} probes")
-    for _name, _row in survival.items():
-        _before = "—" if _row["before_rate"] is None else f"{_row['before_rate']:.0%}"
-        _after = "—" if _row["after_rate"] is None else f"{_row['after_rate']:.0%}"
-        print(f"{_name:<11} {str(_row['boundary'] or '—'):<10} {_before:<10} "
-              f"{_after:<10} {_row['probes']}")
-    print("\nA rate is only a claim if you can say what it was measured on: same "
-          "script,\nsame endpoint, same checker, one policy different.")
+def s03_demo_survival(client, mo):
+    with mo.capture_stdout() as _output:
+        survival = context.survival_table(client)
+        print(f"{'policy':<11} {'boundary':<10} {'before':<10} {'after':<10} probes | status")
+        for _name, _row in survival.items():
+            _before = "—" if _row["before_rate"] is None else f"{_row['before_rate']:.0%}"
+            _after = "—" if _row["after_rate"] is None else f"{_row['after_rate']:.0%}"
+            print(f"{_name:<11} {str(_row['boundary'] or '—'):<10} {_before:<10} "
+                  f"{_after:<10} {_row['probes']}/{_row['attempted_probes']} answered probes; "
+                  f"{_row['capped_probes']} capped | {_row['stop_reason']} "
+                  f"({_row['completed_turns']} answered / {_row['processed_turns']} processed / "
+                  f"{_row['requested_turns']} requested turns; {_row['capped_turns']} capped)")
+        print("\nA rate is only a claim if you can say what it was measured on: same "
+              "script,\nsame endpoint, same checker, one policy different.")
+    mo.plain_text(_output.getvalue())
     return (survival,)
 
 
 @app.cell
-def test_s03_pinned_never_worse_than_buried(survival):
-    pinned = survival["pinned"]["overall_rate"]
-    buried = survival["truncate"]["overall_rate"]
-    assert pinned is not None and buried is not None, survival
-    assert pinned >= buried, survival
-    print(f"pinned {pinned:.0%} vs buried {buried:.0%} over "
-          f"{survival['pinned']['probes']} probes — pinning never does worse")
+def test_s03_probe_rates_are_observations(mo, survival):
+    with mo.capture_stdout() as _output:
+        for name, row in survival.items():
+            rate = row["overall_rate"]
+            assert rate is None or 0 <= rate <= 1, (name, row)
+            assert row["probes"] >= 0, (name, row)
+        print("Observed rates may reverse; pinning guarantees retained text, not compliance.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -296,9 +315,10 @@ def s03_md_checkpoint(mo):
     ## Checkpoint — the number you bank
 
     Bank **probe survival after the boundary, per policy**: `truncate` vs
-    `summarize` vs `pinned`, over the probes the script produced. State it as a
-    pair (policy, rate) and name the rent you paid for the best one — the pinned
-    rule rides every single request.
+    `summarize` vs `pinned`, over answered probes. Bank answered/attempted probe
+    counts and capped turns beside the rate; zero answered probes gives no rate.
+    Name the rent you paid for the best policy — the pinned rule rides every
+    single request.
 
     ## What this unlocks
 

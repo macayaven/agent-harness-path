@@ -33,7 +33,6 @@ MERMAID_RE = re.compile(
 # (directory relative to sessions/, SNN slug, output file name).
 PAGES = [
     (".", "index", "index.html"),
-    (".", "study-plan", "study-plan.html"),
     ("s01-agent-loop", "S01-agent-loop", "lesson.html"),
     ("s02-golden-evals", "S02-golden-evals", "lesson.html"),
     ("s03-context-engineering", "S03-context-engineering", "lesson.html"),
@@ -48,20 +47,8 @@ PAGES = [
     ("s12-judge-calibration", "S12-judge-calibration", "lesson.html"),
     ("s13-rebuild-from-memory", "S13-rebuild-from-memory", "lesson.html"),
     ("s14-ship-and-pilot", "S14-ship-and-pilot", "lesson.html"),
+    (".", "study-plan", "study-plan.html"),
 ]
-
-READ_FRAGMENTS = {
-    slug: 'the-protocol' if slug.startswith(('S13-', 'S14-'))
-    else 'the-theory-in-depth'
-    for _, slug, _ in PAGES
-    if slug.startswith('S')
-}
-
-# Cross-session lesson links in sources, e.g. ../s02-golden-evals/lesson.html.
-LOCAL_LESSON_HREF_RE = re.compile(
-    r'(?P<prefix>href=")(?P<path>(?:\.\./)*'
-    r'(?P<session>s[0-9]{2}-[a-z0-9-]+)/lesson\.html)(?P<suffix>")'
-)
 
 # Source-file links (toy.py, lab.md, ...) must not stay clickable in the
 # built lesson: the preview server hands them out as plain text, outside
@@ -101,25 +88,16 @@ def rel_href(from_dir: str, to_dir: str, to_file: str) -> str:
     return f"../{to_dir}/{to_file}"
 
 
-def canonical_lesson_hrefs(rendered: str) -> str:
-    """Give cross-page lesson links the manifest's canonical read fragment."""
-    def replace(match: re.Match[str]) -> str:
-        slug = "S" + match.group("session")[1:]
-        fragment = READ_FRAGMENTS.get(slug)
-        if fragment is None:
-            return match.group(0)
-        return (
-            f'{match.group("prefix")}{match.group("path")}#{fragment}'
-            f'{match.group("suffix")}'
-        )
-
-    return LOCAL_LESSON_HREF_RE.sub(replace, rendered)
-
-
 def render_body(source: Path, slug: str) -> tuple[str, str, int]:
     """Convert one source file; return (body HTML, H1 title, mermaid count)."""
     MD.reset()
     body = MD.convert(source.read_text(encoding="utf-8"))
+    body = re.sub(
+        r"(<table>.*?</table>)",
+        r'<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0">\1</div>',
+        body,
+        flags=re.S,
+    )
     if slug in STATIC_LESSONS:
         indices = count()
         body, n = MERMAID_RE.subn(
@@ -140,11 +118,12 @@ def render_body(source: Path, slug: str) -> tuple[str, str, int]:
 
 
 def build_nav(directory: str, order: list[tuple[str, str, str]],
-              titles: dict[str, str]) -> str:
+              titles: dict[tuple[str, str], str], *, filename: str | None = None) -> str:
     """Prev/index/next bar. Index gets only the forward link; the last
     lesson gets no next. Link labels are the targets' rendered H1s."""
     keys = [(d, f) for d, _, f in order]
-    i = keys.index((directory, out_name(directory)))
+    filename = out_name(directory) if filename is None else filename
+    i = keys.index((directory, filename))
     prev_link = index_link = next_link = ""
     if i > 0:
         prev_dir, prev_file = keys[i - 1]
@@ -152,7 +131,7 @@ def build_nav(directory: str, order: list[tuple[str, str, str]],
             f'<a href="{rel_href(directory, prev_dir, prev_file)}">'
             f"&larr; Prev: {titles[keys[i - 1]]}</a>"
         )
-    if directory != "." or out_name(directory) != "index.html":
+    if (directory, filename) != (".", "index.html"):
         index_link = (
             f'<a href="{rel_href(directory, ".", "index.html")}">Index</a>'
         )
@@ -186,7 +165,7 @@ def render(source: Path, slug: str, out: Path, nav: str) -> tuple[str, int]:
         .replace("{{ body }}", body)
         .replace("{{ source }}", str(source.relative_to(ROOT)))
     )
-    return unlink_source_hrefs(canonical_lesson_hrefs(rendered)), n
+    return unlink_source_hrefs(rendered), n
 
 
 def main() -> int:
@@ -213,7 +192,7 @@ def main() -> int:
         source = page_source(directory, slug)
         out_path = SESSIONS / directory / out
         html, n_mermaid = render(
-            source, slug, out_path, build_nav(directory, order, titles))
+            source, slug, out_path, build_nav(directory, order, titles, filename=out))
         if slug == "index":
             html = rewrite_overview_href(html)
         if n_mermaid == 0 and slug != "index":

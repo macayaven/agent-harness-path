@@ -7,6 +7,9 @@ Core: `lesson.html`,
 citation validators). Optional café-host lab: `sessions/s09-evidence-reports/lab.md`,
 `build_debrief` in `labs/cafe_host/engine.py`, p06 checker.
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+
 ## The gap
 
 The core toy builds a depleted-reader café debrief with turn citations. The
@@ -23,7 +26,7 @@ the raw transcript to see if the debrief lied.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s09-evidence-reports/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s09 --replay   # p06

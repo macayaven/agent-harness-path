@@ -263,12 +263,11 @@ def main(argv: list[str] | None = None) -> int:
             if mode == "replay":
                 client.assert_exhausted()
             print("PASS s01 shift" if used_tools else "FAIL s01 shift: no tools")
-            if not used_tools and impl == "reference":
+            if not used_tools:
                 exit_code = 1
         except NotImplementedError as exc:
             print(f"s01 shift skipped (not implemented): {exc}")
-            if impl == "reference":
-                exit_code = 1
+            exit_code = 1
         except (ReplayMismatch, RouteRefused) as exc:
             print(f"FAIL s01 shift: {exc}")
             exit_code = 1
@@ -278,13 +277,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.all or args.session == "s03":
         pin = run_pin_test(engine)
         print(pin)
-        if pin.startswith("FAIL") and impl == "reference":
+        if pin.startswith("FAIL"):
             exit_code = 1
 
     if args.all or args.session == "s06":
         medical = run_medical_gate(engine)
         print(medical)
-        if medical.startswith("FAIL") and impl == "reference":
+        if medical.startswith("FAIL"):
             exit_code = 1
 
     if args.all or (args.session and SESSION_TASKS.get(args.session)):
@@ -309,8 +308,7 @@ def main(argv: list[str] | None = None) -> int:
                         "pass": False,
                         "reason": f"not implemented: {exc}",
                     }
-                    if impl == "reference":
-                        exit_code = 1
+                    exit_code = 1
                 except (ReplayMismatch, RouteRefused) as exc:
                     row = {
                         "task_id": task.id,
@@ -322,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
                 rows.append(row)
                 flag = "PASS" if row["pass"] else "FAIL"
                 print(f"{row['task_id']} {row['run_mode']}: {flag} ({row.get('reason', '')})")
-                if impl == "reference" and run_mode == "engine" and not row["pass"]:
+                if run_mode == "engine" and not row["pass"]:
                     exit_code = 1
 
     if args.all or args.session == "s11":
@@ -339,8 +337,7 @@ def main(argv: list[str] | None = None) -> int:
             print("PASS s11: cloud route refused")
         except NotImplementedError:
             print("s11 refuse skipped (student not implemented)")
-            if impl == "reference":
-                exit_code = 1
+            exit_code = 1
 
     if rows:
         report = render_report(

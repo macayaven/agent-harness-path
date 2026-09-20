@@ -1,6 +1,6 @@
 [project]
 name = "agent-harness-path"
-version = "0.3.0"
+version = "0.6.0rc1"
 description = "The Agent Harness Path: a self-contained course on building, evaluating, and governing LLM agents"
 readme = "README.md"
 requires-python = ">=3.11"

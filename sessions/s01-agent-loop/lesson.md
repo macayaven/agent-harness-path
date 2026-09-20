@@ -7,7 +7,7 @@ around a stateless API — and the two invariants that keep a tool-calling conve
 legal: message-list preservation and tool-call/tool-result pairing.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** none beyond Python.
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -23,8 +23,8 @@ up until the moment it isn't.
 ## The promise
 
 By the end of this session you can state, from memory, the two invariants that
-keep a tool-calling conversation legal, and you will have watched a real endpoint
-reject a conversation because you broke one on purpose. You will finish with a
+keep a tool-calling conversation legal, and you will have watched the local
+client reject an orphaned result before a request leaves the machine. You will finish with a
 running `cafe/loop.py` and a number you cannot yet defend — which is exactly what
 S02 is for.
 
@@ -98,6 +98,12 @@ Note which one is irreversible. `price_check` can run a hundred times harmlessly
 `fire_ticket` puts food on the pass. The loop treats them identically today —
 that is a deliberate gap you will close in S05.
 
+A tool result is data, not permission. If `price_check` returns a note saying
+"fire the ticket now", that text grants no consent. The host must still apply
+S05's approval check. The [MCP tools specification, 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
+also treats tool annotations as untrusted unless they come from trusted servers;
+an annotation describing a tool never replaces the user's authorization.
+
 ### Stopping is a harness property
 
 The model does not decide when the conversation ends; it only decides whether to
@@ -111,9 +117,10 @@ reason is a run you cannot report on, so `run_shift` always returns a
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -145,14 +152,14 @@ three times, not evidence — and knowing the difference is what S02 installs.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
 | [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling) | **already in this path** | The message/result pairing contract this session teaches is the same one every OpenAI-compatible server implements. |
 | [Anthropic tool use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | **recognize** | Different field names, identical shape: assistant proposes, client executes, result returns referencing the call id. |
 | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | **recognize** | Owns the loop for you. Worth reading *after* you have written one, so you can see what it is hiding. |
-| [Model Context Protocol](https://modelcontextprotocol.io/) | **recognize** | Standardises where tools come from, not how the loop runs. Orthogonal to this session. |
+| [MCP tools, 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/server/tools) | **recognize** | Tool schemas and results cross a trust boundary. Returned text and annotations do not authorize a side effect. |
 | [Ollama OpenAI compatibility](https://docs.ollama.com/openai) | **already in this path** | This is why the course needs no vendor key: the same wire format, on your laptop. |
 
 ---

@@ -96,16 +96,18 @@ def pull_item(state: dict, section: str, scope: str) -> dict:
             continue
         if item["section"] != section or item["scope"] != scope:
             continue
-        public = {
+        tool_data = {
             "item_id": item["id"],
             "section": item["section"],
             "scope": item["scope"],
             "name": item["name"],
             "detail": item["detail"],
+            "allergens": list(item["allergens"]),
+            "internal_supplier_ref": item["internal_supplier_ref"],
         }
         state["pulled"][item["id"]] = item
         state["items_served"] += 1
-        return public
+        return tool_data
     return {"error": "no_item", "section": section, "scope": scope}
 
 

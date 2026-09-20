@@ -10,7 +10,7 @@ hunt the nondeterminism a replay exposes by injecting the clock and the RNG.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop and its
 `stop_reason`), S07 (the runs you now record).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -34,7 +34,7 @@ the two things that quietly break it — the wall clock and the RNG.
 
 ### A transcript is a printout; a trace is a structure
 
-`run_shift` returns a run record: the message list, the turns, the stop reason, the counters. That
+`run_shift` returns a run record: the message list, the consent decisions, the stop reason, the counters. That
 tells you *what* the conversation said, not *where the time and tokens went*. `Tracer` builds a tree
 instead. Each span carries a name, a kind, attributes, children, a start time and a rounded duration.
 A **generation** is a span that also carries a model call:
@@ -81,6 +81,10 @@ flowchart LR
     end
 ```
 
+Both recording and replay use S05's protected executor. The synthetic customer explicitly
+approves the first valid proposal; an exhausted decision queue rejects. Each replay needs
+a fresh responder with the same decisions. Tracing never substitutes for consent.
+
 Two invariants, and they catch two different regressions. **Matching** polices the calls that
 *arrive*: the next recorded request must equal the incoming one exactly, otherwise `ReplayMismatch`
 raises instead of serving a response recorded for something else. **Exhaustion** polices the calls
@@ -95,6 +99,21 @@ to pretend a dead backend was fine. `export_fail_soft` is the boundary where you
 failure costs — the traces, or the shift. It returns the error text when the exporter raised and
 `None` when the trace shipped. A tracing backend is a network call you do not own; it fails on a
 schedule you do not choose.
+
+A replay cassette contains messages and tool payloads. Keep real recordings
+private; committed course cassettes contain only synthetic café conversations.
+Exported telemetry has a different purpose. A conceptual metadata-only projection
+might keep `{operation: "fire_ticket", status: "blocked", duration_ms: 4}` and
+omit customer text, ticket arguments, results and exception bodies. This is a
+design example, **not an export mode implemented by `Tracer`**; even metadata
+needs review for identifying labels. The [OTel GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/README.md)
+remain in Development, so pin the adopted convention version instead of treating
+current field names as a stable contract.
+
+Replay also differs from retrying a live side effect. Replaying a synthetic shift
+locally does not prove that a kitchen accepted an order only once after a lost
+reply. Carry [S05's approved-payload/idempotency distinction](../s05-consent-gate/lesson.html)
+into any durable design; this notebook does not supply one.
 
 ### Determinism is wired in, not hoped for
 
@@ -121,7 +140,7 @@ not one `.jsonl` landed in it.
 Open [`toy.py`](toy.py).
 Same endpoint configuration as S06, plus the `SCRIPT` of two customer lines the notebook replays.
 
-1. **Record your own shift.** `record_shift(client, SCRIPT, path, tracer=Tracer(clock=TickClock()))`
+1. **Record your own shift.** `record_shift(client, SCRIPT, path, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))`
    runs the real loop through a recording client and prints the rendered tree, the tools that ran and
    the usage totals.
 2. **Predict the replay.** Before running it: how many times will your live model fire during a
@@ -154,12 +173,12 @@ cites turns of a trace you can hand to someone else, who can replay it.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
 | [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) | **already in this path** | The span tree is this idea, smaller. Spans, parents, attributes and durations are the same vocabulary your `Tracer` speaks. |
-| [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) | **adopt** | The agreed attribute names for model calls — model, token usage, prompts. Adopt the names before you ship a trace format nobody else can read. |
+| [OTel GenAI conventions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/README.md) | **recognize** | Development status: pin a version and review content collection. Private replay and exported telemetry need different payload policies. |
 | [OpenTelemetry GenAI spans](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-spans/) | **recognize** | The concrete span shape for a generation. Compare it with `Tracer.generation`; the fields you kept are the ones you can defend. |
 | [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) | **recognize** | Where fail-soft belongs at scale: buffering, retry and backpressure live in the pipeline, not in your request path. |
 | [OpenLLMetry](https://github.com/traceloop/openllmetry) | **adopt** | Open-source instrumentation that emits OTel-compatible GenAI spans, if you would rather not maintain a tracer. |

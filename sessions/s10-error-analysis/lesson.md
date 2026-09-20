@@ -4,7 +4,7 @@
 **Today you ship:** `cafe/taxonomy.py` — the pipeline that turns a pile of real failures into a ranked taxonomy and a new eval task.
 **What this teaches:** error analysis as a method — open coding a pile of real traces into free-form notes, axial coding those notes into categories narrow enough to be wrong, ranking by frequency × severity, and promoting the top category into a permanent eval task that fails on the engine that produced the pile and passes on the fix.
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (checker tiers and the fixture invariant); S08 (traces you can pull); S09 (the event log that already flags what the harness noticed).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -12,7 +12,7 @@
 
 Three shifts, three transcripts, and a suite that says everything is fine. Then you read
 the traces. One shift never checked an allergy the customer declared by name. Another
-fired a ticket before the customer confirmed it. A third ran out of turns with the
+tried to fire a ticket before confirmation; the consent gate refused it. A third ran out of turns with the
 customer still waiting for an answer.
 
 The aggregate said 6/9. It could not say *which* six, or why. A number tells you there is
@@ -116,9 +116,10 @@ discrimination is provable without another model call.
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -127,20 +128,23 @@ uv run marimo edit sessions/s10-error-analysis/toy.py
 ```
 
 1. **Drive the pile.** Three live shifts run through `run_shift` under a deliberately tight
-   turn cap (`max_turns=3`). Each script declares what the customer asked for and which
+   turn cap (`max_turns=3`), retaining S05's consent gate and an explicit synthetic customer. Each script declares what the customer asked for and which
    tool the shift must call. The cap is a harness choice, not a model-quality score: a
    shift that runs out of turns before the customer is answered is a real failure.
 2. **Harvest only what the trace shows.** `harvest` reads each recorded run against its
-   script and returns one record per failure — a missing expected tool, a ticket fired
-   with no prior `propose_order`, an 86'd item sent to the kitchen, a turn cap — each with
+   script and returns one record per failure — a missing expected tool, a refused consent attempt, an actually fired ticket
+   with no prior `propose_order` in an explicitly permissive baseline, an 86'd item sent to the kitchen, a turn cap — each with
    an id, a severity, and a verbatim quote from the conversation. If the trace does not
-   show it, it is not in the pile. A well-behaved model can produce an empty pile; the
-   notebook then adds one deliberately capped shift and says so rather than hiding it.
+   show it, it is not in the pile. An empty pile pauses labeling and promotion;
+   there is no taxonomy evidence to bank from that run.
 3. **Predict first: the categories.** Before you read closely, write down the two or three
    category names you expect this pile to contain. Then fill `attempt_open_code` — one
    category per record — and flip the reveal switch only after your attempt. The reference
    solution names four; yours may differ, and that is fine as long as each name is narrow
    enough to be wrong.
+   Every record needs your own nonempty label before ranking continues. Incomplete
+   attempts never borrow reference labels; reference source and results require
+   both a complete attempt and the reveal switch. Clearing labels pauses results.
 4. **Rank and file.** `rank` turns your labels into a frequency × severity table with trace
    references; `agreed` scores your reading against `classify_naive`. Predict the agreement
    count before you run it, then look at *which* records the auto-filer misfiled.
@@ -165,13 +169,20 @@ Record three things from this run, with your model name beside them:
 
 The counts are facts about *this* pile on *your* endpoint, not a model-quality score. The
 promoted task discriminates deterministically whatever the model did.
+Carry [S02's comparison receipt](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank)
+with the pile: model/configuration, prompt/checker/data versions, timeout, budget,
+sample count and environment. Keep new failure cases in development; use a
+separate untouched holdout for release evidence. [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise)
+is one reason an unexplained score change should trigger investigation before
+a model-quality claim.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise) | **recognize** | Keep the environment in the comparison receipt and infrastructure failures visible in error analysis. |
 | [Hamel Husain — A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/) | **already in this path** | The assigned method: notes first, categories second, evals third — the exact loop this session rehearses. |
 | [Grounded theory (open and axial coding)](https://en.wikipedia.org/wiki/Grounded_theory) | **already in this path** | Applied agent work rediscovered a sixty-year-old social-science method. Constant comparison is your axial pass. |
 | [Cemri et al. — Why Do Multi-Agent LLM Systems Fail? (MAST)](https://arxiv.org/abs/2503.13657) | **recognize** | A published top-down taxonomy built from 150 annotated traces. Compare its category grain size with yours. |
@@ -220,6 +231,6 @@ Because that is what "isolates the failure" means: the failure is provably prese
 
 You can now say which failures recur and you have a task that proves the fix. What you do
 not yet have is any control over what a check is allowed to cost. **[S11 — Budgets &
-routing](../s11-budgets-routing/lesson.html)** turns your taxonomy into runtime spending limits and a
-route table: a call whose projected cost would cross the budget is refused before it is
-dispatched, and a content phase pointed off-local raises instead of leaking.
+routing](../s11-budgets-routing/lesson.html)** turns your taxonomy into an estimate-based
+budget gate and a routing-policy simulation. It distinguishes the simulated table from
+the actual client, and known usage from incomplete accounting.

@@ -8,6 +8,9 @@ shift record, exact replay). Optional café-host lab: `sessions/s08-observabilit
 `labs/client.py` (`match_key`, `ReplayMismatch`, `assert_exhausted` /
 leftover entries), `labs/cassettes/*.jsonl`.
 
+The core keeps the S05 consent gate while collecting evidence. A scripted
+customer is an explicit fixture; a refused fire is not a served ticket.
+
 ## The gap
 
 The core toy records a real café shift and replays it exactly; `cafe/trace.py`
@@ -31,7 +34,7 @@ Confirm `--replay` on a recorded shift reproduces assistant/tool sequence.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s08-observability-replay/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s08 --replay

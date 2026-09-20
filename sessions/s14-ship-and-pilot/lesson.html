@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,7 +109,7 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s13-rebuild-from-memory/lesson.html">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../study-plan.html">Next: Six-week calibrated post-core / BYO-artifact overlay &rarr;</a></span></nav>
 <h1 id="s14-ship-and-pilot-the-cold-run-the-pilot-and-the-public-artifact">S14-ship-and-pilot — The cold run, the pilot, and the public artifact</h1>
 <p><strong>What this teaches:</strong> shipping is the last measurement, not a mood — a cold
 acceptance run on unseen input, one pilot with a second human under a written
@@ -116,11 +118,11 @@ memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 <strong>Time:</strong> ~20 min of reading, ~4 h of doing (fine to split across days).
 <strong>Prerequisites:</strong> S01–S13 for the vocabulary and the mechanisms — and, as in S13,
-a non-trivial project of your own to ship — or, if you walked the hard path,
-the course's own <code>cafe/</code> package. <strong>This session is optional.</strong> Completing S01–S12 does not
+a non-trivial artifact with its own suite and banked baseline: the core <code>cafe/</code>
+package, the optional <code>labs/cafe_host/</code>, or a project of yours.
+<strong>This session is optional.</strong> Completing S01–S12 does not
 require S14.
-<strong>Hands-on:</strong> no notebook — the hands-on is your own system (easy) or the
-<code>cafe/</code> package (hard), run through the protocol below.</p>
+<strong>Hands-on:</strong> no notebook — run the chosen artifact through the protocol below.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="done-is-a-measurement-not-a-mood">Done is a measurement, not a mood</h3>
@@ -193,7 +195,7 @@ original minimal form
 (<a href="https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions">Nygard 2011</a>).</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S14-ship-and-pilot-2.svg" alt="Decision logs, banked eval numbers, traces, and failure counts assemble into architecture and failure documents; those two evidence-backed documents feed the public fixture-run artifact." style="--diagram-width: 590px" /></div>
 <p>The architecture doc gets one section most docs lack: the honest two columns.</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Survives a model swap</th>
@@ -214,7 +216,7 @@ original minimal form
 <td>output post-processing crutches</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The first column is the asset; the second is technical debt with a demolition
 date. Writing both down is what makes the next model generation an upgrade
 instead of a regression hunt.</p>
@@ -306,7 +308,7 @@ steps inherit the earlier steps' contamination.</p>
    parked list (everything after v1.0.0) is written down, not started.</li>
 </ol>
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -356,7 +358,7 @@ steps inherit the earlier steps' contamination.</p>
 <td>S02 established the realism gap. A simulated pilot is theater; ship the awkward human conversation.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Google SRE book, <a href="https://sre.google/sre-book/postmortem-culture/">Postmortem Culture: Learning from Failure</a>
@@ -433,10 +435,10 @@ system you applied them to, a public claim with
 the evidence to survive cross-examination. The parked list — wider pilots, new
 surfaces, outcomes aggregation — is real work with real protocols of its own,
 and it starts from the tag, not before it.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s13-rebuild-from-memory/lesson.html">&larr; Prev: S13-rebuild-from-memory — The closed-book audit</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../study-plan.html">Next: Six-week calibrated post-core / BYO-artifact overlay &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s14-ship-and-pilot/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s14-ship-and-pilot/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

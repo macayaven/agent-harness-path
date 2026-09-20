@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,7 +109,7 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../study-plan.html">&larr; Prev: Six-week calibrated post-core / BYO-artifact overlay</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s02-golden-evals/lesson.html#the-theory-in-depth">Next: S02-golden-evals — A baseline you can defend &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s02-golden-evals/lesson.html">Next: S02-golden-evals — A baseline you can defend &rarr;</a></span></nav>
 <h1 id="s01-agent-loop-the-order-taking-loop">S01-agent-loop — The order-taking loop</h1>
 <p><strong>Carried in:</strong> nothing yet. This is where the café opens.
 <strong>Today you ship:</strong> <code>cafe/loop.py</code> — the loop every later session extends.
@@ -116,7 +118,7 @@ around a stateless API — and the two invariants that keep a tool-calling conve
 legal: message-list preservation and tool-call/tool-result pairing.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> none beyond Python.
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>A customer at table 4 says <em>"get me a latte and a chocolate croissant"</em>. Your model
@@ -126,8 +128,8 @@ the endpoint rejects the entire conversation with a <code>400</code>.</p>
 up until the moment it isn't.</p>
 <h2 id="the-promise">The promise</h2>
 <p>By the end of this session you can state, from memory, the two invariants that
-keep a tool-calling conversation legal, and you will have watched a real endpoint
-reject a conversation because you broke one on purpose. You will finish with a
+keep a tool-calling conversation legal, and you will have watched the local
+client reject an orphaned result before a request leaves the machine. You will finish with a
 running <code>cafe/loop.py</code> and a number you cannot yet defend — which is exactly what
 S02 is for.</p>
 <hr />
@@ -139,7 +141,7 @@ hidden conversation store on the other end: compare the first request with the
 second and the only difference is what you appended.</p>
 <p>An <em>agent</em> is what happens when you wrap that stateless call in a loop and let the
 model decide when to stop:</p>
-<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S01-agent-loop.svg" alt="Client-owned weather loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call." style="--diagram-width: 973px" /></div>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S01-agent-loop.svg" alt="Client-owned café loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call." style="--diagram-width: 973px" /></div>
 <p>This diagram is the complete control-flow skeleton of <code>cafe/loop.py</code>. The model
 proposes an action or a final answer; <strong>Python</strong> owns whether the action executes,
 how the result is recorded, and when the loop stops. The arrow back to the model
@@ -179,6 +181,11 @@ cooperation.</p>
 <p>Note which one is irreversible. <code>price_check</code> can run a hundred times harmlessly.
 <code>fire_ticket</code> puts food on the pass. The loop treats them identically today —
 that is a deliberate gap you will close in S05.</p>
+<p>A tool result is data, not permission. If <code>price_check</code> returns a note saying
+"fire the ticket now", that text grants no consent. The host must still apply
+S05's approval check. The <a href="https://modelcontextprotocol.io/specification/2026-07-28/server/tools">MCP tools specification, 2026-07-28</a>
+also treats tool annotations as untrusted unless they come from trusted servers;
+an annotation describing a tool never replaces the user's authorization.</p>
 <h3 id="stopping-is-a-harness-property">Stopping is a harness property</h3>
 <p>The model does not decide when the conversation ends; it only decides whether to
 request another tool. The loop stops when the model answers in words, when the
@@ -188,8 +195,9 @@ reason is a run you cannot report on, so <code>run_shift</code> always returns a
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
-Configure your endpoint first:</p>
-<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+Start on the offline stub without configuration. For live measurements:</p>
+<pre><code class="language-bash">export COURSE_MODE=live
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor                     # one live call; proves the endpoint
@@ -215,8 +223,8 @@ fully paired conversation</strong>. On a small local model this is often not 3/3
 <p>Write the number down with the model name next to it. It is an anecdote repeated
 three times, not evidence — and knowing the difference is what S02 installs.</p>
 <hr />
-<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -241,9 +249,9 @@ three times, not evidence — and knowing the difference is what S02 installs.</
 <td>Owns the loop for you. Worth reading <em>after</em> you have written one, so you can see what it is hiding.</td>
 </tr>
 <tr>
-<td><a href="https://modelcontextprotocol.io/">Model Context Protocol</a></td>
+<td><a href="https://modelcontextprotocol.io/specification/2026-07-28/server/tools">MCP tools, 2026-07-28</a></td>
 <td><strong>recognize</strong></td>
-<td>Standardises where tools come from, not how the loop runs. Orthogonal to this session.</td>
+<td>Tool schemas and results cross a trust boundary. Returned text and annotations do not authorize a side effect.</td>
 </tr>
 <tr>
 <td><a href="https://docs.ollama.com/openai">Ollama OpenAI compatibility</a></td>
@@ -251,7 +259,7 @@ three times, not evidence — and knowing the difference is what S02 installs.</
 <td>This is why the course needs no vendor key: the same wire format, on your laptop.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
@@ -294,15 +302,15 @@ machine — and so you can see the rule as one explicit function instead of a `4
 
 <hr />
 <h2 id="what-this-unlocks">What this unlocks</h2>
-<p>You have a working loop and a number you cannot defend. <strong><a href="../s02-golden-evals/lesson.html#the-theory-in-depth">S02 — Golden sets &amp;
+<p>You have a working loop and a number you cannot defend. <strong><a href="../s02-golden-evals/lesson.html">S02 — Golden sets &amp;
 baselines</a></strong> turns that anecdote into a measurement
 instrument: a golden set of café scenarios, checkers whose failures you trust, and
 a naive baseline your governed loop has to beat. Everything after S02 is measured
 against it.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../study-plan.html">&larr; Prev: Six-week calibrated post-core / BYO-artifact overlay</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s02-golden-evals/lesson.html#the-theory-in-depth">Next: S02-golden-evals — A baseline you can defend &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../index.html">&larr; Prev: The Agent Harness Path</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s02-golden-evals/lesson.html">Next: S02-golden-evals — A baseline you can defend &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s01-agent-loop/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s01-agent-loop/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

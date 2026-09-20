@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S11-budgets-routing — Budgets, routes, and the privacy boundary</title>
+  <title>S11-budgets-routing — Budget estimates and routing policy</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,13 +109,13 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
-<h1 id="s11-budgets-routing-budgets-routes-and-the-privacy-boundary">S11-budgets-routing — Budgets, routes, and the privacy boundary</h1>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
+<h1 id="s11-budgets-routing-budget-estimates-and-routing-policy">S11-budgets-routing — Budget estimates and routing policy</h1>
 <p><strong>Carried in:</strong> <code>cafe/taxonomy.py</code> — S10's failure classes, and the debrief number S10 banked. Your shift can now name what goes wrong; tonight it learns what a call is allowed to cost and where it is allowed to run.
-<strong>Today you ship:</strong> <code>cafe/routing.py</code> — the budget gate, the route table, and the boundary that refuses a leak.
-<strong>What this teaches:</strong> cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose <em>projected</em> cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
+<strong>Today you ship:</strong> <code>cafe/routing.py</code> — an estimate-based budget gate and an explicit routing-policy simulation.
+<strong>What this teaches:</strong> pre-call estimates, honest usage accounting, and a reviewable classification policy. The route labels are simulated; every dispatched call uses the one configured client.
 <strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>Last Thursday the till showed <strong>€0.42</strong> of model spend on a task the shift prices at
@@ -126,11 +128,12 @@ handwritten note — card number, phone number, the lot — at a cloud route. It
 beautifully. It was also a leak, and it happened at the routing decision, not inside the
 model.</p>
 <h2 id="the-promise">The promise</h2>
-<p>By the end of this session you will be able to write a route table as data, prove that a
-call whose projected cost would cross the budget is refused <strong>before</strong> it is dispatched,
-and prove that a content phase pointed at a cloud route raises before a single request
-leaves the machine. You will also bank real token and latency numbers — read from the
-endpoint's own <code>usage</code> and the client's own clock, not from a formula.</p>
+<p>By the end of this session you can write a route table as data and prove that a
+projected overage is refused before dispatch. You can also reject a disallowed
+content-to-cloud mapping in the policy table. <strong>This is a policy simulation over
+synthetic café data:</strong> all route labels use the same configured client. They do not
+select models, verify locality, inspect content classification, or prove privacy.
+The notebook shows the configured client and any model identity the provider reports.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="a-budget-is-a-runtime-invariant-not-a-finance-report">A budget is a runtime invariant, not a finance report</h3>
@@ -139,29 +142,33 @@ the budget lives <strong>inside</strong> the loop and reads <em>ahead</em>: the 
 before the call happens, and a call that would cross the line is refused.
 <code>stop_reason="budget_exceeded"</code> is a first-class outcome — a run that costs more than the
 task is worth has failed, even mid-progress.</p>
-<p>The estimate is a lie you need: a gate cannot know the usage before the endpoint speaks.
-The <strong>ledger</strong> is the truth, and it is written from <code>response["usage"]</code> after the call.
-Two numbers, two jobs: <strong>the estimate refuses, the usage records.</strong></p>
+<p>A pre-call estimate cannot know the final usage. The ledger multiplies reported
+usage by an <strong>illustrative</strong> rate card; both money figures are estimates, not invoices.
+Missing or invalid token counts are unknown, never zero. With a cap, incomplete
+accounting stops the phase run with <code>usage_unknown</code>, even on its last call, and
+refuses any next call. A completed call can still
+exceed the projection and the budget: <code>budget_overrun</code> stops later phases, not the
+cost already incurred. This is not a hard spending cap.</p>
 <h3 id="routing-is-policy-as-data">Routing is policy-as-data</h3>
-<p>A route table is a dict: café phase → route name. Each route carries a location, a model
-label, and a price per 1k tokens. It is diffable, reviewable, and validatable without
-touching the engine — and the route you choose cites a measured number rather than a
-preference. Different phases of one shift differ wildly in difficulty; sending the note
-(and its card number) to the same place as a category summary is not a routing policy, it
-is an accident.</p>
-<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S11-budgets-routing.svg" alt="A pipeline validates its policy route table before any model call, routes allowed content among local and cloud models, meters cost and latency, and stops before a run would breach its budget." style="--diagram-width: 1639px" /></div>
-<h3 id="the-privacy-boundary-refuses-it-does-not-warn">The privacy boundary refuses; it does not warn</h3>
-<p>Every phase carries a <strong>classification</strong>; every route carries a <strong>location</strong>. A content
-phase — the note with the card and phone numbers, the prose about this customer's order —
-must resolve to a local route. <code>validate_policy</code> runs before any model call and <strong>raises</strong>.
-It does not warn, and it does not fall back to a safe route: a silent fallback is the same
-leak with better logging.</p>
-<p>A warning is a log line nobody reads during the incident. A refusal makes the
-misconfiguration un-runnable. The one phase allowed off-local is <code>till_summary</code>, which
-carries metadata only — category totals, no descriptions — because classification decides
-what may leave, not the vendor's reputation.</p>
+<p>A route table maps café phase to a simulated route name. Each name carries an
+illustrative location, model label and rate. Review that table independently of
+the transport: <code>client_model</code> records the configured alias, while optional
+<code>reported_model</code> records what the response says. Neither resolves a hidden backend.</p>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S11-budgets-routing.svg" alt="A simulated classification policy and illustrative cost projection gate calls to one configured client. Reported usage informs cost estimates; unknown accounting and observed overruns stop later budgeted calls." style="--diagram-width: 2729px" /></div>
+<h3 id="the-classification-policy-refuses-it-does-not-warn">The classification policy refuses; it does not warn</h3>
+<p><code>validate_policy</code> rejects content phases assigned to a simulated cloud route and
+permits the metadata phase there. Both <code>run_phases</code> and <code>metered_call</code> validate
+before calling the injected client. A label is not a privacy boundary: the toy
+does not verify the actual endpoint's location or prove that a payload contains
+only metadata. Use synthetic input. A deployed design would need those checks at
+the real transport and data boundaries.</p>
 <h3 id="what-measured-means-tonight">What "measured" means tonight</h3>
-<p><code>response["usage"]</code> gives the tokens the endpoint actually charged for.
+<p><code>response["usage"]</code> may report token counts. Missing, negative, boolean or
+noninteger counts remain unknown; they are not evidence of a free call.
+Supplied components must agree with the total: neither can exceed it, and
+prompt plus completion must equal it when both are present. Total-only usage
+and genuine all-zero counts remain valid. The notebook and trace publish the
+same stop outcome, including an overrun on the final requested call.
 <code>client.last_latency_ms</code> gives the wall time around the request, set by the client around
 the call, not by a formula in this notebook. A refused call is never sent, so
 <code>client.calls</code> and <code>client.last_latency_ms</code> keep the values of the previous dispatched
@@ -169,8 +176,9 @@ call — which is exactly how the notebook proves the refusal happened before th
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
-Configure your endpoint first:</p>
-<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+Start on the offline stub without configuration. For live measurements:</p>
+<pre><code class="language-bash">export COURSE_MODE=live
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor
@@ -184,9 +192,9 @@ uv run marimo edit sessions/s11-budgets-routing/toy.py
    <code>projected_usd</code>. Write the predicate that refuses the call, then flip the reveal switch.
    Edge case that matters: no budget means no limit. The harness does the refusing; your
    predicate only returns a bool.</li>
-<li><strong>One real metered call.</strong> A <code>draft_reply</code> routed through <code>local-large</code>. The projected
-   cost prints next to the real one; on a short note they are close, on a long one they
-   drift. That gap is why the gate uses an estimate and the ledger uses usage.</li>
+<li><strong>One metered call.</strong> A <code>draft_reply</code> uses the configured client and the simulated
+   <code>local-large</code> rate card. Compare the projection with the usage-based estimate,
+   and record missing usage explicitly. No route label changes the actual endpoint.</li>
 <li><strong>Predict first: a table that validates.</strong> Fill <code>attempt_route_table()</code> so
    <code>validate_policy</code> accepts it: <code>read_note</code> and <code>draft_reply</code> are content phases,
    <code>till_summary</code> is metadata, and <code>local-small</code>, <code>local-large</code>, <code>cloud-frontier</code> are the
@@ -195,7 +203,7 @@ uv run marimo edit sessions/s11-budgets-routing/toy.py
 <li><strong>Watch the invariants.</strong> Three notebook cells are protocol invariants: an over-budget
    call is refused and <code>client.calls</code> does not move; a content phase on a cloud route
    raises while the metadata phase on the same route is permitted; and every metered token
-   count equals the endpoint's <code>usage</code>, with latency read from <code>client.last_latency_ms</code>.</li>
+   count matches valid reported usage, or stays unknown. Latency comes from the client.</li>
 </ol>
 <hr />
 <h2 id="checkpoint-the-numbers-you-bank">Checkpoint — the numbers you bank</h2>
@@ -206,13 +214,13 @@ uv run marimo edit sessions/s11-budgets-routing/toy.py
 <li>a content phase pointed at a cloud route raises, while the same route on a metadata
   phase is permitted.</li>
 </ul>
-<p>And two measured numbers from your own endpoint: <strong>total tokens</strong> and <strong>median latency</strong>
-across the checkpoint calls, plus what they cost at the route's price. On a small local
-model these are small and a little noisy; they are still live measurements. S12's judge
-costs money too, and without these numbers you cannot say whether it is worth running.</p>
+<p>Bank <strong>known tokens</strong>, accounting completeness, <strong>median latency</strong> when available,
+and the cost estimate at the illustrative rate. Stub values are deterministic
+fixtures; only live mode measures your endpoint. Include the actual configured
+client alongside the simulated route. S12 reuses this estimate when comparing rubrics.</p>
 <hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -252,7 +260,7 @@ costs money too, and without these numbers you cannot say whether it is worth ru
 <td>An unbounded, un-metered agent is the excessive-agency risk with a bill attached. Your budget and route table are the governance layer it asks for.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
@@ -264,21 +272,21 @@ costs money too, and without these numbers you cannot say whether it is worth ru
 <h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><em>"The budget is a report."</em> A report is written after the money is gone. The gate must read <em>ahead</em>: a crossing call refused before dispatch is cheap; one refused after is an FYI.</li>
-<li><em>"The estimate is the cost."</em> The estimate is a lie you need to make the pre-dispatch decision; the endpoint's <code>usage</code> is the truth. Confuse them and your ledger drifts from your invoice.</li>
-<li><em>"Warn and fall back to a safe route."</em> A silent fallback is the same leak with better logging. The boundary raises, and the misconfiguration becomes un-runnable.</li>
+<li><em>"The estimate is the cost."</em> Both money figures use an illustrative rate. Usage can be missing, and a completed call can overshoot. Neither figure is an invoice or a hard cap.</li>
+<li><em>"Warn and fall back to a safe route."</em> The table validator raises. That proves the simulated policy check, not the locality of the configured client.</li>
 <li><em>"Route by which model sounds better."</em> Route by classification and by a measured number. The vendor's reputation does not entitle a content phase to leave the machine.</li>
 <li><em>"A refused call still costs latency."</em> It does not: a refused call never reaches <code>client.chat</code>, so <code>client.calls</code> and <code>last_latency_ms</code> do not move. That is how you prove the refusal happened before the wire.</li>
 </ul>
 <hr />
 <h2 id="self-check">Self-check</h2>
 <details><summary>Why does the gate use an estimate before dispatch if the real cost is only known after?</summary>
-Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate refuses the call that would cross, so the cost never lands. The estimate is not the ledger; it only has to be good enough to refuse.</details>
+Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate can refuse a projected overage, but underestimation can still let a crossing call through. Record that overrun and stop subsequent calls; a hard cap needs stronger controls.</details>
 
 <details><summary>A content phase is routed to a route whose location is cloud. What does the harness do?</summary>
-`validate_policy` raises before any model call. It does not warn and does not fall back to a safe route — a silent fallback is the same leak with better logging. The misconfiguration has to be un-runnable.</details>
+`validate_policy` raises before any model call. That checks the simulated table. It does not inspect the actual client location or classify payload contents.</details>
 
 <details><summary>Why is `till_summary` allowed off-local when `read_note` is not?</summary>
-Because classification is a property of the data, not the vendor. `read_note` sees the customer's handwritten card and phone numbers — content. `till_summary` carries metadata only: category totals, no descriptions. The boundary permits the second and refuses the first on the same route.</details>
+The teaching table declares `read_note` content and `till_summary` metadata. It permits the second classification on a simulated cloud route. Actual metadata-only payloads and endpoint locality require separate enforcement; this toy uses synthetic data.</details>
 
 <details><summary>The metadata phase and the content phase use the same cloud route. Does the boundary care about the route or the data?</summary>
 The data. The same route is permitted for metadata and refused for content; `validate_policy` checks each phase's classification against its route's location. Routing decisions are about what the data is, not which model is fashionable.</details>
@@ -287,13 +295,13 @@ The data. The same route is permitted for metadata and refused for content; `val
 <h2 id="what-this-unlocks">What this unlocks</h2>
 <p>You now have a harness that can refuse work before paying for it, and a policy table you can
 review in a diff. What you still do not have is any idea whether the thing producing the
-answers is any good. <strong><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">S12 — Judge calibration</a></strong> turns a model
+answers is any good. <strong><a href="../s12-judge-calibration/lesson.html">S12 — Judge calibration</a></strong> turns a model
 into an instrument: it seeds defects you already know the answer to, and makes you measure
 detection and false positives before you trust a single verdict.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html#the-theory-in-depth">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s10-error-analysis/lesson.html">&larr; Prev: S10-error-analysis — From a pile of failures to a permanent eval task</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s12-judge-calibration/lesson.html">Next: S12-judge-calibration — A judge you have not calibrated is an opinion &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s11-budgets-routing/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s11-budgets-routing/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

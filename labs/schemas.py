@@ -43,7 +43,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "pull_item",
-            "description": "Pull the next unserved menu item from the kitchen.",
+            "description": "Pull the next unserved menu item. Allergens are public; internal_supplier_ref is private tool data and must never appear in customer-facing prose.",
             "parameters": {
                 "type": "object",
                 "properties": {

@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,18 +109,18 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s09-evidence-reports/lesson.html#the-theory-in-depth">&larr; Prev: S09-evidence-reports — The thirty-second debrief</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">Next: S11-budgets-routing — Budgets, routes, and the privacy boundary &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s09-evidence-reports/lesson.html">&larr; Prev: S09-evidence-reports — The thirty-second debrief</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s11-budgets-routing/lesson.html">Next: S11-budgets-routing — Budget estimates and routing policy &rarr;</a></span></nav>
 <h1 id="s10-error-analysis-from-a-pile-of-failures-to-a-permanent-eval-task">S10-error-analysis — From a pile of failures to a permanent eval task</h1>
 <p><strong>Carried in:</strong> <code>cafe/report.py</code> — S09's citation-checked debrief, and the recorded shifts it can describe. You can now tell one shift's story honestly; tonight you find out which failures keep happening.
 <strong>Today you ship:</strong> <code>cafe/taxonomy.py</code> — the pipeline that turns a pile of real failures into a ranked taxonomy and a new eval task.
 <strong>What this teaches:</strong> error analysis as a method — open coding a pile of real traces into free-form notes, axial coding those notes into categories narrow enough to be wrong, ranking by frequency × severity, and promoting the top category into a permanent eval task that fails on the engine that produced the pile and passes on the fix.
 <strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S02 (checker tiers and the fixture invariant); S08 (traces you can pull); S09 (the event log that already flags what the harness noticed).
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>Three shifts, three transcripts, and a suite that says everything is fine. Then you read
 the traces. One shift never checked an allergy the customer declared by name. Another
-fired a ticket before the customer confirmed it. A third ran out of turns with the
+tried to fire a ticket before confirmation; the consent gate refused it. A third ran out of turns with the
 customer still waiting for an answer.</p>
 <p>The aggregate said 6/9. It could not say <em>which</em> six, or why. A number tells you there is
 a fire; it does not tell you what is burning.</p>
@@ -191,8 +193,9 @@ discrimination is provable without another model call.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
-Configure your endpoint first:</p>
-<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1
+Start on the offline stub without configuration. For live measurements:</p>
+<pre><code class="language-bash">export COURSE_MODE=live
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor
@@ -200,20 +203,23 @@ uv run marimo edit sessions/s10-error-analysis/toy.py
 </code></pre>
 <ol>
 <li><strong>Drive the pile.</strong> Three live shifts run through <code>run_shift</code> under a deliberately tight
-   turn cap (<code>max_turns=3</code>). Each script declares what the customer asked for and which
+   turn cap (<code>max_turns=3</code>), retaining S05's consent gate and an explicit synthetic customer. Each script declares what the customer asked for and which
    tool the shift must call. The cap is a harness choice, not a model-quality score: a
    shift that runs out of turns before the customer is answered is a real failure.</li>
 <li><strong>Harvest only what the trace shows.</strong> <code>harvest</code> reads each recorded run against its
-   script and returns one record per failure — a missing expected tool, a ticket fired
-   with no prior <code>propose_order</code>, an 86'd item sent to the kitchen, a turn cap — each with
+   script and returns one record per failure — a missing expected tool, a refused consent attempt, an actually fired ticket
+   with no prior <code>propose_order</code> in an explicitly permissive baseline, an 86'd item sent to the kitchen, a turn cap — each with
    an id, a severity, and a verbatim quote from the conversation. If the trace does not
-   show it, it is not in the pile. A well-behaved model can produce an empty pile; the
-   notebook then adds one deliberately capped shift and says so rather than hiding it.</li>
+   show it, it is not in the pile. An empty pile pauses labeling and promotion;
+   there is no taxonomy evidence to bank from that run.</li>
 <li><strong>Predict first: the categories.</strong> Before you read closely, write down the two or three
    category names you expect this pile to contain. Then fill <code>attempt_open_code</code> — one
    category per record — and flip the reveal switch only after your attempt. The reference
    solution names four; yours may differ, and that is fine as long as each name is narrow
-   enough to be wrong.</li>
+   enough to be wrong.
+   Every record needs your own nonempty label before ranking continues. Incomplete
+   attempts never borrow reference labels; reference source and results require
+   both a complete attempt and the reveal switch. Clearing labels pauses results.</li>
 <li><strong>Rank and file.</strong> <code>rank</code> turns your labels into a frequency × severity table with trace
    references; <code>agreed</code> scores your reading against <code>classify_naive</code>. Predict the agreement
    count before you run it, then look at <em>which</em> records the auto-filer misfiled.</li>
@@ -234,10 +240,16 @@ passes the guarded one.</p>
 <li>confirmation that the promoted task fails the naive engine and passes the guarded one.</li>
 </ul>
 <p>The counts are facts about <em>this</em> pile on <em>your</em> endpoint, not a model-quality score. The
-promoted task discriminates deterministically whatever the model did.</p>
+promoted task discriminates deterministically whatever the model did.
+Carry <a href="../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank">S02's comparison receipt</a>
+with the pile: model/configuration, prompt/checker/data versions, timeout, budget,
+sample count and environment. Keep new failure cases in development; use a
+separate untouched holdout for release evidence. <a href="https://www.anthropic.com/engineering/infrastructure-noise">Infrastructure noise</a>
+is one reason an unexplained score change should trigger investigation before
+a model-quality claim.</p>
 <hr />
-<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -246,6 +258,11 @@ promoted task discriminates deterministically whatever the model did.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="https://www.anthropic.com/engineering/infrastructure-noise">Infrastructure noise</a></td>
+<td><strong>recognize</strong></td>
+<td>Keep the environment in the comparison receipt and infrastructure failures visible in error analysis.</td>
+</tr>
 <tr>
 <td><a href="https://hamel.dev/blog/posts/field-guide/">Hamel Husain — A Field Guide to Rapidly Improving AI Products</a></td>
 <td><strong>already in this path</strong></td>
@@ -277,7 +294,7 @@ promoted task discriminates deterministically whatever the model did.</p>
 <td>A vendor teaching the manual version still starts with "read the traces." The reading is the product.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
@@ -312,14 +329,14 @@ Because that is what "isolates the failure" means: the failure is provably prese
 <hr />
 <h2 id="what-this-unlocks">What this unlocks</h2>
 <p>You can now say which failures recur and you have a task that proves the fix. What you do
-not yet have is any control over what a check is allowed to cost. <strong><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">S11 — Budgets &amp;
-routing</a></strong> turns your taxonomy into runtime spending limits and a
-route table: a call whose projected cost would cross the budget is refused before it is
-dispatched, and a content phase pointed off-local raises instead of leaking.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s09-evidence-reports/lesson.html#the-theory-in-depth">&larr; Prev: S09-evidence-reports — The thirty-second debrief</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">Next: S11-budgets-routing — Budgets, routes, and the privacy boundary &rarr;</a></span></nav>
+not yet have is any control over what a check is allowed to cost. <strong><a href="../s11-budgets-routing/lesson.html">S11 — Budgets &amp;
+routing</a></strong> turns your taxonomy into an estimate-based
+budget gate and a routing-policy simulation. It distinguishes the simulated table from
+the actual client, and known usage from incomplete accounting.</p>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s09-evidence-reports/lesson.html">&larr; Prev: S09-evidence-reports — The thirty-second debrief</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s11-budgets-routing/lesson.html">Next: S11-budgets-routing — Budget estimates and routing policy &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s10-error-analysis/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s10-error-analysis/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

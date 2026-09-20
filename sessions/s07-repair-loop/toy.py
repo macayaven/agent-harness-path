@@ -8,10 +8,12 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.repair import (
         CAP_DEFAULT,
@@ -60,16 +62,18 @@ def s07_md_hook(mo):
 
 
 @app.cell
-def s07_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("cap  :", CAP_DEFAULT, "| stop reasons:", sorted(STOP_REASONS))
+def s07_demo_client(mo):
+    with mo.capture_stdout() as _output:
+        client = get_client()
+        print("mode :", client.mode)
+        print("cap  :", CAP_DEFAULT, "| stop reasons:", sorted(STOP_REASONS))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
 @app.cell(hide_code=True)
 def s07_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### A retry is not a resample
@@ -99,7 +103,7 @@ def s07_md_theory(mo):
     and only if the reason is `passed`. That biconditional is the contract.
 
     ![Score deterministically: accept, retry with a failure view, or withhold](public/diagrams/S07-repair-loop.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 
@@ -117,25 +121,27 @@ def s07_predict_contradiction(mo):
 
 
 @app.cell
-def s07_demo_contradiction():
-    contradiction_spec = {
-        "table": 4,
-        "items": ["latte", "chocolate croissant"],
-        "avoid_allergens": ["milk"],
-    }
-    ping_pong = make_scripted_generator(
-        [
-            {"table": 4, "items": ["latte"]},
-            {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
-            {"table": 4, "items": ["latte"]},
-        ]
-    )
-    contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
-    print("stop_reason:", contradiction_run["stop_reason"])
-    print("attempts   :", len(contradiction_run["attempts"]))
-    print("ticket     :", contradiction_run["ticket"])
-    for attempt in contradiction_run["attempts"]:
-        print(f"  attempt {attempt['n']}: {attempt['failures']}")
+def s07_demo_contradiction(mo):
+    with mo.capture_stdout() as _output:
+        contradiction_spec = {
+            "table": 4,
+            "items": ["latte", "chocolate croissant"],
+            "avoid_allergens": ["milk"],
+        }
+        ping_pong = make_scripted_generator(
+            [
+                {"table": 4, "items": ["latte"]},
+                {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
+                {"table": 4, "items": ["latte"]},
+            ]
+        )
+        contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
+        print("stop_reason:", contradiction_run["stop_reason"])
+        print("attempts   :", len(contradiction_run["attempts"]))
+        print("ticket     :", contradiction_run["ticket"])
+        for attempt in contradiction_run["attempts"]:
+            print(f"  attempt {attempt['n']}: {attempt['failures']}")
+    mo.plain_text(_output.getvalue())
     return (contradiction_run,)
 
 
@@ -198,14 +204,16 @@ def s07_reveal_source_failure_view(mo, reveal_failure_view):
 
 
 @app.cell
-def s07_demo_compare():
-    sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
-    mine = attempt_failure_view(sample_failures, 2)
-    if not mine.strip():
-        print("Attempt pending: write the curated view before comparing the reference.")
-    else:
-        print("your view:\n" + mine)
-        print("\nnames every failure:", all(f.split(":")[0] in mine for f in sample_failures))
+def s07_demo_compare(mo):
+    with mo.capture_stdout() as _output:
+        sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
+        mine = attempt_failure_view(sample_failures, 2)
+        if not mine.strip():
+            print("Attempt pending: write the curated view before comparing the reference.")
+        else:
+            print("your view:\n" + mine)
+            print("\nnames every failure:", all(f.split(":")[0] in mine for f in sample_failures))
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -225,13 +233,15 @@ def s07_predict_live(mo):
 
 
 @app.cell
-def s07_demo_live(client):
-    live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
-    live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
-    print("brief      :", brief_for(live_spec)[:88])
-    print("stop_reason:", live_run["stop_reason"])
-    print("attempts   :", len(live_run["attempts"]))
-    print("ticket     :", live_run["ticket"])
+def s07_demo_live(client, mo):
+    with mo.capture_stdout() as _output:
+        live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
+        live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
+        print("brief      :", brief_for(live_spec)[:88])
+        print("stop_reason:", live_run["stop_reason"])
+        print("attempts   :", len(live_run["attempts"]))
+        print("ticket     :", live_run["ticket"])
+    mo.plain_text(_output.getvalue())
     return live_run, live_spec
 
 
@@ -261,8 +271,8 @@ def s07_md_checkpoint(mo):
     ## What this unlocks
 
     Your agent can now recover. It still cannot tell you *what happened* — the
-    attempt log lives and dies inside one run. **[S08 — Observability &
-    replay](S08-observability-replay.html)** gives the shift a memory: spans, a
+    attempt log lives and dies inside one run. **S08 — Observability &
+    replay** gives the shift a memory: spans, a
     recorded trace of your own live session, and a replay you can prove is
     identical.
     """)
@@ -270,19 +280,21 @@ def s07_md_checkpoint(mo):
 
 
 @app.cell
-def s07_demo_checkpoint(client):
-    distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
-    for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
-        run = repair_ticket(
-            {"table": table, "items": items, "avoid_allergens": []},
-            make_model_generator(client),
-            cap=CAP_DEFAULT,
-        )
-        if run["stop_reason"] == "passed":
-            distribution[f"passed_on_{min(len(run['attempts']), 3)}"] += 1
-        else:
-            distribution["exhausted"] += 1
-    print("S07 baseline — attempts to pass:", distribution)
+def s07_demo_checkpoint(client, mo):
+    with mo.capture_stdout() as _output:
+        distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
+        for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
+            run = repair_ticket(
+                {"table": table, "items": items, "avoid_allergens": []},
+                make_model_generator(client),
+                cap=CAP_DEFAULT,
+            )
+            if run["stop_reason"] == "passed":
+                distribution[f"passed_on_{min(len(run['attempts']), 3)}"] += 1
+            else:
+                distribution["exhausted"] += 1
+        print("S07 baseline — attempts to pass:", distribution)
+    mo.plain_text(_output.getvalue())
     return
 
 

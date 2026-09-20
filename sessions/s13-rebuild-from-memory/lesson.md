@@ -9,9 +9,11 @@ it honestly needs a system whose suite you built — the S02–S12 instrument, o
 project you own, **or** the `cafe/` package if you walked the core path.
 **This session is optional.** Completing S01–S12 does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
-defeat it. Hard path: the audit target is `cafe/loop.py` against the café suite in
+defeat it. Core route: the audit target is `cafe/loop.py` against the café suite in
 `cafe/evals` (score it from `sessions/s02-golden-evals/toy.py` with
-`uv run marimo edit sessions/s02-golden-evals/toy.py`). Easy path: a project of yours.
+`uv run marimo edit sessions/s02-golden-evals/toy.py`). Optional hard path:
+`labs/cafe_host/` against its banked replay suite. Or choose a project of yours
+and its own suite.
 The protocol below is the hands-on.
 
 ---
@@ -136,16 +138,20 @@ flowchart LR
 
 One sitting, no interruptions, roughly 90 minutes end to end.
 
-**Hard path:** you built `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
+**Core path:** you studied `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
 set in `cafe/evals`, scored from [`toy.py`](../s02-golden-evals/toy.py)
 with `uv run marimo edit sessions/s02-golden-evals/toy.py` (a live endpoint works
-too — run `uv run python -m cafe.doctor` first if you need to prove it). Confirm the
+too — explicitly set `COURSE_MODE=live` and run `uv run python -m cafe.doctor`
+first if you need to prove it). Confirm the
 rebuilt core actually ran the golden set and compare its per-scenario results, not only the
 process exit status: an unchanged import would score the original, not your rebuild.
 Do not open the original `cafe/loop.py` from history or the notebook's `solution_*` reveals
 during the sitting.
 
-**Easy path:** any non-trivial project you own — from this path, from work, from
+**Optional hard path:** use your `labs/cafe_host/loop.py` and the banked lab
+suite instead. Its evidence is separate from the core café golden set.
+
+**Bring your own system:** any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that
 project's own.
 

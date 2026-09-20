@@ -4,14 +4,15 @@
 
 Core: `lesson.html`,
 `toy.py`, `cafe/routing.py` (budget gate, route
-table, the boundary that refuses a leak). Optional café-host lab:
+table and explicit policy simulation). Optional café-host lab:
 `sessions/s11-budgets-routing/lab.md`, `run_engine` `max_approx_tokens` / `RouteRefused` in
 `labs/cafe_host/engine.py`, `client.RouteRefused`.
 
 ## The gap
 
-The core toy runs live: a turn cap, a token counter, and a route table that
-refuses a leak. The optional café host:
+The core uses one configured client for all simulated route names. Its illustrative
+cost estimates, reported usage and accounting completeness are separate evidence.
+A route label proves neither locality nor real billing. The optional café host:
 
 - Approximates tokens as `len(json.dumps(messages)) // 4`. Breach →
   `stop_reason=budget_exceeded` (no LiteLLM).
@@ -20,7 +21,7 @@ refuses a leak. The optional café host:
 - Optional: different `OPENAI_MODEL` for spec vs serve — not required.
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s11-budgets-routing/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s11 --replay

@@ -2,10 +2,10 @@
 
 **Carried in:** `cafe/evals` — four scenarios, five deterministic checkers, and the naive-versus-governed pair you banked. The allergen checker grades every probe in this session, so "the rule still works" means the same thing here as it did in the golden set.
 **Today you ship:** `cafe/context.py` — four compaction policies and the measurement that tells them apart.
-**What this teaches:** context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why a pinned rule keeps governing while a summarized or truncated one quietly stops, and what the pin costs on every request.
+**What this teaches:** context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why retaining a rule and following it are different measurements, and what the pin costs on every request.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S02 (the golden set and its checkers).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -37,13 +37,18 @@ assembled context deterministically, before you ever trust a model to notice.
 Two numbers, and they are different kinds of number.
 
 - `BUDGET_DEFAULT` is what the harness *aims* to stay under. It is yours.
-- `HARD_LIMIT_DEFAULT` is the model's real window. Cross it and the endpoint
-  answers a `400`, not a degradation. No policy saves you from that one.
+- `HARD_LIMIT_DEFAULT` is a teaching limit over a word-count proxy. The local guard
+  refuses an oversized request. It does not measure the endpoint's real token window.
 
 Compaction fires when the history outgrows the budget. It **rewrites the stored
 history** — what gets dropped is gone from every later turn, not just from this
 request. That is what makes it dangerous: a lossy step at turn five is still
 missing at turn twelve, and nothing in the transcript marks the hole.
+
+The measured conversation is the one sent, including prior turns and tool results.
+Compaction keeps tool-call/result exchanges whole. If the pinned material plus the current
+request exceeds the budget, the log says so; it does not quietly delete either.
+An intentionally empty system prompt stays empty rather than restoring a removed rule.
 
 ### Four policies, one question
 
@@ -52,8 +57,8 @@ missing at turn twelve, and nothing in the transcript marks the hole.
 | policy | keeps | compacts? |
 | --- | --- | --- |
 | `keep_all` | everything | never — the hard limit becomes the model's problem |
-| `truncate` | pinned messages, then as much of the tail as fits | drops the oldest unpinned messages |
-| `summarize` | pinned messages, one digest, the last two turns | replaces the compactable region with a summary |
+| `truncate` | pinned messages, then as much of the tail as fits | drops the oldest complete unpinned exchanges |
+| `summarize` | pinned exchanges, one digest, the latest complete exchange | replaces the compactable region with a summary |
 | `pinned` | truncation, but the rule message is marked and untouchable | yes, and the rule outlives every round |
 
 `summarize` is lossy **on purpose**. `summarize_turns` keeps topics and drops
@@ -79,25 +84,43 @@ flowchart TB
 ### The rule is rent, and the boundary is where it dies
 
 The allergen rule is one short line, and `pinned` pays for it on **every single
-call**: a few tokens, forever. That cost is real, and the notebook prints it
-(`context.tokens([context.rule_message()])`) so you price the guarantee instead of
+call**: a few words of the proxy budget, every time. That cost is real, and the notebook prints it
+(`context.tokens([context.rule_message()])`) so you measure the retention cost instead of
 pretending it is free.
 
 The interesting question is not "is the text there?" but "does it still govern?"
-A rule that survives but sits behind a compaction boundary — the model read it
-eleven turns ago — behaves like a rule that is absent. So the measurement replays
+A rule can remain in the request and still be ignored. A compaction boundary
+does not by itself prove behavioral failure. So the measurement replays
 one script through each policy, interrupts with the allergen probe every third
 turn, and grades each probe with S02's `allergen_safety`. `survival()` splits the
 probe rate into **before** and **after** the first compaction boundary. Two rates,
 one policy changed, same endpoint, same script, same checker.
 
+These rates use **answered probes**: turns that reached a final reply. The table
+also reports attempted probes, capped probes, and answered/processed/requested
+turns. A capped probe can avoid a violation without answering; it is excluded
+from these rates and remains visible in the counts. No answered probes means no
+rate. Reaching a final reply is a protocol outcome, not proof of useful completion.
+
+Keep three observations separate: **text retention** (the rule is still on the
+wire), **behavior** (the probe respects it), and **task completion** (the requested
+work finishes). A model can retain a rule and ignore it, or avoid a violation by
+doing no useful work. The [Governance Decay preprint, v2](https://arxiv.org/abs/2606.22528v2)
+studies compaction-induced policy violations and pinning on its benchmark.
+[Lost in Compaction, v1](https://arxiv.org/abs/2608.11242v1) studies session-constraint
+retention. Their measured improvements are scoped to their evaluations; neither
+makes retained text a general compliance guarantee. Reuse [S02's receipt and
+decision log](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank) when
+comparing policies, and carry the same distinction into [S08 replay](../s08-observability-replay/lesson.html).
+
 ### Structural failures are not probabilistic
 
 `keep_all` cannot degrade gracefully — it either fits or it hits the wall. The
-guard in `drive` raises `ContextWindowExceeded` *before* the request leaves the
-machine when the sent history crosses the hard limit, and the notebook proves it
-with `hard_limit=1` so the cell costs nothing. That is the difference between a
-policy you own and a `400` you did not plan for: one is a decision, the other is a
+guard on each request from `drive` raises `ContextWindowExceeded` *before* the request leaves the
+machine when the word-count proxy crosses the teaching limit, and the notebook proves it
+with `hard_limit=1` so the cell costs nothing. The comparison table reports a
+window stop and uses only answered probes in its denominator. That is the difference between a
+local teaching guard and an endpoint error you did not plan for: one is a decision, the other is a
 surprise.
 
 ---
@@ -111,9 +134,8 @@ with your endpoint already exported, as in S02.
    down which ones still contain the allergen rule afterwards — and for the ones
    that lose it, say in one sentence what a *transcript reader* would see that a
    *checker* would not.
-2. **Run the boundary cell.** It prints a token count and `rule_is_present` per
-   policy. Every row still reads like a normal café conversation. Only one still
-   governs.
+2. **Run the boundary cell.** It prints a word-count proxy and `rule_is_present` per
+   policy. These describe retained text; behavior is measured separately.
 3. **Break it deterministically.** Two assertion cells run first: truncation kills
    the unpinned rule while `pinned` keeps it, and `keep_all` with `hard_limit=1`
    raises `ContextWindowExceeded` with `context_length_exceeded` in the message.
@@ -124,30 +146,31 @@ with your endpoint already exported, as in S02.
    is behind a switch; flip it after your attempt.
 5. **Measure behaviour, not text.** `context.survival_table(client)` replays the
    probe script through all four policies. Read the `before` and `after` rates and
-   the boundary turn. The assertion is relative: `pinned` never scores below
-   `truncate`, and the spread is printed because a live endpoint is allowed a bad
-   day.
+   the boundary turn. The observed ordering may reverse. Report answered/attempted
+   probe counts and capped turns beside the rates;
+   the notebook does not turn a hypothesis about pinning into an assertion.
 
 ---
 
 ## Checkpoint — the number you bank
 
 Bank **probe survival after the boundary, per policy** — a pair `(policy, rate)`
-for `truncate`, `summarize` and `pinned` across the probes the script produced —
-and name the rent you paid for the best of them. The pinned rule rides every
+for `truncate`, `summarize` and `pinned` across answered probes — alongside the
+answered/attempted counts, capped turns, and the rent you paid. The pinned rule rides every
 request; say so when you quote the number.
 
-This page will not predict your rates. A live model moves them, and the point is
-that the *ordering* survives the movement: if burying the rule ever outscored
+This page will not predict your rates. A live model moves them, and you must report the ordering you actually observe: if burying the rule ever outscored
 pinning it over a real probe count, that would be the finding, not a glitch — and
 your job would be to explain what the pin failed to change.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Governance Decay, v2](https://arxiv.org/abs/2606.22528v2) | **newer than this session** | Preprint evidence for compaction-induced violations and constraint pinning; benchmark results are not universal guarantees. |
+| [Lost in Compaction, v1](https://arxiv.org/abs/2608.11242v1) | **newer than this session** | Measures session-constraint retention. Check retention, behavior and completion separately. |
 | [Anthropic: effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | **adopt** | Treats the window as a budget to curate, not a bucket to fill, and puts stable instructions where compaction cannot reach them. This is the doctrine behind `pinned`. |
 | [Lost in the Middle](https://arxiv.org/abs/2307.03172) | **recognize** | Position in the window changes how reliably a model uses a fact. Your pin is not only a survival trick; where it sits is part of why it works. |
 | [Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) | **recognize** | Pinned, stable prefixes are also the cheapest tokens to send. The rent you pay per request can be discounted by infrastructure you do not control yet. |
@@ -182,7 +205,7 @@ your job would be to explain what the pin failed to change.
 - *"A bigger window is the fix."* A bigger budget moves the boundary. It does not
   decide what survives it.
 - *"Overshooting the budget is the same as overshooting the window."* The budget is
-  a soft target you own; the hard limit is a `400`. Do not conflate a policy with a
+  a soft target you own; the hard limit in this toy is a local proxy guard. Do not conflate a policy with a
   protocol error.
 
 ---
@@ -203,8 +226,7 @@ probe rate is split before and after the boundary.</details>
 
 <details><summary>What does pinning actually buy, and what does it cost?</summary>
 
-It buys a rule that no compaction round can drop, so behaviour stays stable across
-the boundary. It costs a few tokens on every request, forever, and it takes a
+It buys a rule that no compaction round can drop, without promising behavioral compliance. It costs a few words of the proxy budget on every request, and it takes a
 channel out of your budget that history can no longer use.</details>
 
 <details><summary>Your pinned rate came out below the buried rate on ten probes. What now?</summary>

@@ -16,10 +16,10 @@ ALTERNATIVES = {
         'A learner chooses between harness and evaluation work or model-layer fundamentals, leads with the corresponding evidence, and then states clearly which claims that evidence does and does not support.',
     ),
     'S01-agent-loop': (
-        'Client-owned weather loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call.',
+        'Client-owned café loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call.',
     ),
     'S02-golden-evals': (
-        'Controlled fitness comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported.',
+        'Controlled café comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported.',
     ),
     'S03-context-engineering': (
         'Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model.',
@@ -47,7 +47,7 @@ ALTERNATIVES = {
         'Failure traces move through open coding, axial grouping, and count-by-severity ranking; top categories drive focused fixes and recurrent categories add eval tasks whose results produce new traces.',
     ),
     'S11-budgets-routing': (
-        'A pipeline validates its policy route table before any model call, routes allowed content among local and cloud models, meters cost and latency, and stops before a run would breach its budget.',
+        'A simulated classification policy and illustrative cost projection gate calls to one configured client. Reported usage informs cost estimates; unknown accounting and observed overruns stop later budgeted calls.',
     ),
     'S12-judge-calibration': (
         'Seeded transcripts feed both a defect critic and a rubric judge; detection and false-positive counts combine with judge agreement against prior hand labels to determine what findings may trigger.',
@@ -114,9 +114,9 @@ NOTEBOOK_ALTERNATIVES = {
         'responses back in order and raises on any mismatch.',
     ),
     's11-budget': (
-        'A validated route table projects each call cost and refuses before spending '
-        'past budget; dispatched calls report usage and latency into a ledger of '
-        'real tokens and cost.',
+        'Simulated route policy and illustrative projections gate one configured client. '
+        'Reported usage yields cost estimates; missing usage stays unknown and '
+        'observed overruns stop later budgeted calls.',
     ),
     's12-judge': (
         'Clean transcripts seed known defects and an answer key before blind '

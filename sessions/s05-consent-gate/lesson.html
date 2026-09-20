@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,14 +109,14 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html#the-theory-in-depth">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
 <h1 id="s05-consent-gate-the-gate-before-the-irreversible-action">S05-consent-gate — The gate before the irreversible action</h1>
 <p><strong>Carried in:</strong> <code>cafe/schema.py</code> — the ticket contract and the validator that decides whether a proposal is even readable. A ticket you can validate is a ticket a human can approve.
 <strong>Today you ship:</strong> <code>cafe/consent.py</code> — the gate that stands between the model and the one irreversible action in the café.
 <strong>What this teaches:</strong> propose → confirm → fire, with approve, edit and reject as first-class outcomes; an enforcement check that runs before dispatch on the harness's own copy of the approved ticket; and the two violation semantics, abort and degrade.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop), S04 (the ticket contract).
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>A customer asks for a latte. The model calls <code>propose_order</code>, and then — without
@@ -171,6 +173,16 @@ fires must match what was approved. <code>fire_requested</code> is the only call
 </ul>
 <p>Note what degrade does <em>not</em> do: it never fires the model's request. The approved
 ticket is the only ticket in the building.</p>
+<p>Approval is not retry safety. Suppose the kitchen accepts the approved ticket,
+but its reply is lost. Retrying with a new operation ID can make a second order.
+A durable design binds one idempotency key to the exact approved payload,
+reuses that key after an uncertain response, rejects a different payload under
+the same key, and preserves the operation's outcome. See <a href="https://temporal.io/blog/idempotency-and-durable-execution">Temporal's idempotency
+explanation</a>.
+<a href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph interrupts</a>
+can re-run a node on resume, so side effects before an interrupt need idempotent
+handling. This toy enforces consent in memory; it does not implement durable
+execution, crash recovery or an idempotent kitchen service.</p>
 <h3 id="the-gate-inside-the-loop">The gate inside the loop</h3>
 <p><code>cafe/consent.py</code>'s <code>run_shift</code> intercepts <code>propose_order</code> to collect consent and
 stash the approved ticket on the run; a later <code>fire_ticket</code> is compared against it
@@ -213,8 +225,8 @@ it exercises the reject path on this endpoint, with this script, and it says not
 yet about a model that proposes something nobody approved. That is the loop-level
 case the drift assertion covers.</p>
 <hr />
-<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -223,6 +235,11 @@ case the drift assertion covers.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="https://temporal.io/blog/idempotency-and-durable-execution">Temporal: idempotency and durable execution</a></td>
+<td><strong>recognize</strong></td>
+<td>A stable operation key prevents duplicate effects only when the receiving system enforces it. This toy does not implement that service.</td>
+</tr>
 <tr>
 <td><a href="https://openai.github.io/openai-agents-python/">OpenAI Agents SDK</a></td>
 <td><strong>recognize</strong></td>
@@ -244,12 +261,12 @@ case the drift assertion covers.</p>
 <td>Standardises tool discovery and deliberately leaves approval to the host. The gate you wrote is that host's job.</td>
 </tr>
 <tr>
-<td><a href="https://langchain-ai.github.io/langgraph/">LangGraph</a></td>
-<td><strong>adopt</strong></td>
-<td>Models human-in-the-loop as interrupts with durable state, so an approval can resume a paused graph. Read it when you need the gate to survive a restart.</td>
+<td><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph interrupts</a></td>
+<td><strong>recognize</strong></td>
+<td>Resume may re-run a node. Review side effects around the interrupt; a pause alone does not make retries safe.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
@@ -312,14 +329,14 @@ path. Read `stop_reason` and `gate_log` before calling it a success or a failure
 <h2 id="what-this-unlocks">What this unlocks</h2>
 <p>You can now hold an irreversible action behind a check that runs before dispatch.
 But the gate only sees what it is <em>given</em>: an untrusted message still flows straight
-into the model. <strong><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">S06 — Layered detection</a></strong> puts an
+into the model. <strong><a href="../s06-layered-detection/lesson.html">S06 — Layered detection</a></strong> puts an
 ordered pipeline in front of the model — a deterministic keyword floor before any
 model call, an allergen classifier, and a scope governor — with a real allergen as
 the stake.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html#the-theory-in-depth">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html#the-theory-in-depth">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s04-structured-generation/lesson.html">&larr; Prev: S04-structured-generation — The ticket contract</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s06-layered-detection/lesson.html">Next: S06-layered-detection — Screening the counter &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s05-consent-gate/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s05-consent-gate/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

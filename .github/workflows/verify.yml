@@ -18,11 +18,12 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install tooling
+      - name: Install tooling (networked bootstrap)
         run: uv sync --frozen
       - name: Content and static freshness contracts
         env:
           COURSE_MODE: stub
+          PYTHONPATH: ${{ github.workspace }}/tests/no_network_site:${{ github.workspace }}
         run: uv run python -m unittest discover -s tests -v
       - name: Execute notebooks offline
         env:
@@ -53,9 +54,12 @@ jobs:
       - name: Check relative links
         run: uv run python tools/check_links.py
       - name: Test lab contracts
+        env:
+          COURSE_MODE: stub
+          PYTHONPATH: ${{ github.workspace }}/tests/no_network_site:${{ github.workspace }}
         run: uv run python -m unittest labs/test_contracts.py
       - name: Replay labs against committed cassettes
+        env:
+          COURSE_MODE: stub
+          PYTHONPATH: ${{ github.workspace }}/tests/no_network_site:${{ github.workspace }}
         run: uv run python labs/run.py --all --replay
-      - name: Check http links
-        if: matrix.python-version == '3.11'
-        run: uv run python tools/check_links.py --http

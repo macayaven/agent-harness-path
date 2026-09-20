@@ -11,6 +11,8 @@ tests/test_codespaces.py.
 from __future__ import annotations
 
 import json
+import ast
+import re
 import sys
 from pathlib import Path
 
@@ -84,17 +86,78 @@ def check_extension_parity(dev: dict, recommended: list[str]) -> list[str]:
     return []
 
 
-def check_instructions_mirror(mdc: str, instructions: str) -> list[str]:
-    def body(text: str) -> str:
-        lines = text.splitlines()
-        if lines and lines[0].strip() == "---":
-            end = lines.index("---", 1)
-            lines = lines[end + 1 :]
-        return "\n".join(lines).strip() + "\n"
+def frontmatter(text: str) -> tuple[dict, str]:
+    """The flat YAML subset used by these course files, including inline lists."""
+    lines = text.splitlines(keepends=True)
+    if not lines or lines[0].strip() != "---":
+        raise ValueError("frontmatter is required")
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        raise ValueError("frontmatter must have a closing delimiter")
+    fields = {}
+    for line in lines[1:end]:
+        if not line.strip():
+            continue
+        if ":" not in line:
+            raise ValueError("expected a flat frontmatter field")
+        key, value = (part.strip() for part in line.split(":", 1))
+        if key in fields:
+            raise ValueError(f"duplicate frontmatter field: {key}")
+        if value in {"true", "false"}:
+            fields[key] = value == "true"
+        elif value.startswith(("[", '"', "'")):
+            try:
+                fields[key] = ast.literal_eval(value)
+            except (ValueError, SyntaxError):
+                raise ValueError(f"invalid course frontmatter field: {key}") from None
+        else:
+            fields[key] = value
+    return fields, "".join(lines[end + 1:])
 
-    if body(mdc) != body(instructions):
-        return ["instructions body diverged from the .cursor rule"]
-    return []
+
+def check_tutor_policy(text: str) -> list[str]:
+    """Structural safeguards; editor/model behavior still needs a live tutor bank."""
+    normalized = " ".join(text.casefold().split())
+    problems = []
+    if re.search(r"unless.{0,80}peek", normalized) or "contributor exception" in normalized:
+        problems.append("tutor policy contains a peek or contributor exception")
+    for required in ("either in files or in chat", "does not change this role",
+                     "s13/s14 assistance is process-only", "never request, open, print, log, copy, or commit credentials"):
+        if required not in normalized:
+            problems.append(f"tutor boundary missing: {required}")
+    return problems
+
+
+def check_instructions_mirror(mdc: str, instructions: str) -> list[str]:
+    try:
+        cursor_meta, cursor_body = frontmatter(mdc)
+        copilot_meta, copilot_body = frontmatter(instructions)
+    except ValueError as exc:
+        return [str(exc)]
+    problems = []
+    if cursor_meta.get("alwaysApply") is not True:
+        problems.append("Cursor rule must declare alwaysApply: true")
+    if copilot_meta.get("applyTo") != "**":
+        problems.append('Copilot instructions must declare applyTo: "**"')
+    if cursor_body != copilot_body:
+        problems.append("instructions body diverged from the .cursor rule")
+    return problems + check_tutor_policy(cursor_body)
+
+
+def check_tutor_agent(text: str) -> list[str]:
+    try:
+        fields, body = frontmatter(text)
+    except ValueError as exc:
+        return [str(exc)]
+    expected = {"name": "AHP Tutor", "tools": ["read", "search"], "agents": [],
+                "user-invocable": True, "disable-model-invocation": True}
+    problems = [f"AHP Tutor requires {key}={value!r}" for key, value in expected.items()
+                if fields.get(key) != value]
+    if any(key in fields for key in ("handoffs", "hooks", "mcp-servers")):
+        problems.append("AHP Tutor must not add handoffs, hooks or MCP servers")
+    if "../instructions/ahp-companion.instructions.md" not in body:
+        problems.append("AHP Tutor must reference the shared learner policy")
+    return problems
 
 
 def main() -> int:
@@ -111,6 +174,11 @@ def main() -> int:
             encoding="utf-8"
         ),
     )
+    problems += check_tutor_agent((ROOT / ".github/agents/ahp-tutor.agent.md").read_text())
+    settings = load_jsonc(ROOT / ".vscode/settings.json")
+    for name in ("chat.includeApplyingInstructions", "chat.includeReferencedInstructions"):
+        if settings.get(name) is not True:
+            problems.append(f"{name} must be enabled for the learner policy")
     for problem in problems:
         print(f"FAIL {problem}", file=sys.stderr)
     if problems:

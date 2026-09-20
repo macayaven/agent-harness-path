@@ -24,7 +24,7 @@ Print it (the returned dict and `state["stop_reason"]`). No ambiguous exits.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s07-repair-loop/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s07 --replay
@@ -36,7 +36,7 @@ the delta may be “none, still 6/6” — that is a valid record if true.
 
 ## Predict-first
 
-If an allergen leak happens, does the bad assistant turn remain in the
+If a supplier-reference leak happens, does the bad assistant turn remain in the
 product transcript? (No: suffix is deleted before retry.)
 
 ## Assistant: do / don't

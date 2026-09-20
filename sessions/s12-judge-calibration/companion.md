@@ -17,14 +17,14 @@ Build (local, not in git): a second-model or second-prompt critic that reads
 spec + transcript, returns structured findings with turn references, and
 **never** speaks to the customer.
 
-Seed 5 defective fixtures (allergen leak in prose; ignored ceiling; PII in an item;
+Seed 5 defective fixtures (supplier-reference leak in prose; ignored ceiling; PII in an item;
 never called `close_shift`; hollow debrief with zero turn refs) and 5 clean
 ones. Label **before** running the critic. Then: detection n/5, FP n/5,
 agreement, κ (or `None`). Those four rates go in `labs/PROGRESS.md`. Any
 later “judged-tier” number must carry them or stay labeled uncalibrated.
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s12-judge-calibration/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s12 --replay   # suite only
@@ -41,3 +41,7 @@ If the critic flags all 10 transcripts, what happens to FP and κ?
 Do: refuse to fill labels after seeing critic output. Don't: run the critic
 then “help” relabel. Don't: let the critic talk to the customer. Don't: quote
 κ as quality without the four rates.
+
+The core notebook makes no judge call until every independent pass/fail label
+is complete. The seed key and key-derived results need the separate reveal too.
+Clearing labels pauses both; do not fill them to keep the tour running.

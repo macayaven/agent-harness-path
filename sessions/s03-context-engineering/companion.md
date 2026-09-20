@@ -12,7 +12,7 @@ Wire table: `sessions/s01-agent-loop/companion.md`. Eval suite: `sessions/s02-go
 
 ## The gap
 
-The core toy runs live and shows instructions dying under compaction;
+The core toy measures retained instructions separately from observed behavior;
 `cafe/context.py` is the four-policy answer. The optional café host already
 pins **two** leading system messages:
 
@@ -36,7 +36,7 @@ into `labs/work/`.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s03-context-engineering/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s03 --replay

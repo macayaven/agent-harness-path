@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -107,7 +109,7 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s08-observability-replay/lesson.html#the-theory-in-depth">&larr; Prev: S08-observability-replay — A shift with a memory</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">Next: S10-error-analysis — From a pile of failures to a permanent eval task &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s08-observability-replay/lesson.html">&larr; Prev: S08-observability-replay — A shift with a memory</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s10-error-analysis/lesson.html">Next: S10-error-analysis — From a pile of failures to a permanent eval task &rarr;</a></span></nav>
 <h1 id="s09-evidence-reports-the-thirty-second-debrief">S09-evidence-reports — The thirty-second debrief</h1>
 <p><strong>Carried in:</strong> <code>cafe/trace.py</code> from S08 — you can record a real shift and replay it exactly.
 <strong>Today you ship:</strong> <code>cafe/report.py</code> — a debrief a tired reader can trust, with the validators that
@@ -118,7 +120,7 @@ gets an honest report.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S02 (golden sets and
 deterministic checks), S08 (the trace and replay this session reads).
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>It is 23:40. Someone has to read what happened on this shift and decide whether to change anything
@@ -133,7 +135,7 @@ that was never said, and the safety event that quietly never happened.</p>
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="write-for-the-depleted-reader">Write for the depleted reader</h3>
 <p>The reader is tired and accountable. They need six things, fast:</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>slot</th>
@@ -173,15 +175,15 @@ that was never said, and the safety event that quietly never happened.</p>
 <td>model calls, turns, tokens, model latency</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>write_report</code> produces exactly those slots — not a narrative. It is a deterministic stand-in for the
 LLM writer you would ship; two rules make it honest by construction: <strong>quotes are copied from the
 conversation</strong>, and <strong>the outcome is read from the run record</strong>, never inferred from how the last
 message felt.</p>
 <h3 id="a-claim-carries-a-turn-and-a-verbatim-quote">A claim carries a turn and a verbatim quote</h3>
 <p><code>log_events</code> reads events off the trace rather than off a vibe: an allergen check that reported
-<code>contains: true</code> is a <code>safety</code> event, a check that cleared an item is an <code>observation</code>, a fired
-ticket is a <code>milestone</code>, an item priced while sold out is a <code>safety</code> event, and a shift the turn cap
+<code>contains: true</code> is a <code>safety</code> event, a check that cleared an item is an <code>observation</code>, an actually fired
+ticket is a <code>milestone</code>, a refused fire is a <code>safety</code> event, an item priced while sold out is a <code>safety</code> event, and a shift the turn cap
 cut short is a <code>setback</code> carrying the last spoken turn. Each event quotes the raw tool result — the
 same string the loop wrote into the message list — so the quote resolves verbatim to its turn by
 construction. For the two free-text slots, <code>_first_sentence</code> and <code>_last_sentence</code> take a prefix and a
@@ -194,7 +196,7 @@ record. An LLM writing the same report will tidy a quote into something nicer an
 shift up to a clean finish; the validator catches both because it compares bytes and integers, not
 impressions.</p>
 <h3 id="the-two-lies-are-different-so-you-need-both-validators">The two lies are different, so you need both validators</h3>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>lie</th>
@@ -214,13 +216,15 @@ impressions.</p>
 <td><code>validate_coverage</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>validate_coverage</code> compares the report against the events the harness logged, not against the report
 itself: every event must surface in <code>moments</code>, and every event whose type starts with <code>safety</code> must
 reach the <code>safety</code> slot. That is the only way to catch a lie that leaves no false sentence on the
 page. A report that passes one validator and fails the other is still dishonest — honesty is the
 conjunction. Neither validator is a judge: they check provenance, not quality, and inventing a
 quality score here is S12's problem, not this module's.</p>
+<p>S05's consent gate remains active. These examples use an explicitly scripted customer,
+not approval inferred from the model's prose. A refused action stays refused when reported.</p>
 <h3 id="a-failed-run-still-gets-a-report">A failed run still gets a report</h3>
 <p>A shift that hit the turn cap is not an excuse to write nothing. <code>capped_shift_trace()</code> is one such
 trace kept as teaching material: the allergen check found milk in the croissant, the model asked a
@@ -254,7 +258,7 @@ validators</strong>. Write it down with the model name. Anything short of all of
 not a reporting style choice — a shift you cannot debit honestly is a shift you cannot defend.</p>
 <hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -304,7 +308,7 @@ not a reporting style choice — a shift you cannot debit honestly is a shift yo
 <td>Asking the model to "only use the transcript" is advice, not verification. The validator is what makes the claim checkable.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
@@ -369,13 +373,13 @@ the report would hide the run that most needs a decision made about it.</details
 <hr />
 <h2 id="what-this-unlocks">What this unlocks</h2>
 <p>You can describe one shift honestly, and you can prove the description resolves to the trace. You
-still have no idea which failures <em>recur</em> — every trace gets read on its own. <strong><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">S10 — Error
+still have no idea which failures <em>recur</em> — every trace gets read on its own. <strong><a href="../s10-error-analysis/lesson.html">S10 — Error
 analysis</a></strong> turns a pile of real traces into open-coded notes, a labeled
 taxonomy, and a top category that becomes a permanent eval task.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s08-observability-replay/lesson.html#the-theory-in-depth">&larr; Prev: S08-observability-replay — A shift with a memory</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s10-error-analysis/lesson.html#the-theory-in-depth">Next: S10-error-analysis — From a pile of failures to a permanent eval task &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s08-observability-replay/lesson.html">&larr; Prev: S08-observability-replay — A shift with a memory</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s10-error-analysis/lesson.html">Next: S10-error-analysis — From a pile of failures to a permanent eval task &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s09-evidence-reports/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s09-evidence-reports/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

@@ -9,7 +9,7 @@ curated failure view; honest `stop_reason`.
 
 ## Build
 
-If a host turn hits policy (allergen leak, PII), do not keep it as the product
+If a host turn hits policy (supplier-reference leak, PII), do not keep it as the product
 turn. Append a short repair instruction, regenerate, **≤3** attempts. Never
 grow the approved scope on a retry.
 

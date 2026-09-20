@@ -1,8 +1,9 @@
 """The one seam between the course and a real model.
 
 A notebook never constructs a client; it calls `get_client()`. That returns a
-LiveClient for the learner and a deterministic StubClient in CI, so the same
-notebook source is both a real experiment and an offline, zero-cost contract.
+deterministic StubClient by default on every platform. COURSE_MODE=live selects
+LiveClient, so the same notebook source supports live experiments and offline
+contracts. CI additionally blocks socket connections.
 
 Wire format: OpenAI-compatible POST /chat/completions over urllib. No SDK.
 The API key is never printed, logged, or included in an error message.
@@ -27,6 +28,7 @@ __all__ = [
     "StubClient",
     "get_client",
     "check_pairing",
+    "usage_tokens",
 ]
 
 TIMEOUT_DEFAULT = 120.0
@@ -107,7 +109,26 @@ def _slim(response: dict) -> dict:
     }
     if isinstance(response.get("usage"), dict):
         out["usage"] = response["usage"]
+    if isinstance(response.get("model"), str):
+        out["model"] = response["model"]
     return out
+
+
+def usage_tokens(usage: Any) -> int | None:
+    """Known total only when supplied counts are valid and consistent.
+
+    A total-only response is sufficient. Supplied prompt/completion components
+    cannot exceed that total and, when both are supplied, must sum to it.
+    """
+    if not isinstance(usage, dict):
+        return None
+    total = usage.get("total_tokens")
+    parts = [usage[k] for k in ("prompt_tokens", "completion_tokens") if k in usage]
+    if not all(type(value) is int and value >= 0 for value in [total] + parts):
+        return None
+    if any(part > total for part in parts) or (len(parts) == 2 and sum(parts) != total):
+        return None
+    return total
 
 
 class _TransportError(RuntimeError):
@@ -243,7 +264,7 @@ class LiveClient:
 
 
 class StubClient:
-    """Deterministic offline stand-in. CI only - never the learner default.
+    """Deterministic offline stand-in; the default for learners and CI.
 
     It is intentionally mediocre: it answers, it sometimes skips a tool, and it
     never invents a price. That is enough to exercise the harness contracts
