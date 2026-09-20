@@ -261,8 +261,8 @@ def s07_md_checkpoint(mo):
     ## What this unlocks
 
     Your agent can now recover. It still cannot tell you *what happened* — the
-    attempt log lives and dies inside one run. **[S08 — Observability &
-    replay](S08-observability-replay.html)** gives the shift a memory: spans, a
+    attempt log lives and dies inside one run. **S08 — Observability &
+    replay** gives the shift a memory: spans, a
     recorded trace of your own live session, and a replay you can prove is
     identical.
     """)

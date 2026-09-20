@@ -212,15 +212,17 @@ def s12_reveal_source_hand_labels(hand_labels_ready, mo, reveal_hand_labels):
 
 
 @app.cell
-def s12_demo_hand_labels(transcripts):
-    hand_labels = attempt_hand_labels(transcripts)
-    hand_labels_ready = labels_ready(hand_labels, set(transcripts), {"pass", "fail"})
-    if not transcripts:
-        print("No transcripts to label; no calibration evidence.")
-    elif not hand_labels_ready:
-        print("Attempt pending: supply pass/fail for every transcript before judging.")
-    else:
-        print("Independent labels complete:", hand_labels)
+def s12_demo_hand_labels(mo, transcripts):
+    # Cell outputs clear with the label gate; console history would retain them.
+    with mo.redirect_stdout():
+        hand_labels = attempt_hand_labels(transcripts)
+        hand_labels_ready = labels_ready(hand_labels, set(transcripts), {"pass", "fail"})
+        if not transcripts:
+            print("No transcripts to label; no calibration evidence.")
+        elif not hand_labels_ready:
+            print("Attempt pending: supply pass/fail for every transcript before judging.")
+        else:
+            print("Independent labels complete:", hand_labels)
     return hand_labels, hand_labels_ready
 
 
@@ -232,14 +234,15 @@ def s12_demo_reference_key(hand_labels_ready, mo, reveal_hand_labels):
 
 
 @app.cell
-def s12_demo_compare_hand_labels(hand_labels, key, transcripts):
-    _reference = judge.reference_labels(key)
-    _ids = list(transcripts)
-    _agree = sum(hand_labels[tid] == _reference[tid] for tid in _ids)
-    _mine = [hand_labels[tid] for tid in _ids]
-    _ref = [_reference[tid] for tid in _ids]
-    print(f"you vs the seed key: {_agree}/{len(_ids)} agreement")
-    print(f"your κ vs the key  : {judge.fmt_kappa(judge.cohens_kappa(_ref, _mine))}")
+def s12_demo_compare_hand_labels(hand_labels, key, mo, transcripts):
+    with mo.redirect_stdout():
+        _reference = judge.reference_labels(key)
+        _ids = list(transcripts)
+        _agree = sum(hand_labels[tid] == _reference[tid] for tid in _ids)
+        _mine = [hand_labels[tid] for tid in _ids]
+        _ref = [_reference[tid] for tid in _ids]
+        print(f"you vs the seed key: {_agree}/{len(_ids)} agreement")
+        print(f"your κ vs the key  : {judge.fmt_kappa(judge.cohens_kappa(_ref, _mine))}")
     return
 
 
@@ -262,46 +265,49 @@ def s12_md_judge_v1(mo):
 
 @app.cell
 def s12_demo_judge_v1(client, hand_labels_ready, mo, transcripts):
-    mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
-    verdicts_v1 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V1)
-    _sample = list(verdicts_v1)[0]
-    print(f"sample {_sample}:", verdicts_v1[_sample])
-    print("one verdict per transcript:", len(verdicts_v1) == len(transcripts))
+    with mo.redirect_stdout():
+        mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
+        verdicts_v1 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V1)
+        _sample = list(verdicts_v1)[0]
+        print(f"sample {_sample}:", verdicts_v1[_sample])
+        print("one verdict per transcript:", len(verdicts_v1) == len(transcripts))
     return (verdicts_v1,)
 
 
 @app.cell
-def s12_demo_scores_v1(key, verdicts_v1):
-    _det = judge.detection_rate(key, verdicts_v1)
-    _fp = judge.false_positive_rate(key, verdicts_v1)
-    _unreadable = [tid for tid, verdict in verdicts_v1.items() if verdict["verdict"] == "unparseable"]
-    print("v1 detection       :", judge.fmt_rate(_det))
-    print("v1 false positives :", judge.fmt_rate(_fp))
-    print("v1 unparseable     :", f"{len(_unreadable)}/{len(verdicts_v1)}", _unreadable)
-    print("v1 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)))
-    print()
-    print("Both numbers or neither. A judge that fails everything detects everything.")
-    print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
+def s12_demo_scores_v1(key, mo, verdicts_v1):
+    with mo.redirect_stdout():
+        _det = judge.detection_rate(key, verdicts_v1)
+        _fp = judge.false_positive_rate(key, verdicts_v1)
+        _unreadable = [tid for tid, verdict in verdicts_v1.items() if verdict["verdict"] == "unparseable"]
+        print("v1 detection       :", judge.fmt_rate(_det))
+        print("v1 false positives :", judge.fmt_rate(_fp))
+        print("v1 unparseable     :", f"{len(_unreadable)}/{len(verdicts_v1)}", _unreadable)
+        print("v1 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)))
+        print()
+        print("Both numbers or neither. A judge that fails everything detects everything.")
+        print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
     return
 
 
 @app.cell
-def s12_demo_kappa_v1(key, transcripts, verdicts_v1):
-    _reference = judge.reference_labels(key)
-    _ids = list(transcripts)
-    _ref = [_reference[tid] for tid in _ids]
-    _v1 = [verdicts_v1[tid]["verdict"] for tid in _ids]
-    _agree = sum(left == right for left, right in zip(_ref, _v1))
-    _kappa = judge.cohens_kappa(_ref, _v1)
-    print(f"judge v1 vs the seed key: {_agree}/{len(_ids)} agreement, κ = {judge.fmt_kappa(_kappa)}")
-    print()
-    for _label, _group in (("defective", [t for t in _ids if key[t]]),
-                           ("clean", [t for t in _ids if not key[t]])):
-        _hits = sum(_reference[tid] == verdicts_v1[tid]["verdict"] for tid in _group)
-        _misses = [tid for tid in _group if _reference[tid] != verdicts_v1[tid]["verdict"]]
-        print(f"{_label:<10} {_hits}/{len(_group)}  misses: {_misses}")
-    print()
-    print("An aggregate hides this. Split it by the class you care about before believing it.")
+def s12_demo_kappa_v1(key, mo, transcripts, verdicts_v1):
+    with mo.redirect_stdout():
+        _reference = judge.reference_labels(key)
+        _ids = list(transcripts)
+        _ref = [_reference[tid] for tid in _ids]
+        _v1 = [verdicts_v1[tid]["verdict"] for tid in _ids]
+        _agree = sum(left == right for left, right in zip(_ref, _v1))
+        _kappa = judge.cohens_kappa(_ref, _v1)
+        print(f"judge v1 vs the seed key: {_agree}/{len(_ids)} agreement, κ = {judge.fmt_kappa(_kappa)}")
+        print()
+        for _label, _group in (("defective", [t for t in _ids if key[t]]),
+                               ("clean", [t for t in _ids if not key[t]])):
+            _hits = sum(_reference[tid] == verdicts_v1[tid]["verdict"] for tid in _group)
+            _misses = [tid for tid in _group if _reference[tid] != verdicts_v1[tid]["verdict"]]
+            print(f"{_label:<10} {_hits}/{len(_group)}  misses: {_misses}")
+        print()
+        print("An aggregate hides this. Split it by the class you care about before believing it.")
     return
 
 
@@ -320,23 +326,25 @@ def s12_md_judge_v2(mo):
 
 @app.cell
 def s12_demo_judge_v2(client, hand_labels_ready, mo, transcripts):
-    mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
-    verdicts_v2 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V2)
-    print("sample v2 verdict:", verdicts_v2[list(verdicts_v2)[0]])
+    with mo.redirect_stdout():
+        mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
+        verdicts_v2 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V2)
+        print("sample v2 verdict:", verdicts_v2[list(verdicts_v2)[0]])
     return (verdicts_v2,)
 
 
 @app.cell
-def s12_demo_scores_v2(key, verdicts_v1, verdicts_v2):
-    _fp1 = judge.false_positive_rate(key, verdicts_v1)
-    _fp2 = judge.false_positive_rate(key, verdicts_v2)
-    _det2 = judge.detection_rate(key, verdicts_v2)
-    print("v2 detection       :", judge.fmt_rate(_det2))
-    print(f"v2 false positives : {judge.fmt_rate(_fp2)}  (v1 was {judge.fmt_rate(_fp1)})")
-    print("v2 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
-    print()
-    print("Compare both rates AND coverage; either rubric can perform worse.")
-    print("Zero false alarms with zero valid verdicts does not establish quality.")
+def s12_demo_scores_v2(key, mo, verdicts_v1, verdicts_v2):
+    with mo.redirect_stdout():
+        _fp1 = judge.false_positive_rate(key, verdicts_v1)
+        _fp2 = judge.false_positive_rate(key, verdicts_v2)
+        _det2 = judge.detection_rate(key, verdicts_v2)
+        print("v2 detection       :", judge.fmt_rate(_det2))
+        print(f"v2 false positives : {judge.fmt_rate(_fp2)}  (v1 was {judge.fmt_rate(_fp1)})")
+        print("v2 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
+        print()
+        print("Compare both rates AND coverage; either rubric can perform worse.")
+        print("Zero false alarms with zero valid verdicts does not establish quality.")
     return
 
 
@@ -355,20 +363,21 @@ def s12_md_cost(mo):
 
 
 @app.cell
-def s12_demo_cost(transcripts, verdicts_v1, verdicts_v2):
-    cost_route = routing.ROUTES["local-large"]
-    cost_total = 0.0
-    for cost_rubric, cost_verdicts in (
-        (judge.RUBRIC_V1, verdicts_v1),
-        (judge.RUBRIC_V2, verdicts_v2),
-    ):
-        for cost_tid in cost_verdicts:
-            cost_messages = judge.judge_messages(transcripts[cost_tid], cost_rubric)
-            cost_total += routing.projected_usd(cost_route, cost_messages)
-    cost_calls = len(verdicts_v1) + len(verdicts_v2)
-    print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
-    print(f"illustrative projection: ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
-    print("Worth it is a question with two numbers: this cost, and the κ above.")
+def s12_demo_cost(mo, transcripts, verdicts_v1, verdicts_v2):
+    with mo.redirect_stdout():
+        cost_route = routing.ROUTES["local-large"]
+        cost_total = 0.0
+        for cost_rubric, cost_verdicts in (
+            (judge.RUBRIC_V1, verdicts_v1),
+            (judge.RUBRIC_V2, verdicts_v2),
+        ):
+            for cost_tid in cost_verdicts:
+                cost_messages = judge.judge_messages(transcripts[cost_tid], cost_rubric)
+                cost_total += routing.projected_usd(cost_route, cost_messages)
+        cost_calls = len(verdicts_v1) + len(verdicts_v2)
+        print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
+        print(f"illustrative projection: ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
+        print("Worth it is a question with two numbers: this cost, and the κ above.")
     return
 
 
@@ -457,20 +466,21 @@ def s12_md_checkpoint(mo):
 
 
 @app.cell
-def s12_demo_checkpoint(key, transcripts, verdicts_v1, verdicts_v2):
-    _det1 = judge.detection_rate(key, verdicts_v1)
-    _fp1 = judge.false_positive_rate(key, verdicts_v1)
-    _det2 = judge.detection_rate(key, verdicts_v2)
-    _fp2 = judge.false_positive_rate(key, verdicts_v2)
-    _ids = list(transcripts)
-    _ref = [judge.reference_labels(key)[tid] for tid in _ids]
-    _k1 = judge.cohens_kappa(_ref, [verdicts_v1[tid]["verdict"] for tid in _ids])
-    _k2 = judge.cohens_kappa(_ref, [verdicts_v2[tid]["verdict"] for tid in _ids])
-    print(f"bank this line — {len(transcripts)} transcripts, {_det1[1]} seeded defects")
-    print(f"  v1: detection {judge.fmt_rate(_det1)}  false positives {judge.fmt_rate(_fp1)}  κ {judge.fmt_kappa(_k1)}")
-    print(f"  v2: detection {judge.fmt_rate(_det2)}  false positives {judge.fmt_rate(_fp2)}  κ {judge.fmt_kappa(_k2)}")
-    print("  valid coverage:", "v1", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)),
-          "v2", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
+def s12_demo_checkpoint(key, mo, transcripts, verdicts_v1, verdicts_v2):
+    with mo.redirect_stdout():
+        _det1 = judge.detection_rate(key, verdicts_v1)
+        _fp1 = judge.false_positive_rate(key, verdicts_v1)
+        _det2 = judge.detection_rate(key, verdicts_v2)
+        _fp2 = judge.false_positive_rate(key, verdicts_v2)
+        _ids = list(transcripts)
+        _ref = [judge.reference_labels(key)[tid] for tid in _ids]
+        _k1 = judge.cohens_kappa(_ref, [verdicts_v1[tid]["verdict"] for tid in _ids])
+        _k2 = judge.cohens_kappa(_ref, [verdicts_v2[tid]["verdict"] for tid in _ids])
+        print(f"bank this line — {len(transcripts)} transcripts, {_det1[1]} seeded defects")
+        print(f"  v1: detection {judge.fmt_rate(_det1)}  false positives {judge.fmt_rate(_fp1)}  κ {judge.fmt_kappa(_k1)}")
+        print(f"  v2: detection {judge.fmt_rate(_det2)}  false positives {judge.fmt_rate(_fp2)}  κ {judge.fmt_kappa(_k2)}")
+        print("  valid coverage:", "v1", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)),
+              "v2", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
     return
 
 

@@ -276,7 +276,7 @@ def s09_md_checkpoint(mo):
     ## What this unlocks
 
     You can now describe one shift honestly. You still have no idea which failures
-    *recur*. **[S10 — Error analysis](S10-error-analysis.html)** turns a pile of
+    *recur*. **S10 — Error analysis** turns a pile of
     real traces into a taxonomy, and the top category into a permanent eval task.
     """)
     return

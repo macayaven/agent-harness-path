@@ -9,9 +9,11 @@ it honestly needs a system whose suite you built — the S02–S12 instrument, o
 project you own, **or** the `cafe/` package if you walked the core path.
 **This session is optional.** Completing S01–S12 does not require S13.
 **Hands-on:** none — there is no notebook this session. Scaffolding the rebuild would
-defeat it. Hard path: the audit target is `cafe/loop.py` against the café suite in
+defeat it. Core route: the audit target is `cafe/loop.py` against the café suite in
 `cafe/evals` (score it from `sessions/s02-golden-evals/toy.py` with
-`uv run marimo edit sessions/s02-golden-evals/toy.py`). Easy path: a project of yours.
+`uv run marimo edit sessions/s02-golden-evals/toy.py`). Optional hard path:
+`labs/cafe_host/` against its banked replay suite. Or choose a project of yours
+and its own suite.
 The protocol below is the hands-on.
 
 ---

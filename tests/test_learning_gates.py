@@ -1,6 +1,8 @@
 """Labels must be independent; resetting an attempt closes every result gate."""
 
 from pathlib import Path
+from contextlib import nullcontext, redirect_stdout
+from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import Mock
 import unittest
@@ -16,6 +18,8 @@ class Paused(Exception):
 
 
 class FakeMo:
+    redirect_stdout = staticmethod(nullcontext)
+
     @staticmethod
     def stop(condition, output=None):
         if condition:
@@ -27,6 +31,21 @@ class FakeMo:
 
 
 class LearningGateTests(unittest.TestCase):
+    def test_reference_output_does_not_leak_into_the_persistent_console(self):
+        path = ROOT / "sessions/s10-error-analysis/toy.py"
+        solution = notebook_function(path, "solution_open_code")
+        cell = notebook_function(path, "s10_demo_reference", {"solution_open_code": solution})
+        display = StringIO()
+        console = StringIO()
+        mo = SimpleNamespace(stop=FakeMo.stop, md=FakeMo.md,
+                             redirect_stdout=lambda: redirect_stdout(display))
+        with redirect_stdout(console):
+            cell(mo=mo, open_code_ready=True,
+                 pile=[{"id": "synthetic", "signal": "turn cap", "expects": ()}],
+                 reveal_open_code=SimpleNamespace(value=True))
+        self.assertEqual(console.getvalue(), "")
+        self.assertIn("reference labels: {'synthetic': 'never-answered'}", display.getvalue())
+
     def test_incomplete_or_invalid_labels_do_not_unlock_results(self):
         for labels in ({}, {"a": "pass", "b": None}, {"a": "pass", "b": "maybe"},
                        {"a": "pass", "b": " "}, {"a": "pass", "b": " pass "},

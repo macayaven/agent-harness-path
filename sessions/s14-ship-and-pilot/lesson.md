@@ -7,11 +7,11 @@ memory, and a public evidence artifact that shows measured behavior instead of
 vision.
 **Time:** ~20 min of reading, ~4 h of doing (fine to split across days).
 **Prerequisites:** S01–S13 for the vocabulary and the mechanisms — and, as in S13,
-a non-trivial project of your own to ship — or, if you walked the hard path,
-the course's own `cafe/` package. **This session is optional.** Completing S01–S12 does not
+a non-trivial artifact with its own suite and banked baseline: the core `cafe/`
+package, the optional `labs/cafe_host/`, or a project of yours.
+**This session is optional.** Completing S01–S12 does not
 require S14.
-**Hands-on:** no notebook — the hands-on is your own system (easy) or the
-`cafe/` package (hard), run through the protocol below.
+**Hands-on:** no notebook — run the chosen artifact through the protocol below.
 
 ---
 

@@ -262,44 +262,49 @@ def s10_reveal_source_open_code(mo, open_code_ready, reveal_open_code):
 
 
 @app.cell
-def s10_demo_attempt(pile):
-    mine = attempt_open_code(pile)
-    open_code_ready = labels_ready(mine, {record["id"] for record in pile})
-    if not open_code_ready:
-        print("Attempt pending: supply one nonempty category per record before continuing.")
-    else:
-        print("your labels    :", mine)
+def s10_demo_attempt(mo, pile):
+    # Cell outputs are replaced on invalidation; console history is retained.
+    with mo.redirect_stdout():
+        mine = attempt_open_code(pile)
+        open_code_ready = labels_ready(mine, {record["id"] for record in pile})
+        if not open_code_ready:
+            print("Attempt pending: supply one nonempty category per record before continuing.")
+        else:
+            print("your labels    :", mine)
     return mine, open_code_ready
 
 
 @app.cell
 def s10_demo_labels(mine, mo, open_code_ready):
-    mo.stop(not open_code_ready, mo.md("*Taxonomy paused until your labels are complete.*"))
-    labels = mine
-    print("Using your complete labels for the taxonomy.")
+    with mo.redirect_stdout():
+        mo.stop(not open_code_ready, mo.md("*Taxonomy paused until your labels are complete.*"))
+        labels = mine
+        print("Using your complete labels for the taxonomy.")
     return (labels,)
 
 
 @app.cell
 def s10_demo_reference(mo, open_code_ready, pile, reveal_open_code):
-    mo.stop(not (open_code_ready and reveal_open_code.value), mo.md("*Reference labels hidden.*"))
-    print("reference labels:", solution_open_code(pile))
+    with mo.redirect_stdout():
+        mo.stop(not (open_code_ready and reveal_open_code.value), mo.md("*Reference labels hidden.*"))
+        print("reference labels:", solution_open_code(pile))
     return
 
 
 @app.cell
-def s10_demo_ranking(labels, pile):
-    ranked = rank(labels, pile)
-    agreement = agreed(labels, pile, classify=classify_naive)
-    print(f"agreement with the auto-filer: {agreement}/{len(pile)}")
-    print(f"{'category':<28}{'n':<4}{'freq × sev':<12}refs")
-    for row in ranked:
-        print(
-            f"{row['category']:<28}{row['count']:<4}{row['weight']:<12}"
-            + ",".join(row["refs"])
-        )
-    top_category = ranked[0]["category"] if ranked else None
-    print("top category:", top_category or "none")
+def s10_demo_ranking(labels, mo, pile):
+    with mo.redirect_stdout():
+        ranked = rank(labels, pile)
+        agreement = agreed(labels, pile, classify=classify_naive)
+        print(f"agreement with the auto-filer: {agreement}/{len(pile)}")
+        print(f"{'category':<28}{'n':<4}{'freq × sev':<12}refs")
+        for row in ranked:
+            print(
+                f"{row['category']:<28}{row['count']:<4}{row['weight']:<12}"
+                + ",".join(row["refs"])
+            )
+        top_category = ranked[0]["category"] if ranked else None
+        print("top category:", top_category or "none")
     return (top_category,)
 
 
@@ -314,31 +319,33 @@ def s10_predict_promotion(mo):
 
 
 @app.cell
-def s10_demo_promotion(labels, pile, top_category):
-    if top_category is None:
-        task = None
-        print("No category to promote: the pile is empty.")
-    else:
-        task = promote(top_category, pile, labels)
-        print("promoted:", task["id"])
-        print("expects :", ", ".join(task["expects"]))
-        print("refs    :", ", ".join(task["refs"]))
+def s10_demo_promotion(labels, mo, pile, top_category):
+    with mo.redirect_stdout():
+        if top_category is None:
+            task = None
+            print("No category to promote: the pile is empty.")
+        else:
+            task = promote(top_category, pile, labels)
+            print("promoted:", task["id"])
+            print("expects :", ", ".join(task["expects"]))
+            print("refs    :", ", ".join(task["refs"]))
     return (task,)
 
 
 @app.cell
-def s10_demo_engines(task):
-    if task is None:
-        naive_shift = guarded_shift = None
-        naive_result = guarded_result = None
-        print("No promoted task, so no engine comparison.")
-    else:
-        naive_shift = naive_engine(task)
-        guarded_shift = guarded_engine(task)
-        naive_result = check_task(task, naive_shift)
-        guarded_result = check_task(task, guarded_shift)
-        print("naive  :", "PASS" if naive_result[0] else "FAIL", naive_result[1])
-        print("guarded:", "PASS" if guarded_result[0] else "FAIL", guarded_result[1])
+def s10_demo_engines(mo, task):
+    with mo.redirect_stdout():
+        if task is None:
+            naive_shift = guarded_shift = None
+            naive_result = guarded_result = None
+            print("No promoted task, so no engine comparison.")
+        else:
+            naive_shift = naive_engine(task)
+            guarded_shift = guarded_engine(task)
+            naive_result = check_task(task, naive_shift)
+            guarded_result = check_task(task, guarded_shift)
+            print("naive  :", "PASS" if naive_result[0] else "FAIL", naive_result[1])
+            print("guarded:", "PASS" if guarded_result[0] else "FAIL", guarded_result[1])
     return guarded_result, guarded_shift, naive_result, naive_shift
 
 
@@ -382,8 +389,8 @@ def s10_md_checkpoint(mo):
     ## What this unlocks
 
     You now know which failures recur and have a task that proves the fix. But a
-    taxonomy does not tell you what each check should cost. **[S11 — Budgets &
-    routing](S11-budgets-routing.html)** turns those categories into spending
+    taxonomy does not tell you what each check should cost. **S11 — Budgets &
+    routing** turns those categories into spending
     limits and routing choices.
     """)
     return
