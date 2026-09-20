@@ -5,6 +5,7 @@ from io import StringIO
 from pathlib import Path
 import unittest
 import statistics
+from unittest.mock import patch
 
 from cafe import domain, routing, trace
 from cafe.model import _slim
@@ -44,7 +45,12 @@ class RoutingEvidenceTests(unittest.TestCase):
     def test_unknown_usage_is_not_free_and_blocks_the_next_budgeted_call(self):
         for usage in (None, {}, {"total_tokens": -1}, {"total_tokens": True},
                       {"total_tokens": "10"}, {"total_tokens": 1.5},
-                      {"total_tokens": 10, "prompt_tokens": False}):
+                      {"total_tokens": 10, "prompt_tokens": False},
+                      {"total_tokens": 0, "prompt_tokens": 5000, "completion_tokens": 5000},
+                      {"total_tokens": 11, "prompt_tokens": 4, "completion_tokens": 6},
+                      {"total_tokens": 9, "prompt_tokens": 4, "completion_tokens": 6},
+                      {"total_tokens": 10, "prompt_tokens": 11},
+                      {"total_tokens": 10, "completion_tokens": 11}):
             with self.subTest(usage=usage):
                 client = ScriptedClient([reply(usage=usage)])
                 budget = routing.Budget(1.0)
@@ -62,6 +68,36 @@ class RoutingEvidenceTests(unittest.TestCase):
                 self.assertIsNone(trace.usage_of(tracer)["total_tokens"])
                 self.assertFalse(trace.usage_of(tracer)["usage_complete"])
 
+    def test_raw_trace_usage_cannot_accept_contradictory_components(self):
+        tracer = trace.Tracer()
+        with tracer.generation("synthetic order", usage={
+                "total_tokens": 0, "prompt_tokens": 5000, "completion_tokens": 5000}):
+            pass
+        self.assertIn("usage unknown", tracer.render())
+        summary = trace.usage_of(tracer)
+        self.assertIsNone(summary["total_tokens"])
+        self.assertFalse(summary["usage_complete"])
+        self.assertEqual(summary["known_total_tokens"], 0)
+
+    def test_consistent_usage_including_real_zero_remains_known(self):
+        cases = [({"total_tokens": 0, "prompt_tokens": 0, "completion_tokens": 0}, 0),
+                 ({"total_tokens": 10}, 10),
+                 ({"total_tokens": 10, "prompt_tokens": 4, "completion_tokens": 6}, 10),
+                 ({"total_tokens": 10, "prompt_tokens": 4}, 10),
+                 ({"total_tokens": 10, "completion_tokens": 6}, 10)]
+        for usage, expected in cases:
+            with self.subTest(usage=usage):
+                run = routing.run_phases(ScriptedClient([reply(usage=usage)]), TABLE,
+                                         [("draft_reply", MESSAGES)], budget_usd=0.01)
+                self.assertEqual(run["stop_reason"], "ok")
+                self.assertTrue(run["budget"].usage_complete)
+                self.assertEqual(run["records"][0]["tokens"], expected)
+                tracer = trace.Tracer()
+                with tracer.generation("synthetic order", usage=usage):
+                    pass
+                self.assertEqual(trace.usage_of(tracer)["total_tokens"], expected)
+                self.assertNotIn("unknown", tracer.render())
+
     def test_no_budget_allows_unknown_usage_with_partial_accounting(self):
         client = ScriptedClient([reply(), reply(usage={"total_tokens": 20})])
         run = routing.run_phases(client, TABLE, [("draft_reply", MESSAGES)] * 2)
@@ -76,6 +112,24 @@ class RoutingEvidenceTests(unittest.TestCase):
         self.assertEqual(run["stop_reason"], "budget_overrun")
         self.assertTrue(run["records"][0]["estimate_overrun"])
         self.assertGreater(run["budget"].spent_usd, 0.01)
+
+    def test_notebook_reports_and_publishes_the_last_calls_accounting_stop(self):
+        path = Path(__file__).resolve().parents[1] / "sessions/s11-budgets-routing/toy.py"
+        cell = notebook_function(path, "s11_demo_checkpoint", {"routing": routing,
+                                  "domain": domain, "statistics": statistics})
+        for final_usage, expected in (({"total_tokens": 10000}, "budget_overrun"),
+                                      (None, "usage_unknown")):
+            with self.subTest(expected=expected):
+                client = ScriptedClient([reply(usage={"total_tokens": 10}),
+                                         reply(usage={"total_tokens": 10}),
+                                         reply(usage=final_usage)])
+                tracer = trace.Tracer()
+                output = StringIO()
+                with patch.object(trace, "Tracer", return_value=tracer), redirect_stdout(output):
+                    cell(client)
+                self.assertEqual(client.calls, 3)
+                self.assertIn("stop reason      : " + expected, output.getvalue())
+                self.assertEqual(tracer.roots[0]["attrs"]["stop_reason"], expected)
 
     def test_zero_usage_is_known_and_reported_model_is_preserved(self):
         response = {**reply(usage={"total_tokens": 0}), "model": "fixture-reported"}

@@ -229,6 +229,7 @@ def drive(
             "over_budget": tokens(wire) > budget,
             "rule_present": rule_is_present(wire),
             "requests": requests,
+            "stop_reason": record["stop_reason"],
             "task_completed": record["stop_reason"] == "answered",
             "ok": None,
         }
@@ -269,23 +270,35 @@ def survival(
     *,
     budget: int = BUDGET_DEFAULT,
 ) -> dict:
-    """Probe survival before vs after the first compaction boundary."""
+    """Safety among answered probes, with capped work reported separately.
+
+    An answered turn reached the protocol's final reply; it is not proof of a
+    useful answer. A capped probe may avoid a violation without answering at all.
+    """
     stop_reason = "completed"
     try:
         log, _ = drive(client, policy, n_turns, budget=budget)
     except ContextWindowExceeded as exc:
         log = exc.log
         stop_reason = "context_limit"
+    capped = [entry for entry in log if entry["stop_reason"] == "turn_cap"]
+    if capped and stop_reason == "completed":
+        stop_reason = "turn_cap"
     boundary = next((entry["turn"] for entry in log if entry["compacted"]), None)
-    probes = [entry for entry in log if entry["probe"]]
+    attempted = [entry for entry in log if entry["probe"]]
+    probes = [entry for entry in attempted if entry["task_completed"]]
     before = [entry["ok"] for entry in probes if boundary is None or entry["turn"] < boundary]
     after = [entry["ok"] for entry in probes if boundary is not None and entry["turn"] >= boundary]
     return {
         "stop_reason": stop_reason,
-        "completed_turns": len(log),
+        "processed_turns": len(log),
+        "completed_turns": sum(entry["task_completed"] for entry in log),
+        "capped_turns": len(capped),
         "requested_turns": n_turns,
         "boundary": boundary,
         "probes": len(probes),
+        "attempted_probes": len(attempted),
+        "capped_probes": sum(entry["probe"] for entry in capped),
         "before": before,
         "after": after,
         "before_rate": _rate(before),

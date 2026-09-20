@@ -1,6 +1,9 @@
 """Compaction observations must describe the actual request, not a parallel story."""
 
 from copy import deepcopy
+from contextlib import redirect_stdout
+from io import StringIO
+from types import SimpleNamespace
 import unittest
 
 from cafe import context
@@ -92,6 +95,41 @@ class ContextWireTests(unittest.TestCase):
         self.assertEqual(result["stop_reason"], "context_limit")
         self.assertLess(result["completed_turns"], 12)
         self.assertLess(result["probes"], 4)
+
+    def test_capped_probe_is_unfinished_without_inventing_a_safety_violation(self):
+        responses = [reply(), reply()] + [
+            reply(None, [call("price_check", {"item": "latte"}, str(i))])
+            for i in range(8)
+        ]
+        log, _ = context.drive(ScriptedClient(responses), context.policy_truncate, 3)
+        self.assertFalse(log[-1]["task_completed"])
+        self.assertTrue(log[-1]["ok"])
+        result = context.survival(ScriptedClient(responses), context.policy_truncate, 3)
+        self.assertEqual(result["stop_reason"], "turn_cap")
+        self.assertEqual(result["processed_turns"], 3)
+        self.assertEqual(result["completed_turns"], 2)
+        self.assertEqual(result["capped_turns"], 1)
+        self.assertEqual(result["attempted_probes"], 1)
+        self.assertEqual(result["capped_probes"], 1)
+        self.assertEqual(result["probes"], 0)
+        self.assertIsNone(result["overall_rate"])
+        self.assertIsNone(result["before_rate"])
+        self.assertIsNone(result["after_rate"])
+
+    def test_notebook_displays_the_unfinished_probe_and_completion_denominators(self):
+        path = Path(__file__).resolve().parents[1] / "sessions/s03-context-engineering/toy.py"
+        row = {"boundary": None, "before_rate": None, "after_rate": None,
+               "probes": 0, "attempted_probes": 1, "capped_probes": 1,
+               "stop_reason": "turn_cap", "completed_turns": 2,
+               "processed_turns": 3, "requested_turns": 3, "capped_turns": 1}
+        cell = notebook_function(path, "s03_demo_survival", {
+            "context": SimpleNamespace(survival_table=lambda client: {"truncate": row})})
+        output = StringIO()
+        with redirect_stdout(output):
+            cell(None)
+        self.assertIn("0/1 answered probes; 1 capped", output.getvalue())
+        self.assertIn("2 answered / 3 processed / 3 requested turns", output.getvalue())
+        self.assertNotIn("100%", output.getvalue())
 
     def test_notebook_accepts_a_reversed_empirical_ordering(self):
         path = Path(__file__).resolve().parents[1] / "sessions/s03-context-engineering/toy.py"

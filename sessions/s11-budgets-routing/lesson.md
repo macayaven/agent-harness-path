@@ -45,7 +45,8 @@ task is worth has failed, even mid-progress.
 A pre-call estimate cannot know the final usage. The ledger multiplies reported
 usage by an **illustrative** rate card; both money figures are estimates, not invoices.
 Missing or invalid token counts are unknown, never zero. With a cap, incomplete
-accounting refuses the next call with `usage_unknown`. A completed call can still
+accounting stops the phase run with `usage_unknown`, even on its last call, and
+refuses any next call. A completed call can still
 exceed the projection and the budget: `budget_overrun` stops later phases, not the
 cost already incurred. This is not a hard spending cap.
 
@@ -82,6 +83,10 @@ the real transport and data boundaries.
 
 `response["usage"]` may report token counts. Missing, negative, boolean or
 noninteger counts remain unknown; they are not evidence of a free call.
+Supplied components must agree with the total: neither can exceed it, and
+prompt plus completion must equal it when both are present. Total-only usage
+and genuine all-zero counts remain valid. The notebook and trace publish the
+same stop outcome, including an overrun on the final requested call.
 `client.last_latency_ms` gives the wall time around the request, set by the client around
 the call, not by a formula in this notebook. A refused call is never sent, so
 `client.calls` and `client.last_latency_ms` keep the values of the previous dispatched

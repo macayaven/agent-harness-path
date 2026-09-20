@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from cafe.consent import run_shift
+from cafe.model import usage_tokens
 from collections.abc import Callable
 
 __all__ = [
@@ -140,8 +141,8 @@ class Tracer:
             extra = ""
             usage = node["attrs"].get("usage")
             if node["kind"] == "generation" and isinstance(usage, dict):
-                count = usage.get("total_tokens")
-                extra = f"  ({count} tok)" if type(count) is int and count >= 0 else "  (usage unknown)"
+                count = usage_tokens(usage)
+                extra = f"  ({count} tok)" if count is not None else "  (usage unknown)"
             lines.append(
                 "  " * depth
                 + f"{node['name']} [{node['kind']}] {node['duration_s']:.1f}s{extra}"
@@ -396,8 +397,8 @@ def usage_of(tracer: Any) -> dict:
     latency = 0.0
     for node in tracer.generations():
         usage = node["attrs"].get("usage")
-        count = usage.get("total_tokens") if isinstance(usage, dict) else None
-        if type(count) is int and count >= 0:
+        count = usage_tokens(usage)
+        if count is not None:
             tokens += count
         else:
             complete = False

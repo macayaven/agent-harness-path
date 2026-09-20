@@ -28,6 +28,7 @@ __all__ = [
     "StubClient",
     "get_client",
     "check_pairing",
+    "usage_tokens",
 ]
 
 TIMEOUT_DEFAULT = 120.0
@@ -111,6 +112,23 @@ def _slim(response: dict) -> dict:
     if isinstance(response.get("model"), str):
         out["model"] = response["model"]
     return out
+
+
+def usage_tokens(usage: Any) -> int | None:
+    """Known total only when supplied counts are valid and consistent.
+
+    A total-only response is sufficient. Supplied prompt/completion components
+    cannot exceed that total and, when both are supplied, must sum to it.
+    """
+    if not isinstance(usage, dict):
+        return None
+    total = usage.get("total_tokens")
+    parts = [usage[k] for k in ("prompt_tokens", "completion_tokens") if k in usage]
+    if not all(type(value) is int and value >= 0 for value in [total] + parts):
+        return None
+    if any(part > total for part in parts) or (len(parts) == 2 and sum(parts) != total):
+        return None
+    return total
 
 
 class _TransportError(RuntimeError):

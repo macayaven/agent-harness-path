@@ -419,35 +419,29 @@ def s11_demo_checkpoint(client):
         "draft_reply": "local-large",
         "till_summary": "local-small",
     }
-    _ledger = routing.Budget(budget_usd=0.50)
     _prompts = [
         "What do you recommend for breakfast?",
         "I'm allergic to milk, what can I have?",
         "Two espressos, please.",
     ]
-    for _line in _prompts:
-        routing.metered_call(
-            client,
-            _table,
-            "draft_reply",
-            [{"role": "system", "content": domain.PERSONA},
-             {"role": "user", "content": _line}],
-            budget=_ledger,
-        )
+    _phases = [("draft_reply", [{"role": "system", "content": domain.PERSONA},
+                               {"role": "user", "content": _line}])
+               for _line in _prompts]
+    _run = routing.run_phases(client, _table, _phases, budget_usd=0.50)
+    _ledger = _run["budget"]
     _dispatched = [record for record in _ledger.calls if record["dispatched"]]
     _tokens = [record["tokens"] for record in _dispatched]
     _latencies = sorted(record["latency_ms"] for record in _dispatched
                         if type(record["latency_ms"]) in (int, float))
     _median = statistics.median(_latencies) if _latencies else None
-    print("calls dispatched :", len(_dispatched), "of", len(_ledger.calls))
+    print("calls dispatched :", len(_dispatched), "of", len(_prompts), "requested")
     print("tokens (usage)   :", _tokens, "known sum", sum(t for t in _tokens if t is not None))
     print("accounting complete:", _ledger.usage_complete)
     print(f"latency samples  : {[round(value, 1) for value in _latencies]} ms")
     print("median latency ms:", _median)
     print(f"known cost estimate at illustrative $0.06/1k: ${_ledger.spent_usd:.4f} of ${_ledger.budget_usd:.2f}")
-    _stop = next((record["refusal"] for record in _ledger.calls if record["refusal"]), "ok")
-    print("stop reason      :", _stop)
-    _tracer = routing.publish({"stop_reason": _stop, "records": _ledger.calls})
+    print("stop reason      :", _run["stop_reason"])
+    _tracer = routing.publish(_run)
     if _tracer is None:
         print()
         print("cafe.trace not importable: the ledger stays in memory, no span tree.")

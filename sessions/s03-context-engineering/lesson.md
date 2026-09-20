@@ -96,6 +96,12 @@ turn, and grades each probe with S02's `allergen_safety`. `survival()` splits th
 probe rate into **before** and **after** the first compaction boundary. Two rates,
 one policy changed, same endpoint, same script, same checker.
 
+These rates use **answered probes**: turns that reached a final reply. The table
+also reports attempted probes, capped probes, and answered/processed/requested
+turns. A capped probe can avoid a violation without answering; it is excluded
+from these rates and remains visible in the counts. No answered probes means no
+rate. Reaching a final reply is a protocol outcome, not proof of useful completion.
+
 Keep three observations separate: **text retention** (the rule is still on the
 wire), **behavior** (the probe respects it), and **task completion** (the requested
 work finishes). A model can retain a rule and ignore it, or avoid a violation by
@@ -113,7 +119,7 @@ comparing policies, and carry the same distinction into [S08 replay](../s08-obse
 guard on each request from `drive` raises `ContextWindowExceeded` *before* the request leaves the
 machine when the word-count proxy crosses the teaching limit, and the notebook proves it
 with `hard_limit=1` so the cell costs nothing. The comparison table reports a
-window stop and uses only completed probes in its denominator. That is the difference between a
+window stop and uses only answered probes in its denominator. That is the difference between a
 local teaching guard and an endpoint error you did not plan for: one is a decision, the other is a
 surprise.
 
@@ -140,7 +146,8 @@ with your endpoint already exported, as in S02.
    is behind a switch; flip it after your attempt.
 5. **Measure behaviour, not text.** `context.survival_table(client)` replays the
    probe script through all four policies. Read the `before` and `after` rates and
-   the boundary turn. The observed ordering may reverse. Report the rates and completed probe counts;
+   the boundary turn. The observed ordering may reverse. Report answered/attempted
+   probe counts and capped turns beside the rates;
    the notebook does not turn a hypothesis about pinning into an assertion.
 
 ---
@@ -148,8 +155,8 @@ with your endpoint already exported, as in S02.
 ## Checkpoint — the number you bank
 
 Bank **probe survival after the boundary, per policy** — a pair `(policy, rate)`
-for `truncate`, `summarize` and `pinned` across the probes the script produced —
-and name the rent you paid for the best of them. The pinned rule rides every
+for `truncate`, `summarize` and `pinned` across answered probes — alongside the
+answered/attempted counts, capped turns, and the rent you paid. The pinned rule rides every
 request; say so when you quote the number.
 
 This page will not predict your rates. A live model moves them, and you must report the ordering you actually observe: if burying the rule ever outscored

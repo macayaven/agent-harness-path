@@ -12,6 +12,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from cafe.model import usage_tokens
+
 try:
     from cafe import evals as _evals
 except ImportError:  # S02 has not landed yet; the route table still stands alone
@@ -131,17 +133,6 @@ class Budget:
         return self.budget_usd is not None and self.spent_usd + projected > self.budget_usd
 
 
-def usage_tokens(usage: Any) -> int | None:
-    """No coercion: absent, negative, bool or otherwise invalid counts are unknown."""
-    if not isinstance(usage, dict):
-        return None
-    fields = [usage.get("total_tokens")]
-    fields += [usage[k] for k in ("prompt_tokens", "completion_tokens") if k in usage]
-    if not all(type(value) is int and value >= 0 for value in fields):
-        return None
-    return usage["total_tokens"]
-
-
 def metered_call(
     client: Any,
     route_table: dict[str, str],
@@ -219,7 +210,7 @@ def run_phases(
     budget_usd: float | None = None,
     routes: dict[str, dict] | None = None,
 ) -> dict:
-    """Validate, then run `(phase, messages)` pairs until one call is refused."""
+    """Run phases until a refusal, unknown budget accounting, or observed overrun."""
     routes = ROUTES if routes is None else routes
     validate_policy(route_table, routes)
     budget = Budget(budget_usd)
@@ -230,6 +221,9 @@ def run_phases(
         )
         if not record["dispatched"]:
             stop_reason = "usage_unknown" if record["refusal"] == "usage_unknown" else "budget_exceeded"
+            break
+        if budget_usd is not None and not budget.usage_complete:
+            stop_reason = "usage_unknown"
             break
         if budget_usd is not None and budget.spent_usd > budget_usd:
             stop_reason = "budget_overrun"

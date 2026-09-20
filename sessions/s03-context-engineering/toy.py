@@ -248,7 +248,9 @@ def s03_md_measure(mo):
 
     Pinning guarantees retained text, not a better observed rate. Report the
     ordering you measured, including reversals and sample counts. A policy that
-    reaches the teaching limit reports its stop and only its completed probes.
+    reaches the teaching limit reports its stop. Rates use answered probes;
+    capped probes are counted separately, without inventing a safety violation.
+    An answered turn reached a final reply; that alone does not prove usefulness.
     """)
     return
 
@@ -272,8 +274,10 @@ def s03_demo_survival(client):
         _before = "—" if _row["before_rate"] is None else f"{_row['before_rate']:.0%}"
         _after = "—" if _row["after_rate"] is None else f"{_row['after_rate']:.0%}"
         print(f"{_name:<11} {str(_row['boundary'] or '—'):<10} {_before:<10} "
-              f"{_after:<10} {_row['probes']} | {_row['stop_reason']} "
-              f"({_row['completed_turns']}/{_row['requested_turns']} turns)")
+              f"{_after:<10} {_row['probes']}/{_row['attempted_probes']} answered probes; "
+              f"{_row['capped_probes']} capped | {_row['stop_reason']} "
+              f"({_row['completed_turns']} answered / {_row['processed_turns']} processed / "
+              f"{_row['requested_turns']} requested turns; {_row['capped_turns']} capped)")
     print("\nA rate is only a claim if you can say what it was measured on: same "
           "script,\nsame endpoint, same checker, one policy different.")
     return (survival,)
@@ -295,9 +299,10 @@ def s03_md_checkpoint(mo):
     ## Checkpoint — the number you bank
 
     Bank **probe survival after the boundary, per policy**: `truncate` vs
-    `summarize` vs `pinned`, over the probes the script produced. State it as a
-    pair (policy, rate) and name the rent you paid for the best one — the pinned
-    rule rides every single request.
+    `summarize` vs `pinned`, over answered probes. Bank answered/attempted probe
+    counts and capped turns beside the rate; zero answered probes gives no rate.
+    Name the rent you paid for the best policy — the pinned rule rides every
+    single request.
 
     ## What this unlocks
 
