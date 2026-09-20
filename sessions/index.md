@@ -16,8 +16,8 @@ lesson text; the lesson and notebook are canonical. Google branding in the
 file is Google's. Clone the repo to run the notebooks.
 
 S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
-a system you already own — or, if you walked the hard path in `labs/`, against
-the café host you built.
+your core `cafe/` artifact, your optional `labs/cafe_host/` artifact, or another
+system you own. Use the chosen artifact's own suite and banked baseline.
 
 ## Core route and post-core overlay
 
@@ -50,12 +50,13 @@ model-layer fundamentals depth.
 5. **(Optional) hard path.** After the notebook: [`labs/README.md`](../labs/README.md).
    Replay committed cassettes (`uv run python labs/run.py --session sNN --replay`)
    or call any OpenAI-compatible endpoint (`--live`). S13 is an optional
-   closed-book audit — of `labs/cafe_host/` if you built it, otherwise of a
-   system you own — and it is strict.
+   closed-book audit of one chosen artifact against its own banked suite.
+   Core `cafe/`, optional `labs/cafe_host/` and bring-your-own results stay separate.
 
-Setup: `uv sync` once, then point `CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL`
-at any OpenAI-compatible endpoint (a local model costs nothing), prove it with
-`uv run python -m cafe.doctor`, and open a session with
+Setup: `uv sync --frozen` once, then `uv run python -m cafe.doctor` checks the
+offline stub without keys. For live work, explicitly set `COURSE_MODE=live` plus
+`CAFE_BASE_URL` / `CAFE_API_KEY` / `CAFE_MODEL` for your own endpoint and rerun
+doctor. Open a session with
 `uv run marimo edit sessions/s01-agent-loop/toy.py`. Course logic is Python
 standard library only; `marimo` is the runtime.
 
@@ -73,14 +74,13 @@ standard library only; `marimo` is the runtime.
 | 8 | [Observability & replay](s08-observability-replay/lesson.html) | Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism | [toy.py](s08-observability-replay/toy.py) | [lab.md](s08-observability-replay/lab.md) |
 | 9 | [Evidence reports](s09-evidence-reports/lesson.html) | Reports a depleted reader can trust; citation and coverage validators; the 30-second test | [toy.py](s09-evidence-reports/toy.py) | [lab.md](s09-evidence-reports/lab.md) |
 | 10 | [Error analysis](s10-error-analysis/lesson.html) | Failure logs → taxonomy → new evals; open and axial coding on real traces | [toy.py](s10-error-analysis/toy.py) | [lab.md](s10-error-analysis/lab.md) |
-| 11 | [Budgets & routing](s11-budgets-routing/lesson.html) | Budgets as runtime invariants; routing as policy-as-data; the privacy boundary; latency math | [toy.py](s11-budgets-routing/toy.py) | [lab.md](s11-budgets-routing/lab.md) |
+| 11 | [Budgets & routing](s11-budgets-routing/lesson.html) | Simulated routing over one client; cost estimates, missing usage and budget refusals; latency math | [toy.py](s11-budgets-routing/toy.py) | [lab.md](s11-budgets-routing/lab.md) |
 | 12 | [Judge calibration](s12-judge-calibration/lesson.html) | Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy | [toy.py](s12-judge-calibration/toy.py) | [lab.md](s12-judge-calibration/lab.md) |
 | 13 | [Rebuild from memory](s13-rebuild-from-memory/lesson.html) | Optional lab: closed-book audit of a system you own | — (the audit is the exercise) | hard path: `cafe_host/`; else BYO |
 | 14 | [Ship & pilot](s14-ship-and-pilot/lesson.html) | Optional lab: cold acceptance run, first real user, public artifact | — (protocol, not notebook) | hard path: fixture run of the host; else BYO |
 
-S13 and S14 have no notebook by design. Easy path: optional *bring your own
-system* labs. Hard path: the audit/ship target is `labs/cafe_host/` if you
-built it. Completing S01–S12 does not require them, and does not require `labs/`.
+S13 and S14 have no notebook by design. Choose core `cafe/`, optional
+`labs/cafe_host/`, or a system you own, and retain that artifact's baseline. Completing S01–S12 does not require them, and does not require `labs/`.
 
 Per-session videos were removed in September 2026: they lagged the lessons and
 cost more to re-record than they taught. The learning happens in the notebook
@@ -96,8 +96,9 @@ an optional preview of the arc.
   habits this builds is the actual curriculum.
 - **Failure is on the syllabus.** Each toy contains deliberately broken variants
   (labeled) so you meet the failure modes cheaply, where the fix is one cell away.
-- **State of the art, dated.** Each lesson's SOTA table is stamped "as of August 2026"
-  and every claim carries a source. Treat anything older than a year as history.
+- **State of the art, dated.** Each lesson's SOTA table states its review date
+  and every row carries a source. Check evolving specifications and distinguish
+  preprint findings from general guarantees.
 
 ## License
 

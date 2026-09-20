@@ -5,7 +5,7 @@
 **What this teaches:** context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why retaining a rule and following it are different measurements, and what the pin costs on every request.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S02 (the golden set and its checkers).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -96,6 +96,17 @@ turn, and grades each probe with S02's `allergen_safety`. `survival()` splits th
 probe rate into **before** and **after** the first compaction boundary. Two rates,
 one policy changed, same endpoint, same script, same checker.
 
+Keep three observations separate: **text retention** (the rule is still on the
+wire), **behavior** (the probe respects it), and **task completion** (the requested
+work finishes). A model can retain a rule and ignore it, or avoid a violation by
+doing no useful work. The [Governance Decay preprint, v2](https://arxiv.org/abs/2606.22528v2)
+studies compaction-induced policy violations and pinning on its benchmark.
+[Lost in Compaction, v1](https://arxiv.org/abs/2608.11242v1) studies session-constraint
+retention. Their measured improvements are scoped to their evaluations; neither
+makes retained text a general compliance guarantee. Reuse [S02's receipt and
+decision log](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank) when
+comparing policies, and carry the same distinction into [S08 replay](../s08-observability-replay/lesson.html).
+
 ### Structural failures are not probabilistic
 
 `keep_all` cannot degrade gracefully — it either fits or it hits the wall. The
@@ -147,10 +158,12 @@ your job would be to explain what the pin failed to change.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Governance Decay, v2](https://arxiv.org/abs/2606.22528v2) | **newer than this session** | Preprint evidence for compaction-induced violations and constraint pinning; benchmark results are not universal guarantees. |
+| [Lost in Compaction, v1](https://arxiv.org/abs/2608.11242v1) | **newer than this session** | Measures session-constraint retention. Check retention, behavior and completion separately. |
 | [Anthropic: effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | **adopt** | Treats the window as a budget to curate, not a bucket to fill, and puts stable instructions where compaction cannot reach them. This is the doctrine behind `pinned`. |
 | [Lost in the Middle](https://arxiv.org/abs/2307.03172) | **recognize** | Position in the window changes how reliably a model uses a fact. Your pin is not only a survival trick; where it sits is part of why it works. |
 | [Anthropic prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) | **recognize** | Pinned, stable prefixes are also the cheapest tokens to send. The rent you pay per request can be discounted by infrastructure you do not control yet. |

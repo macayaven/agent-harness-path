@@ -1,0 +1,19 @@
+name: check-sources
+on:
+  workflow_dispatch:
+
+# Deliberately networked maintenance; separate from offline course execution.
+jobs:
+  sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install tooling
+        run: uv sync --frozen
+      - name: Check external source links
+        run: uv run python tools/check_links.py --http

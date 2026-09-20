@@ -4,7 +4,7 @@
 **Today you ship:** `cafe/taxonomy.py` — the pipeline that turns a pile of real failures into a ranked taxonomy and a new eval task.
 **What this teaches:** error analysis as a method — open coding a pile of real traces into free-form notes, axial coding those notes into categories narrow enough to be wrong, ranking by frequency × severity, and promoting the top category into a permanent eval task that fails on the engine that produced the pile and passes on the fix.
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (checker tiers and the fixture invariant); S08 (traces you can pull); S09 (the event log that already flags what the harness noticed).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -116,9 +116,10 @@ discrimination is provable without another model call.
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -168,13 +169,20 @@ Record three things from this run, with your model name beside them:
 
 The counts are facts about *this* pile on *your* endpoint, not a model-quality score. The
 promoted task discriminates deterministically whatever the model did.
+Carry [S02's comparison receipt](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank)
+with the pile: model/configuration, prompt/checker/data versions, timeout, budget,
+sample count and environment. Keep new failure cases in development; use a
+separate untouched holdout for release evidence. [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise)
+is one reason an unexplained score change should trigger investigation before
+a model-quality claim.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Infrastructure noise](https://www.anthropic.com/engineering/infrastructure-noise) | **recognize** | Keep the environment in the comparison receipt and infrastructure failures visible in error analysis. |
 | [Hamel Husain — A Field Guide to Rapidly Improving AI Products](https://hamel.dev/blog/posts/field-guide/) | **already in this path** | The assigned method: notes first, categories second, evals third — the exact loop this session rehearses. |
 | [Grounded theory (open and axial coding)](https://en.wikipedia.org/wiki/Grounded_theory) | **already in this path** | Applied agent work rediscovered a sixty-year-old social-science method. Constant comparison is your axial pass. |
 | [Cemri et al. — Why Do Multi-Agent LLM Systems Fail? (MAST)](https://arxiv.org/abs/2503.13657) | **recognize** | A published top-down taxonomy built from 150 annotated traces. Compare its category grain size with yours. |

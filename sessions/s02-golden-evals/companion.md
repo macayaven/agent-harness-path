@@ -61,7 +61,7 @@ silently edit checkers.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s02-golden-evals/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s02 --replay

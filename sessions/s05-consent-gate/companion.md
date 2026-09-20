@@ -31,7 +31,7 @@ is a different (weaker) story — still explain the cell.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s05-consent-gate/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s05 --replay

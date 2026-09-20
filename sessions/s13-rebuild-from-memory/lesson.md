@@ -136,16 +136,20 @@ flowchart LR
 
 One sitting, no interruptions, roughly 90 minutes end to end.
 
-**Hard path:** you built `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
+**Core path:** you studied `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
 set in `cafe/evals`, scored from [`toy.py`](../s02-golden-evals/toy.py)
 with `uv run marimo edit sessions/s02-golden-evals/toy.py` (a live endpoint works
-too — run `uv run python -m cafe.doctor` first if you need to prove it). Confirm the
+too — explicitly set `COURSE_MODE=live` and run `uv run python -m cafe.doctor`
+first if you need to prove it). Confirm the
 rebuilt core actually ran the golden set and compare its per-scenario results, not only the
 process exit status: an unchanged import would score the original, not your rebuild.
 Do not open the original `cafe/loop.py` from history or the notebook's `solution_*` reveals
 during the sitting.
 
-**Easy path:** any non-trivial project you own — from this path, from work, from
+**Optional hard path:** use your `labs/cafe_host/loop.py` and the banked lab
+suite instead. Its evidence is separate from the core café golden set.
+
+**Bring your own system:** any non-trivial project you own — from this path, from work, from
 another course — and "the suite" and "the banked number" below are that
 project's own.
 

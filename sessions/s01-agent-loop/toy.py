@@ -47,8 +47,8 @@ def s01_md_hook(mo):
     ## The promise
 
     By the end of this session you can state, from memory, the two invariants that
-    keep a tool-calling conversation legal, and you will have watched a real
-    endpoint reject the conversation when you break one on purpose.
+    keep a tool-calling conversation legal, and you will have watched the local
+    client reject an orphaned result before sending a request.
     """)
     return
 

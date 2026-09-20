@@ -4,7 +4,7 @@
 **Today you ship:** `cafe/judge.py` — the seeded-defect game, the detection and false-positive rates, and the agreement math.
 **What this teaches:** how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus *before* you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -108,9 +108,10 @@ that its model improved.
 ## Build (in the notebook, predict first)
 
 Open [`toy.py`](toy.py).
-Configure your endpoint first:
+Start on the offline stub without configuration. For live measurements:
 
 ```bash
+export COURSE_MODE=live
 export CAFE_BASE_URL=http://127.0.0.1:11434/v1
 export CAFE_API_KEY=ollama
 export CAFE_MODEL=qwen2.5:14b-instruct
@@ -153,16 +154,24 @@ it so the change is attributable. On a small local model those numbers may be po
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
 Bank the projected calibration cost next to the κ: twelve calls estimated with S11's illustrative table.
 A verdict is worth what it measures minus what it cost to get.
+Keep [S02's comparison receipt](../s02-golden-evals/lesson.html#checkpoint-the-number-you-bank),
+including model/configuration, prompt/checker/data versions, timeout, budget,
+sample count and environment. Tune on development examples, then freeze the
+rubric before an independently labeled holdout. The six teaching transcripts
+cannot serve both roles. If you generated a wider corpus with simulated users,
+label that provenance: [Lost in Simulation](https://arxiv.org/abs/2601.17087v2)
+shows why simulator evidence should not stand in for observations from people.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Lost in Simulation, v2](https://arxiv.org/abs/2601.17087v2) | **newer than this session** | Separate synthetic-corpus calibration from evidence about human users; protect an independently labeled holdout. |
 | [Hamel Husain — Creating a LLM-as-a-Judge that drives business results](https://hamel.dev/blog/posts/llm-judge/) | **already in this path** | The method behind this session: label your own corpus first, report agreement as a pair, and never trust a judge you have not measured. |
 | [Cohen's κ — overview](https://en.wikipedia.org/wiki/Cohen%27s_kappa) | **recognize** | Chance-corrected agreement. Note the degenerate case: κ is undefined, not 1.0, when the chance term is 1. |
-| [Cohen 1960 — A Coefficient of Agreement for Nominal Scales](https://doi.org/10.2307/2529310) | **recognize** | The original definition your helper implements. Read the assumption your constant-vector guard protects. |
+| [Cohen 1960 — A Coefficient of Agreement for Nominal Scales](https://doi.org/10.1177/001316446002000104) | **recognize** | The original definition your helper implements. Read the assumption your constant-vector guard protects. |
 | [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685) | **recognize** | Documents the judge's known biases — position, verbosity, self-enhancement. Small models are more susceptible, which is why this session expects a poor judge. |
 | [Anthropic — Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) | **adopt** | Judged criteria stay labeled uncalibrated until you have the rates. This session is the calibration that lets a judged tier count. |
 

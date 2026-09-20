@@ -201,7 +201,9 @@ learner notebooks, no raw logs.
 
 ## Security and configuration
 
-Nothing in S01–S12 reads network, keys, or credentials; keep it that way. The S01
+S01–S12 default to the offline stub without network or credentials. Explicit
+`COURSE_MODE=live` uses the learner's environment through `cafe.model`; never add
+a second model seam or run live mode in CI. The S01
 statute intentionally demonstrates unsafe patterns inside labeled experiments —
 do not "fix" the deliberately broken variants. Labs may read `OPENAI_API_KEY` from
 the environment for `--live`; never print or commit it. Report real repo

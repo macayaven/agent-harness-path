@@ -36,7 +36,7 @@ shipped host, p01 engine already PASSes.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s04-structured-generation/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s04 --replay   # includes p01

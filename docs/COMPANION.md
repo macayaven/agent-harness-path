@@ -11,9 +11,8 @@ read-only tools constrain file operations. Inline completion is a separate featu
 ## 1. Open the course
 
 ```bash
-git clone https://github.com/macayaven/agent-harness-path.git
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
-GIT_LFS_SKIP_SMUDGE=1           # optional: skip the archived overview video
 uv sync --frozen                # notebooks + lesson build tooling
 ```
 
@@ -30,7 +29,7 @@ A session:
 3. Predict-first: write your guess **before** asking the assistant to confirm.
 4. Optional hard path: open the same session's `lab.md` and attach its
    `companion.md` to chat. For example, [S03 companion](../sessions/s03-context-engineering/companion.md)
-   connects the context toy to the lab; there is no `bridges/s03.md` file.
+   connects the context toy to the lab.
 
 ## 2. Select and verify the learner role
 

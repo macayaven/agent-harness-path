@@ -6,7 +6,7 @@ Core: `lesson.html`,
 `toy.py`, `cafe/detect.py` (`decide`, the
 ordered screen pipeline). Optional café-host lab: `sessions/s06-layered-detection/lab.md`,
 `policy_hit` / `medical_advice_hit` / repair prelude in
-`labs/cafe_host/engine.py`, PII regex in `spec_schema.py`, synthetic private references in
+`labs/cafe_host/engine.py`, PII regex in `labs/spec_schema.py`, synthetic private references in
 `labs/menu.py` (values from `cafe/domain.py`).
 
 **Hard rule (optional café-host lab):** counter policy only (supplier-reference leaks,
@@ -43,7 +43,7 @@ Over-triggering is a product defect.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s06-layered-detection/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s06 --replay

@@ -21,7 +21,7 @@ A route label proves neither locality nor real billing. The optional café host:
 - Optional: different `OPENAI_MODEL` for spec vs serve — not required.
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s11-budgets-routing/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s11 --replay

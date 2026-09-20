@@ -1,8 +1,9 @@
 """The one seam between the course and a real model.
 
 A notebook never constructs a client; it calls `get_client()`. That returns a
-LiveClient for the learner and a deterministic StubClient in CI, so the same
-notebook source is both a real experiment and an offline, zero-cost contract.
+deterministic StubClient by default on every platform. COURSE_MODE=live selects
+LiveClient, so the same notebook source supports live experiments and offline
+contracts. CI additionally blocks socket connections.
 
 Wire format: OpenAI-compatible POST /chat/completions over urllib. No SDK.
 The API key is never printed, logged, or included in an error message.
@@ -245,7 +246,7 @@ class LiveClient:
 
 
 class StubClient:
-    """Deterministic offline stand-in. CI only - never the learner default.
+    """Deterministic offline stand-in; the default for learners and CI.
 
     It is intentionally mediocre: it answers, it sometimes skips a tool, and it
     never invents a price. That is enough to exercise the harness contracts

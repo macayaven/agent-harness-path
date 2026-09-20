@@ -6,7 +6,7 @@ A self-contained course on **building, evaluating, and governing LLM agents** �
 twelve build sessions plus two optional apply-to-your-system protocols (S13
 rebuild audit, S14 ship & pilot).
 
-**You build one agent, against a real model.** Across S01–S12 you grow a single
+**You grow one café agent, offline first or against your own model.** Across S01–S12 you grow a single
 café-counter agent in `cafe/`: loop → evals → context → schema → consent →
 detection → repair → tracing → reports → taxonomy → routing → judge. Every
 session starts from the artifact and the number the last one produced.
@@ -25,8 +25,9 @@ uv run python -m cafe.doctor                     # one live call; proves your en
 uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
-`CAFE_*` is read before `OPENAI_*`, so the course never collides with production
-credentials. No key is ever committed, printed, or logged. Notebooks are
+`CAFE_*` takes precedence over `OPENAI_*`, with a fallback for each variable.
+Use a dedicated shell and set all three explicitly before live work so a missing
+course variable cannot select an unrelated credential or endpoint. No key is ever committed, printed, or logged. Notebooks are
 [marimo](https://marimo.io) files — plain Python, reactive, diffable.
 
 **Model size matters.** Most sessions are *better* with a mediocre model: bad
@@ -34,7 +35,7 @@ output is exactly what S02, S07 and S10 measure and repair. S04
 (structured generation) and S12 (judge calibration) need a mid-size instruct
 model with real tool-calling support.
 
-**Take it in Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
+**Take it in VS Code/Copilot or Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
 then start `sessions/s01-agent-loop/lesson.html` with
 `@sessions/s01-agent-loop/companion.md` in chat.
 
@@ -49,13 +50,13 @@ uv run marimo edit sessions/s01-agent-loop/toy.py
 
 The Codespace is created under *your* GitHub account, so usage bills to you,
 not the maintainer — see [about billing for Codespaces](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces).
-The free tier (120 core-hours + 15 GB/month) is ample here: the full suite
-runs in about a minute and notebooks idle cheaply, but watch your usage at
-account billing settings. Stop the machine when you stop (`Ctrl+Shift+P` →
+Included allowances depend on your account and can change; check your account
+billing settings before starting. Stop the machine when you stop (`Ctrl+Shift+P` →
 "Codespaces: Stop Current Codespace") and delete it when done; an idle machine
 burns hours, a kept one burns storage. The default path runs offline on the deterministic
-stub. For a live model, point `CAFE_*` at a network endpoint — a Codespace
-cannot reach Ollama on your laptop. Never commit keys.
+stub. Codespaces support in this release is the offline path. A live endpoint
+requires a separately verified private route from the Codespace; its loopback
+address is not your laptop. Never expose a local model publicly just to connect it.
 
 Editor defaults (local and Codespaces): Markdown opens as preview, session
 notebooks open as marimo notebooks. For `lesson.html` files there is no
@@ -68,8 +69,10 @@ covers the arc first (it may lag the lessons; it is a Google Gemini Notebook
 overview; the lesson + notebook are canonical).
 
 S01–S12 are the core path and they **do** accumulate: the capstone is the `cafe/`
-package you finish with. S13 and S14 are optional unaided protocols — rebuild
-`cafe/loop.py` closed-book, judged by the eval suite you built.
+package you finish with. S13 and S14 are optional unaided protocols. For the core
+path, audit `cafe/loop.py` against the café golden set. For the optional hard path,
+audit your `labs/cafe_host/` loop against its own banked lab suite. A system you
+already own uses its own component and suite; do not mix their baselines.
 
 ## Core route and post-core overlay
 
@@ -86,7 +89,7 @@ package you finish with. S13 and S14 are optional unaided protocols — rebuild
 
 Engineers who already call an LLM API and want the discipline around it: eval suites
 that produce defensible numbers, context that survives compaction, consent gates,
-safety layers, traces you can replay, judges you've calibrated, budgets that hold.
+safety layers, traces you can replay, judges you've calibrated, and explicit budget limits and accounting gaps.
 Not an intro to prompting. The model call is the easy part; the harness is the
 product.
 
@@ -95,7 +98,7 @@ product.
 1. **Read the lesson** (20–40 min) — theory in depth, a diagram, and a dated
    state-of-the-art table (what the industry currently does about it, with sources).
 2. **Run the notebook** (30–60 min) — the session's slice of the café-counter
-   agent in `cafe/`, against your live endpoint, with **predict-first**
+   agent in `cafe/`, on the stub or your live endpoint, with **predict-first**
    experiments and attempt-before-solution exercises.
 3. **Self-check** — foldable quiz questions at the end of the lesson.
 4. **(Optional) hard path** — after the notebook, `sessions/sNN-slug/lab.md`
@@ -120,13 +123,8 @@ credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
 git clone https://github.com/macayaven/agent-harness-path.git
 cd agent-harness-path
 uv sync --frozen   # creates .venv/ (Python 3.11+, pinned by uv.lock)
-# Open this folder in Cursor (companion rule in .cursor/rules/).
-# Point the course at your OpenAI-compatible endpoint, prove it, open S01:
-export COURSE_MODE=live
-export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
-export CAFE_API_KEY=ollama                       # any non-empty string for a local server
-export CAFE_MODEL=qwen2.5:14b-instruct
-uv run python -m cafe.doctor
+# No .env file or key is needed. Select the learner role in docs/COMPANION.md.
+uv run python -m cafe.doctor  # offline stub; no endpoint contacted
 uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
@@ -140,8 +138,8 @@ uv run python labs/run.py --session s02 --replay
 Copy edited notebooks, progress notes and experiment output outside the Git
 checkout so they survive a clean clone, branch switch or course upgrade.
 
-`--live` is never the default and never runs in CI. Tutor credentials are
-Cursor's; lab `--live` uses separate shell `OPENAI_*`. See
+`--live` is never the default and never runs in CI. Tutor credentials belong to
+your editor; lab `--live` uses separate shell `OPENAI_*`. See
 [docs/COMPANION.md](docs/COMPANION.md) and `labs/README.md`.
 
 The clone is small: preview mp4s stream from the web when you click ▶, so you do
@@ -164,7 +162,7 @@ See [sessions/README.md](sessions/README.md).
 | `sessions/sNN-slug/lab.md` | Optional hard-path protocol, not lesson text |
 | `sessions/sNN-slug/companion.md` | Cursor companion rung |
 | `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
-| `docs/COMPANION.md` | Local OpenAI-compatible tutor wiring |
+| `docs/COMPANION.md` | Select and verify the editor tutor; separate model settings |
 | `study/` | Optional study, pilot and transfer protocols |
 | `AGENTS.md` / `CONTRIBUTING.md` | Contributor map |
 
@@ -178,6 +176,11 @@ eval baseline on a system you own. The optional labs are a **separate** café-ho
 spine — same toy domain, different artifact. If either spine grows file/shell tools, rewrite it back.
 
 ## Contributing
+
+Installing dependencies and container images is a networked bootstrap. After
+installation, the runtime verification gate uses the offline stub, committed
+cassettes and a socket guard. The separate manual source-link workflow checks
+external websites; it is not part of the offline execution claim.
 
 Reports and patches that make the path more accurate, easier to start, or
 honest about its limits are welcome. The bar is the same as the lessons:
@@ -200,15 +203,15 @@ Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
 
 The [documentation map](docs/README.md) separates learner, contributor, and pilot
-material. The v0.2.0 [GitHub release](https://github.com/macayaven/agent-harness-path/releases/tag/v0.2.0)
-remains historical evidence about named artifacts.
+material. Tagged releases remain historical evidence about their named artifacts;
+[CHANGELOG.md](CHANGELOG.md) distinguishes released versions from pending changes.
 
 ## License
 
 Split license, 2026 Carlos Crespo Macaya:
 
-- **Apache-2.0** — session toys (`sessions/*/toy.py`), labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
-- **CC BY 4.0** — lessons, the course overview video, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
+- **Apache-2.0** — `cafe/**/*.py`, session toys (`sessions/*/toy.py`), labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
+- **CC BY 4.0** — lessons, Mermaid source and rendered educational figures, the course overview video, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
 
 Vendored Mermaid.js remains MIT; see `NOTICE`. The course overview was generated with
 Google Gemini Notebook; Google's marks in that file are not part of the CC BY

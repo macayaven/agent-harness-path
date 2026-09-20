@@ -1,4 +1,4 @@
-"""One live call, so a learner can prove their endpoint works before S01.
+"""Check the selected course mode before S01; offline unless explicitly live.
 
     uv run python -m cafe.doctor
 """
@@ -32,7 +32,11 @@ def main() -> int:
     print(f"reply : {reply!r}")
     if latency:
         print(f"latency: {latency:.0f} ms")
-    print("\nendpoint works. Start at sessions/s01-agent-loop/lesson.html")
+    message = (
+        "offline stub works; no endpoint was contacted"
+        if client.mode == "stub" else "live endpoint responded"
+    )
+    print(f"\n{message}. Start at sessions/s01-agent-loop/lesson.html")
     return 0
 
 

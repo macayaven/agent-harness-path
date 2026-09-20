@@ -284,7 +284,7 @@ def time_stamped_note(run):
     process-wide RNG is not an input either.
     """
     return [
-        f"FICHA DEL TURNO - {datetime.datetime.now().isoformat()}",
+        f"SHIFT NOTE - {datetime.datetime.now().isoformat()}",
         f"cerrado: {run['stop_reason']} | turnos: {run['turns_used']}",
         f"tickets: {len(run['state'].fired)}",
         random.choice(FLOURISH),
@@ -323,7 +323,7 @@ def s08_reveal_handover_note(mo):
 @app.function(hide_code=True)
 def solution_handover_note(run, *, clock, rng):
     return [
-        f"FICHA DEL TURNO - {clock()}",
+        f"SHIFT NOTE - {clock()}",
         f"cerrado: {run['stop_reason']} | turnos: {run['turns_used']}",
         f"tickets: {len(run['state'].fired)}",
         rng.choice(FLOURISH),

@@ -5,7 +5,7 @@ marimo toy notebook, and it ships `cafe/loop.py` — the café order-taking loop
 every later session extends. The optional hard path is a separate, **complete**
 café host in `labs/cafe_host/` (this companion cut). Your job is to connect
 the core loop to that host when they take it, not to hide either side, and not
-to rewrite the host unless asked.
+to complete the learner's host implementation, even when asked.
 
 ## Files to keep in context
 
@@ -42,7 +42,7 @@ it via the bridges; S13 is still unaided.
 
 ## The gap this session exists to close
 
-The toy runs **live** against the learner's own OpenAI-compatible endpoint via
+The toy uses the offline stub by default, or the learner's own endpoint with `COURSE_MODE=live`, via
 `get_client()` from `cafe/model.py`. It walks one café shift: the assistant
 proposes an order, the harness pairs every `tool_call_id`, and the turn cap
 belongs to the loop. Café tools are `price_check`, `check_allergens`,
@@ -63,7 +63,7 @@ Same ideas: append the assistant **verbatim** (protocol fields only); pair every
 
 | Core | Optional café host |
 | --- | --- |
-| `cafe.model.get_client()` → `LiveClient.chat` | `Client.chat(messages, tools=…, temperature=0.0)` |
+| `cafe.model.get_client()` → stub or `LiveClient.chat` | `Client.chat(messages, tools=…, temperature=0.0)` |
 | `cafe.loop.run_shift(client, state, …, max_turns=…)` | `cafe_host.loop.run_loop` |
 | `cafe.tools.dispatch(state, call)` | `cafe_host.tools.dispatch(state, call)` |
 | dropped assistant message | `client.check_orphans` / `OrphanedToolResult` (runs before network/cassette) |
@@ -92,7 +92,7 @@ recipe.
 | Tool | Success | Errors |
 | --- | --- | --- |
 | `propose_order` | `{"ok": true, "spec": SPEC}` | `{"error": MESSAGE}` or `{"error": "scope_ceiling", "approved": LEVEL}` |
-| `pull_item` | `item_id, section, scope, name, detail` | `scope_ceiling`, `section_not_allowed`, `no_item` |
+| `pull_item` | `item_id, section, scope, name, detail, allergens, internal_supplier_ref` | `scope_ceiling`, `section_not_allowed`, `no_item` |
 | `settle_item` | `served, line_total, item_id` | `unknown_item` |
 | `close_shift` | `total, items_served, stop_reason` | none |
 | unknown name | — | `{"error": "unknown_tool", "name": NAME}` |
@@ -102,7 +102,7 @@ Changing `PINNED_RULES` or `STARTER_PERSONA` breaks course-cassette `--replay`.
 ## Commands
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s01-agent-loop/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s01 --replay

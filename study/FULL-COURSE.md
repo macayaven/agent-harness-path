@@ -21,10 +21,10 @@ Read the objectives and use the diagram. Write a prediction before the relevant
 notebook result, attempt the authored work yourself and compare one observation
 with the prediction. Save the notebook outside this checkout so a clean clone
 does not eat your predictions.
-Notebooks are marimo files that run **live** against your own OpenAI-compatible
-endpoint through the single `cafe/` seam (`CAFE_BASE_URL`, `CAFE_API_KEY`,
-`CAFE_MODEL`; smoke-test with `uv run python -m cafe.doctor`). Only CI is offline,
-via `COURSE_MODE=stub`. Running all cells demonstrates execution; empty attempt
+Notebooks are marimo files that use the deterministic **offline stub by default**,
+without keys or an environment file. For a live experiment, set `COURSE_MODE=live`
+and all three `CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL` variables, then run
+`uv run python -m cafe.doctor`. CI sets stub mode and blocks sockets. Running all cells demonstrates execution; empty attempt
 skeletons and reference-label scores do not become your independent work.
 
 | Session | A useful feedback focus |
@@ -50,7 +50,7 @@ reflection or certify mastery.
 
 ## Assistance and optional material
 
-The Cursor companion stays on the same chat across lesson, notebook, and lab.
+The selected tutor stays in the same learner conversation across lesson, notebook, and lab.
 Ground it with `@sessions/sNN-slug/companion.md` plus the HTML lesson you are on
 (`docs/COMPANION.md`). Do not paste a whole notebook. Predict-first cells stay
 empty until you write them. The assistant has no authority to complete activities

@@ -16,10 +16,10 @@ ALTERNATIVES = {
         'A learner chooses between harness and evaluation work or model-layer fundamentals, leads with the corresponding evidence, and then states clearly which claims that evidence does and does not support.',
     ),
     'S01-agent-loop': (
-        'Client-owned weather loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call.',
+        'Client-owned café loop: send the messages list to the model; an answer ends the loop, while tool calls are executed locally and their assistant message and matched results are retained before the next model call.',
     ),
     'S02-golden-evals': (
-        'Controlled fitness comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported.',
+        'Controlled café comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported.',
     ),
     'S03-context-engineering': (
         'Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model.',

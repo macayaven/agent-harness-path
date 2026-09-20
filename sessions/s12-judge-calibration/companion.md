@@ -24,7 +24,7 @@ agreement, κ (or `None`). Those four rates go in `labs/PROGRESS.md`. Any
 later “judged-tier” number must carry them or stay labeled uncalibrated.
 
 ```bash
-# core path: run the notebook live against your own endpoint
+# core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s12-judge-calibration/toy.py
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s12 --replay   # suite only

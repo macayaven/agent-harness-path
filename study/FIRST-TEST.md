@@ -33,12 +33,12 @@ library/museum assessment. Write an attempt before any hint:
 
 | Practice | Static condition prompt/hint | Adapted condition prompt |
 |---|---|---|
-| Weather failure | Explain where the fragile weather error appears. Static hint: follow dispatch's return value into the messages list; distinguish continuation from successful retrieval. | Explain your attempted trace to the Cursor companion and ask for one next question about your uncertainty. |
-| Fitness evidence | Explain whether the table's equal p50 values show equal speed. Static hint: find where drive creates each latency value and read the column label. | Give your attempted interpretation to the same assistant and ask for a targeted hint, not the final explanation. |
+| Café pairing failure | Explain where S01 loses the assistant tool call. Static hint: follow the call ID from the assistant message to its tool result; distinguish having an ID from preserving the call it answers. | Explain your attempted trace to the selected tutor and ask for one next question about your uncertainty. |
+| Baseline evidence | Explain what S02's naive/governed pass-rate difference can support. Static hint: identify the shared scenarios, checker and client mode, then separate the observation from a general quality claim. | Give your attempted interpretation to the same tutor and ask for a targeted hint, not the final explanation. |
 
-For a first self-guided run, use static weather and adapted fitness. If another
+For a first self-guided run, use static pairing and adapted baseline. If another
 tester repeats the protocol, reverse which practice gets which help (adapted
-weather, static fitness). If the same learner repeats it, report prior exposure.
+pairing, static baseline). If the same learner repeats it, report prior exposure.
 Within-person practice, different concepts,
 order and tester knowledge confound the comparison: it can expose friction and
 errors, not isolate a causal learning effect. Static means the ordinary course and

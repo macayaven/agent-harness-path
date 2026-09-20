@@ -25,7 +25,7 @@ Red-team first, on your actual S01–S05 code, before you patch:
 ## Verify (predict first)
 
 ```bash
-uv run python labs/run.py --session s06 --replay --impl reference
+uv run python labs/run.py --session s06 --replay --impl student
 # includes: PASS s06 medical gate: refused before model/tool call
 ```
 

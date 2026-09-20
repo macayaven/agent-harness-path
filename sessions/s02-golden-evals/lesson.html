@@ -114,11 +114,11 @@
 <strong>What this teaches:</strong> what a pass rate is a claim about — one scripted user, deterministic checkers whose failures you trust, the fixture invariant, and the naive-versus-governed delta as the only attributable comparison.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop).
-<strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
+<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
 <hr />
 <h2 id="the-hook">The hook</h2>
 <p>A customer says <em>"I'm allergic to egg, can I get a cheese omelette?"</em> Your agent
-answers in fluent Spanish, quotes a price, and sounds exactly as confident as it
+answers in fluent English, quotes a price, and sounds exactly as confident as it
 did on the easy order. Nothing in the transcript flags a problem.</p>
 <p>The problem is real: the cheese omelette carries egg. Yesterday you replayed a shift three
 times and called the result a number. A different customer, a declared allergy, a
@@ -167,6 +167,12 @@ can check:</p>
 <p>The script is reproducible; the model is not. That split is the whole design, and
 it is why the delta between two arms means something and a single absolute score
 does not.</p>
+<p>The café bank uses fixed customer scripts. <a href="https://arxiv.org/abs/2406.12045">τ-bench</a>
+instead uses dynamic conversations with an LLM-simulated user, domain tools and
+policies, then checks the final database state against the goal. Neither route is
+an observed human interaction. <a href="https://arxiv.org/abs/2601.17087v2">Lost in Simulation</a>
+reports mismatches between simulated and human users in its studied tasks;
+simulator scores cannot establish learner or customer outcomes.</p>
 <h3 id="the-checker-gets-checked-first">The checker gets checked first</h3>
 <p>A checker that cannot fail asserts nothing. Every deterministic checker earns its
 keep with one fixture invariant: <strong>an empty run must fail and a hand-built
@@ -206,7 +212,7 @@ tools means no task. That is not a rigged test, it is a description of a chatbot
 The honest assertion in the notebook is relative — <code>governed.passes &gt;=
 naive.passes</code> — because a live model is allowed to have a bad day and an absolute
 score would turn that day into a false claim.</p>
-<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S02-golden-evals.svg" alt="Controlled fitness comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported." style="--diagram-width: 977px" /></div>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S02-golden-evals.svg" alt="Controlled café comparison: the same scripted user feeds naive and governed engines; both transcripts rejoin at the same deterministic checks before results and explicitly labeled metric slots are reported." style="--diagram-width: 977px" /></div>
 <h3 id="what-this-number-cannot-say">What this number cannot say</h3>
 <p>The deterministic tier catches protocol and policy breaks. It cannot see quality:
 no checker here distinguishes a warm reply from a curt one, and none of them should
@@ -216,8 +222,9 @@ a checker, stop: you are smuggling taste into a tier that cannot hold it.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
-Configure your endpoint first:</p>
-<pre><code class="language-bash">export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+Start on the offline stub without configuration. For live measurements:</p>
+<pre><code class="language-bash">export COURSE_MODE=live
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
 export CAFE_API_KEY=ollama                       # any non-empty string for a local server
 export CAFE_MODEL=qwen2.5:14b-instruct
 uv run python -m cafe.doctor                     # one live call; proves the endpoint
@@ -245,13 +252,26 @@ uv run marimo edit sessions/s02-golden-evals/toy.py
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
 <p>Two numbers from one session on one endpoint: <strong>naive n/4 and governed n/4</strong>. Bank
 the pair, never the governed rate alone — a pass rate is only meaningful against
-the status quo it replaced. Write the model name next to it.</p>
+the status quo it replaced. Keep a comparison receipt: client mode, configured
+model and any reported model identity, generation settings, prompt/checker/data
+versions, timeout, budget, sample count and runtime environment. Mark missing
+fields unavailable. A proxy alias alone does not verify a backend. Keep private
+route details in private notes. <a href="https://www.anthropic.com/engineering/infrastructure-noise">Infrastructure noise</a>
+can change outcomes even with model and task held fixed; this receipt makes the
+comparison inspectable. The notebook does not collect every field for you.</p>
+<p>Start your own decision log now: <strong>date, decision, evidence, rejected alternative,
+next check</strong>. Write one short record whenever you change a checker, prompt or
+policy. S14 uses those records; an assistant must not fill them for you.</p>
+<p>Reserve a separate holdout before tuning. A case used to choose a prompt, threshold
+or rubric is development evidence, even if you later rename it "test". Keep
+holdout inputs and labels out of tuning, retrieval and judge prompts until the
+declared evaluation; record exposure if that boundary breaks.</p>
 <p>On your endpoint these will not be exact values and this page will not predict
 them. What you can defend is the comparison: same scripts, same endpoint, same
 checker, one harness different. This is also the number S03 must not lose while it
 compacts the context.</p>
 <hr />
-<h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
+<h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
 <table>
 <thead>
 <tr>
@@ -261,6 +281,16 @@ compacts the context.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="https://arxiv.org/abs/2601.17087v2">Lost in Simulation, v2</a></td>
+<td><strong>newer than this session</strong></td>
+<td>A preprint on simulator/human disagreement; validate the population you intend to help.</td>
+</tr>
+<tr>
+<td><a href="https://www.anthropic.com/engineering/infrastructure-noise">Infrastructure noise</a></td>
+<td><strong>recognize</strong></td>
+<td>Resource limits can change measured performance. Record the environment with the score.</td>
+</tr>
 <tr>
 <td><a href="https://www.promptfoo.dev/">promptfoo</a></td>
 <td><strong>recognize</strong></td>
@@ -274,7 +304,7 @@ compacts the context.</p>
 <tr>
 <td><a href="https://arxiv.org/abs/2406.12045">τ-bench</a></td>
 <td><strong>recognize</strong></td>
-<td>Scripted users plus a goal-state comparison, and reliability measured across repeated trials. This is where "one run is an anecdote" became a benchmark design.</td>
+<td>Dynamic LLM-simulated users, goal-state checks and repeated-trial reliability. The café bank uses fixed scripts; neither measures real people.</td>
 </tr>
 <tr>
 <td><a href="https://platform.openai.com/docs/guides/evals">OpenAI evals guide</a></td>
@@ -291,8 +321,8 @@ compacts the context.</p>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
-<li><strong>τ-bench, the task-and-reward sections only</strong> — extract: how a scripted user and
-  a state comparison replace a human grader, and what the paper admits the
+<li><strong>τ-bench, the task-and-reward sections only</strong> — extract: how an LLM-simulated user and
+  a final-state comparison support the evaluation, and what the paper admits the
   simulation cannot show.</li>
 <li><strong>Inspect AI: solvers and scorers</strong> — extract: why a harness keeps the thing
   under test and the thing that judges it in separate interfaces. That separation
@@ -352,7 +382,7 @@ would you prove it?</p>
 <nav class="lesson-nav"><span class="nav-prev"><a href="../s01-agent-loop/lesson.html#the-theory-in-depth">&larr; Prev: S01-agent-loop — The order-taking loop</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s03-context-engineering/lesson.html#the-theory-in-depth">Next: S03-context-engineering — What survives compaction &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
-  <code>sessions/sessions/s02-golden-evals/lesson.md</code> — part of The Agent Harness Path.
+  <code>sessions/s02-golden-evals/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
 </body>

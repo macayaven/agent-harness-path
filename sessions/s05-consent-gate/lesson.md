@@ -5,7 +5,7 @@
 **What this teaches:** propose → confirm → fire, with approve, edit and reject as first-class outcomes; an enforcement check that runs before dispatch on the harness's own copy of the approved ticket; and the two violation semantics, abort and degrade.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop), S04 (the ticket contract).
-**Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
+**Hands-on:** [`toy.py`](toy.py) — offline by default; `COURSE_MODE=live` uses **your** model.
 
 ---
 
@@ -96,6 +96,17 @@ fires must match what was approved. `fire_requested` is the only caller of
 Note what degrade does *not* do: it never fires the model's request. The approved
 ticket is the only ticket in the building.
 
+Approval is not retry safety. Suppose the kitchen accepts the approved ticket,
+but its reply is lost. Retrying with a new operation ID can make a second order.
+A durable design binds one idempotency key to the exact approved payload,
+reuses that key after an uncertain response, rejects a different payload under
+the same key, and preserves the operation's outcome. See [Temporal's idempotency
+explanation](https://temporal.io/blog/idempotency-and-durable-execution).
+[LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)
+can re-run a node on resume, so side effects before an interrupt need idempotent
+handling. This toy enforces consent in memory; it does not implement durable
+execution, crash recovery or an idempotent kitchen service.
+
 ### The gate inside the loop
 
 `cafe/consent.py`'s `run_shift` intercepts `propose_order` to collect consent and
@@ -147,15 +158,16 @@ case the drift assertion covers.
 
 ---
 
-## State of the art (as of August 2026)
+## State of the art (source review: 20 September 2026)
 
 | Development | Status | Take |
 |---|---|---|
+| [Temporal: idempotency and durable execution](https://temporal.io/blog/idempotency-and-durable-execution) | **recognize** | A stable operation key prevents duplicate effects only when the receiving system enforces it. This toy does not implement that service. |
 | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | **recognize** | Owns the loop and offers tool-level approval flows, so a human can interrupt before a sensitive call. The same design question: who holds the approved object. |
 | [Anthropic tool use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) | **recognize** | A tool call is a request, not an execution. Every consent design starts from that fact, which S01 established the hard way. |
 | [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) | **recognize** | Names excessive agency as a risk class and treats human approval as the control. Read it as a checklist for what your gate does not yet cover. |
 | [Model Context Protocol](https://modelcontextprotocol.io/) | **recognize** | Standardises tool discovery and deliberately leaves approval to the host. The gate you wrote is that host's job. |
-| [LangGraph](https://langchain-ai.github.io/langgraph/) | **adopt** | Models human-in-the-loop as interrupts with durable state, so an approval can resume a paused graph. Read it when you need the gate to survive a restart. |
+| [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts) | **recognize** | Resume may re-run a node. Review side effects around the interrupt; a pause alone does not make retries safe. |
 
 ---
 
