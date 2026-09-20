@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -138,7 +140,7 @@ because the script, the model and the checker are shared.</p>
 golden set fixes the <strong>user side</strong> and leaves the model exactly as uncertain as it
 was. <code>cafe/evals/tasks.py</code> ships four scenarios, each carrying the facts a program
 can check:</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>field</th>
@@ -163,7 +165,7 @@ can check:</p>
 <td>the tools the task cannot be done without</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The script is reproducible; the model is not. That split is the whole design, and
 it is why the delta between two arms means something and a single absolute score
 does not.</p>
@@ -272,7 +274,7 @@ checker, one harness different. This is also the number S03 must not lose while 
 compacts the context.</p>
 <hr />
 <h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -317,7 +319,7 @@ compacts the context.</p>
 <td>Start with the simplest thing and measure before you add. This session is that advice applied to the S01 loop.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>

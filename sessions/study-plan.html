@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -138,7 +140,7 @@ cp study/PROGRESS.template.md study/PROGRESS.md
 <p>This route pairs one defensible model-layer build with an existing agent/eval
 artifact. Choose which learning emphasis leads; complete and bank both evidence
 sets.</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Learning emphasis</th>
@@ -158,7 +160,7 @@ sets.</p>
 <td>The harness receipts and inference benchmark add systems context. Six part-time weeks do not demonstrate large-scale training or the full CS336 core.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Choose the learning emphasis before ordering the evidence narrative. The same
 evidence set supports both emphases; only the leading evidence changes.</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/study-plan.svg" alt="A learner chooses between harness and evaluation work or model-layer fundamentals, leads with the corresponding evidence, and then states clearly which claims that evidence does and does not support." style="--diagram-width: 1269px" /></div>
@@ -196,7 +198,7 @@ evidence set supports both emphases; only the leading evidence changes.</p>
 </ul>
 <h2 id="the-six-week-calendar">The six-week calendar</h2>
 <p>The hour split is a cap, not a suggestion to fill unused time with new scope.</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Week</th>
@@ -257,7 +259,7 @@ evidence set supports both emphases; only the leading evidence changes.</p>
 <td style="text-align: right;"><strong>32.5</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="w1-artifact-baseline-managed-post-training-pass">W1 — Artifact baseline + managed post-training pass</h3>
 <ul>
 <li><strong>Base:</strong> Run the local harness verification gates and record their exact results.

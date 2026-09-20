@@ -92,6 +92,12 @@ def render_body(source: Path, slug: str) -> tuple[str, str, int]:
     """Convert one source file; return (body HTML, H1 title, mermaid count)."""
     MD.reset()
     body = MD.convert(source.read_text(encoding="utf-8"))
+    body = re.sub(
+        r"(<table>.*?</table>)",
+        r'<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0">\1</div>',
+        body,
+        flags=re.S,
+    )
     if slug in STATIC_LESSONS:
         indices = count()
         body, n = MERMAID_RE.subn(

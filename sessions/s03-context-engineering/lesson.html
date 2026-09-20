@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -149,7 +151,7 @@ request exceeds the budget, the log says so; it does not quietly delete either.
 An intentionally empty system prompt stays empty rather than restoring a removed rule.</p>
 <h3 id="four-policies-one-question">Four policies, one question</h3>
 <p><code>cafe/context.py</code> answers <em>what survives compaction</em> four ways:</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>policy</th>
@@ -179,7 +181,7 @@ An intentionally empty system prompt stays empty rather than restoring a removed
 <td>yes, and the rule outlives every round</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>summarize</code> is lossy <strong>on purpose</strong>. <code>summarize_turns</code> keeps topics and drops
 prescriptive prose: "the client asked about the menu" is not a constraint. Real
 summarizers lose the same way, which is why survival must be measured rather than
@@ -256,7 +258,7 @@ pinning it over a real probe count, that would be the finding, not a glitch — 
 your job would be to explain what the pin failed to change.</p>
 <hr />
 <h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -301,7 +303,7 @@ your job would be to explain what the pin failed to change.</p>
 <td>The other answer to a full window: fetch what is relevant instead of deciding what to drop. Same question — who chooses what the model sees — different owner.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>

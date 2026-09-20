@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -231,7 +233,7 @@ label that provenance: <a href="https://arxiv.org/abs/2601.17087v2">Lost in Simu
 shows why simulator evidence should not stand in for observations from people.</p>
 <hr />
 <h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -271,7 +273,7 @@ shows why simulator evidence should not stand in for observations from people.</
 <td>Judged criteria stay labeled uncalibrated until you have the rates. This session is the calibration that lets a judged tier count.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>

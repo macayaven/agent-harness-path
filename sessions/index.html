@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -165,7 +167,7 @@ doctor. Open a session with
 <code>uv run marimo edit sessions/s01-agent-loop/toy.py</code>. Course logic is Python
 standard library only; <code>marimo</code> is the runtime.</p>
 <h2 id="the-sessions">The sessions</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -275,7 +277,7 @@ standard library only; <code>marimo</code> is the runtime.</p>
 <td>hard path: fixture run of the host; else BYO</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>S13 and S14 have no notebook by design. Choose core <code>cafe/</code>, optional
 <code>labs/cafe_host/</code>, or a system you own, and retain that artifact's baseline. Completing S01–S12 does not require them, and does not require <code>labs/</code>.</p>
 <p>Per-session videos were removed in September 2026: they lagged the lessons and

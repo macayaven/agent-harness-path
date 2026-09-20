@@ -47,6 +47,8 @@
       overflow-x: auto;
     }
     pre code { background: none; padding: 0; }
+    .table-scroll { max-width: 100%; overflow-x: auto; }
+    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -133,7 +135,7 @@ that was never said, and the safety event that quietly never happened.</p>
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="write-for-the-depleted-reader">Write for the depleted reader</h3>
 <p>The reader is tired and accountable. They need six things, fast:</p>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>slot</th>
@@ -173,7 +175,7 @@ that was never said, and the safety event that quietly never happened.</p>
 <td>model calls, turns, tokens, model latency</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>write_report</code> produces exactly those slots — not a narrative. It is a deterministic stand-in for the
 LLM writer you would ship; two rules make it honest by construction: <strong>quotes are copied from the
 conversation</strong>, and <strong>the outcome is read from the run record</strong>, never inferred from how the last
@@ -194,7 +196,7 @@ record. An LLM writing the same report will tidy a quote into something nicer an
 shift up to a clean finish; the validator catches both because it compares bytes and integers, not
 impressions.</p>
 <h3 id="the-two-lies-are-different-so-you-need-both-validators">The two lies are different, so you need both validators</h3>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>lie</th>
@@ -214,7 +216,7 @@ impressions.</p>
 <td><code>validate_coverage</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>validate_coverage</code> compares the report against the events the harness logged, not against the report
 itself: every event must surface in <code>moments</code>, and every event whose type starts with <code>safety</code> must
 reach the <code>safety</code> slot. That is the only way to catch a lie that leaves no false sentence on the
@@ -256,7 +258,7 @@ validators</strong>. Write it down with the model name. Anything short of all of
 not a reporting style choice — a shift you cannot debit honestly is a shift you cannot defend.</p>
 <hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
-<table>
+<div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
 <th>Development</th>
@@ -306,7 +308,7 @@ not a reporting style choice — a shift you cannot debit honestly is a shift yo
 <td>Asking the model to "only use the transcript" is advice, not verification. The validator is what makes the claim checkable.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="annotated-readings">Annotated readings</h2>
 <ul>
