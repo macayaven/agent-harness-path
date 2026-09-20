@@ -3,6 +3,13 @@
 Committed JSONL traces from a real OpenAI-compatible endpoint. CI and keyless
 students `--replay` these.
 
+The `v0.6.0-rc.1` set was recorded on 20 September 2026 using NVIDIA Nemotron 3.5
+Lightning 30B A3B (NVFP4), served locally on the maintainer's NVIDIA DGX Spark:
+19 files with 43 model responses. See the
+[model and hardware acknowledgment](../../README.md#validation-model-and-offline-replay).
+Core notebooks use a separate deterministic Python stub by default; these
+cassettes provide offline replay for the hard-path labs.
+
 Layout (one file per run — no combined tape, so `--session s02` cannot consume
 S01 entries):
 
