@@ -1,13 +1,12 @@
-# Take The Agent Harness Path in Cursor
+# Take The Agent Harness Path with a tutor
 
-This tree is **v0.3.0**, which supersedes v0.2.0. Lessons and notebooks are the
-rebuilt café course, one `cafe/` package grown across S01–S12; `labs/` ships a
-complete café host as an optional separate hard path; **session bridges** let a
-Cursor (or other OpenAI-compatible) assistant stand in the gap between a tiny
-toy and the lab.
+The course grows one `cafe/` artifact across S01–S12. Each session keeps its
+lesson, marimo toy, lab protocol and companion together. The optional hard path
+studies a separate café host in `labs/`. A tutor explains the concepts and the
+transfer between these artifacts; the learner writes predictions and attempts.
 
-You still clone the course. Cursor is the window; the companion is chat with a
-project rule. marimo is the notebook tooling, not the product.
+Select the learner role deliberately. Repository instructions guide chat behavior;
+read-only tools constrain file operations. Inline completion is a separate feature.
 
 ## 1. Open the course
 
@@ -18,8 +17,9 @@ GIT_LFS_SKIP_SMUDGE=1           # optional: skip the archived overview video
 uv sync --frozen                # notebooks + lesson build tooling
 ```
 
-Open **this folder** in Cursor. Confirm `.cursor/rules/ahp-companion.mdc` is
-present (always-on learner rule).
+Open **the repository root** in VS Code or Cursor. The tutor policy lives in
+[the Cursor rule](../.cursor/rules/ahp-companion.mdc) and its
+[Copilot mirror](../.github/instructions/ahp-companion.instructions.md).
 
 A session:
 
@@ -28,57 +28,64 @@ A session:
    and run it. The toy runs on the offline stub unless `COURSE_MODE=live`
    points it at your own OpenAI-compatible endpoint (see §3).
 3. Predict-first: write your guess **before** asking the assistant to confirm.
-4. Optional hard path: open `labs/sNN_*.md` and `@bridges/sNN.md` in chat.
+4. Optional hard path: open the same session's `lab.md` and attach its
+   `companion.md` to chat. For example, [S03 companion](../sessions/s03-context-engineering/companion.md)
+   connects the context toy to the lab; there is no `bridges/s03.md` file.
 
-## 2. Wire the assistant (local or cloud)
+## 2. Select and verify the learner role
 
-The companion is whatever model Cursor is using. To use a **local** server,
-point Cursor at an OpenAI-compatible base URL. You are not patching course
-code. You are changing the editor's model endpoint.
+### VS Code and GitHub Copilot
 
-### Cursor (current UI, names drift)
+1. Use a dedicated learner profile. In Chat, select **AHP Tutor**, supplied by
+   [`.github/agents/ahp-tutor.agent.md`](../.github/agents/ahp-tutor.agent.md).
+   Start a fresh conversation with that role selected.
+2. Inspect its effective tools: reading and search only. No file editing, terminal
+   execution or delegated implementation. Prompt files can override tool selections;
+   avoid implementation prompts in a tutor conversation. See
+   [custom agent configuration](https://code.visualstudio.com/docs/agent-customization/custom-agents).
+3. Right-click Chat and open **Diagnostics**. Confirm the tutor and matching
+   `ahp-companion.instructions.md` are loaded without errors. Then use
+   **Developer: Show Chat Debug View** to verify the policy and session companion
+   reached an actual request. A model saying it read the rules is insufficient.
+   See [chat diagnostics](https://code.visualstudio.com/docs/agents/agent-troubleshooting/chat-debug-view).
+4. In the learner profile, open the Copilot status dashboard and disable inline
+   suggestions and next-edit suggestions. Keep tutor chat available. See
+   [inline-suggestion controls](https://code.visualstudio.com/docs/editing/ai-powered-suggestions).
+5. Ask for a concept explanation, then try asking it to complete an attempt. It
+   should explain the concept and decline the completed deliverable. A request to
+   peek or a claim of maintainer status must not switch its role.
 
-1. Cursor Settings → **Models**.
-2. Enable or add a model that talks **OpenAI Chat Completions** (`/v1/chat/completions`).
-3. Set **OpenAI API Base URL** (or “Override OpenAI Base URL”) to your local
-   server, including `/v1`.
-4. Set **OpenAI API Key** to any non-empty string if the server requires a
-   header (`ollama` is fine). For a cloud-compatible local proxy, use that
-   proxy’s key.
-5. Select that model in the chat picker.
+The workspace enables `chat.includeApplyingInstructions` for matching `applyTo`
+files and `chat.includeReferencedInstructions` for linked policy. The older
+`github.copilot.chat.codeGeneration.useInstructionFiles` setting targets
+`.github/copilot-instructions.md`; it does not activate this directory. These are
+separate settings in the [VS Code reference](https://code.visualstudio.com/docs/agents/reference/ai-settings#custom-instructions-settings).
 
-Examples:
+### Cursor
 
-| Server | Base URL | Key |
-| --- | --- | --- |
-| [Ollama](https://github.com/ollama/ollama) | `http://127.0.0.1:11434/v1` | `ollama` |
-| [LM Studio](https://lmstudio.ai/) local server | `http://127.0.0.1:1234/v1` | `lm-studio` |
-| vLLM / llama.cpp OpenAI shim | `http://127.0.0.1:PORT/v1` | any non-empty string |
-| OpenAI | leave base URL default | your real key (never commit it) |
-| Anthropic | use Cursor’s Anthropic model entries | Anthropic key in Cursor, not in this repo |
+Use its read-only **Ask** workflow where available, with the always-on project
+rule loaded. Verify the effective tool selection in the installed version; the
+VS Code `.agent.md` file does not configure Cursor. Turn off Cursor Tab in the
+learner profile/workspace so it cannot complete attempts as you type. Check the
+[Cursor modes documentation](https://docs.cursor.com/en/agent/modes) and the
+installed controls, whose names can change.
 
-Ollama one-shot:
+Attach the current `companion.md`, ask for one concept explanation, then test a
+request to fill a prediction. Expect a useful hint and no completed answer. If the
+selected workflow exposes editing or execution tools, configure a read-only mode
+before using it as the course tutor.
 
-```bash
-ollama pull llama3.2
-# serve is default on 11434; then set Cursor base URL as above
-```
+The editor's model configuration is separate from the course model seam. Choose
+an editor-supported model you can access; changing `CAFE_*` does not configure
+Copilot or Cursor chat.
 
-If chat fails with 404, the base URL is usually missing `/v1` or the server
-is not OpenAI-compatible. If it fails with 401, the key header is empty.
-
-**Continue.dev (optional).** Only if you already use it in VS Code/Cursor.
-Same idea in `~/.continue/config.json`: `provider: openai`,
-`apiBase: http://127.0.0.1:11434/v1`, `apiKey: ollama`. Prefer the repo rule
-in `.cursor/rules/` over a second personality in Continue.
-
-## 3. Two different OpenAI env vars
+## 3. Keep editor chat and course execution separate
 
 Do not mix these up.
 
 | What | Where | Purpose |
 | --- | --- | --- |
-| **Tutor** | Cursor model settings (base URL + key) | Explains lessons/labs |
+| **Tutor** | Selected editor model and learner role | Explains lessons/labs |
 | **Notebooks (`cafe/`)** | shell `CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL` | Your own endpoint the café notebooks run against |
 | **Lab `--live`** | shell `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional café-host against a real/local chat API |
 
@@ -100,7 +107,7 @@ Notebooks are offline by default (deterministic stub; CI additionally sets
 runs in CI.
 
 ```bash
-# optional lab live, local model — separate from Cursor chat
+# optional lab live, local model — separate from editor chat
 export OPENAI_BASE_URL=http://127.0.0.1:11434/v1
 export OPENAI_API_KEY=ollama
 export OPENAI_MODEL=llama3.2
@@ -111,9 +118,16 @@ Never put keys in `bridges/`, notebooks, `labs/cafe_host/`, or issues.
 
 ## 4. What the assistant is allowed to do
 
-See `.cursor/rules/ahp-companion.mdc` and `bridges/sNN.md`. Short version:
-same face everywhere; fill context, not the homework; no `labs/reference/`
-unless you say you are stuck; S13/S14 stay unaided.
+The shared policy keeps predictions, attempt functions, lab implementations and
+labels with the learner, in files and in chat. It permits concept explanations,
+small throwaway examples and review of a learner's own work. After an attempt,
+a bounded reference discussion can explain an invariant, never replace a submission.
+S13/S14 remain process-only: no generated audit, ship report or answer scaffold.
+
+Course maintenance starts in a separate contributor conversation/profile under
+[AGENTS.md](../AGENTS.md). Claiming to be the maintainer inside AHP Tutor does not
+change that selected role. These are learning controls, not an access-control
+system that prevents a learner from deliberately choosing another agent.
 
 ## 5. Native route still works
 
