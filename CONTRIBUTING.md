@@ -91,6 +91,14 @@ refactor). Maintainers will reject:
 - SOTA rows without a source, or status tags other than the five in `AGENTS.md`
 - cheerleading or padded prose that drops the existing density
 
+## Licensing contributions
+
+Submit contributions under the license that applies to the files you change:
+Apache-2.0 for code and CC BY 4.0 for educational content, as mapped in
+[LICENSE](LICENSE). You retain copyright in your contributions; no copyright
+assignment is required. Preserve applicable third-party notices and include
+only material you have the right to contribute under those terms.
+
 ## Code of conduct
 
 `CODE_OF_CONDUCT.md`. Report CoC issues via GitHub issues (maintainers will

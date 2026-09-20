@@ -2,6 +2,13 @@
 
 All notable changes to The Agent Harness Path are documented here.
 
+## Unreleased
+
+- Acknowledge substantial design, planning, and implementation assistance from
+  Codex with multiple GPT-family models, Claude Code, and Muse Code.
+- Clarify retained copyright, commercial reuse, attribution, and contribution
+  terms under the existing Apache-2.0 code / CC BY 4.0 content license split.
+
 ## 0.6.0-rc.1 — 2026-09-20
 
 Release candidate for maintainer testing and early testers. Full cross-editor

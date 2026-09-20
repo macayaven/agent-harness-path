@@ -2,6 +2,16 @@ The Agent Harness Path uses a split license.
 
 Copyright 2026 Carlos Crespo Macaya
 
+Contributors retain copyright in their own contributions. The licenses below
+grant permissions to reuse the work; they do not transfer copyright ownership
+or dedicate it to the public domain. Both permit commercial reuse under their
+respective terms. The grants cover only rights the licensors can grant;
+third-party material and trademarks are subject to the exceptions below.
+
+This file identifies which license applies to which material. The complete,
+unmodified license terms are in LICENSES/Apache-2.0.txt and
+LICENSES/CC-BY-4.0.txt; the README's reuse guidance is a summary of those terms.
+
 ## Code — Apache License 2.0
 
 The following are licensed under the Apache License 2.0
@@ -43,7 +53,8 @@ SPDX-License-Identifier: CC-BY-4.0
 
 You must give appropriate credit when you reuse the lessons or videos. Projects
 you build yourself while following the path — including anything you publish for
-S14's public-artifact step — are your own work.
+S14's public-artifact step — are your own work. Course code or content you reuse
+within them remains subject to its applicable license.
 
 ## Third-party
 
