@@ -126,9 +126,9 @@ labeled the corpus yourself <strong>before</strong> any judge output existed on 
 reported a detection rate, a false-positive rate, and Cohen's κ — with the pair for an
 uncalibrated rubric next to the pair for a calibrated one, so the change is attributable.
 You will be able to say exactly what that κ licenses and what it does not.</p>
-<p>One thing to read before the numbers: <strong>a small local model is often a poor judge.</strong> That is
-the expected finding, not a bug in the notebook — and it is the reason calibration exists
-rather than trust.</p>
+<p>The six-case corpus is an arithmetic demonstration, not release calibration. Measure
+your model rather than assuming it will be good or bad; a release decision needs a larger,
+independently labeled corpus that you did not use to tune the rubric.</p>
 <hr />
 <h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="a-judge-is-an-instrument-an-uncalibrated-instrument-is-an-opinion">A judge is an instrument; an uncalibrated instrument is an opinion</h3>
@@ -161,16 +161,22 @@ gate on.</p>
 <h3 id="one-verdict-per-transcript-and-unparseable-is-a-result">One verdict per transcript, and <code>unparseable</code> is a result</h3>
 <p>The harness guarantees the mechanical part: <code>run_judge_all</code> returns exactly one verdict per
 transcript, in a fixed, mixed corpus order, so "the defective ones are first" never becomes
-a habit. <code>parse_verdict</code> reads whatever the model actually said; output it cannot read
-becomes <code>unparseable</code>, which counts as neither a detection nor a clean pass and must never
-be silently turned into "pass".</p>
+a habit. <code>parse_verdict</code> requires one JSON object with <code>verdict</code>, <code>class</code>, and a nonempty
+<code>rationale</code>. It rejects extra prose, duplicate keys, unknown classes and contradictions:
+pass requires <code>none</code>; fail requires a defect class or <code>other</code>. V1 uses <code>other</code> for its
+intentionally poor style criterion. Invalid output becomes <code>unparseable</code>, never pass.</p>
+<p>The request includes menu facts separately from the transcript and treats transcript
+instructions as evidence. Add approval/tool facts for each real run when available.
+Report valid-output coverage alongside detection and false positives, which retain
+the full defective/clean denominators. Zero alarms with zero valid outputs is no
+evidence of quality.</p>
 <h3 id="calibration-is-a-property-of-the-pair">Calibration is a property of the pair</h3>
 <p>The rubric and the model are one instrument. v1 of the rubric is strict, style-sensitive,
 and told to distrust short answers — the judge most people ship on the first try. v2 spells
 out S10's failure classes and deletes the style bias, with the same model and the same
-corpus. The claim this session makes is deliberately narrow: the calibrated rubric does not
-produce <strong>more</strong> false alarms than the uncalibrated one on the same corpus. It promises
-nothing about detection, because a better rubric is not a better model.</p>
+corpus. Compare both rates and coverage on the same corpus. Either rubric can perform worse;
+the direction is an observation, not an assertion. Changing a rubric does not prove
+that its model improved.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
@@ -201,8 +207,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 <li><strong>κ both ways.</strong> <code>cohens_kappa</code> compares the judge vectors with the reference labels. If
    both vectors are constant, it returns <code>None</code> and the notebook prints "undefined" — the
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
-   vectors, every transcript gets exactly one verdict, and the calibrated rubric's
-   false-positive rate does not worsen.</li>
+   vectors, every transcript gets exactly one verdict, and the rates and coverage retain their denominators.</li>
 <li><strong>Price the twelve calls.</strong> Calibration cost two rubrics over six transcripts.
    The cost cell rebuilds each call's messages exactly and projects them on S11's
    route table — worth-it is a question with two numbers, and now you have both.</li>
@@ -210,7 +215,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
 <p>Put this in one sentence and defend it: <strong>6 transcripts, 3 seeded defects, detection n/3,
-false positives n/3, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
+false positives n/3, valid outputs n/6, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
 Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
@@ -281,7 +286,7 @@ Detection 3/3 and false positives 3/3. It detects everything and flags everythin
 When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. `None` means "undefined", and the notebook prints it that way.</details>
 
 <details><summary>The calibrated rubric holds the false-positive rate but the detection rate drops. Did calibration fail?</summary>
-No — and the session only claims what it measured. The claim is relative and inside one session: the calibrated rubric does not produce more false alarms than the uncalibrated one on the same corpus. It promises nothing about detection, because you changed the rubric, not the model.</details>
+It is a tradeoff to inspect, not an automatic success. Compare detection, false positives and valid-output coverage on both rubrics. Either rubric can perform worse; six cases do not establish release quality.</details>
 
 <hr />
 <h2 id="what-this-unlocks">What this unlocks</h2>

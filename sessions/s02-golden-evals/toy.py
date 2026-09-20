@@ -130,7 +130,12 @@ def s02_demo_arms(client):
         _row = comparison[_arm]
         _failed = [d["id"] for d in _row["details"] if not d["ok"]]
         print(f"{_arm:<10} {_row['passes']}/{_row['total']:<10} {', '.join(_failed) or '-'}")
+        _prices = {k: sum(d["price_evidence"][k] for d in _row["details"])
+                   for k in ("claims", "verified", "incorrect", "unverified")}
+        print("  price evidence:", _prices)
     print("\nSame scripts, same endpoint, same checker. Only the harness differs.")
+    print("Price syntax: [quantity x] exact item [+ item]: 4.00 EUR; total: 4.00 after a receipt.")
+    print("Unverified prose fails the evidence contract; it is not a factual price error.")
     return (comparison,)
 
 

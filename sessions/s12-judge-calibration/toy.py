@@ -51,8 +51,8 @@ def s12_md_hook(mo):
     κ — and you will be able to say exactly what that κ licenses and what it does
     not.
 
-    A note you should read before the numbers: a small local model will be a bad
-    judge. That is the finding, not a bug in the notebook.
+    Six cases demonstrate the arithmetic. They cannot establish release quality;
+    measure your model instead of assuming it will be a good or bad judge.
     """)
     return
 
@@ -161,6 +161,11 @@ def s12_md_judge_v1(mo):
     One pass/fail verdict per transcript, returned as JSON. This rubric is
     deliberately uncalibrated: strict, style-sensitive, and told to distrust short
     answers. It is the judge most people ship.
+
+    The parser requires one object with `verdict`, `class` and a nonempty
+    `rationale`. Ambiguous prose, extra objects and contradictory fields become
+    `unparseable`. Menu facts are sent separately; transcript instructions are
+    evidence. V1 uses `other` for its intentionally poor style criterion.
     """)
     return
 
@@ -182,6 +187,7 @@ def s12_demo_scores_v1(key, verdicts_v1):
     print("v1 detection       :", judge.fmt_rate(_det))
     print("v1 false positives :", judge.fmt_rate(_fp))
     print("v1 unparseable     :", f"{len(_unreadable)}/{len(verdicts_v1)}", _unreadable)
+    print("v1 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)))
     print()
     print("Both numbers or neither. A judge that fails everything detects everything.")
     print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
@@ -310,11 +316,10 @@ def s12_demo_scores_v2(key, verdicts_v1, verdicts_v2):
     _det2 = judge.detection_rate(key, verdicts_v2)
     print("v2 detection       :", judge.fmt_rate(_det2))
     print(f"v2 false positives : {judge.fmt_rate(_fp2)}  (v1 was {judge.fmt_rate(_fp1)})")
+    print("v2 valid coverage  :", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
     print()
-    print("The claim this session makes is relative and measured in one session:")
-    print("the calibrated rubric does not produce MORE false alarms than the")
-    print("uncalibrated one on the same corpus. It makes no promise about detection:")
-    print("a better rubric, not a better model, is all you changed.")
+    print("Compare both rates AND coverage; either rubric can perform worse.")
+    print("Zero false alarms with zero valid verdicts does not establish quality.")
     return
 
 
@@ -341,13 +346,7 @@ def s12_demo_cost(transcripts, verdicts_v1, verdicts_v2):
         (judge.RUBRIC_V2, verdicts_v2),
     ):
         for cost_tid in cost_verdicts:
-            cost_messages = [
-                {"role": "system", "content": cost_rubric},
-                {
-                    "role": "user",
-                    "content": judge.render_transcript(transcripts[cost_tid]),
-                },
-            ]
+            cost_messages = judge.judge_messages(transcripts[cost_tid], cost_rubric)
             cost_total += routing.projected_usd(cost_route, cost_messages)
     cost_calls = len(verdicts_v1) + len(verdicts_v2)
     print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
@@ -389,14 +388,14 @@ def test_s12_key_and_verdicts_have_the_same_length(
 
 
 @app.cell
-def test_s12_calibrated_false_positive_rate_does_not_worsen(
-    key,
-    verdicts_v1,
-    verdicts_v2,
-):
+def test_s12_rate_and_coverage_denominators(key, verdicts_v1, verdicts_v2):
     _fp1 = judge.false_positive_rate(key, verdicts_v1)
     _fp2 = judge.false_positive_rate(key, verdicts_v2)
-    assert _fp2[2] <= _fp1[2], (_fp1, _fp2)
+    assert _fp2[1] == _fp1[1]
+    for _verdicts in (verdicts_v1, verdicts_v2):
+        _valid, _total, _rate = judge.verdict_coverage(_verdicts)
+        assert 0 <= _valid <= _total == len(key)
+        assert 0 <= _rate <= 1
     return
 
 
@@ -453,6 +452,8 @@ def s12_demo_checkpoint(key, transcripts, verdicts_v1, verdicts_v2):
     print(f"bank this line — {len(transcripts)} transcripts, {_det1[1]} seeded defects")
     print(f"  v1: detection {judge.fmt_rate(_det1)}  false positives {judge.fmt_rate(_fp1)}  κ {judge.fmt_kappa(_k1)}")
     print(f"  v2: detection {judge.fmt_rate(_det2)}  false positives {judge.fmt_rate(_fp2)}  κ {judge.fmt_kappa(_k2)}")
+    print("  valid coverage:", "v1", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)),
+          "v2", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
     return
 
 

@@ -107,8 +107,10 @@ def score_arm(client: Any, arm: str, scenarios: tuple[Scenario, ...] = GOLDEN) -
     runner = ARMS[arm]
     details = []
     for scenario in scenarios:
-        problems = checkers.evaluate(scenario, runner(client, scenario))
-        details.append({"id": scenario.id, "ok": not problems, "violations": problems})
+        record = runner(client, scenario)
+        problems = checkers.evaluate(scenario, record)
+        details.append({"id": scenario.id, "ok": not problems, "violations": problems,
+                        "price_evidence": checkers.price_evidence(record)})
     passes = sum(1 for row in details if row["ok"])
     return {
         "arm": arm,

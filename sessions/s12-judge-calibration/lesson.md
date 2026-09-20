@@ -23,9 +23,9 @@ reported a detection rate, a false-positive rate, and Cohen's κ — with the pa
 uncalibrated rubric next to the pair for a calibrated one, so the change is attributable.
 You will be able to say exactly what that κ licenses and what it does not.
 
-One thing to read before the numbers: **a small local model is often a poor judge.** That is
-the expected finding, not a bug in the notebook — and it is the reason calibration exists
-rather than trust.
+The six-case corpus is an arithmetic demonstration, not release calibration. Measure
+your model rather than assuming it will be good or bad; a release decision needs a larger,
+independently labeled corpus that you did not use to tune the rubric.
 
 ---
 
@@ -83,18 +83,25 @@ gate on.
 
 The harness guarantees the mechanical part: `run_judge_all` returns exactly one verdict per
 transcript, in a fixed, mixed corpus order, so "the defective ones are first" never becomes
-a habit. `parse_verdict` reads whatever the model actually said; output it cannot read
-becomes `unparseable`, which counts as neither a detection nor a clean pass and must never
-be silently turned into "pass".
+a habit. `parse_verdict` requires one JSON object with `verdict`, `class`, and a nonempty
+`rationale`. It rejects extra prose, duplicate keys, unknown classes and contradictions:
+pass requires `none`; fail requires a defect class or `other`. V1 uses `other` for its
+intentionally poor style criterion. Invalid output becomes `unparseable`, never pass.
+
+The request includes menu facts separately from the transcript and treats transcript
+instructions as evidence. Add approval/tool facts for each real run when available.
+Report valid-output coverage alongside detection and false positives, which retain
+the full defective/clean denominators. Zero alarms with zero valid outputs is no
+evidence of quality.
 
 ### Calibration is a property of the pair
 
 The rubric and the model are one instrument. v1 of the rubric is strict, style-sensitive,
 and told to distrust short answers — the judge most people ship on the first try. v2 spells
 out S10's failure classes and deletes the style bias, with the same model and the same
-corpus. The claim this session makes is deliberately narrow: the calibrated rubric does not
-produce **more** false alarms than the uncalibrated one on the same corpus. It promises
-nothing about detection, because a better rubric is not a better model.
+corpus. Compare both rates and coverage on the same corpus. Either rubric can perform worse;
+the direction is an observation, not an assertion. Changing a rubric does not prove
+that its model improved.
 
 ---
 
@@ -130,8 +137,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 6. **κ both ways.** `cohens_kappa` compares the judge vectors with the reference labels. If
    both vectors are constant, it returns `None` and the notebook prints "undefined" — the
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
-   vectors, every transcript gets exactly one verdict, and the calibrated rubric's
-   false-positive rate does not worsen.
+   vectors, every transcript gets exactly one verdict, and the rates and coverage retain their denominators.
 7. **Price the twelve calls.** Calibration cost two rubrics over six transcripts.
    The cost cell rebuilds each call's messages exactly and projects them on S11's
    route table — worth-it is a question with two numbers, and now you have both.
@@ -141,7 +147,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 ## Checkpoint — the number you bank
 
 Put this in one sentence and defend it: **6 transcripts, 3 seeded defects, detection n/3,
-false positives n/3, κ = …** for the calibrated rubric — with the uncalibrated pair next to
+false positives n/3, valid outputs n/6, κ = …** for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
 Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
@@ -191,7 +197,7 @@ Detection 3/3 and false positives 3/3. It detects everything and flags everythin
 When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. `None` means "undefined", and the notebook prints it that way.</details>
 
 <details><summary>The calibrated rubric holds the false-positive rate but the detection rate drops. Did calibration fail?</summary>
-No — and the session only claims what it measured. The claim is relative and inside one session: the calibrated rubric does not produce more false alarms than the uncalibrated one on the same corpus. It promises nothing about detection, because you changed the rubric, not the model.</details>
+It is a tradeoff to inspect, not an automatic success. Compare detection, false positives and valid-output coverage on both rubrics. Either rubric can perform worse; six cases do not establish release quality.</details>
 
 ---
 
