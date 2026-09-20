@@ -8,12 +8,14 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe.evals import GOLDEN, checkers, naive_vs_governed
     from cafe.evals.tasks import empty_record, reference_record
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.tools import OrderState
 
@@ -78,7 +80,7 @@ def s02_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s02_md_golden(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## What a golden set is, and what it is not
 
     A golden set is a fixed script of customer turns plus what the shift was asked
@@ -95,7 +97,7 @@ def s02_md_golden(mo):
     | `expect_tools` | the tools the task cannot be done without |
 
     ![Same scripted user feeds naive and governed engines; both transcripts meet the same deterministic checks](public/diagrams/S02-golden-evals.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

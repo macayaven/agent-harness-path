@@ -9,9 +9,12 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
+
+    from cafe.figures import embed_figures
 
     from cafe import domain
     from cafe.evals import checkers
@@ -79,7 +82,7 @@ def s04_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s04_md_contract(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The contract, and the line between shape and meaning
 
     The schema is the ticket system's data model. The validator is a stdlib subset
@@ -92,7 +95,7 @@ def s04_md_contract(mo):
     Two gates, not one. The first is *shape*: is this the object the contract
     describes? The second is *meaning*: does it agree with tonight's menu and
     prices? The second gate is S02's checker, doing exactly what a checker is for.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

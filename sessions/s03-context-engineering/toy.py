@@ -8,11 +8,13 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import context, domain
+    from cafe.figures import embed_figures
     from cafe.model import get_client
 
 
@@ -78,7 +80,7 @@ def s03_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s03_md_window(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## A window you have to fit, and a wall you cannot cross
 
     Two numbers, and they are different kinds of number.
@@ -92,7 +94,7 @@ def s03_md_window(mo):
     just from this request. That is what makes it dangerous.
 
     ![Over budget, compact; past the hard limit the call fails instead of degrading](public/diagrams/s03-window.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

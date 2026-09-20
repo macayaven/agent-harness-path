@@ -9,11 +9,13 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import domain, routing
+    from cafe.figures import embed_figures
     from cafe.model import get_client
 
 
@@ -84,7 +86,7 @@ def s11_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s11_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### 1. A budget is a runtime invariant, not a finance report
@@ -123,7 +125,7 @@ def s11_md_theory(mo):
     are observations. A configured alias is printed beside the simulated route;
     optional `reported_model` says what the provider returned. Missing usage is
     unknown, and every money figure uses illustrative rates rather than billing.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

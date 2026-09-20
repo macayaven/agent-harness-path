@@ -9,9 +9,12 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
+
+    from cafe.figures import embed_figures
 
     from cafe.consent import (
         IRREVERSIBLE_ACTION,
@@ -87,7 +90,7 @@ def s05_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s05_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The gate: propose → consent → fire
 
     The ticket is **data** (`{"items": [...], "table": int}`), so every later
@@ -102,7 +105,7 @@ def s05_md_theory(mo):
        check runs pre-dispatch, on the harness's own copy of the approved ticket.
     2. **Reject is a first-class outcome.** It returns `None`, and nothing
        downstream ever runs. "Nothing happens" is a claim — the tests below test it.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

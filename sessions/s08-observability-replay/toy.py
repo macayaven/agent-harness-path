@@ -13,11 +13,13 @@ with app.setup:
     import tempfile
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe.consent import make_responder
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.trace import (
         ReplayMismatch,
@@ -108,7 +110,7 @@ def s08_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s08_md_record(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## A recording is a contract, not a printout
 
     `RecordingClient` wraps any client and appends one JSONL line per call:
@@ -125,7 +127,7 @@ def s08_md_record(mo):
 
     Everything below writes inside a `tempfile.TemporaryDirectory()`. Nothing —
     not one `.jsonl` — lands under the repo root.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

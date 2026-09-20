@@ -1,10 +1,13 @@
 """Evidence and complete explanations must survive marimo's preview surface."""
 
 from contextlib import redirect_stdout
+import ast
+import base64
 from importlib.util import module_from_spec, spec_from_file_location
 from inspect import signature
 from io import StringIO
 from pathlib import Path
+import re
 from types import SimpleNamespace
 import unittest
 
@@ -17,6 +20,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class NotebookRenderingTests(unittest.TestCase):
+    def test_every_notebook_figure_embeds_the_committed_svg_without_a_request(self):
+        figures = 0
+        for path in sorted((ROOT / "sessions").glob("*/toy.py")):
+            source = path.read_text()
+            spec = spec_from_file_location("figures_" + path.parent.name[:3], path)
+            module = module_from_spec(spec)
+            spec.loader.exec_module(module)
+            for cell in ast.parse(source).body:
+                if not isinstance(cell, ast.FunctionDef):
+                    continue
+                assets = re.findall(r"public/diagrams/([A-Za-z0-9_-]+\.svg)",
+                                    ast.get_source_segment(source, cell))
+                if not assets:
+                    continue
+                with self.subTest(session=path.parent.name, cell=cell.name):
+                    output, _ = getattr(module, cell.name).run(mo=mo)
+                    images = re.findall(r'<img\b[^>]*src="([^"]+)"', output.text)
+                    self.assertEqual(len(images), len(assets))
+                    for image, asset in zip(images, assets):
+                        self.assertTrue(image.startswith("data:image/svg+xml;base64,"))
+                        self.assertEqual(base64.b64decode(image.split(",", 1)[1]),
+                                         (path.parent / "public/diagrams" / asset).read_bytes())
+                        figures += 1
+        self.assertEqual(figures, 12)
+
     def test_multi_argument_prints_remain_one_readable_cell_output(self):
         spec = spec_from_file_location("render_s01", ROOT / "sessions/s01-agent-loop/toy.py")
         module = module_from_spec(spec)

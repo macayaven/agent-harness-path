@@ -8,11 +8,13 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import domain, judge, routing
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.taxonomy import labels_ready
 
@@ -86,7 +88,7 @@ def s12_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s12_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### 1. A judge is an instrument; an uncalibrated instrument is an opinion
@@ -127,7 +129,7 @@ def s12_md_theory(mo):
     the same label — κ is **undefined**, not 1.0. The helper returns `None`, and a
     report that turns that into 1.0 is lying to you. `κ = 0.4` is a judge that has
     earned a bigger calibration set, not one you can gate on.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

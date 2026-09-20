@@ -8,10 +8,12 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.repair import (
         CAP_DEFAULT,
@@ -71,7 +73,7 @@ def s07_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s07_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### A retry is not a resample
@@ -101,7 +103,7 @@ def s07_md_theory(mo):
     and only if the reason is `passed`. That biconditional is the contract.
 
     ![Score deterministically: accept, retry with a failure view, or withhold](public/diagrams/S07-repair-loop.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

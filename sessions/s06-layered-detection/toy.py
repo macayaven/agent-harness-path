@@ -8,7 +8,8 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
@@ -24,6 +25,7 @@ with app.setup:
         scope_verdict,
         screen_injection,
     )
+    from cafe.figures import embed_figures
     from cafe.model import get_client
 
 
@@ -88,7 +90,7 @@ def s06_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s06_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The order is the safety invariant
 
     Every message is routed to exactly one terminal action. The layers run in a
@@ -103,7 +105,7 @@ def s06_md_theory(mo):
     2. **The menu decides safety, not the model.** The classifier only says *"an
        allergy was declared"*; `cafe.tools` data says whether an item contains it.
        A model's opinion is not a safety clearance.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

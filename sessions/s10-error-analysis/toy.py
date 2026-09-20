@@ -8,12 +8,14 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe import domain
     from cafe.consent import make_responder, run_shift
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.report import log_events
     from cafe.taxonomy import (
@@ -64,7 +66,7 @@ def s10_md_hook(mo):
 
 @app.cell(hide_code=True)
 def s10_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### Open coding, then axial coding
@@ -87,7 +89,7 @@ def s10_md_theory(mo):
     pass on the fix; that delta is what makes it worth a slot in the suite.
 
     ![Open coding, axial grouping, count-by-severity ranking; top categories drive fixes](public/diagrams/S10-error-analysis.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

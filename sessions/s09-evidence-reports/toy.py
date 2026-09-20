@@ -8,11 +8,13 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
 
     from cafe.consent import make_responder, run_shift
+    from cafe.figures import embed_figures
     from cafe.model import get_client
     from cafe.report import (
         capped_shift_trace,
@@ -84,7 +86,7 @@ def s09_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s09_md_theory(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The theory in depth
 
     ### Write for the depleted reader
@@ -113,7 +115,7 @@ def s09_md_theory(mo):
     the conjunction.
 
     ![Transcript and run record become evidence slots; validators compare before short human review](public/diagrams/S09-evidence-reports.svg)
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 

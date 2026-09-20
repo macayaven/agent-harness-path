@@ -9,9 +9,12 @@ with app.setup:
     import sys
     from pathlib import Path
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    NOTEBOOK_FILE = Path(__file__).resolve()
+    ROOT = NOTEBOOK_FILE.parent.parent.parent
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
+
+    from cafe.figures import embed_figures
 
     from cafe import domain
     from cafe.loop import run_shift
@@ -80,7 +83,7 @@ def s01_demo_client(mo):
 
 @app.cell(hide_code=True)
 def s01_md_api_shape(mo):
-    mo.md(r"""
+    mo.md(embed_figures(r"""
     ## The API is stateless; the loop is the agent
 
     One request in, one response out. Every request carries the **entire**
@@ -91,7 +94,7 @@ def s01_md_api_shape(mo):
 
     The arrow back to the model carries **history**, not an invocation of the tool
     inside the model. Trace that with your finger before reading the code.
-    """)
+    """, NOTEBOOK_FILE))
     return
 
 
