@@ -111,7 +111,7 @@
 <h1 id="s03-context-engineering-what-survives-compaction">S03-context-engineering — What survives compaction</h1>
 <p><strong>Carried in:</strong> <code>cafe/evals</code> — four scenarios, five deterministic checkers, and the naive-versus-governed pair you banked. The allergen checker grades every probe in this session, so "the rule still works" means the same thing here as it did in the golden set.
 <strong>Today you ship:</strong> <code>cafe/context.py</code> — four compaction policies and the measurement that tells them apart.
-<strong>What this teaches:</strong> context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why a pinned rule keeps governing while a summarized or truncated one quietly stops, and what the pin costs on every request.
+<strong>What this teaches:</strong> context assembly as a policy you own — a budget versus a hard window, what compaction rewrites, why retaining a rule and following it are different measurements, and what the pin costs on every request.
 <strong>Time:</strong> 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S01 (the loop), S02 (the golden set and its checkers).
 <strong>Hands-on:</strong> <code>toy.py</code> — runs against <strong>your</strong> model.</p>
@@ -136,13 +136,17 @@ assembled context deterministically, before you ever trust a model to notice.</p
 <p>Two numbers, and they are different kinds of number.</p>
 <ul>
 <li><code>BUDGET_DEFAULT</code> is what the harness <em>aims</em> to stay under. It is yours.</li>
-<li><code>HARD_LIMIT_DEFAULT</code> is the model's real window. Cross it and the endpoint
-  answers a <code>400</code>, not a degradation. No policy saves you from that one.</li>
+<li><code>HARD_LIMIT_DEFAULT</code> is a teaching limit over a word-count proxy. The local guard
+  refuses an oversized request. It does not measure the endpoint's real token window.</li>
 </ul>
 <p>Compaction fires when the history outgrows the budget. It <strong>rewrites the stored
 history</strong> — what gets dropped is gone from every later turn, not just from this
 request. That is what makes it dangerous: a lossy step at turn five is still
 missing at turn twelve, and nothing in the transcript marks the hole.</p>
+<p>The measured conversation is the one sent, including prior turns and tool results.
+Compaction keeps tool-call/result exchanges whole. If the pinned material plus the current
+request exceeds the budget, the log says so; it does not quietly delete either.
+An intentionally empty system prompt stays empty rather than restoring a removed rule.</p>
 <h3 id="four-policies-one-question">Four policies, one question</h3>
 <p><code>cafe/context.py</code> answers <em>what survives compaction</em> four ways:</p>
 <table>
@@ -162,11 +166,11 @@ missing at turn twelve, and nothing in the transcript marks the hole.</p>
 <tr>
 <td><code>truncate</code></td>
 <td>pinned messages, then as much of the tail as fits</td>
-<td>drops the oldest unpinned messages</td>
+<td>drops the oldest complete unpinned exchanges</td>
 </tr>
 <tr>
 <td><code>summarize</code></td>
-<td>pinned messages, one digest, the last two turns</td>
+<td>pinned exchanges, one digest, the latest complete exchange</td>
 <td>replaces the compactable region with a summary</td>
 </tr>
 <tr>
@@ -183,22 +187,23 @@ read off the transcript.</p>
 <div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S03-context-engineering.svg" alt="Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model." style="--diagram-width: 555px" /></div>
 <h3 id="the-rule-is-rent-and-the-boundary-is-where-it-dies">The rule is rent, and the boundary is where it dies</h3>
 <p>The allergen rule is one short line, and <code>pinned</code> pays for it on <strong>every single
-call</strong>: a few tokens, forever. That cost is real, and the notebook prints it
-(<code>context.tokens([context.rule_message()])</code>) so you price the guarantee instead of
+call</strong>: a few words of the proxy budget, every time. That cost is real, and the notebook prints it
+(<code>context.tokens([context.rule_message()])</code>) so you measure the retention cost instead of
 pretending it is free.</p>
 <p>The interesting question is not "is the text there?" but "does it still govern?"
-A rule that survives but sits behind a compaction boundary — the model read it
-eleven turns ago — behaves like a rule that is absent. So the measurement replays
+A rule can remain in the request and still be ignored. A compaction boundary
+does not by itself prove behavioral failure. So the measurement replays
 one script through each policy, interrupts with the allergen probe every third
 turn, and grades each probe with S02's <code>allergen_safety</code>. <code>survival()</code> splits the
 probe rate into <strong>before</strong> and <strong>after</strong> the first compaction boundary. Two rates,
 one policy changed, same endpoint, same script, same checker.</p>
 <h3 id="structural-failures-are-not-probabilistic">Structural failures are not probabilistic</h3>
 <p><code>keep_all</code> cannot degrade gracefully — it either fits or it hits the wall. The
-guard in <code>drive</code> raises <code>ContextWindowExceeded</code> <em>before</em> the request leaves the
-machine when the sent history crosses the hard limit, and the notebook proves it
-with <code>hard_limit=1</code> so the cell costs nothing. That is the difference between a
-policy you own and a <code>400</code> you did not plan for: one is a decision, the other is a
+guard on each request from <code>drive</code> raises <code>ContextWindowExceeded</code> <em>before</em> the request leaves the
+machine when the word-count proxy crosses the teaching limit, and the notebook proves it
+with <code>hard_limit=1</code> so the cell costs nothing. The comparison table reports a
+window stop and uses only completed probes in its denominator. That is the difference between a
+local teaching guard and an endpoint error you did not plan for: one is a decision, the other is a
 surprise.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
@@ -209,9 +214,8 @@ with your endpoint already exported, as in S02.</p>
    down which ones still contain the allergen rule afterwards — and for the ones
    that lose it, say in one sentence what a <em>transcript reader</em> would see that a
    <em>checker</em> would not.</li>
-<li><strong>Run the boundary cell.</strong> It prints a token count and <code>rule_is_present</code> per
-   policy. Every row still reads like a normal café conversation. Only one still
-   governs.</li>
+<li><strong>Run the boundary cell.</strong> It prints a word-count proxy and <code>rule_is_present</code> per
+   policy. These describe retained text; behavior is measured separately.</li>
 <li><strong>Break it deterministically.</strong> Two assertion cells run first: truncation kills
    the unpinned rule while <code>pinned</code> keeps it, and <code>keep_all</code> with <code>hard_limit=1</code>
    raises <code>ContextWindowExceeded</code> with <code>context_length_exceeded</code> in the message.</li>
@@ -222,9 +226,8 @@ with your endpoint already exported, as in S02.</p>
    is behind a switch; flip it after your attempt.</li>
 <li><strong>Measure behaviour, not text.</strong> <code>context.survival_table(client)</code> replays the
    probe script through all four policies. Read the <code>before</code> and <code>after</code> rates and
-   the boundary turn. The assertion is relative: <code>pinned</code> never scores below
-   <code>truncate</code>, and the spread is printed because a live endpoint is allowed a bad
-   day.</li>
+   the boundary turn. The observed ordering may reverse. Report the rates and completed probe counts;
+   the notebook does not turn a hypothesis about pinning into an assertion.</li>
 </ol>
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
@@ -232,8 +235,7 @@ with your endpoint already exported, as in S02.</p>
 for <code>truncate</code>, <code>summarize</code> and <code>pinned</code> across the probes the script produced —
 and name the rent you paid for the best of them. The pinned rule rides every
 request; say so when you quote the number.</p>
-<p>This page will not predict your rates. A live model moves them, and the point is
-that the <em>ordering</em> survives the movement: if burying the rule ever outscored
+<p>This page will not predict your rates. A live model moves them, and you must report the ordering you actually observe: if burying the rule ever outscored
 pinning it over a real probe count, that would be the finding, not a glitch — and
 your job would be to explain what the pin failed to change.</p>
 <hr />
@@ -300,7 +302,7 @@ your job would be to explain what the pin failed to change.</p>
 <li><em>"A bigger window is the fix."</em> A bigger budget moves the boundary. It does not
   decide what survives it.</li>
 <li><em>"Overshooting the budget is the same as overshooting the window."</em> The budget is
-  a soft target you own; the hard limit is a <code>400</code>. Do not conflate a policy with a
+  a soft target you own; the hard limit in this toy is a local proxy guard. Do not conflate a policy with a
   protocol error.</li>
 </ul>
 <hr />
@@ -319,8 +321,7 @@ probe rate is split before and after the boundary.</details>
 
 <details><summary>What does pinning actually buy, and what does it cost?</summary>
 
-It buys a rule that no compaction round can drop, so behaviour stays stable across
-the boundary. It costs a few tokens on every request, forever, and it takes a
+It buys a rule that no compaction round can drop, without promising behavioral compliance. It costs a few words of the proxy budget on every request, and it takes a
 channel out of your budget that history can no longer use.</details>
 
 <details><summary>Your pinned rate came out below the buried rate on ten probes. What now?</summary>

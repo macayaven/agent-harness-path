@@ -82,8 +82,8 @@ def s03_md_window(mo):
     Two numbers, and they are different kinds of number.
 
     - `BUDGET` is what the harness *aims* to stay under. It is yours to set.
-    - `HARD_LIMIT` is the model's real window. Cross it and the API answers a
-      `400`, not a degradation. No policy saves you from that one.
+    - `HARD_LIMIT` is a teaching limit over a word-count proxy. The guard stops
+      before dispatch; it is not a measurement of the endpoint's token window.
 
     Compaction happens when the conversation outgrows the budget. **It rewrites the
     stored history** — what gets dropped is gone from every later turn too, not
@@ -112,14 +112,14 @@ def s03_demo_boundary():
         {"role": "user", "content": f"Question {index} about the menu and today's service."}
         for index in range(20)
     ]
-    print(f"before compaction: {context.tokens(_history)} tokens, "
+    print(f"before compaction: {context.tokens(_history)} words (proxy), "
           f"rule present: {context.rule_is_present(_history)}\n")
-    print(f"{'policy':<11} {'compacted':<11} {'tokens':<8} rule survives")
+    print(f"{'policy':<11} {'compacted':<11} {'words':<8} rule survives")
     for _name, _policy in context.POLICIES.items():
         _new, _compacted = _policy(_history, context.BUDGET_DEFAULT)
         print(f"{_name:<11} {str(_compacted):<11} {context.tokens(_new):<8} "
               f"{context.rule_is_present(_new)}")
-    print("\nThe transcript reads fine for every row. Only one row still governs.")
+    print("\nRetained text is visible here. Whether it governs requires the behavioral probe.")
     return
 
 
@@ -135,8 +135,8 @@ def test_s03_buried_rule_dies_pinned_rule_survives():
     assert _compacted, "the fixture must be long enough to compact"
     assert not context.rule_is_present(_buried), "the unpinned rule should have died"
     assert context.rule_is_present(_kept), "the pinned rule must survive"
-    print(f"buried: {context.tokens(_buried)} tokens, rule gone | "
-          f"pinned: {context.tokens(_kept)} tokens, rule kept")
+    print(f"buried: {context.tokens(_buried)} words (proxy), rule gone | "
+          f"pinned: {context.tokens(_kept)} words (proxy), rule kept")
     return
 
 
@@ -150,7 +150,7 @@ def test_s03_keep_all_overflows_the_window(client):
         assert "context_length_exceeded" in str(exc)
     else:
         raise AssertionError("keep_all was allowed past the hard limit")
-    print("keep_all cannot dodge the window: the 400 is structural, not probabilistic")
+    print("keep_all exceeds the teaching limit before any endpoint call")
     return
 
 
@@ -180,7 +180,7 @@ def attempt_keep_rule(history, budget):
 def s03_predict_keep_rule(mo):
     mo.md(r"""
     **Predict first:** what is the cheapest thing you can change that keeps the rule
-    across the boundary? Guess the token cost it adds to *every* request — then run
+    across the boundary? Guess the word-count cost it adds to *every* request — then run
     the fixture and check whether the surviving history fits the budget at all.
     """)
     return
@@ -225,10 +225,10 @@ def s03_demo_compare():
         )
     else:
         _new, _compacted = mine
-        print("your policy  : compacted", _compacted, "| tokens", context.tokens(_new),
+        print("your policy  : compacted", _compacted, "| words (proxy)", context.tokens(_new),
               "| rule present", context.rule_is_present(_new))
         _ref, _ref_compacted = solution_keep_rule(_history, context.BUDGET_DEFAULT)
-        print("reference    : compacted", _ref_compacted, "| tokens", context.tokens(_ref),
+        print("reference    : compacted", _ref_compacted, "| words (proxy)", context.tokens(_ref),
               "| rule present", context.rule_is_present(_ref))
         print("rule rent    :", context.tokens([context.rule_message()]),
               "tokens on every request, forever")
@@ -246,10 +246,9 @@ def s03_md_measure(mo):
     same endpoint, in the same session — the only difference is what survived
     compaction.
 
-    The honest assertion here is relative: pinning never does *worse* than burying.
-    With a live model both rates move; the ordering should not. We print the spread
-    instead of asserting an absolute score, because a live endpoint is allowed to
-    have a bad day.
+    Pinning guarantees retained text, not a better observed rate. Report the
+    ordering you measured, including reversals and sample counts. A policy that
+    reaches the teaching limit reports its stop and only its completed probes.
     """)
     return
 
@@ -268,25 +267,25 @@ def s03_predict_survival(mo):
 @app.cell
 def s03_demo_survival(client):
     survival = context.survival_table(client)
-    print(f"{'policy':<11} {'boundary':<10} {'before':<10} {'after':<10} probes")
+    print(f"{'policy':<11} {'boundary':<10} {'before':<10} {'after':<10} probes | status")
     for _name, _row in survival.items():
         _before = "—" if _row["before_rate"] is None else f"{_row['before_rate']:.0%}"
         _after = "—" if _row["after_rate"] is None else f"{_row['after_rate']:.0%}"
         print(f"{_name:<11} {str(_row['boundary'] or '—'):<10} {_before:<10} "
-              f"{_after:<10} {_row['probes']}")
+              f"{_after:<10} {_row['probes']} | {_row['stop_reason']} "
+              f"({_row['completed_turns']}/{_row['requested_turns']} turns)")
     print("\nA rate is only a claim if you can say what it was measured on: same "
           "script,\nsame endpoint, same checker, one policy different.")
     return (survival,)
 
 
 @app.cell
-def test_s03_pinned_never_worse_than_buried(survival):
-    pinned = survival["pinned"]["overall_rate"]
-    buried = survival["truncate"]["overall_rate"]
-    assert pinned is not None and buried is not None, survival
-    assert pinned >= buried, survival
-    print(f"pinned {pinned:.0%} vs buried {buried:.0%} over "
-          f"{survival['pinned']['probes']} probes — pinning never does worse")
+def test_s03_probe_rates_are_observations(survival):
+    for name, row in survival.items():
+        rate = row["overall_rate"]
+        assert rate is None or 0 <= rate <= 1, (name, row)
+        assert row["probes"] >= 0, (name, row)
+    print("Observed rates may reverse; pinning guarantees retained text, not compliance.")
     return
 
 

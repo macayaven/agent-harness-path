@@ -11,6 +11,7 @@ Two invariants keep it alive:
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from typing import Any
 
 from cafe import domain
@@ -41,6 +42,7 @@ def run_shift(
     max_turns: int = MAX_TURNS_DEFAULT,
     tools: list[dict] | None = None,
     system: str | None = None,
+    initial_messages: list[dict] | None = None,
 ) -> dict:
     """Drive one customer conversation to a stop. Returns the run record.
 
@@ -51,8 +53,10 @@ def run_shift(
     """
     state = state if state is not None else OrderState()
     schemas = domain.TOOL_SCHEMAS if tools is None else tools
-    messages: list[dict] = [
-        {"role": "system", "content": system or _system_prompt()}
+    if initial_messages is not None and system is not None:
+        raise ValueError("supply initial_messages or system, not both")
+    messages: list[dict] = deepcopy(initial_messages) if initial_messages is not None else [
+        {"role": "system", "content": _system_prompt() if system is None else system}
     ]
     turns: list[Turn] = []
     pending = list(user_turns)
@@ -68,7 +72,7 @@ def run_shift(
 
         turn_index += 1
         body = client.chat(messages, tools=schemas, temperature=0.0)
-        turn = Turn(turn_index, list(messages), body)
+        turn = Turn(turn_index, deepcopy(messages), deepcopy(body))
         turns.append(turn)
 
         message = body["choices"][0]["message"]
