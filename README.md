@@ -214,6 +214,26 @@ and **Muse Code**. Carlos Crespo Macaya remains responsible for the course's
 direction, editorial decisions, and published content. Acknowledging these tools
 does not imply endorsement by their providers.
 
+### Validation model and offline replay
+
+For the `v0.6.0-rc.1` validation and recording pass, the maintainer used
+[NVIDIA Nemotron 3.5 Lightning 30B A3B (NVFP4)](https://build.nvidia.com/nvidia/nemotron-3.5-lightning-30b-a3b/modelcard),
+running locally on an [NVIDIA DGX Spark workstation](https://build.nvidia.com/spark).
+This setup powered live checks of all 12 S01–S12 notebooks and the recording of
+the [hard-path lab cassettes](labs/cassettes/README.md): 19 files containing 43
+model responses for reproducible replay of the recorded lab scenarios.
+
+The course supports offline study in two ways:
+
+- **Notebooks:** a deterministic Python stub provides scripted and rule-based
+  responses by default.
+- **Hard-path labs:** `--replay` uses the committed request/response recordings
+  from the real model.
+
+After installing the course tooling, these defaults require no API key, running
+LLM, provider connection, or NVIDIA hardware. A live OpenAI-compatible endpoint
+is optional for exploring actual model behavior with your own inputs.
+
 ## License
 
 Copyright 2026 Carlos Crespo Macaya. Contributors retain copyright in their own

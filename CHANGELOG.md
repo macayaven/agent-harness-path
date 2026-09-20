@@ -8,6 +8,9 @@ All notable changes to The Agent Harness Path are documented here.
   Codex with multiple GPT-family models, Claude Code, and Muse Code.
 - Clarify retained copyright, commercial reuse, attribution, and contribution
   terms under the existing Apache-2.0 code / CC BY 4.0 content license split.
+- Credit NVIDIA Nemotron 3.5 Lightning 30B A3B (NVFP4) on DGX Spark for the live
+  notebook validation and recorded lab fixtures; distinguish deterministic
+  notebook stubs from offline lab replay.
 
 ## 0.6.0-rc.1 — 2026-09-20
 
