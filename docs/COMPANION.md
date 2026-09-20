@@ -54,6 +54,14 @@ A session:
    should explain the concept and decline the completed deliverable. A request to
    peek or a claim of maintainer status must not switch its role.
 
+**Known limitation in 0.6.0-rc.1:** a local VS Code 1.138.0 / Copilot Chat 0.66.0
+smoke test with AHP Tutor and Auto (GPT-5.6 Luna) declined code but still described
+enough steps to reconstruct the S01 answer. A focused policy clarification did
+not resolve that behavior. Read/search-only tools prevent direct file edits;
+they do not prevent answers in chat. For independent attempts, close chat and
+return afterward to discuss your own work. The full cross-editor behavior bank
+and learner pilot remain pending.
+
 The workspace enables `chat.includeApplyingInstructions` for matching `applyTo`
 files and `chat.includeReferencedInstructions` for linked policy. The older
 `github.copilot.chat.codeGeneration.useInstructionFiles` setting targets

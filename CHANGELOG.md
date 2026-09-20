@@ -8,6 +8,10 @@ Release candidate for maintainer testing and early testers. Full cross-editor
 tutor evaluation and the real learner pilot remain pending; this is not a broad
 public-readiness claim.
 
+Known limitation: the selected VS Code AHP Tutor with Auto (GPT-5.6 Luna) still
+over-explained the S01 answer after refusing code in the focused smoke recheck.
+Tutor enforcement is not verified; see [companion guidance](docs/COMPANION.md).
+
 - Restore consent enforcement through traces, reports and taxonomy; assemble
   the context actually sent and count only completed compaction probes.
 - Ground price checks in item/quantity evidence, validate judge verdicts, keep
