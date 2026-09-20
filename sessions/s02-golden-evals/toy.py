@@ -67,10 +67,11 @@ def s02_md_client(mo):
 
 
 @app.cell
-def s02_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s02_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
     return (client,)
 
 
@@ -98,16 +99,17 @@ def s02_md_golden(mo):
 
 
 @app.cell
-def s02_demo_golden():
-    print(f"{'id':<20} {'turns':<6} {'allergen':<10} {'confirm':<8} tools")
-    for _scenario in GOLDEN:
-        print(
-            f"{_scenario.id:<20} {len(_scenario.turns):<6} "
-            f"{_scenario.allergen or '-':<10} "
-            f"{'yes' if _scenario.confirm_text else '-':<8} "
-            f"{', '.join(_scenario.expect_tools) or '-'}"
-        )
-    print(f"\n{len(GOLDEN)} scenarios. Read every one before you score anything.")
+def s02_demo_golden(mo):
+    with mo.redirect_stdout():
+        print(f"{'id':<20} {'turns':<6} {'allergen':<10} {'confirm':<8} tools")
+        for _scenario in GOLDEN:
+            print(
+                f"{_scenario.id:<20} {len(_scenario.turns):<6} "
+                f"{_scenario.allergen or '-':<10} "
+                f"{'yes' if _scenario.confirm_text else '-':<8} "
+                f"{', '.join(_scenario.expect_tools) or '-'}"
+            )
+        print(f"\n{len(GOLDEN)} scenarios. Read every one before you score anything.")
     return
 
 
@@ -123,19 +125,20 @@ def s02_predict_arms(mo):
 
 
 @app.cell
-def s02_demo_arms(client):
-    comparison = naive_vs_governed(client)
-    print(f"{'arm':<10} {'pass rate':<12} failing scenarios")
-    for _arm in ("naive", "governed"):
-        _row = comparison[_arm]
-        _failed = [d["id"] for d in _row["details"] if not d["ok"]]
-        print(f"{_arm:<10} {_row['passes']}/{_row['total']:<10} {', '.join(_failed) or '-'}")
-        _prices = {k: sum(d["price_evidence"][k] for d in _row["details"])
-                   for k in ("claims", "verified", "incorrect", "unverified")}
-        print("  price evidence:", _prices)
-    print("\nSame scripts, same endpoint, same checker. Only the harness differs.")
-    print("Price syntax: [quantity x] exact item [+ item]: 4.00 EUR; total: 4.00 after a receipt.")
-    print("Unverified prose fails the evidence contract; it is not a factual price error.")
+def s02_demo_arms(client, mo):
+    with mo.redirect_stdout():
+        comparison = naive_vs_governed(client)
+        print(f"{'arm':<10} {'pass rate':<12} failing scenarios")
+        for _arm in ("naive", "governed"):
+            _row = comparison[_arm]
+            _failed = [d["id"] for d in _row["details"] if not d["ok"]]
+            print(f"{_arm:<10} {_row['passes']}/{_row['total']:<10} {', '.join(_failed) or '-'}")
+            _prices = {k: sum(d["price_evidence"][k] for d in _row["details"])
+                       for k in ("claims", "verified", "incorrect", "unverified")}
+            print("  price evidence:", _prices)
+        print("\nSame scripts, same endpoint, same checker. Only the harness differs.")
+        print("Price syntax: [quantity x] exact item [+ item]: 4.00 EUR; total: 4.00 after a receipt.")
+        print("Unverified prose fails the evidence contract; it is not a factual price error.")
     return (comparison,)
 
 
@@ -195,41 +198,42 @@ def s02_reveal_source_premature_fire(mo, reveal_premature_fire):
 
 
 @app.cell
-def s02_demo_compare():
-    scenario = GOLDEN[2]
-    dirty = {
-        "messages": [
-            {"role": "user", "content": scenario.turns[-1]},
-            {
-                "role": "assistant",
-                "content": None,
-                "tool_calls": [
-                    {
-                        "id": "call_1",
-                        "type": "function",
-                        "function": {
-                            "name": "fire_ticket",
-                            "arguments": '{"items": ["latte"], "table": 1}',
-                        },
-                    }
-                ],
-            },
-            {"role": "tool", "tool_call_id": "call_1", "content": "{}"},
-        ],
-        "state": OrderState(),
-        "stop_reason": "answered",
-    }
-    clean = reference_record(scenario)
-    mine = attempt_premature_fire(scenario, dirty)
-    if mine is None:
-        print(
-            "Attempt pending: write attempt_premature_fire, then compare it with "
-            "the reference on both fixtures."
-        )
-    else:
-        print("your violations, dirty run :", mine)
-        print("dirty run vs reference    :", solution_premature_fire(scenario, dirty))
-        print("clean run vs reference    :", solution_premature_fire(scenario, clean))
+def s02_demo_compare(mo):
+    with mo.redirect_stdout():
+        scenario = GOLDEN[2]
+        dirty = {
+            "messages": [
+                {"role": "user", "content": scenario.turns[-1]},
+                {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {
+                                "name": "fire_ticket",
+                                "arguments": '{"items": ["latte"], "table": 1}',
+                            },
+                        }
+                    ],
+                },
+                {"role": "tool", "tool_call_id": "call_1", "content": "{}"},
+            ],
+            "state": OrderState(),
+            "stop_reason": "answered",
+        }
+        clean = reference_record(scenario)
+        mine = attempt_premature_fire(scenario, dirty)
+        if mine is None:
+            print(
+                "Attempt pending: write attempt_premature_fire, then compare it with "
+                "the reference on both fixtures."
+            )
+        else:
+            print("your violations, dirty run :", mine)
+            print("dirty run vs reference    :", solution_premature_fire(scenario, dirty))
+            print("clean run vs reference    :", solution_premature_fire(scenario, clean))
     return
 
 
@@ -251,30 +255,33 @@ def s02_md_checks(mo):
 
 
 @app.cell
-def test_s02_checker_rejects_empty_and_accepts_reference():
-    for _scenario in GOLDEN:
-        assert checkers.evaluate(_scenario, empty_record()), _scenario.id
-        assert checkers.evaluate(_scenario, reference_record(_scenario)) == [], _scenario.id
-    print("fixture invariant holds: empty runs fail, reference runs pass")
+def test_s02_checker_rejects_empty_and_accepts_reference(mo):
+    with mo.redirect_stdout():
+        for _scenario in GOLDEN:
+            assert checkers.evaluate(_scenario, empty_record()), _scenario.id
+            assert checkers.evaluate(_scenario, reference_record(_scenario)) == [], _scenario.id
+        print("fixture invariant holds: empty runs fail, reference runs pass")
     return
 
 
 @app.cell
-def test_s02_arms_share_one_golden_set(comparison):
-    assert comparison["scenarios"] == tuple(scenario.id for scenario in GOLDEN)
-    for _arm in ("naive", "governed"):
-        assert comparison[_arm]["total"] == len(GOLDEN)
-    print("both arms scored the same", len(GOLDEN), "scenarios, in the same order")
+def test_s02_arms_share_one_golden_set(comparison, mo):
+    with mo.redirect_stdout():
+        assert comparison["scenarios"] == tuple(scenario.id for scenario in GOLDEN)
+        for _arm in ("naive", "governed"):
+            assert comparison[_arm]["total"] == len(GOLDEN)
+        print("both arms scored the same", len(GOLDEN), "scenarios, in the same order")
     return
 
 
 @app.cell
-def test_s02_governed_never_scores_below_naive(comparison):
-    naive = comparison["naive"]
-    governed = comparison["governed"]
-    assert governed["passes"] >= naive["passes"], comparison
-    print(f"naive {naive['passes']}/{naive['total']} vs governed "
-          f"{governed['passes']}/{governed['total']} — the harness never does worse")
+def test_s02_governed_never_scores_below_naive(comparison, mo):
+    with mo.redirect_stdout():
+        naive = comparison["naive"]
+        governed = comparison["governed"]
+        assert governed["passes"] >= naive["passes"], comparison
+        print(f"naive {naive['passes']}/{naive['total']} vs governed "
+              f"{governed['passes']}/{governed['total']} — the harness never does worse")
     return
 
 

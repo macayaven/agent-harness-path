@@ -60,10 +60,11 @@ def s07_md_hook(mo):
 
 
 @app.cell
-def s07_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("cap  :", CAP_DEFAULT, "| stop reasons:", sorted(STOP_REASONS))
+def s07_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("cap  :", CAP_DEFAULT, "| stop reasons:", sorted(STOP_REASONS))
     return (client,)
 
 
@@ -117,25 +118,26 @@ def s07_predict_contradiction(mo):
 
 
 @app.cell
-def s07_demo_contradiction():
-    contradiction_spec = {
-        "table": 4,
-        "items": ["latte", "chocolate croissant"],
-        "avoid_allergens": ["milk"],
-    }
-    ping_pong = make_scripted_generator(
-        [
-            {"table": 4, "items": ["latte"]},
-            {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
-            {"table": 4, "items": ["latte"]},
-        ]
-    )
-    contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
-    print("stop_reason:", contradiction_run["stop_reason"])
-    print("attempts   :", len(contradiction_run["attempts"]))
-    print("ticket     :", contradiction_run["ticket"])
-    for attempt in contradiction_run["attempts"]:
-        print(f"  attempt {attempt['n']}: {attempt['failures']}")
+def s07_demo_contradiction(mo):
+    with mo.redirect_stdout():
+        contradiction_spec = {
+            "table": 4,
+            "items": ["latte", "chocolate croissant"],
+            "avoid_allergens": ["milk"],
+        }
+        ping_pong = make_scripted_generator(
+            [
+                {"table": 4, "items": ["latte"]},
+                {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
+                {"table": 4, "items": ["latte"]},
+            ]
+        )
+        contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
+        print("stop_reason:", contradiction_run["stop_reason"])
+        print("attempts   :", len(contradiction_run["attempts"]))
+        print("ticket     :", contradiction_run["ticket"])
+        for attempt in contradiction_run["attempts"]:
+            print(f"  attempt {attempt['n']}: {attempt['failures']}")
     return (contradiction_run,)
 
 
@@ -198,14 +200,15 @@ def s07_reveal_source_failure_view(mo, reveal_failure_view):
 
 
 @app.cell
-def s07_demo_compare():
-    sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
-    mine = attempt_failure_view(sample_failures, 2)
-    if not mine.strip():
-        print("Attempt pending: write the curated view before comparing the reference.")
-    else:
-        print("your view:\n" + mine)
-        print("\nnames every failure:", all(f.split(":")[0] in mine for f in sample_failures))
+def s07_demo_compare(mo):
+    with mo.redirect_stdout():
+        sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
+        mine = attempt_failure_view(sample_failures, 2)
+        if not mine.strip():
+            print("Attempt pending: write the curated view before comparing the reference.")
+        else:
+            print("your view:\n" + mine)
+            print("\nnames every failure:", all(f.split(":")[0] in mine for f in sample_failures))
     return
 
 
@@ -225,13 +228,14 @@ def s07_predict_live(mo):
 
 
 @app.cell
-def s07_demo_live(client):
-    live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
-    live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
-    print("brief      :", brief_for(live_spec)[:88])
-    print("stop_reason:", live_run["stop_reason"])
-    print("attempts   :", len(live_run["attempts"]))
-    print("ticket     :", live_run["ticket"])
+def s07_demo_live(client, mo):
+    with mo.redirect_stdout():
+        live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
+        live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
+        print("brief      :", brief_for(live_spec)[:88])
+        print("stop_reason:", live_run["stop_reason"])
+        print("attempts   :", len(live_run["attempts"]))
+        print("ticket     :", live_run["ticket"])
     return live_run, live_spec
 
 
@@ -270,19 +274,20 @@ def s07_md_checkpoint(mo):
 
 
 @app.cell
-def s07_demo_checkpoint(client):
-    distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
-    for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
-        run = repair_ticket(
-            {"table": table, "items": items, "avoid_allergens": []},
-            make_model_generator(client),
-            cap=CAP_DEFAULT,
-        )
-        if run["stop_reason"] == "passed":
-            distribution[f"passed_on_{min(len(run['attempts']), 3)}"] += 1
-        else:
-            distribution["exhausted"] += 1
-    print("S07 baseline — attempts to pass:", distribution)
+def s07_demo_checkpoint(client, mo):
+    with mo.redirect_stdout():
+        distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
+        for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
+            run = repair_ticket(
+                {"table": table, "items": items, "avoid_allergens": []},
+                make_model_generator(client),
+                cap=CAP_DEFAULT,
+            )
+            if run["stop_reason"] == "passed":
+                distribution[f"passed_on_{min(len(run['attempts']), 3)}"] += 1
+            else:
+                distribution["exhausted"] += 1
+        print("S07 baseline — attempts to pass:", distribution)
     return
 
 

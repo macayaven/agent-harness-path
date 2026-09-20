@@ -71,14 +71,15 @@ def s12_md_client(mo):
 
 
 @app.cell
-def s12_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
-    print("neighbours:", judge.companion_note())
-    print("defect classes in play:", judge.defect_classes())
-    _aliases = judge.taxonomy_aliases()
-    print("S10's name for them:", _aliases or "(no overlap available this run)")
+def s12_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
+        print("neighbours:", judge.companion_note())
+        print("defect classes in play:", judge.defect_classes())
+        _aliases = judge.taxonomy_aliases()
+        print("S10's name for them:", _aliases or "(no overlap available this run)")
     return (client,)
 
 
@@ -108,8 +109,7 @@ def s12_md_theory(mo):
     ### 3. The order of operations is the protocol
 
     ![Seed defects, hand-label blind, calibrate the rubric, re-measure with chance-corrected agreement](public/diagrams/s12-judge.svg)
-    """)
-    mo.md(r"""
+
     Hand labels come **before** judge output, because a seen verdict anchors your
     label and the measurement dies quietly. Detection reported without false
     positives is half a number: a judge that fails everything detects everything.
@@ -144,13 +144,14 @@ def s12_md_corpus(mo):
 
 
 @app.cell
-def s12_demo_corpus():
-    transcripts = judge.seeded_corpus()[0]
-    print("menu facts for your labels:", domain.MENU)
-    print("corpus size:", len(transcripts), list(transcripts))
-    for _tid, _transcript in transcripts.items():
-        print(f"\n--- {_tid} ---")
-        print(judge.render_transcript(_transcript))
+def s12_demo_corpus(mo):
+    with mo.redirect_stdout():
+        transcripts = judge.seeded_corpus()[0]
+        print("menu facts for your labels:", domain.MENU)
+        print("corpus size:", len(transcripts), list(transcripts))
+        for _tid, _transcript in transcripts.items():
+            print(f"\n--- {_tid} ---")
+            print(judge.render_transcript(_transcript))
     return (transcripts,)
 
 

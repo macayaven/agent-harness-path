@@ -1,8 +1,9 @@
 """Route labels and illustrative rates must not impersonate execution evidence."""
 
-from contextlib import redirect_stdout
+from contextlib import nullcontext, redirect_stdout
 from io import StringIO
 from pathlib import Path
+from types import SimpleNamespace
 import unittest
 import statistics
 from unittest.mock import patch
@@ -24,7 +25,7 @@ class RoutingEvidenceTests(unittest.TestCase):
             "attempt_budget_gate": predicate, "solution_budget_gate": predicate})
         output = StringIO()
         with redirect_stdout(output):
-            cell()
+            cell(mo=SimpleNamespace(redirect_stdout=nullcontext))
         self.assertNotIn("MISMATCH", output.getvalue())
         self.assertIn("module=True", output.getvalue())
 
@@ -126,7 +127,7 @@ class RoutingEvidenceTests(unittest.TestCase):
                 tracer = trace.Tracer()
                 output = StringIO()
                 with patch.object(trace, "Tracer", return_value=tracer), redirect_stdout(output):
-                    cell(client)
+                    cell(client, mo=SimpleNamespace(redirect_stdout=nullcontext))
                 self.assertEqual(client.calls, 3)
                 self.assertIn("stop reason      : " + expected, output.getvalue())
                 self.assertEqual(tracer.roots[0]["attrs"]["stop_reason"], expected)
@@ -153,7 +154,7 @@ class RoutingEvidenceTests(unittest.TestCase):
         client = ScriptedClient([reply()])
         output = StringIO()
         with redirect_stdout(output):
-            cell(client)
+            cell(client, mo=SimpleNamespace(redirect_stdout=nullcontext))
         self.assertEqual(client.calls, 1)
         self.assertIn("accounting complete: False", output.getvalue())
         self.assertIn("usage_unknown", output.getvalue())

@@ -1,7 +1,7 @@
 """Compaction observations must describe the actual request, not a parallel story."""
 
 from copy import deepcopy
-from contextlib import redirect_stdout
+from contextlib import nullcontext, redirect_stdout
 from io import StringIO
 from types import SimpleNamespace
 import unittest
@@ -126,7 +126,7 @@ class ContextWireTests(unittest.TestCase):
             "context": SimpleNamespace(survival_table=lambda client: {"truncate": row})})
         output = StringIO()
         with redirect_stdout(output):
-            cell(None)
+            cell(None, mo=SimpleNamespace(redirect_stdout=nullcontext))
         self.assertIn("0/1 answered probes; 1 capped", output.getvalue())
         self.assertIn("2 answered / 3 processed / 3 requested turns", output.getvalue())
         self.assertNotIn("100%", output.getvalue())
@@ -136,6 +136,7 @@ class ContextWireTests(unittest.TestCase):
         nodes = ast.parse(path.read_text()).body
         check = next(n.name for n in nodes if isinstance(n, ast.FunctionDef)
                      and n.name.startswith("test_s03_")
-                     and [a.arg for a in n.args.args] == ["survival"])
-        notebook_function(path, check)({"pinned": {"overall_rate": 0.25, "probes": 4},
-                                        "truncate": {"overall_rate": 0.5, "probes": 4}})
+                     and [a.arg for a in n.args.args if a.arg != "mo"] == ["survival"])
+        notebook_function(path, check)(survival={"pinned": {"overall_rate": 0.25, "probes": 4},
+                                                 "truncate": {"overall_rate": 0.5, "probes": 4}},
+                                      mo=SimpleNamespace(redirect_stdout=nullcontext))

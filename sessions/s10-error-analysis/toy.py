@@ -92,10 +92,11 @@ def s10_md_theory(mo):
 
 
 @app.cell
-def s10_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s10_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
     return (client,)
 
 
@@ -113,64 +114,65 @@ def s10_md_shifts(mo):
 
 
 @app.cell
-def s10_demo_shifts(client):
-    allergy_item = next(
-        item for item, details in domain.MENU.items() if "milk" in details["allergens"]
-    )
-    unavailable_item = domain.EIGHTY_SIXED[0]
-    plain_item = next(
-        item for item, details in domain.MENU.items() if not details["allergens"]
-    )
-    second_plain_item = next(
-        item
-        for item, details in domain.MENU.items()
-        if not details["allergens"] and item != plain_item
-    )
-
-    shift_scripts = (
-        {
-            "id": "s10-allergy",
-            "user_turns": (
-                f"I'm allergic to milk. Can I order a {allergy_item}?",
-                "OK.",
-                "Nothing else, thanks.",
-                "Thanks.",
-            ),
-            "expects": ("check_allergens",),
-        },
-        {
-            "id": "s10-unavailable",
-            "user_turns": (
-                f"I'd like a {unavailable_item}, please.",
-                "Yes, confirm it.",
-                "To go.",
-                "Thanks.",
-            ),
-            "expects": ("price_check", "propose_order"),
-        },
-        {
-            "id": "s10-plain",
-            "user_turns": (
-                f"A {plain_item} and a {second_plain_item}.",
-                "Yes, that's everything.",
-                "Perfect.",
-                "Thanks.",
-            ),
-            "expects": ("propose_order",),
-        },
-    )
-
-    shifts = []
-    for script in shift_scripts:
-        run = run_shift(client, script["user_turns"], make_responder([("approve", None)]), max_turns=3)
-        shifts.append({"script": script, "run": run})
-        summary = shift_summary(run)
-        print(
-            script["id"],
-            "| stop:", run["stop_reason"],
-            "| tools:", ",".join(summary["tool_log"]) or "none",
-            "| events:", len(log_events(run)),
+def s10_demo_shifts(client, mo):
+    with mo.redirect_stdout():
+        allergy_item = next(
+            item for item, details in domain.MENU.items() if "milk" in details["allergens"]
         )
+        unavailable_item = domain.EIGHTY_SIXED[0]
+        plain_item = next(
+            item for item, details in domain.MENU.items() if not details["allergens"]
+        )
+        second_plain_item = next(
+            item
+            for item, details in domain.MENU.items()
+            if not details["allergens"] and item != plain_item
+        )
+
+        shift_scripts = (
+            {
+                "id": "s10-allergy",
+                "user_turns": (
+                    f"I'm allergic to milk. Can I order a {allergy_item}?",
+                    "OK.",
+                    "Nothing else, thanks.",
+                    "Thanks.",
+                ),
+                "expects": ("check_allergens",),
+            },
+            {
+                "id": "s10-unavailable",
+                "user_turns": (
+                    f"I'd like a {unavailable_item}, please.",
+                    "Yes, confirm it.",
+                    "To go.",
+                    "Thanks.",
+                ),
+                "expects": ("price_check", "propose_order"),
+            },
+            {
+                "id": "s10-plain",
+                "user_turns": (
+                    f"A {plain_item} and a {second_plain_item}.",
+                    "Yes, that's everything.",
+                    "Perfect.",
+                    "Thanks.",
+                ),
+                "expects": ("propose_order",),
+            },
+        )
+
+        shifts = []
+        for script in shift_scripts:
+            run = run_shift(client, script["user_turns"], make_responder([("approve", None)]), max_turns=3)
+            shifts.append({"script": script, "run": run})
+            summary = shift_summary(run)
+            print(
+                script["id"],
+                "| stop:", run["stop_reason"],
+                "| tools:", ",".join(summary["tool_log"]) or "none",
+                "| events:", len(log_events(run)),
+            )
     return (shifts,)
 
 
@@ -188,15 +190,16 @@ def s10_md_harvest(mo):
 
 
 @app.cell
-def s10_demo_harvest(shifts):
-    pile = harvest(shifts)
-    print("harvested failures:", len(pile))
-    if not pile:
-        print("No failures to label in this run; no taxonomy or calibration evidence.")
-    for record in pile:
-        print(
-            f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
-        )
+def s10_demo_harvest(mo, shifts):
+    with mo.redirect_stdout():
+        pile = harvest(shifts)
+        print("harvested failures:", len(pile))
+        if not pile:
+            print("No failures to label in this run; no taxonomy or calibration evidence.")
+        for record in pile:
+            print(
+                f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
+            )
     return (pile,)
 
 

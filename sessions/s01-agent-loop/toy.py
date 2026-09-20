@@ -69,10 +69,11 @@ def s01_md_client(mo):
 
 
 @app.cell
-def s01_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s01_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
     return (client,)
 
 
@@ -86,8 +87,7 @@ def s01_md_api_shape(mo):
     a final answer (`content`, no `tool_calls`), or a request to run a tool.
 
     ![Client-owned loop: answers end the loop, tool calls execute locally and persist before the next call](public/diagrams/S01-agent-loop.svg)
-    """)
-    mo.md(r"""
+
     The arrow back to the model carries **history**, not an invocation of the tool
     inside the model. Trace that with your finger before reading the code.
     """)
@@ -106,18 +106,19 @@ def s01_predict_first_call(mo):
 
 
 @app.cell
-def s01_demo_first_call(client):
-    first = client.chat(
-        [
-            {"role": "system", "content": domain.PERSONA},
-            {"role": "user", "content": "Get me a latte, please."},
-        ],
-        tools=domain.TOOL_SCHEMAS,
-        temperature=0.0,
-    )
-    first_message = first["choices"][0]["message"]
-    print("content    :", first_message.get("content"))
-    print("tool_calls :", [c["function"]["name"] for c in first_message.get("tool_calls") or []])
+def s01_demo_first_call(client, mo):
+    with mo.redirect_stdout():
+        first = client.chat(
+            [
+                {"role": "system", "content": domain.PERSONA},
+                {"role": "user", "content": "Get me a latte, please."},
+            ],
+            tools=domain.TOOL_SCHEMAS,
+            temperature=0.0,
+        )
+        first_message = first["choices"][0]["message"]
+        print("content    :", first_message.get("content"))
+        print("tool_calls :", [c["function"]["name"] for c in first_message.get("tool_calls") or []])
     return
 
 
@@ -163,32 +164,33 @@ def s01_md_broken(mo):
 
 
 @app.cell
-def s01_demo_broken(client):
-    broken_state = OrderState()
-    broken_messages = [
-        {"role": "system", "content": domain.PERSONA},
-        {"role": "user", "content": "Get me a latte, please."},
-    ]
-    broken_body = client.chat(broken_messages, tools=domain.TOOL_SCHEMAS, temperature=0.0)
-    broken_reply = broken_body["choices"][0]["message"]
-    broken_calls = broken_reply.get("tool_calls") or []
-    if not broken_calls:
-        print("the model answered in words this turn; rerun to get a tool call")
-    else:
-        # BUG on purpose: the assistant message is never appended.
-        for broken_call in broken_calls:
-            broken_messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": broken_call["id"],
-                    "content": json.dumps(dispatch(broken_state, broken_call)),
-                }
-            )
-        try:
-            client.chat(broken_messages, tools=domain.TOOL_SCHEMAS, temperature=0.0)
-            print("no rejection — this endpoint is lenient; the conversation is still wrong")
-        except OrphanedToolResult as exc:
-            print("rejected before it ever left the machine:", exc)
+def s01_demo_broken(client, mo):
+    with mo.redirect_stdout():
+        broken_state = OrderState()
+        broken_messages = [
+            {"role": "system", "content": domain.PERSONA},
+            {"role": "user", "content": "Get me a latte, please."},
+        ]
+        broken_body = client.chat(broken_messages, tools=domain.TOOL_SCHEMAS, temperature=0.0)
+        broken_reply = broken_body["choices"][0]["message"]
+        broken_calls = broken_reply.get("tool_calls") or []
+        if not broken_calls:
+            print("the model answered in words this turn; rerun to get a tool call")
+        else:
+            # BUG on purpose: the assistant message is never appended.
+            for broken_call in broken_calls:
+                broken_messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": broken_call["id"],
+                        "content": json.dumps(dispatch(broken_state, broken_call)),
+                    }
+                )
+            try:
+                client.chat(broken_messages, tools=domain.TOOL_SCHEMAS, temperature=0.0)
+                print("no rejection — this endpoint is lenient; the conversation is still wrong")
+            except OrphanedToolResult as exc:
+                print("rejected before it ever left the machine:", exc)
     return
 
 
@@ -243,21 +245,22 @@ def s01_reveal_source_tool_results(mo, reveal_tool_results):
 
 
 @app.cell
-def s01_demo_compare():
-    pending_calls = [
-        {"id": "call_a", "type": "function",
-         "function": {"name": "price_check", "arguments": '{"item": "latte"}'}},
-        {"id": "call_b", "type": "function",
-         "function": {"name": "price_check", "arguments": '{"item": "chocolate croissant"}'}},
-    ]
-    supplied = attempt_tool_results(pending_calls, OrderState())
-    if not supplied:
-        print("Attempt pending: supply one result record per call before comparing.")
-    else:
-        requested = {call["id"] for call in pending_calls}
-        covered = {record.get("tool_call_id") for record in supplied}
-        print("covered  :", sorted(covered))
-        print("uncovered:", sorted(requested - covered))
+def s01_demo_compare(mo):
+    with mo.redirect_stdout():
+        pending_calls = [
+            {"id": "call_a", "type": "function",
+             "function": {"name": "price_check", "arguments": '{"item": "latte"}'}},
+            {"id": "call_b", "type": "function",
+             "function": {"name": "price_check", "arguments": '{"item": "chocolate croissant"}'}},
+        ]
+        supplied = attempt_tool_results(pending_calls, OrderState())
+        if not supplied:
+            print("Attempt pending: supply one result record per call before comparing.")
+        else:
+            requested = {call["id"] for call in pending_calls}
+            covered = {record.get("tool_call_id") for record in supplied}
+            print("covered  :", sorted(covered))
+            print("uncovered:", sorted(requested - covered))
     return
 
 
@@ -273,14 +276,15 @@ def s01_md_whole_loop(mo):
 
 
 @app.cell
-def s01_demo_shift(client):
-    shift = run_shift(
-        client,
-        ["Hi, get me a latte and a chocolate croissant.", "Nothing else, thanks."],
-    )
-    print("stop_reason:", shift["stop_reason"])
-    print("turns_used :", shift["turns_used"], "| model calls:", shift["model_calls"])
-    print("tools run  :", shift["state"].tool_log)
+def s01_demo_shift(client, mo):
+    with mo.redirect_stdout():
+        shift = run_shift(
+            client,
+            ["Hi, get me a latte and a chocolate croissant.", "Nothing else, thanks."],
+        )
+        print("stop_reason:", shift["stop_reason"])
+        print("turns_used :", shift["turns_used"], "| model calls:", shift["model_calls"])
+        print("tools run  :", shift["state"].tool_log)
     return (shift,)
 
 
@@ -338,16 +342,17 @@ def s01_md_checkpoint(mo):
 
 
 @app.cell
-def s01_demo_checkpoint(client):
-    legal = 0
-    for _ in range(3):
-        run = run_shift(client, ["Get me a latte.", "Nothing else."])
-        try:
-            check_pairing(run["messages"])
-            legal += 1
-        except OrphanedToolResult:
-            pass
-    print(f"S01 baseline: {legal}/3 legal conversations")
+def s01_demo_checkpoint(client, mo):
+    with mo.redirect_stdout():
+        legal = 0
+        for _ in range(3):
+            run = run_shift(client, ["Get me a latte.", "Nothing else."])
+            try:
+                check_pairing(run["messages"])
+                legal += 1
+            except OrphanedToolResult:
+                pass
+        print(f"S01 baseline: {legal}/3 legal conversations")
     return
 
 

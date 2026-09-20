@@ -72,11 +72,12 @@ def s11_md_client(mo):
 
 
 @app.cell
-def s11_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
-    print("neighbours:", routing.companion_note())
+def s11_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
+        print("neighbours:", routing.companion_note())
     return (client,)
 
 
@@ -107,8 +108,7 @@ def s11_md_theory(mo):
     the actual model selected through `get_client()`.
 
     ![Simulated policy and illustrative cost estimates gate calls to one configured client](public/diagrams/s11-budget.svg)
-    """)
-    mo.md(r"""
+
     ### 3. Classification policy is separate from transport
 
     `validate_policy` rejects a simulated content-to-cloud mapping. It does not
@@ -127,12 +127,13 @@ def s11_md_theory(mo):
 
 
 @app.cell
-def s11_demo_routes():
-    print("phase        classification")
-    for phase, classification in routing.PHASES.items():
-        print(f"  {phase:12s} {classification}")
-    print()
-    print(routing.describe_routes())
+def s11_demo_routes(mo):
+    with mo.redirect_stdout():
+        print("phase        classification")
+        for phase, classification in routing.PHASES.items():
+            print(f"  {phase:12s} {classification}")
+        print()
+        print(routing.describe_routes())
     return
 
 
@@ -181,25 +182,26 @@ def s11_reveal_source_budget_gate(mo, reveal_budget_gate):
 
 
 @app.cell
-def s11_demo_budget_gate():
-    _examples = [
-        {"projected_usd": 0.04, "spent_usd": 0.00, "budget_usd": 0.25},
-        {"projected_usd": 0.04, "spent_usd": 0.23, "budget_usd": 0.25},
-        {"projected_usd": 9.99, "spent_usd": 0.00, "budget_usd": None},
-    ]
-    for _example in _examples:
-        _yours = attempt_budget_gate(**_example)
-        _reference = solution_budget_gate(**_example)
-        _example_budget = routing.Budget(_example["budget_usd"])
-        _example_budget.spent_usd = _example["spent_usd"]
-        _module = _example_budget.would_exceed(_example["projected_usd"])
-        if _yours is None:
-            print(f"{_example} -> Attempt pending: return True or False, not None")
-        else:
-            print(
-                f"{_example} -> you={_yours} reference={_reference} module={_module}"
-                f" {'OK' if _yours == _reference == _module else 'MISMATCH'}"
-            )
+def s11_demo_budget_gate(mo):
+    with mo.redirect_stdout():
+        _examples = [
+            {"projected_usd": 0.04, "spent_usd": 0.00, "budget_usd": 0.25},
+            {"projected_usd": 0.04, "spent_usd": 0.23, "budget_usd": 0.25},
+            {"projected_usd": 9.99, "spent_usd": 0.00, "budget_usd": None},
+        ]
+        for _example in _examples:
+            _yours = attempt_budget_gate(**_example)
+            _reference = solution_budget_gate(**_example)
+            _example_budget = routing.Budget(_example["budget_usd"])
+            _example_budget.spent_usd = _example["spent_usd"]
+            _module = _example_budget.would_exceed(_example["projected_usd"])
+            if _yours is None:
+                print(f"{_example} -> Attempt pending: return True or False, not None")
+            else:
+                print(
+                    f"{_example} -> you={_yours} reference={_reference} module={_module}"
+                    f" {'OK' if _yours == _reference == _module else 'MISMATCH'}"
+                )
     return
 
 
@@ -216,29 +218,30 @@ def s11_md_meter(mo):
 
 
 @app.cell
-def s11_demo_metered_call(client):
-    local_table = {
-        "read_note": "local-small",
-        "draft_reply": "local-large",
-        "till_summary": "local-small",
-    }
-    routing.validate_policy(local_table)
-    _draft = [
-        {"role": "system", "content": domain.PERSONA},
-        {"role": "user", "content": "Get me a latte and a chocolate croissant, please."},
-    ]
-    _record = routing.metered_call(client, local_table, "draft_reply", _draft)
-    _usage = _record["response"].get("usage") or {}
-    print("simulated route  :", _record["route"], "->", _record["route_model"])
-    print("configured client:", _record["client_model"])
-    print("reported model   :", _record.get("reported_model", "not reported"))
-    print("dispatched       :", _record["dispatched"])
-    print("usage from wire  :", _usage)
-    print("tokens recorded  :", _record["tokens"])
-    print("client latency ms:", _record["latency_ms"])
-    print("usage known      :", _record["usage_known"])
-    print("cost estimates   :", "projected", _record["projected_usd"],
-          "usage-based", _record["estimated_cost_usd"], "USD at illustrative rates")
+def s11_demo_metered_call(client, mo):
+    with mo.redirect_stdout():
+        local_table = {
+            "read_note": "local-small",
+            "draft_reply": "local-large",
+            "till_summary": "local-small",
+        }
+        routing.validate_policy(local_table)
+        _draft = [
+            {"role": "system", "content": domain.PERSONA},
+            {"role": "user", "content": "Get me a latte and a chocolate croissant, please."},
+        ]
+        _record = routing.metered_call(client, local_table, "draft_reply", _draft)
+        _usage = _record["response"].get("usage") or {}
+        print("simulated route  :", _record["route"], "->", _record["route_model"])
+        print("configured client:", _record["client_model"])
+        print("reported model   :", _record.get("reported_model", "not reported"))
+        print("dispatched       :", _record["dispatched"])
+        print("usage from wire  :", _usage)
+        print("tokens recorded  :", _record["tokens"])
+        print("client latency ms:", _record["latency_ms"])
+        print("usage known      :", _record["usage_known"])
+        print("cost estimates   :", "projected", _record["projected_usd"],
+              "usage-based", _record["estimated_cost_usd"], "USD at illustrative rates")
     return
 
 
@@ -296,19 +299,20 @@ def s11_reveal_source_route_table(mo, reveal_route_table):
 
 
 @app.cell
-def s11_demo_route_table():
-    _table = attempt_route_table()
-    if any(name is None for name in _table.values()):
-        print("Attempt pending: give every phase a route name before validating.")
-    else:
-        try:
-            routing.validate_policy(_table)
-            print("valid :", _table)
-        except routing.RouteRefused as exc:
-            print("REFUSED before any call:", exc)
-        _reference = solution_route_table()
-        routing.validate_policy(_reference)
-        print("reference valid too:", _reference)
+def s11_demo_route_table(mo):
+    with mo.redirect_stdout():
+        _table = attempt_route_table()
+        if any(name is None for name in _table.values()):
+            print("Attempt pending: give every phase a route name before validating.")
+        else:
+            try:
+                routing.validate_policy(_table)
+                print("valid :", _table)
+            except routing.RouteRefused as exc:
+                print("REFUSED before any call:", exc)
+            _reference = solution_route_table()
+            routing.validate_policy(_reference)
+            print("reference valid too:", _reference)
     return
 
 
@@ -413,42 +417,43 @@ def s11_md_checkpoint(mo):
 
 
 @app.cell
-def s11_demo_checkpoint(client):
-    _table = {
-        "read_note": "local-small",
-        "draft_reply": "local-large",
-        "till_summary": "local-small",
-    }
-    _prompts = [
-        "What do you recommend for breakfast?",
-        "I'm allergic to milk, what can I have?",
-        "Two espressos, please.",
-    ]
-    _phases = [("draft_reply", [{"role": "system", "content": domain.PERSONA},
-                               {"role": "user", "content": _line}])
-               for _line in _prompts]
-    _run = routing.run_phases(client, _table, _phases, budget_usd=0.50)
-    _ledger = _run["budget"]
-    _dispatched = [record for record in _ledger.calls if record["dispatched"]]
-    _tokens = [record["tokens"] for record in _dispatched]
-    _latencies = sorted(record["latency_ms"] for record in _dispatched
-                        if type(record["latency_ms"]) in (int, float))
-    _median = statistics.median(_latencies) if _latencies else None
-    print("calls dispatched :", len(_dispatched), "of", len(_prompts), "requested")
-    print("tokens (usage)   :", _tokens, "known sum", sum(t for t in _tokens if t is not None))
-    print("accounting complete:", _ledger.usage_complete)
-    print(f"latency samples  : {[round(value, 1) for value in _latencies]} ms")
-    print("median latency ms:", _median)
-    print(f"known cost estimate at illustrative $0.06/1k: ${_ledger.spent_usd:.4f} of ${_ledger.budget_usd:.2f}")
-    print("stop reason      :", _run["stop_reason"])
-    _tracer = routing.publish(_run)
-    if _tracer is None:
-        print()
-        print("cafe.trace not importable: the ledger stays in memory, no span tree.")
-    else:
-        print()
-        print("--- S08 span tree, mirrored from this run ---")
-        print(_tracer.render())
+def s11_demo_checkpoint(client, mo):
+    with mo.redirect_stdout():
+        _table = {
+            "read_note": "local-small",
+            "draft_reply": "local-large",
+            "till_summary": "local-small",
+        }
+        _prompts = [
+            "What do you recommend for breakfast?",
+            "I'm allergic to milk, what can I have?",
+            "Two espressos, please.",
+        ]
+        _phases = [("draft_reply", [{"role": "system", "content": domain.PERSONA},
+                                   {"role": "user", "content": _line}])
+                   for _line in _prompts]
+        _run = routing.run_phases(client, _table, _phases, budget_usd=0.50)
+        _ledger = _run["budget"]
+        _dispatched = [record for record in _ledger.calls if record["dispatched"]]
+        _tokens = [record["tokens"] for record in _dispatched]
+        _latencies = sorted(record["latency_ms"] for record in _dispatched
+                            if type(record["latency_ms"]) in (int, float))
+        _median = statistics.median(_latencies) if _latencies else None
+        print("calls dispatched :", len(_dispatched), "of", len(_prompts), "requested")
+        print("tokens (usage)   :", _tokens, "known sum", sum(t for t in _tokens if t is not None))
+        print("accounting complete:", _ledger.usage_complete)
+        print(f"latency samples  : {[round(value, 1) for value in _latencies]} ms")
+        print("median latency ms:", _median)
+        print(f"known cost estimate at illustrative $0.06/1k: ${_ledger.spent_usd:.4f} of ${_ledger.budget_usd:.2f}")
+        print("stop reason      :", _run["stop_reason"])
+        _tracer = routing.publish(_run)
+        if _tracer is None:
+            print()
+            print("cafe.trace not importable: the ledger stays in memory, no span tree.")
+        else:
+            print()
+            print("--- S08 span tree, mirrored from this run ---")
+            print(_tracer.render())
     return
 
 

@@ -76,10 +76,11 @@ def s05_md_client(mo):
 
 
 @app.cell
-def s05_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s05_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
     return (client,)
 
 
@@ -93,8 +94,7 @@ def s05_md_theory(mo):
     cannot be checked at all.
 
     ![Proposed ticket validates, renders for a human, and only fires on approval](public/diagrams/s05-consent.svg)
-    """)
-    mo.md(r"""
+
     Two properties carry the whole design:
 
     1. **The gate is the check, not the dialog.** The model can say anything; the
@@ -117,23 +117,24 @@ def s05_predict_gate(mo):
 
 
 @app.cell
-def s05_demo_gate():
-    proposal = {"items": ["latte", "tomato toast"], "table": 4}
-    print(render_ticket(enrich_ticket(proposal)))
-    print()
-    gate_approved, gate_log = consent_gate(
-        proposal,
-        make_responder(
-            [("edit", {"items": ["espresso"], "table": 4}), ("approve", None)]
-        ),
-    )
-    for gate_entry in gate_log:
-        print(
-            " ",
-            gate_entry["decision"],
-            gate_entry.get("ticket") or gate_entry.get("errors") or "",
+def s05_demo_gate(mo):
+    with mo.redirect_stdout():
+        proposal = {"items": ["latte", "tomato toast"], "table": 4}
+        print(render_ticket(enrich_ticket(proposal)))
+        print()
+        gate_approved, gate_log = consent_gate(
+            proposal,
+            make_responder(
+                [("edit", {"items": ["espresso"], "table": 4}), ("approve", None)]
+            ),
         )
-    print("approved:", gate_approved)
+        for gate_entry in gate_log:
+            print(
+                " ",
+                gate_entry["decision"],
+                gate_entry.get("ticket") or gate_entry.get("errors") or "",
+            )
+        print("approved:", gate_approved)
     return
 
 
@@ -189,18 +190,19 @@ def s05_reveal_source_gate(mo, reveal_gate):
 
 
 @app.cell
-def s05_demo_compare():
-    compare_state = OrderState()
-    compare_approved = {"items": ["espresso"], "table": 2}
-    compare_record = attempt_gate(
-        compare_state, {"items": ["latte"], "table": 2}, compare_approved
-    )
-    if compare_record is None:
-        print("Attempt pending: return an enforcement record before comparing.")
-    else:
-        print("record   :", compare_record)
-        print("fired    :", compare_state.fired)
-        print("tool_log :", compare_state.tool_log)
+def s05_demo_compare(mo):
+    with mo.redirect_stdout():
+        compare_state = OrderState()
+        compare_approved = {"items": ["espresso"], "table": 2}
+        compare_record = attempt_gate(
+            compare_state, {"items": ["latte"], "table": 2}, compare_approved
+        )
+        if compare_record is None:
+            print("Attempt pending: return an enforcement record before comparing.")
+        else:
+            print("record   :", compare_record)
+            print("fired    :", compare_state.fired)
+            print("tool_log :", compare_state.tool_log)
     return
 
 
@@ -274,49 +276,50 @@ def s05_md_loop(mo):
 
 
 @app.cell
-def s05_demo_shift():
-    def stub_tool(call_id, name, arguments):
-        return {
-            "choices": [
-                {
-                    "index": 0,
-                    "finish_reason": "tool_calls",
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            {
-                                "id": call_id,
-                                "type": "function",
-                                "function": {"name": name, "arguments": json.dumps(arguments)},
-                            }
-                        ],
-                    },
-                }
-            ]
-        }
+def s05_demo_shift(mo):
+    with mo.redirect_stdout():
+        def stub_tool(call_id, name, arguments):
+            return {
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "tool_calls",
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": call_id,
+                                    "type": "function",
+                                    "function": {"name": name, "arguments": json.dumps(arguments)},
+                                }
+                            ],
+                        },
+                    }
+                ]
+            }
 
-    scripted_script = [
-        stub_tool("call_a", "propose_order", {"items": ["latte"], "table": 2}),
-        stub_tool("call_b", "fire_ticket", {"items": ["latte"], "table": 2}),
-        {
-            "choices": [
-                {
-                    "index": 0,
-                    "finish_reason": "stop",
-                    "message": {"role": "assistant", "content": "Coming right up, table 2."},
-                }
-            ]
-        },
-    ]
-    scripted = run_shift(
-        StubClient(script=scripted_script),
-        ["Get me a latte for table 2."],
-        make_responder([("approve", None)]),
-    )
-    print("stop_reason:", scripted["stop_reason"])
-    print("gate       :", [g["decision"] for g in scripted["gate_log"]])
-    print("fired      :", scripted["state"].fired)
+        scripted_script = [
+            stub_tool("call_a", "propose_order", {"items": ["latte"], "table": 2}),
+            stub_tool("call_b", "fire_ticket", {"items": ["latte"], "table": 2}),
+            {
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "stop",
+                        "message": {"role": "assistant", "content": "Coming right up, table 2."},
+                    }
+                ]
+            },
+        ]
+        scripted = run_shift(
+            StubClient(script=scripted_script),
+            ["Get me a latte for table 2."],
+            make_responder([("approve", None)]),
+        )
+        print("stop_reason:", scripted["stop_reason"])
+        print("gate       :", [g["decision"] for g in scripted["gate_log"]])
+        print("fired      :", scripted["state"].fired)
     return
 
 
@@ -333,16 +336,17 @@ def s05_md_live(mo):
 
 
 @app.cell
-def s05_demo_live(client):
-    live = run_shift(
-        client,
-        ["Get me a latte for table 2, and a chocolate croissant."],
-        make_responder([("approve", None)]),
-    )
-    print("stop_reason:", live["stop_reason"])
-    print("approved   :", live["approved"])
-    print("gate       :", [g["decision"] for g in live["gate_log"]])
-    print("fired      :", live["state"].fired)
+def s05_demo_live(client, mo):
+    with mo.redirect_stdout():
+        live = run_shift(
+            client,
+            ["Get me a latte for table 2, and a chocolate croissant."],
+            make_responder([("approve", None)]),
+        )
+        print("stop_reason:", live["stop_reason"])
+        print("approved   :", live["approved"])
+        print("gate       :", [g["decision"] for g in live["gate_log"]])
+        print("fired      :", live["state"].fired)
     return
 
 
@@ -367,17 +371,18 @@ def s05_md_checkpoint(mo):
 
 
 @app.cell
-def s05_demo_checkpoint(client):
-    kept = 0
-    for _ in range(3):
-        run = run_shift(
-            client, ["Get me an espresso."], make_responder([("reject", None)])
-        )
-        refused_everything = all(
-            record["action"] == "refused" for record in run["fires"]
-        )
-        kept += int(refused_everything and run["state"].fired == [])
-    print(f"S05 checkpoint: {kept}/3 live runs fired nothing after a rejection")
+def s05_demo_checkpoint(client, mo):
+    with mo.redirect_stdout():
+        kept = 0
+        for _ in range(3):
+            run = run_shift(
+                client, ["Get me an espresso."], make_responder([("reject", None)])
+            )
+            refused_everything = all(
+                record["action"] == "refused" for record in run["fires"]
+            )
+            kept += int(refused_everything and run["state"].fired == [])
+        print(f"S05 checkpoint: {kept}/3 live runs fired nothing after a rejection")
     return
 
 

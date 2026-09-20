@@ -68,10 +68,11 @@ def s04_md_client(mo):
 
 
 @app.cell
-def s04_demo_client():
-    client = get_client()
-    print("mode :", client.mode)
-    print("model:", getattr(client, "model", "stub"))
+def s04_demo_client(mo):
+    with mo.redirect_stdout():
+        client = get_client()
+        print("mode :", client.mode)
+        print("model:", getattr(client, "model", "stub"))
     return (client,)
 
 
@@ -86,8 +87,7 @@ def s04_md_contract(mo):
     keywords.
 
     ![Parse, validate, return specific errors for another bounded attempt; exhausted attempts escalate](public/diagrams/S04-structured-generation.svg)
-    """)
-    mo.md(r"""
+
     Two gates, not one. The first is *shape*: is this the object the contract
     describes? The second is *meaning*: does it agree with tonight's menu and
     prices? The second gate is S02's checker, doing exactly what a checker is for.
@@ -108,21 +108,22 @@ def s04_predict_validator(mo):
 
 
 @app.cell
-def s04_demo_validator():
-    _items = [sorted(domain.MENU)[0], sorted(domain.MENU)[1]]
-    _reference_ticket = {
-        "table": 4,
-        "items": _items,
-        "total_eur": round(sum(domain.MENU[item]["price"] for item in _items), 2),
-        "allergen_checked": True,
-    }
-    _broken_ticket = {"table": "four", "items": [_items[0]]}
-    print("reference ticket :", validate(_reference_ticket, TICKET_SCHEMA) or "valid")
-    print("broken ticket    :")
-    for _problem in validate(_broken_ticket, TICKET_SCHEMA):
-        print("  -", _problem)
-    print("\nfenced reply parses too:",
-          parse_json('Here it is:\n```json\n{"table": 1}\n```'))
+def s04_demo_validator(mo):
+    with mo.redirect_stdout():
+        _items = [sorted(domain.MENU)[0], sorted(domain.MENU)[1]]
+        _reference_ticket = {
+            "table": 4,
+            "items": _items,
+            "total_eur": round(sum(domain.MENU[item]["price"] for item in _items), 2),
+            "allergen_checked": True,
+        }
+        _broken_ticket = {"table": "four", "items": [_items[0]]}
+        print("reference ticket :", validate(_reference_ticket, TICKET_SCHEMA) or "valid")
+        print("broken ticket    :")
+        for _problem in validate(_broken_ticket, TICKET_SCHEMA):
+            print("  -", _problem)
+        print("\nfenced reply parses too:",
+              parse_json('Here it is:\n```json\n{"table": 1}\n```'))
     return
 
 
@@ -168,24 +169,25 @@ def s04_reveal_source_semantic(mo, reveal_semantic):
 
 
 @app.cell
-def s04_demo_semantic(reveal_semantic):
-    _valid_but_wrong = {
-        "table": 4,
-        "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
-        "total_eur": 99.0,
-        "allergen_checked": True,
-    }
-    print("schema says        :", validate(_valid_but_wrong, TICKET_SCHEMA) or "valid")
-    mine = attempt_semantic(_valid_but_wrong)
-    if mine is None:
-        print(
-            "Attempt pending: write attempt_semantic, then compare it with the "
-            "reference on this ticket."
-        )
-    else:
-        print("your violations    :", mine)
-        if reveal_semantic.value:
-            print("reference          :", solution_semantic(_valid_but_wrong))
+def s04_demo_semantic(mo, reveal_semantic):
+    with mo.redirect_stdout():
+        _valid_but_wrong = {
+            "table": 4,
+            "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
+            "total_eur": 99.0,
+            "allergen_checked": True,
+        }
+        print("schema says        :", validate(_valid_but_wrong, TICKET_SCHEMA) or "valid")
+        mine = attempt_semantic(_valid_but_wrong)
+        if mine is None:
+            print(
+                "Attempt pending: write attempt_semantic, then compare it with the "
+                "reference on this ticket."
+            )
+        else:
+            print("your violations    :", mine)
+            if reveal_semantic.value:
+                print("reference          :", solution_semantic(_valid_but_wrong))
     return
 
 
@@ -218,28 +220,29 @@ def s04_predict_retry(mo):
 
 
 @app.cell
-def s04_demo_live(client):
-    briefs = (
-        "Table 4: a latte and tomato toast, please.",
-        "Table 2 wants two chocolate croissants and an orange juice.",
-        "I'm Lucia, table 7. I want a cheese omelette, but I'm not sure it'll sit well.",
-    )
-    print(f"{'brief':<6} {'outcome':<12} {'attempts':<9} detail")
-    ticket_runs = []
-    for _index, _brief in enumerate(briefs):
-        _run = ask_ticket_run(client, _brief)
-        ticket_runs.append(_run)
-        _ticket, _attempts = _run["ticket"], _run["attempts"]
-        if _ticket is None:
-            _outcome, _detail = "no ticket", "loop hit the cap"
-        else:
-            _outcome, _detail = "accepted", str(_ticket.get("items"))
-        print(f"{_index:<6} {_outcome:<12} {_attempts:<9} {_detail[:52]}")
-        for _step in _run["outcomes"]:
-            print("  attempt", _step["attempt"], "parsed:", _step["parsed"],
-                  "shape:", _step["shape_ok"], "meaning:", _step["semantic_ok"])
-    print("\nRead the failures: a repeated identical error is the contract talking, "
-          "\nnot the model.")
+def s04_demo_live(client, mo):
+    with mo.redirect_stdout():
+        briefs = (
+            "Table 4: a latte and tomato toast, please.",
+            "Table 2 wants two chocolate croissants and an orange juice.",
+            "I'm Lucia, table 7. I want a cheese omelette, but I'm not sure it'll sit well.",
+        )
+        print(f"{'brief':<6} {'outcome':<12} {'attempts':<9} detail")
+        ticket_runs = []
+        for _index, _brief in enumerate(briefs):
+            _run = ask_ticket_run(client, _brief)
+            ticket_runs.append(_run)
+            _ticket, _attempts = _run["ticket"], _run["attempts"]
+            if _ticket is None:
+                _outcome, _detail = "no ticket", "loop hit the cap"
+            else:
+                _outcome, _detail = "accepted", str(_ticket.get("items"))
+            print(f"{_index:<6} {_outcome:<12} {_attempts:<9} {_detail[:52]}")
+            for _step in _run["outcomes"]:
+                print("  attempt", _step["attempt"], "parsed:", _step["parsed"],
+                      "shape:", _step["shape_ok"], "meaning:", _step["semantic_ok"])
+        print("\nRead the failures: a repeated identical error is the contract talking, "
+              "\nnot the model.")
     return (ticket_runs,)
 
 
@@ -257,46 +260,49 @@ def s04_md_checks(mo):
 
 
 @app.cell
-def test_s04_validator_accepts_reference_and_rejects_enum_miss():
-    _item = sorted(domain.MENU)[0]
-    _reference_ticket = {
-        "table": 1,
-        "items": [_item],
-        "total_eur": round(domain.MENU[_item]["price"], 2),
-        "allergen_checked": False,
-    }
-    off_menu = {**_reference_ticket, "items": ["pizza"]}
-    assert validate(_reference_ticket, TICKET_SCHEMA) == []
-    errors = validate(off_menu, TICKET_SCHEMA)
-    assert errors and "$.items[0]" in errors[0], errors
-    print("validator: reference passes, an off-menu item fails on the enum")
+def test_s04_validator_accepts_reference_and_rejects_enum_miss(mo):
+    with mo.redirect_stdout():
+        _item = sorted(domain.MENU)[0]
+        _reference_ticket = {
+            "table": 1,
+            "items": [_item],
+            "total_eur": round(domain.MENU[_item]["price"], 2),
+            "allergen_checked": False,
+        }
+        off_menu = {**_reference_ticket, "items": ["pizza"]}
+        assert validate(_reference_ticket, TICKET_SCHEMA) == []
+        errors = validate(off_menu, TICKET_SCHEMA)
+        assert errors and "$.items[0]" in errors[0], errors
+        print("validator: reference passes, an off-menu item fails on the enum")
     return
 
 
 @app.cell
-def test_s04_valid_is_not_correct():
-    _valid_but_wrong = {
-        "table": 4,
-        "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
-        "total_eur": 99.0,
-        "allergen_checked": True,
-    }
-    assert validate(_valid_but_wrong, TICKET_SCHEMA) == []
-    problems = checkers.ticket_matches_menu(_valid_but_wrong)
-    assert any("86'd" in problem for problem in problems), problems
-    assert any("total_eur" in problem for problem in problems), problems
-    print("schema-valid, semantically wrong:", problems)
+def test_s04_valid_is_not_correct(mo):
+    with mo.redirect_stdout():
+        _valid_but_wrong = {
+            "table": 4,
+            "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
+            "total_eur": 99.0,
+            "allergen_checked": True,
+        }
+        assert validate(_valid_but_wrong, TICKET_SCHEMA) == []
+        problems = checkers.ticket_matches_menu(_valid_but_wrong)
+        assert any("86'd" in problem for problem in problems), problems
+        assert any("total_eur" in problem for problem in problems), problems
+        print("schema-valid, semantically wrong:", problems)
     return
 
 
 @app.cell
-def test_s04_retry_loop_stays_protocol_legal(client):
-    _, messages, attempts = ask_ticket(client, "Table 3: an espresso.")
-    check_pairing(messages)
-    assert 1 <= attempts <= 3, attempts
-    assert messages[0]["role"] == "system" and messages[1]["role"] == "user"
-    assert len(messages) >= 3, "the model turn must be recorded even when it fails"
-    print(f"retry loop: {attempts} attempt(s), {len(messages)} messages, pairing legal")
+def test_s04_retry_loop_stays_protocol_legal(client, mo):
+    with mo.redirect_stdout():
+        _, messages, attempts = ask_ticket(client, "Table 3: an espresso.")
+        check_pairing(messages)
+        assert 1 <= attempts <= 3, attempts
+        assert messages[0]["role"] == "system" and messages[1]["role"] == "user"
+        assert len(messages) >= 3, "the model turn must be recorded even when it fails"
+        print(f"retry loop: {attempts} attempt(s), {len(messages)} messages, pairing legal")
     return
 
 
@@ -321,11 +327,12 @@ def s04_md_checkpoint(mo):
 
 
 @app.cell
-def s04_demo_checkpoint(ticket_runs):
-    _first = [run["outcomes"][0] for run in ticket_runs if run["outcomes"]]
-    print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
-          f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
-    print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
+def s04_demo_checkpoint(mo, ticket_runs):
+    with mo.redirect_stdout():
+        _first = [run["outcomes"][0] for run in ticket_runs if run["outcomes"]]
+        print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
+              f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
+        print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
     return
 
 
