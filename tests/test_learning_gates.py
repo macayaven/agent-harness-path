@@ -1,11 +1,12 @@
 """Labels must be independent; resetting an attempt closes every result gate."""
 
 from pathlib import Path
-from contextlib import nullcontext, redirect_stdout
+from contextlib import redirect_stdout
 from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import Mock
 import unittest
+import marimo
 
 from cafe import taxonomy
 from notebook_support import notebook_function
@@ -18,7 +19,8 @@ class Paused(Exception):
 
 
 class FakeMo:
-    redirect_stdout = staticmethod(nullcontext)
+    capture_stdout = staticmethod(marimo.capture_stdout)
+    plain_text = staticmethod(print)
 
     @staticmethod
     def stop(condition, output=None):
@@ -38,7 +40,7 @@ class LearningGateTests(unittest.TestCase):
         display = StringIO()
         console = StringIO()
         mo = SimpleNamespace(stop=FakeMo.stop, md=FakeMo.md,
-                             redirect_stdout=lambda: redirect_stdout(display))
+                             capture_stdout=marimo.capture_stdout, plain_text=display.write)
         with redirect_stdout(console):
             cell(mo=mo, open_code_ready=True,
                  pile=[{"id": "synthetic", "signal": "turn cap", "expects": ()}],

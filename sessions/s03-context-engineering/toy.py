@@ -68,10 +68,11 @@ def s03_md_client(mo):
 
 @app.cell
 def s03_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -108,7 +109,7 @@ def s03_predict_boundary(mo):
 
 @app.cell
 def s03_demo_boundary(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
         _history += [
             {"role": "user", "content": f"Question {index} about the menu and today's service."}
@@ -122,12 +123,13 @@ def s03_demo_boundary(mo):
             print(f"{_name:<11} {str(_compacted):<11} {context.tokens(_new):<8} "
                   f"{context.rule_is_present(_new)}")
         print("\nRetained text is visible here. Whether it governs requires the behavioral probe.")
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
 def test_s03_buried_rule_dies_pinned_rule_survives(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
         _history += [
             {"role": "user", "content": f"Question {index} about the menu and today's service."}
@@ -140,6 +142,7 @@ def test_s03_buried_rule_dies_pinned_rule_survives(mo):
         assert context.rule_is_present(_kept), "the pinned rule must survive"
         print(f"buried: {context.tokens(_buried)} words (proxy), rule gone | "
               f"pinned: {context.tokens(_kept)} words (proxy), rule kept")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -147,7 +150,7 @@ def test_s03_buried_rule_dies_pinned_rule_survives(mo):
 def test_s03_keep_all_overflows_the_window(client, mo):
     # hard_limit=1 trips the guard before the first model call, so this cell
     # costs nothing no matter which endpoint is behind the seam.
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         try:
             context.drive(client, context.POLICIES["keep_all"], 1, hard_limit=1)
         except context.ContextWindowExceeded as exc:
@@ -155,6 +158,7 @@ def test_s03_keep_all_overflows_the_window(client, mo):
         else:
             raise AssertionError("keep_all was allowed past the hard limit")
         print("keep_all exceeds the teaching limit before any endpoint call")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -216,7 +220,7 @@ def s03_reveal_source_keep_rule(mo, reveal_keep_rule):
 
 @app.cell
 def s03_demo_compare(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _history = [{"role": "system", "content": domain.PERSONA}, context.rule_message()]
         _history += [
             {"role": "user", "content": f"Question {index} about the menu and today's service."}
@@ -237,6 +241,7 @@ def s03_demo_compare(mo):
                   "| rule present", context.rule_is_present(_ref))
             print("rule rent    :", context.tokens([context.rule_message()]),
                   "tokens on every request, forever")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -273,7 +278,7 @@ def s03_predict_survival(mo):
 
 @app.cell
 def s03_demo_survival(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         survival = context.survival_table(client)
         print(f"{'policy':<11} {'boundary':<10} {'before':<10} {'after':<10} probes | status")
         for _name, _row in survival.items():
@@ -286,17 +291,19 @@ def s03_demo_survival(client, mo):
                   f"{_row['requested_turns']} requested turns; {_row['capped_turns']} capped)")
         print("\nA rate is only a claim if you can say what it was measured on: same "
               "script,\nsame endpoint, same checker, one policy different.")
+    mo.plain_text(_output.getvalue())
     return (survival,)
 
 
 @app.cell
 def test_s03_probe_rates_are_observations(mo, survival):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         for name, row in survival.items():
             rate = row["overall_rate"]
             assert rate is None or 0 <= rate <= 1, (name, row)
             assert row["probes"] >= 0, (name, row)
         print("Observed rates may reverse; pinning guarantees retained text, not compliance.")
+    mo.plain_text(_output.getvalue())
     return
 
 

@@ -98,10 +98,11 @@ def s08_md_client(mo):
 
 @app.cell
 def s08_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -130,7 +131,7 @@ def s08_md_record(mo):
 
 @app.cell
 def s08_demo_record(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         workdir = tempfile.TemporaryDirectory()
         trace_path = Path(workdir.name) / "shift.jsonl"
         repo_root = Path(__file__).resolve().parents[1]
@@ -144,6 +145,7 @@ def s08_demo_record(client, mo):
         print("usage    :", usage_of(recording["tracer"]))
         print()
         print(recording["tracer"].render())
+    mo.plain_text(_output.getvalue())
     return recording, repo_after, repo_before, repo_root, trace_path
 
 
@@ -171,7 +173,7 @@ def s08_predict_replay(mo):
 
 @app.cell
 def s08_demo_replay(client, mo, recording, trace_path):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         live_calls_before = client.calls
         first = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
         second = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(clock=TickClock()))
@@ -184,6 +186,7 @@ def s08_demo_replay(client, mo, recording, trace_path):
         print("live model calls during the replays:", live_calls_after - live_calls_before)
         print()
         print(first["tracer"].render())
+    mo.plain_text(_output.getvalue())
     return first, live_calls_after, live_calls_before, second
 
 
@@ -251,12 +254,13 @@ def dead_exporter(payload):
 
 @app.cell
 def s08_demo_fail_soft(mo, trace_path):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         doomed = replay_shift(trace_path, SCRIPT, responder=make_responder([("approve", None)]), tracer=Tracer(exporter=dead_exporter))
         problem = export_fail_soft(doomed["tracer"])
         print("the shift still ran to:", doomed["run"]["stop_reason"])
         print("export_fail_soft returned:", problem)
         print("telemetry degrades; the shift does not.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -345,7 +349,7 @@ def s08_reveal_source_handover_note(mo, reveal_handover_note):
 
 @app.cell
 def s08_demo_handover_note(first, mo, second):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         injected_clock = lambda: "2026-09-17T21:00:00Z"  # noqa: E731 - a fixture literal
         attempt = attempt_handover_note(
             first["run"], clock=injected_clock, rng=random.Random(7)
@@ -361,6 +365,7 @@ def s08_demo_handover_note(first, mo, second):
             print("Attempt pending: fill in the note before comparing the reference.")
         else:
             print("your note matches the reference:", attempt == reference)
+    mo.plain_text(_output.getvalue())
     return
 
 

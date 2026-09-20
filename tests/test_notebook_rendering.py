@@ -17,6 +17,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class NotebookRenderingTests(unittest.TestCase):
+    def test_multi_argument_prints_remain_one_readable_cell_output(self):
+        spec = spec_from_file_location("render_s01", ROOT / "sessions/s01-agent-loop/toy.py")
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+        output, _ = module.s01_demo_client.run(
+            mo=mo, get_client=lambda: SimpleNamespace(mode="stub", model="synthetic-model"))
+        self.assertIsNotNone(output)
+        self.assertEqual(output.text.count("<pre"), 1)
+        self.assertIn("mode : stub\nmodel: synthetic-model\n", output.text)
+
     def test_theory_output_contains_the_diagram_and_surrounding_explanation(self):
         cases = (
             ("s01-agent-loop", "s01_md_api_shape", "The API is stateless", "Trace that"),
@@ -41,7 +51,7 @@ class NotebookRenderingTests(unittest.TestCase):
         cell = notebook_function(ROOT / "sessions/s12-judge-calibration/toy.py",
                                  "s12_demo_corpus", {"domain": domain, "judge": judge})
         display, console = StringIO(), StringIO()
-        view = SimpleNamespace(redirect_stdout=lambda: redirect_stdout(display))
+        view = SimpleNamespace(capture_stdout=mo.capture_stdout, plain_text=display.write)
         args = {"mo": view} if "mo" in signature(cell).parameters else {}
         with redirect_stdout(console):
             (transcripts,) = cell(**args)

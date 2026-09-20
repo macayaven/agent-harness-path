@@ -1,7 +1,8 @@
 """Compaction observations must describe the actual request, not a parallel story."""
 
 from copy import deepcopy
-from contextlib import nullcontext, redirect_stdout
+from contextlib import redirect_stdout
+import marimo
 from io import StringIO
 from types import SimpleNamespace
 import unittest
@@ -126,7 +127,7 @@ class ContextWireTests(unittest.TestCase):
             "context": SimpleNamespace(survival_table=lambda client: {"truncate": row})})
         output = StringIO()
         with redirect_stdout(output):
-            cell(None, mo=SimpleNamespace(redirect_stdout=nullcontext))
+            cell(None, mo=SimpleNamespace(capture_stdout=marimo.capture_stdout, plain_text=print))
         self.assertIn("0/1 answered probes; 1 capped", output.getvalue())
         self.assertIn("2 answered / 3 processed / 3 requested turns", output.getvalue())
         self.assertNotIn("100%", output.getvalue())
@@ -139,4 +140,4 @@ class ContextWireTests(unittest.TestCase):
                      and [a.arg for a in n.args.args if a.arg != "mo"] == ["survival"])
         notebook_function(path, check)(survival={"pinned": {"overall_rate": 0.25, "probes": 4},
                                                  "truncate": {"overall_rate": 0.5, "probes": 4}},
-                                      mo=SimpleNamespace(redirect_stdout=nullcontext))
+                                      mo=SimpleNamespace(capture_stdout=marimo.capture_stdout, plain_text=print))

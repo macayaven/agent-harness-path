@@ -77,10 +77,11 @@ def s05_md_client(mo):
 
 @app.cell
 def s05_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -118,7 +119,7 @@ def s05_predict_gate(mo):
 
 @app.cell
 def s05_demo_gate(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         proposal = {"items": ["latte", "tomato toast"], "table": 4}
         print(render_ticket(enrich_ticket(proposal)))
         print()
@@ -135,6 +136,7 @@ def s05_demo_gate(mo):
                 gate_entry.get("ticket") or gate_entry.get("errors") or "",
             )
         print("approved:", gate_approved)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -191,7 +193,7 @@ def s05_reveal_source_gate(mo, reveal_gate):
 
 @app.cell
 def s05_demo_compare(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         compare_state = OrderState()
         compare_approved = {"items": ["espresso"], "table": 2}
         compare_record = attempt_gate(
@@ -203,6 +205,7 @@ def s05_demo_compare(mo):
             print("record   :", compare_record)
             print("fired    :", compare_state.fired)
             print("tool_log :", compare_state.tool_log)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -277,7 +280,7 @@ def s05_md_loop(mo):
 
 @app.cell
 def s05_demo_shift(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         def stub_tool(call_id, name, arguments):
             return {
                 "choices": [
@@ -320,6 +323,7 @@ def s05_demo_shift(mo):
         print("stop_reason:", scripted["stop_reason"])
         print("gate       :", [g["decision"] for g in scripted["gate_log"]])
         print("fired      :", scripted["state"].fired)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -337,7 +341,7 @@ def s05_md_live(mo):
 
 @app.cell
 def s05_demo_live(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         live = run_shift(
             client,
             ["Get me a latte for table 2, and a chocolate croissant."],
@@ -347,6 +351,7 @@ def s05_demo_live(client, mo):
         print("approved   :", live["approved"])
         print("gate       :", [g["decision"] for g in live["gate_log"]])
         print("fired      :", live["state"].fired)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -372,7 +377,7 @@ def s05_md_checkpoint(mo):
 
 @app.cell
 def s05_demo_checkpoint(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         kept = 0
         for _ in range(3):
             run = run_shift(
@@ -383,6 +388,7 @@ def s05_demo_checkpoint(client, mo):
             )
             kept += int(refused_everything and run["state"].fired == [])
         print(f"S05 checkpoint: {kept}/3 live runs fired nothing after a rejection")
+    mo.plain_text(_output.getvalue())
     return
 
 

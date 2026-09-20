@@ -73,11 +73,12 @@ def s11_md_client(mo):
 
 @app.cell
 def s11_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
         print("neighbours:", routing.companion_note())
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -128,12 +129,13 @@ def s11_md_theory(mo):
 
 @app.cell
 def s11_demo_routes(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         print("phase        classification")
         for phase, classification in routing.PHASES.items():
             print(f"  {phase:12s} {classification}")
         print()
         print(routing.describe_routes())
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -183,7 +185,7 @@ def s11_reveal_source_budget_gate(mo, reveal_budget_gate):
 
 @app.cell
 def s11_demo_budget_gate(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _examples = [
             {"projected_usd": 0.04, "spent_usd": 0.00, "budget_usd": 0.25},
             {"projected_usd": 0.04, "spent_usd": 0.23, "budget_usd": 0.25},
@@ -202,6 +204,7 @@ def s11_demo_budget_gate(mo):
                     f"{_example} -> you={_yours} reference={_reference} module={_module}"
                     f" {'OK' if _yours == _reference == _module else 'MISMATCH'}"
                 )
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -219,7 +222,7 @@ def s11_md_meter(mo):
 
 @app.cell
 def s11_demo_metered_call(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         local_table = {
             "read_note": "local-small",
             "draft_reply": "local-large",
@@ -242,6 +245,7 @@ def s11_demo_metered_call(client, mo):
         print("usage known      :", _record["usage_known"])
         print("cost estimates   :", "projected", _record["projected_usd"],
               "usage-based", _record["estimated_cost_usd"], "USD at illustrative rates")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -300,7 +304,7 @@ def s11_reveal_source_route_table(mo, reveal_route_table):
 
 @app.cell
 def s11_demo_route_table(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _table = attempt_route_table()
         if any(name is None for name in _table.values()):
             print("Attempt pending: give every phase a route name before validating.")
@@ -313,6 +317,7 @@ def s11_demo_route_table(mo):
             _reference = solution_route_table()
             routing.validate_policy(_reference)
             print("reference valid too:", _reference)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -418,7 +423,7 @@ def s11_md_checkpoint(mo):
 
 @app.cell
 def s11_demo_checkpoint(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _table = {
             "read_note": "local-small",
             "draft_reply": "local-large",
@@ -454,6 +459,7 @@ def s11_demo_checkpoint(client, mo):
             print()
             print("--- S08 span tree, mirrored from this run ---")
             print(_tracer.render())
+    mo.plain_text(_output.getvalue())
     return
 
 

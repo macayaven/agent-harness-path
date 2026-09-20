@@ -93,10 +93,11 @@ def s10_md_theory(mo):
 
 @app.cell
 def s10_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -115,7 +116,7 @@ def s10_md_shifts(mo):
 
 @app.cell
 def s10_demo_shifts(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         allergy_item = next(
             item for item, details in domain.MENU.items() if "milk" in details["allergens"]
         )
@@ -173,6 +174,7 @@ def s10_demo_shifts(client, mo):
                 "| tools:", ",".join(summary["tool_log"]) or "none",
                 "| events:", len(log_events(run)),
             )
+    mo.plain_text(_output.getvalue())
     return (shifts,)
 
 
@@ -191,7 +193,7 @@ def s10_md_harvest(mo):
 
 @app.cell
 def s10_demo_harvest(mo, shifts):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         pile = harvest(shifts)
         print("harvested failures:", len(pile))
         if not pile:
@@ -200,6 +202,7 @@ def s10_demo_harvest(mo, shifts):
             print(
                 f"{record['id']:<18} {record['severity']:<7} {record['signal']}"
             )
+    mo.plain_text(_output.getvalue())
     return (pile,)
 
 
@@ -267,36 +270,39 @@ def s10_reveal_source_open_code(mo, open_code_ready, reveal_open_code):
 @app.cell
 def s10_demo_attempt(mo, pile):
     # Cell outputs are replaced on invalidation; console history is retained.
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mine = attempt_open_code(pile)
         open_code_ready = labels_ready(mine, {record["id"] for record in pile})
         if not open_code_ready:
             print("Attempt pending: supply one nonempty category per record before continuing.")
         else:
             print("your labels    :", mine)
+    mo.plain_text(_output.getvalue())
     return mine, open_code_ready
 
 
 @app.cell
 def s10_demo_labels(mine, mo, open_code_ready):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mo.stop(not open_code_ready, mo.md("*Taxonomy paused until your labels are complete.*"))
         labels = mine
         print("Using your complete labels for the taxonomy.")
+    mo.plain_text(_output.getvalue())
     return (labels,)
 
 
 @app.cell
 def s10_demo_reference(mo, open_code_ready, pile, reveal_open_code):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mo.stop(not (open_code_ready and reveal_open_code.value), mo.md("*Reference labels hidden.*"))
         print("reference labels:", solution_open_code(pile))
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
 def s10_demo_ranking(labels, mo, pile):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         ranked = rank(labels, pile)
         agreement = agreed(labels, pile, classify=classify_naive)
         print(f"agreement with the auto-filer: {agreement}/{len(pile)}")
@@ -308,6 +314,7 @@ def s10_demo_ranking(labels, mo, pile):
             )
         top_category = ranked[0]["category"] if ranked else None
         print("top category:", top_category or "none")
+    mo.plain_text(_output.getvalue())
     return (top_category,)
 
 
@@ -323,7 +330,7 @@ def s10_predict_promotion(mo):
 
 @app.cell
 def s10_demo_promotion(labels, mo, pile, top_category):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         if top_category is None:
             task = None
             print("No category to promote: the pile is empty.")
@@ -332,12 +339,13 @@ def s10_demo_promotion(labels, mo, pile, top_category):
             print("promoted:", task["id"])
             print("expects :", ", ".join(task["expects"]))
             print("refs    :", ", ".join(task["refs"]))
+    mo.plain_text(_output.getvalue())
     return (task,)
 
 
 @app.cell
 def s10_demo_engines(mo, task):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         if task is None:
             naive_shift = guarded_shift = None
             naive_result = guarded_result = None
@@ -349,6 +357,7 @@ def s10_demo_engines(mo, task):
             guarded_result = check_task(task, guarded_shift)
             print("naive  :", "PASS" if naive_result[0] else "FAIL", naive_result[1])
             print("guarded:", "PASS" if guarded_result[0] else "FAIL", guarded_result[1])
+    mo.plain_text(_output.getvalue())
     return guarded_result, guarded_shift, naive_result, naive_shift
 
 

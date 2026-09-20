@@ -69,10 +69,11 @@ def s04_md_client(mo):
 
 @app.cell
 def s04_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -109,7 +110,7 @@ def s04_predict_validator(mo):
 
 @app.cell
 def s04_demo_validator(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _items = [sorted(domain.MENU)[0], sorted(domain.MENU)[1]]
         _reference_ticket = {
             "table": 4,
@@ -124,6 +125,7 @@ def s04_demo_validator(mo):
             print("  -", _problem)
         print("\nfenced reply parses too:",
               parse_json('Here it is:\n```json\n{"table": 1}\n```'))
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -170,7 +172,7 @@ def s04_reveal_source_semantic(mo, reveal_semantic):
 
 @app.cell
 def s04_demo_semantic(mo, reveal_semantic):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _valid_but_wrong = {
             "table": 4,
             "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
@@ -188,6 +190,7 @@ def s04_demo_semantic(mo, reveal_semantic):
             print("your violations    :", mine)
             if reveal_semantic.value:
                 print("reference          :", solution_semantic(_valid_but_wrong))
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -221,7 +224,7 @@ def s04_predict_retry(mo):
 
 @app.cell
 def s04_demo_live(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         briefs = (
             "Table 4: a latte and tomato toast, please.",
             "Table 2 wants two chocolate croissants and an orange juice.",
@@ -243,6 +246,7 @@ def s04_demo_live(client, mo):
                       "shape:", _step["shape_ok"], "meaning:", _step["semantic_ok"])
         print("\nRead the failures: a repeated identical error is the contract talking, "
               "\nnot the model.")
+    mo.plain_text(_output.getvalue())
     return (ticket_runs,)
 
 
@@ -261,7 +265,7 @@ def s04_md_checks(mo):
 
 @app.cell
 def test_s04_validator_accepts_reference_and_rejects_enum_miss(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _item = sorted(domain.MENU)[0]
         _reference_ticket = {
             "table": 1,
@@ -274,12 +278,13 @@ def test_s04_validator_accepts_reference_and_rejects_enum_miss(mo):
         errors = validate(off_menu, TICKET_SCHEMA)
         assert errors and "$.items[0]" in errors[0], errors
         print("validator: reference passes, an off-menu item fails on the enum")
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
 def test_s04_valid_is_not_correct(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _valid_but_wrong = {
             "table": 4,
             "items": [sorted(domain.EIGHTY_SIXED)[0], "latte"],
@@ -291,18 +296,20 @@ def test_s04_valid_is_not_correct(mo):
         assert any("86'd" in problem for problem in problems), problems
         assert any("total_eur" in problem for problem in problems), problems
         print("schema-valid, semantically wrong:", problems)
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
 def test_s04_retry_loop_stays_protocol_legal(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _, messages, attempts = ask_ticket(client, "Table 3: an espresso.")
         check_pairing(messages)
         assert 1 <= attempts <= 3, attempts
         assert messages[0]["role"] == "system" and messages[1]["role"] == "user"
         assert len(messages) >= 3, "the model turn must be recorded even when it fails"
         print(f"retry loop: {attempts} attempt(s), {len(messages)} messages, pairing legal")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -328,11 +335,12 @@ def s04_md_checkpoint(mo):
 
 @app.cell
 def s04_demo_checkpoint(mo, ticket_runs):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _first = [run["outcomes"][0] for run in ticket_runs if run["outcomes"]]
         print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
               f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
         print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
+    mo.plain_text(_output.getvalue())
     return
 
 

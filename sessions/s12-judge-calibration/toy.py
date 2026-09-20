@@ -72,7 +72,7 @@ def s12_md_client(mo):
 
 @app.cell
 def s12_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
@@ -80,6 +80,7 @@ def s12_demo_client(mo):
         print("defect classes in play:", judge.defect_classes())
         _aliases = judge.taxonomy_aliases()
         print("S10's name for them:", _aliases or "(no overlap available this run)")
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -145,13 +146,14 @@ def s12_md_corpus(mo):
 
 @app.cell
 def s12_demo_corpus(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         transcripts = judge.seeded_corpus()[0]
         print("menu facts for your labels:", domain.MENU)
         print("corpus size:", len(transcripts), list(transcripts))
         for _tid, _transcript in transcripts.items():
             print(f"\n--- {_tid} ---")
             print(judge.render_transcript(_transcript))
+    mo.plain_text(_output.getvalue())
     return (transcripts,)
 
 
@@ -215,7 +217,7 @@ def s12_reveal_source_hand_labels(hand_labels_ready, mo, reveal_hand_labels):
 @app.cell
 def s12_demo_hand_labels(mo, transcripts):
     # Cell outputs clear with the label gate; console history would retain them.
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         hand_labels = attempt_hand_labels(transcripts)
         hand_labels_ready = labels_ready(hand_labels, set(transcripts), {"pass", "fail"})
         if not transcripts:
@@ -224,6 +226,7 @@ def s12_demo_hand_labels(mo, transcripts):
             print("Attempt pending: supply pass/fail for every transcript before judging.")
         else:
             print("Independent labels complete:", hand_labels)
+    mo.plain_text(_output.getvalue())
     return hand_labels, hand_labels_ready
 
 
@@ -236,7 +239,7 @@ def s12_demo_reference_key(hand_labels_ready, mo, reveal_hand_labels):
 
 @app.cell
 def s12_demo_compare_hand_labels(hand_labels, key, mo, transcripts):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _reference = judge.reference_labels(key)
         _ids = list(transcripts)
         _agree = sum(hand_labels[tid] == _reference[tid] for tid in _ids)
@@ -244,6 +247,7 @@ def s12_demo_compare_hand_labels(hand_labels, key, mo, transcripts):
         _ref = [_reference[tid] for tid in _ids]
         print(f"you vs the seed key: {_agree}/{len(_ids)} agreement")
         print(f"your κ vs the key  : {judge.fmt_kappa(judge.cohens_kappa(_ref, _mine))}")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -266,18 +270,19 @@ def s12_md_judge_v1(mo):
 
 @app.cell
 def s12_demo_judge_v1(client, hand_labels_ready, mo, transcripts):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
         verdicts_v1 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V1)
         _sample = list(verdicts_v1)[0]
         print(f"sample {_sample}:", verdicts_v1[_sample])
         print("one verdict per transcript:", len(verdicts_v1) == len(transcripts))
+    mo.plain_text(_output.getvalue())
     return (verdicts_v1,)
 
 
 @app.cell
 def s12_demo_scores_v1(key, mo, verdicts_v1):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _det = judge.detection_rate(key, verdicts_v1)
         _fp = judge.false_positive_rate(key, verdicts_v1)
         _unreadable = [tid for tid, verdict in verdicts_v1.items() if verdict["verdict"] == "unparseable"]
@@ -288,12 +293,13 @@ def s12_demo_scores_v1(key, mo, verdicts_v1):
         print()
         print("Both numbers or neither. A judge that fails everything detects everything.")
         print("The misses:", [tid for tid in key if key[tid] and verdicts_v1[tid]["verdict"] != "fail"])
+    mo.plain_text(_output.getvalue())
     return
 
 
 @app.cell
 def s12_demo_kappa_v1(key, mo, transcripts, verdicts_v1):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _reference = judge.reference_labels(key)
         _ids = list(transcripts)
         _ref = [_reference[tid] for tid in _ids]
@@ -309,6 +315,7 @@ def s12_demo_kappa_v1(key, mo, transcripts, verdicts_v1):
             print(f"{_label:<10} {_hits}/{len(_group)}  misses: {_misses}")
         print()
         print("An aggregate hides this. Split it by the class you care about before believing it.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -327,16 +334,17 @@ def s12_md_judge_v2(mo):
 
 @app.cell
 def s12_demo_judge_v2(client, hand_labels_ready, mo, transcripts):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mo.stop(not hand_labels_ready, mo.md("*Judge paused until your independent labels are complete.*"))
         verdicts_v2 = judge.run_judge_all(client, transcripts, judge.RUBRIC_V2)
         print("sample v2 verdict:", verdicts_v2[list(verdicts_v2)[0]])
+    mo.plain_text(_output.getvalue())
     return (verdicts_v2,)
 
 
 @app.cell
 def s12_demo_scores_v2(key, mo, verdicts_v1, verdicts_v2):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _fp1 = judge.false_positive_rate(key, verdicts_v1)
         _fp2 = judge.false_positive_rate(key, verdicts_v2)
         _det2 = judge.detection_rate(key, verdicts_v2)
@@ -346,6 +354,7 @@ def s12_demo_scores_v2(key, mo, verdicts_v1, verdicts_v2):
         print()
         print("Compare both rates AND coverage; either rubric can perform worse.")
         print("Zero false alarms with zero valid verdicts does not establish quality.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -365,7 +374,7 @@ def s12_md_cost(mo):
 
 @app.cell
 def s12_demo_cost(mo, transcripts, verdicts_v1, verdicts_v2):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         cost_route = routing.ROUTES["local-large"]
         cost_total = 0.0
         for cost_rubric, cost_verdicts in (
@@ -379,6 +388,7 @@ def s12_demo_cost(mo, transcripts, verdicts_v1, verdicts_v2):
         print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
         print(f"illustrative projection: ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
         print("Worth it is a question with two numbers: this cost, and the κ above.")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -468,7 +478,7 @@ def s12_md_checkpoint(mo):
 
 @app.cell
 def s12_demo_checkpoint(key, mo, transcripts, verdicts_v1, verdicts_v2):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         _det1 = judge.detection_rate(key, verdicts_v1)
         _fp1 = judge.false_positive_rate(key, verdicts_v1)
         _det2 = judge.detection_rate(key, verdicts_v2)
@@ -482,6 +492,7 @@ def s12_demo_checkpoint(key, mo, transcripts, verdicts_v1, verdicts_v2):
         print(f"  v2: detection {judge.fmt_rate(_det2)}  false positives {judge.fmt_rate(_fp2)}  κ {judge.fmt_kappa(_k2)}")
         print("  valid coverage:", "v1", judge.fmt_rate(judge.verdict_coverage(verdicts_v1)),
               "v2", judge.fmt_rate(judge.verdict_coverage(verdicts_v2)))
+    mo.plain_text(_output.getvalue())
     return
 
 

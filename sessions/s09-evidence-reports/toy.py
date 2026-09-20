@@ -63,7 +63,7 @@ def s09_md_hook(mo):
 
 @app.cell
 def s09_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         shift_run = run_shift(
             client,
@@ -78,6 +78,7 @@ def s09_demo_client(mo):
         print("mode        :", client.mode)
         print("stop_reason :", shift_run["stop_reason"])
         print("events      :", len(events))
+    mo.plain_text(_output.getvalue())
     return client, events, shift_run
 
 
@@ -130,11 +131,12 @@ def s09_predict_honest(mo):
 
 @app.cell
 def s09_demo_honest(events, mo, shift_run):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         honest_report = write_report(shift_run, events)
         print(render_md(honest_report)[:700])
         print("\ncitations:", validate_citations(honest_report, shift_run) or "clean")
         print("coverage :", validate_coverage(honest_report, events) or "clean")
+    mo.plain_text(_output.getvalue())
     return (honest_report,)
 
 
@@ -163,11 +165,12 @@ def s09_md_omission(mo):
 
 @app.cell
 def s09_demo_omission(events, honest_report, mo, shift_run):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         reassuring = reassuring_variant(honest_report)
         print("citations:", validate_citations(reassuring, shift_run) or "clean (nothing on the page is false)")
         for violation in validate_coverage(reassuring, events):
             print("  COVERAGE VIOLATION:", violation)
+    mo.plain_text(_output.getvalue())
     return (reassuring,)
 
 
@@ -235,7 +238,7 @@ def s09_reveal_source_thirty_second(mo, reveal_thirty_second):
 
 @app.cell
 def s09_demo_compare(honest_report, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         mine = attempt_thirty_second_test(honest_report)
         reference = solution_thirty_second_test(honest_report)
         if not mine and reference:
@@ -243,6 +246,7 @@ def s09_demo_compare(honest_report, mo):
         else:
             print("your missing slots     :", mine)
             print("reference missing slots:", reference)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -259,13 +263,14 @@ def s09_md_failed_run(mo):
 
 @app.cell
 def s09_demo_failed_run(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         capped = capped_shift_trace()
         capped_events = log_events(capped)
         capped_report = write_report(capped, capped_events)
         print("stop_reason:", capped["stop_reason"])
         print("citations  :", validate_citations(capped_report, capped) or "clean")
         print("coverage   :", validate_coverage(capped_report, capped_events) or "clean")
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -289,7 +294,7 @@ def s09_md_checkpoint(mo):
 
 @app.cell
 def s09_demo_checkpoint(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         clean = 0
         scripts = (
             ["Get me a latte.", "Nothing else."],
@@ -303,6 +308,7 @@ def s09_demo_checkpoint(client, mo):
             if not validate_citations(report, run) and not validate_coverage(report, run_events):
                 clean += 1
         print(f"S09 baseline: {clean}/{len(scripts)} debriefs pass both validators")
+    mo.plain_text(_output.getvalue())
     return
 
 

@@ -70,10 +70,11 @@ def s01_md_client(mo):
 
 @app.cell
 def s01_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -107,7 +108,7 @@ def s01_predict_first_call(mo):
 
 @app.cell
 def s01_demo_first_call(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         first = client.chat(
             [
                 {"role": "system", "content": domain.PERSONA},
@@ -119,6 +120,7 @@ def s01_demo_first_call(client, mo):
         first_message = first["choices"][0]["message"]
         print("content    :", first_message.get("content"))
         print("tool_calls :", [c["function"]["name"] for c in first_message.get("tool_calls") or []])
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -165,7 +167,7 @@ def s01_md_broken(mo):
 
 @app.cell
 def s01_demo_broken(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         broken_state = OrderState()
         broken_messages = [
             {"role": "system", "content": domain.PERSONA},
@@ -191,6 +193,7 @@ def s01_demo_broken(client, mo):
                 print("no rejection — this endpoint is lenient; the conversation is still wrong")
             except OrphanedToolResult as exc:
                 print("rejected before it ever left the machine:", exc)
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -246,7 +249,7 @@ def s01_reveal_source_tool_results(mo, reveal_tool_results):
 
 @app.cell
 def s01_demo_compare(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         pending_calls = [
             {"id": "call_a", "type": "function",
              "function": {"name": "price_check", "arguments": '{"item": "latte"}'}},
@@ -261,6 +264,7 @@ def s01_demo_compare(mo):
             covered = {record.get("tool_call_id") for record in supplied}
             print("covered  :", sorted(covered))
             print("uncovered:", sorted(requested - covered))
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -277,7 +281,7 @@ def s01_md_whole_loop(mo):
 
 @app.cell
 def s01_demo_shift(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         shift = run_shift(
             client,
             ["Hi, get me a latte and a chocolate croissant.", "Nothing else, thanks."],
@@ -285,6 +289,7 @@ def s01_demo_shift(client, mo):
         print("stop_reason:", shift["stop_reason"])
         print("turns_used :", shift["turns_used"], "| model calls:", shift["model_calls"])
         print("tools run  :", shift["state"].tool_log)
+    mo.plain_text(_output.getvalue())
     return (shift,)
 
 
@@ -343,7 +348,7 @@ def s01_md_checkpoint(mo):
 
 @app.cell
 def s01_demo_checkpoint(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         legal = 0
         for _ in range(3):
             run = run_shift(client, ["Get me a latte.", "Nothing else."])
@@ -353,6 +358,7 @@ def s01_demo_checkpoint(client, mo):
             except OrphanedToolResult:
                 pass
         print(f"S01 baseline: {legal}/3 legal conversations")
+    mo.plain_text(_output.getvalue())
     return
 
 

@@ -61,10 +61,11 @@ def s07_md_hook(mo):
 
 @app.cell
 def s07_demo_client(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         client = get_client()
         print("mode :", client.mode)
         print("cap  :", CAP_DEFAULT, "| stop reasons:", sorted(STOP_REASONS))
+    mo.plain_text(_output.getvalue())
     return (client,)
 
 
@@ -119,7 +120,7 @@ def s07_predict_contradiction(mo):
 
 @app.cell
 def s07_demo_contradiction(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         contradiction_spec = {
             "table": 4,
             "items": ["latte", "chocolate croissant"],
@@ -138,6 +139,7 @@ def s07_demo_contradiction(mo):
         print("ticket     :", contradiction_run["ticket"])
         for attempt in contradiction_run["attempts"]:
             print(f"  attempt {attempt['n']}: {attempt['failures']}")
+    mo.plain_text(_output.getvalue())
     return (contradiction_run,)
 
 
@@ -201,7 +203,7 @@ def s07_reveal_source_failure_view(mo, reveal_failure_view):
 
 @app.cell
 def s07_demo_compare(mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
         mine = attempt_failure_view(sample_failures, 2)
         if not mine.strip():
@@ -209,6 +211,7 @@ def s07_demo_compare(mo):
         else:
             print("your view:\n" + mine)
             print("\nnames every failure:", all(f.split(":")[0] in mine for f in sample_failures))
+    mo.plain_text(_output.getvalue())
     return
 
 
@@ -229,13 +232,14 @@ def s07_predict_live(mo):
 
 @app.cell
 def s07_demo_live(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
         live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
         print("brief      :", brief_for(live_spec)[:88])
         print("stop_reason:", live_run["stop_reason"])
         print("attempts   :", len(live_run["attempts"]))
         print("ticket     :", live_run["ticket"])
+    mo.plain_text(_output.getvalue())
     return live_run, live_spec
 
 
@@ -275,7 +279,7 @@ def s07_md_checkpoint(mo):
 
 @app.cell
 def s07_demo_checkpoint(client, mo):
-    with mo.redirect_stdout():
+    with mo.capture_stdout() as _output:
         distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
         for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
             run = repair_ticket(
@@ -288,6 +292,7 @@ def s07_demo_checkpoint(client, mo):
             else:
                 distribution["exhausted"] += 1
         print("S07 baseline — attempts to pass:", distribution)
+    mo.plain_text(_output.getvalue())
     return
 
 
