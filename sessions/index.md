@@ -10,7 +10,7 @@ guarantee.
 
 **New here?** Watch the 9-minute [course overview](S00-course-overview.mp4)
 for the whole arc — core mechanics → context & boundaries → safety & governance →
-observability → production — then start at S01. The overview is a Google Gemini
+observability → production — then [start at S01](s01-agent-loop/lesson.html). The overview is a Google Gemini
 Notebook overview (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
 file is Google's. Clone the repo to run the notebooks.
@@ -66,7 +66,7 @@ standard library only; `marimo` is the runtime.
 |---|---|---|---|---|
 | 1 | [The agent loop](s01-agent-loop/lesson.html) | A client-side loop around a stateless API; append-verbatim and tool-pairing invariants | [toy.py](s01-agent-loop/toy.py) | [lab.md](s01-agent-loop/lab.md) |
 | 2 | [Golden sets & baselines](s02-golden-evals/lesson.html) | Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline | [toy.py](s02-golden-evals/toy.py) | [lab.md](s02-golden-evals/lab.md) |
-| 3 | [Context engineering](s03-context-engineering/lesson.html) | Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary | [toy.py](s03-context-engineering/toy.py) | [lab.md](s03-context-engineering/lab.md) |
+| 3 | [Context engineering](s03-context-engineering/lesson.html) | Compaction, pinning, attention decay; measure retained rules and behavior across a compaction boundary | [toy.py](s03-context-engineering/toy.py) | [lab.md](s03-context-engineering/lab.md) |
 | 4 | [Structured generation](s04-structured-generation/lesson.html) | Schema as contract; validate-and-retry; valid ≠ correct | [toy.py](s04-structured-generation/toy.py) | [lab.md](s04-structured-generation/lab.md) |
 | 5 | [The consent gate](s05-consent-gate/lesson.html) | Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade | [toy.py](s05-consent-gate/toy.py) | [lab.md](s05-consent-gate/lab.md) |
 | 6 | [Layered detection](s06-layered-detection/lesson.html) | Keyword-floor + classifier pipeline; policy as data; the false-trigger counter | [toy.py](s06-layered-detection/toy.py) | [lab.md](s06-layered-detection/lab.md) |

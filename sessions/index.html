@@ -107,7 +107,7 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="study-plan.html">Next: Six-week calibrated post-core / BYO-artifact overlay &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="s01-agent-loop/lesson.html">Next: S01-agent-loop — The order-taking loop &rarr;</a></span></nav>
 <h1 id="the-agent-harness-path">The Agent Harness Path</h1>
 <p>A self-contained course on building, evaluating, and governing LLM agents — twelve
 notebook sessions plus two optional protocol sessions (S13 rebuild audit, S14 ship
@@ -118,7 +118,7 @@ external courses and does not inherit that zero-network, zero-key, zero-cost
 guarantee.</p>
 <p><strong>New here?</strong> Watch the 9-minute <a href="https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4">course overview</a>
 for the whole arc — core mechanics → context &amp; boundaries → safety &amp; governance →
-observability → production — then start at S01. The overview is a Google Gemini
+observability → production — then <a href="s01-agent-loop/lesson.html">start at S01</a>. The overview is a Google Gemini
 Notebook overview (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
 file is Google's. Clone the repo to run the notebooks.</p>
@@ -178,98 +178,98 @@ standard library only; <code>marimo</code> is the runtime.</p>
 <tbody>
 <tr>
 <td>1</td>
-<td><a href="s01-agent-loop/lesson.html#the-theory-in-depth">The agent loop</a></td>
+<td><a href="s01-agent-loop/lesson.html">The agent loop</a></td>
 <td>A client-side loop around a stateless API; append-verbatim and tool-pairing invariants</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>2</td>
-<td><a href="s02-golden-evals/lesson.html#the-theory-in-depth">Golden sets &amp; baselines</a></td>
+<td><a href="s02-golden-evals/lesson.html">Golden sets &amp; baselines</a></td>
 <td>Evals as measurement instruments; scripted users, two-tier checkers, fixture invariant, naive baseline</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>3</td>
-<td><a href="s03-context-engineering/lesson.html#the-theory-in-depth">Context engineering</a></td>
-<td>Compaction, pinning, attention decay; watch a buried rule die across a compaction boundary</td>
+<td><a href="s03-context-engineering/lesson.html">Context engineering</a></td>
+<td>Compaction, pinning, attention decay; measure retained rules and behavior across a compaction boundary</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>4</td>
-<td><a href="s04-structured-generation/lesson.html#the-theory-in-depth">Structured generation</a></td>
+<td><a href="s04-structured-generation/lesson.html">Structured generation</a></td>
 <td>Schema as contract; validate-and-retry; valid ≠ correct</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>5</td>
-<td><a href="s05-consent-gate/lesson.html#the-theory-in-depth">The consent gate</a></td>
+<td><a href="s05-consent-gate/lesson.html">The consent gate</a></td>
 <td>Plan-then-execute; approve/edit/reject; violation semantics; abort vs degrade</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>6</td>
-<td><a href="s06-layered-detection/lesson.html#the-theory-in-depth">Layered detection</a></td>
+<td><a href="s06-layered-detection/lesson.html">Layered detection</a></td>
 <td>Keyword-floor + classifier pipeline; policy as data; the false-trigger counter</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>7</td>
-<td><a href="s07-repair-loop/lesson.html#the-theory-in-depth">The repair loop</a></td>
+<td><a href="s07-repair-loop/lesson.html">The repair loop</a></td>
 <td>Bounded regeneration; the curated failure view; what context a retry gets</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>8</td>
-<td><a href="s08-observability-replay/lesson.html#the-theory-in-depth">Observability &amp; replay</a></td>
+<td><a href="s08-observability-replay/lesson.html">Observability &amp; replay</a></td>
 <td>Spans and traces; fail-soft telemetry; record/replay content-identical; hunt planted nondeterminism</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>9</td>
-<td><a href="s09-evidence-reports/lesson.html#the-theory-in-depth">Evidence reports</a></td>
+<td><a href="s09-evidence-reports/lesson.html">Evidence reports</a></td>
 <td>Reports a depleted reader can trust; citation and coverage validators; the 30-second test</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>10</td>
-<td><a href="s10-error-analysis/lesson.html#the-theory-in-depth">Error analysis</a></td>
+<td><a href="s10-error-analysis/lesson.html">Error analysis</a></td>
 <td>Failure logs → taxonomy → new evals; open and axial coding on real traces</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>11</td>
-<td><a href="s11-budgets-routing/lesson.html#the-theory-in-depth">Budgets &amp; routing</a></td>
+<td><a href="s11-budgets-routing/lesson.html">Budgets &amp; routing</a></td>
 <td>Simulated routing over one client; cost estimates, missing usage and budget refusals; latency math</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>12</td>
-<td><a href="s12-judge-calibration/lesson.html#the-theory-in-depth">Judge calibration</a></td>
+<td><a href="s12-judge-calibration/lesson.html">Judge calibration</a></td>
 <td>Seeded-defect games; label-before-you-see-the-judge; Cohen's κ; rates → policy</td>
 <td>toy.py</td>
 <td>lab.md</td>
 </tr>
 <tr>
 <td>13</td>
-<td><a href="s13-rebuild-from-memory/lesson.html#the-protocol">Rebuild from memory</a></td>
+<td><a href="s13-rebuild-from-memory/lesson.html">Rebuild from memory</a></td>
 <td>Optional lab: closed-book audit of a system you own</td>
 <td>— (the audit is the exercise)</td>
 <td>hard path: <code>cafe_host/</code>; else BYO</td>
 </tr>
 <tr>
 <td>14</td>
-<td><a href="s14-ship-and-pilot/lesson.html#the-protocol">Ship &amp; pilot</a></td>
+<td><a href="s14-ship-and-pilot/lesson.html">Ship &amp; pilot</a></td>
 <td>Optional lab: cold acceptance run, first real user, public artifact</td>
 <td>— (protocol, not notebook)</td>
 <td>hard path: fixture run of the host; else BYO</td>
@@ -300,7 +300,7 @@ an optional preview of the arc.</p>
 the course overview video, docs, and lab protocols. Cited sources remain their
 authors'. Google branding in the course overview is Google's. See <code>LICENSE</code>
 in the repository root.</p>
-<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="study-plan.html">Next: Six-week calibrated post-core / BYO-artifact overlay &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="s01-agent-loop/lesson.html">Next: S01-agent-loop — The order-taking loop &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
   <code>sessions/index.md</code> — part of The Agent Harness Path.
