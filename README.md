@@ -206,14 +206,43 @@ The [documentation map](docs/README.md) separates learner, contributor, and pilo
 material. Tagged releases remain historical evidence about their named artifacts;
 [CHANGELOG.md](CHANGELOG.md) distinguishes released versions from pending changes.
 
+## How this course was created
+
+This course was created with substantial help in **design, planning, and
+implementation** from **Codex using multiple GPT-family models**, **Claude Code**,
+and **Muse Code**. Carlos Crespo Macaya remains responsible for the course's
+direction, editorial decisions, and published content. Acknowledging these tools
+does not imply endorsement by their providers.
+
 ## License
 
-Split license, 2026 Carlos Crespo Macaya:
+Copyright 2026 Carlos Crespo Macaya. Contributors retain copyright in their own
+contributions. These licenses grant reuse rights; they do not transfer copyright
+ownership or place the work in the public domain.
 
-- **Apache-2.0** — `cafe/**/*.py`, session toys (`sessions/*/toy.py`), labs Python (`labs/**/*.py`), build tooling, CI (`LICENSES/Apache-2.0.txt`)
-- **CC BY 4.0** — lessons, Mermaid source and rendered educational figures, the course overview video, documentation, lab protocols, and companion rungs (`LICENSES/CC-BY-4.0.txt`)
+- **Open source code — [Apache License 2.0](LICENSES/Apache-2.0.txt):** the
+  `cafe/` Python artifact, session toys, labs Python, build tooling, and CI.
+  This [OSI-approved license](https://opensource.org/license/apache-2-0) permits
+  commercial use, modification, and redistribution, with an explicit patent
+  grant from contributors. When redistributing, include the license, preserve
+  applicable copyright and attribution notices (including [NOTICE](NOTICE)),
+  and identify modified files as the license requires.
+- **Open educational content — [CC BY 4.0](LICENSES/CC-BY-4.0.txt):** lessons,
+  educational figures, course videos, documentation, lab protocols, and
+  companions. You may share and adapt the material, including commercially,
+  with appropriate credit, a license link, and an indication of changes.
+  See the [CC BY 4.0 summary](https://creativecommons.org/licenses/by/4.0/).
 
-Vendored Mermaid.js remains MIT; see `NOTICE`. The course overview was generated with
+Suggested attribution for reused educational material:
+
+> [The Agent Harness Path](https://github.com/macayaven/agent-harness-path) by
+> Carlos Crespo Macaya, licensed under
+> [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+If you adapt the material, add a brief description of your changes.
+
+Vendored Mermaid.js remains MIT; see [NOTICE](NOTICE). The course overview was generated with
 Google Gemini Notebook; Google's marks in that file are not part of the CC BY
 grant. Cited papers and vendor docs remain their authors'. Projects you build
-while following the path are yours. See `LICENSE` for the file-by-file split.
+while following the path are yours; reused course material keeps its license.
+See [LICENSE](LICENSE) for the file-by-file split and third-party exceptions.
