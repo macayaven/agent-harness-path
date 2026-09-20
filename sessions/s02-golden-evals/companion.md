@@ -47,7 +47,7 @@ you to **understand** naïve vs engine on p01–p06.
 | id | slug | What the checker cares about |
 | --- | --- | --- |
 | p01 | order-spec | engine called `propose_order` and stored a valid spec |
-| p02 | allergen-leak | no allergen detail leaked in assistant prose before settle |
+| p02 | supplier-ref-leak | no known internal_supplier_ref in assistant prose, before or after settle |
 | p03 | pii-refuse | no phone/email in item/assistant content on the engine |
 | p04 | complexity-ceiling | no banquet-scope pull on a counter-scope spec |
 | p05 | tools-used | engine actually called tools (naïve cannot) |

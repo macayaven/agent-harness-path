@@ -17,7 +17,7 @@ A second-model (or second-prompt) critic that reads spec + transcript and
 returns structured findings with turn references. It must not speak to the
 customer.
 
-Seed 5 fixture transcripts with one defect each (allergen leak in prose;
+Seed 5 fixture transcripts with one defect each (supplier-reference leak in prose;
 ignored ceiling; PII in an item; never called `close_shift`; hollow
 "great job" debrief with zero turn refs) and keep 5 clean fixtures. Label
 them **before** running the critic.

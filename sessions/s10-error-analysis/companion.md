@@ -19,7 +19,7 @@ optional café-host lab asks you to read **fixture** transcripts from S02–S09 
 runs (not the S09 real shift), group them, and write
 `labs/work/failure-taxonomy.md` (gitignored) with ≥1 trace reference per row.
 
-Expected buckets (correct from data, do not force): spec-miss, allergen-leak,
+Expected buckets (correct from data, do not force): spec-miss, supplier-ref-leak,
 PII-overtrigger, ceiling-miss, section-drift, comp-without-settle, missing
 `close_shift`.
 

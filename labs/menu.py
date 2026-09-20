@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from cafe.domain import INTERNAL_SUPPLIER_REFS
+
 MENU: list[dict] = [
     {
         "id": "m01",
@@ -100,6 +102,9 @@ MENU: list[dict] = [
         "allergens": ["eggs", "dairy", "wheat", "pork"],
     },
 ]
+
+for item in MENU:
+    item["internal_supplier_ref"] = INTERNAL_SUPPLIER_REFS[item["id"]]
 
 by_id = {item["id"]: item for item in MENU}
 

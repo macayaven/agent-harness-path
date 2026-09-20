@@ -17,7 +17,7 @@ Build (local, not in git): a second-model or second-prompt critic that reads
 spec + transcript, returns structured findings with turn references, and
 **never** speaks to the customer.
 
-Seed 5 defective fixtures (allergen leak in prose; ignored ceiling; PII in an item;
+Seed 5 defective fixtures (supplier-reference leak in prose; ignored ceiling; PII in an item;
 never called `close_shift`; hollow debrief with zero turn refs) and 5 clean
 ones. Label **before** running the critic. Then: detection n/5, FP n/5,
 agreement, κ (or `None`). Those four rates go in `labs/PROGRESS.md`. Any

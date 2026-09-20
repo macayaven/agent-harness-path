@@ -12,7 +12,7 @@
    S09 real shift). Open-code causes; group them.
 2. Write `labs/work/failure-taxonomy.md` (gitignored) with ≥1 trace reference
    per row. Expected buckets, to be corrected by the data: spec-miss,
-   allergen-leak, PII-overtrigger, ceiling-miss, section-drift,
+   supplier-ref-leak, PII-overtrigger, ceiling-miss, section-drift,
    comp-without-settle, missing `close_shift`.
 3. The course already ships `p07`–`p09` as the grown suite (section, billing
    integrity, `close_shift`). If your taxonomy names a different top-3, add

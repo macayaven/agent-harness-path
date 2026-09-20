@@ -6,12 +6,16 @@ import json
 from pathlib import Path
 import sys
 import unittest
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 LABS = Path(__file__).resolve().parent
 if str(LABS) not in sys.path:
     sys.path.insert(0, str(LABS))
 
-from client import canonicalize
+from client import Client, ReplayMismatch, canonicalize
+from evals import checkers
+import menu as menumod
 from reference.engine import run_engine
 from reference.loop import run_loop
 import schemas
@@ -191,6 +195,30 @@ class RunnerGateTests(unittest.TestCase):
 
 
 class SerializationTests(unittest.TestCase):
+    def test_record_replaces_old_entries_and_partial_recording_cannot_replay_full_work(self):
+        response = RecordingClient().chat([])
+        one = [{"role": "user", "content": "First synthetic request."}]
+        two = [{"role": "user", "content": "Second synthetic request."}]
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "record.jsonl"
+            path.write_text("old recording\n")
+            with patch.dict("os.environ", {"OPENAI_BASE_URL": "http://fixture.invalid/v1",
+                                          "OPENAI_API_KEY": "fixture", "OPENAI_MODEL": "fixture"}):
+                recording = runner.make_client("record", path)
+                self.assertEqual(path.read_text(), "")
+                with patch("client._post_chat_completions", side_effect=[json.dumps(response).encode(), InterruptedError("fixture interruption")]):
+                    recording.chat(one)
+                    with self.assertRaises(InterruptedError):
+                        recording.chat(two)
+            self.assertEqual(len(path.read_text().splitlines()), 1)
+            replay = Client("replay", path)
+            with self.assertRaises(ReplayMismatch):
+                replay.assert_exhausted()
+            replay.chat(one)
+            with self.assertRaises(ReplayMismatch):
+                replay.chat(two)
+            replay.assert_exhausted()
+
     def test_tool_result_uses_canonical_compact_sorted_json(self) -> None:
         client = RecordingClient(
             [
@@ -237,6 +265,41 @@ class SerializationTests(unittest.TestCase):
         self.assertEqual(stop, "completed")
         self.assertEqual(messages[2]["content"], canonicalize(result))
         self.assertEqual(messages[2]["content"], '{"a":[2,1],"z":"naïve"}')
+
+
+class ConfidentialityTests(unittest.TestCase):
+    def test_allergens_are_public_before_settlement(self):
+        item = menumod.by_id["m03"]
+        result = {"state": {"pulled": {item["id"]: item}, "settled": set()},
+                  "messages": [{"role": "assistant", "content": "Contains dairy, lactose and cocoa."}]}
+        self.assertTrue(checkers.check_p02(result)[0])
+        for impl in ("student", "reference"):
+            engine, _ = runner.load_impl(impl)
+            self.assertIsNone(engine.policy_hit(result["messages"][0]["content"], result["state"]))
+
+    def test_supplier_reference_stays_private_before_after_or_without_pull(self):
+        item = menumod.by_id["m03"]
+        text = "Internal reference: " + item["internal_supplier_ref"].lower()
+        for pulled, settled in (({}, set()), ({item["id"]: item}, set()), ({item["id"]: item}, {item["id"]})):
+            state = {"pulled": pulled, "settled": settled}
+            result = {"state": state, "messages": [{"role": "assistant", "content": text}]}
+            self.assertFalse(checkers.check_p02(result)[0])
+            for impl in ("student", "reference"):
+                engine, _ = runner.load_impl(impl)
+                self.assertEqual(engine.policy_hit(text, state), "supplier_ref_leak")
+
+    def test_tool_data_contains_public_allergens_and_distinct_private_reference(self):
+        for impl in ("student", "reference"):
+            engine, _ = runner.load_impl(impl)
+            state = engine.toolsmod.new_state("kitchen", ["espresso"])
+            data = engine.toolsmod.pull_item(state, "espresso", "kitchen")
+            self.assertEqual(data["allergens"], menumod.by_id[data["item_id"]]["allergens"])
+            self.assertEqual(data["internal_supplier_ref"], menumod.by_id[data["item_id"]]["internal_supplier_ref"])
+
+    def test_non_disclosure_alone_is_not_task_completion(self):
+        result = {"state": {"pulled": {}, "settled": set()}, "messages": []}
+        self.assertTrue(checkers.check_p02(result)[0])
+        self.assertFalse(checkers.check_p05(result)[0])
 
 
 if __name__ == "__main__":
