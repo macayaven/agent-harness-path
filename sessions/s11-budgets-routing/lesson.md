@@ -1,8 +1,8 @@
-# S11-budgets-routing — Budgets, routes, and the privacy boundary
+# S11-budgets-routing — Budget estimates and routing policy
 
 **Carried in:** `cafe/taxonomy.py` — S10's failure classes, and the debrief number S10 banked. Your shift can now name what goes wrong; tonight it learns what a call is allowed to cost and where it is allowed to run.
-**Today you ship:** `cafe/routing.py` — the budget gate, the route table, and the boundary that refuses a leak.
-**What this teaches:** cost, latency and data flow as harness-enforced invariants — a budget that refuses a call whose *projected* cost would cross the line before it is dispatched, a route table kept as reviewable policy-as-data, and a privacy boundary that raises on a misconfiguration instead of silently falling back.
+**Today you ship:** `cafe/routing.py` — an estimate-based budget gate and an explicit routing-policy simulation.
+**What this teaches:** pre-call estimates, honest usage accounting, and a reviewable classification policy. The route labels are simulated; every dispatched call uses the one configured client.
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop this gate wraps); S02 (relative comparisons inside one session — the routing argument is a delta table).
 **Hands-on:** [`toy.py`](toy.py) — runs against **your** model.
 
@@ -23,11 +23,12 @@ model.
 
 ## The promise
 
-By the end of this session you will be able to write a route table as data, prove that a
-call whose projected cost would cross the budget is refused **before** it is dispatched,
-and prove that a content phase pointed at a cloud route raises before a single request
-leaves the machine. You will also bank real token and latency numbers — read from the
-endpoint's own `usage` and the client's own clock, not from a formula.
+By the end of this session you can write a route table as data and prove that a
+projected overage is refused before dispatch. You can also reject a disallowed
+content-to-cloud mapping in the policy table. **This is a policy simulation over
+synthetic café data:** all route labels use the same configured client. They do not
+select models, verify locality, inspect content classification, or prove privacy.
+The notebook shows the configured client and any model identity the provider reports.
 
 ---
 
@@ -41,49 +42,46 @@ before the call happens, and a call that would cross the line is refused.
 `stop_reason="budget_exceeded"` is a first-class outcome — a run that costs more than the
 task is worth has failed, even mid-progress.
 
-The estimate is a lie you need: a gate cannot know the usage before the endpoint speaks.
-The **ledger** is the truth, and it is written from `response["usage"]` after the call.
-Two numbers, two jobs: **the estimate refuses, the usage records.**
+A pre-call estimate cannot know the final usage. The ledger multiplies reported
+usage by an **illustrative** rate card; both money figures are estimates, not invoices.
+Missing or invalid token counts are unknown, never zero. With a cap, incomplete
+accounting refuses the next call with `usage_unknown`. A completed call can still
+exceed the projection and the budget: `budget_overrun` stops later phases, not the
+cost already incurred. This is not a hard spending cap.
 
 ### Routing is policy-as-data
 
-A route table is a dict: café phase → route name. Each route carries a location, a model
-label, and a price per 1k tokens. It is diffable, reviewable, and validatable without
-touching the engine — and the route you choose cites a measured number rather than a
-preference. Different phases of one shift differ wildly in difficulty; sending the note
-(and its card number) to the same place as a category summary is not a routing policy, it
-is an accident.
+A route table maps café phase to a simulated route name. Each name carries an
+illustrative location, model label and rate. Review that table independently of
+the transport: `client_model` records the configured alias, while optional
+`reported_model` records what the response says. Neither resolves a hidden backend.
 
 ```mermaid
 flowchart LR
-    P[pipeline run<br/>phase sequence] --> V{validate route table<br/>against policy}
-    V -- misconfigured --> X[REFUSE<br/>zero model calls made]
-    V -- valid --> RT[route table<br/>policy-as-data]
-    RT -- categorize<br/>content --> S[local-small<br/>cheap + fast]
-    RT -- summarize<br/>content --> L[local-large<br/>slow + strong]
-    RT -- format<br/>metadata only --> C[cloud-frontier<br/>allowed, not required]
-    S --> M[meter: tokens x price,<br/>latency, wall time]
-    L --> M
-    C --> M
-    M -->|"would breach"| B[stop_reason=budget_exceeded]
+    P[synthetic phase + messages] --> V{validate simulated policy}
+    V -- disallowed --> X[REFUSE before dispatch]
+    V -- allowed --> E[illustrative rate + usage projection]
+    E --> G{known estimates + projection within cap?}
+    G -- no or unknown --> X
+    G -- yes --> C[one configured client]
+    C --> U[reported usage + client latency]
+    U --> L[known cost estimate or unknown accounting]
+    L --> B[stop later phases on observed budget overrun]
 ```
 
-### The privacy boundary refuses; it does not warn
+### The classification policy refuses; it does not warn
 
-Every phase carries a **classification**; every route carries a **location**. A content
-phase — the note with the card and phone numbers, the prose about this customer's order —
-must resolve to a local route. `validate_policy` runs before any model call and **raises**.
-It does not warn, and it does not fall back to a safe route: a silent fallback is the same
-leak with better logging.
-
-A warning is a log line nobody reads during the incident. A refusal makes the
-misconfiguration un-runnable. The one phase allowed off-local is `till_summary`, which
-carries metadata only — category totals, no descriptions — because classification decides
-what may leave, not the vendor's reputation.
+`validate_policy` rejects content phases assigned to a simulated cloud route and
+permits the metadata phase there. Both `run_phases` and `metered_call` validate
+before calling the injected client. A label is not a privacy boundary: the toy
+does not verify the actual endpoint's location or prove that a payload contains
+only metadata. Use synthetic input. A deployed design would need those checks at
+the real transport and data boundaries.
 
 ### What "measured" means tonight
 
-`response["usage"]` gives the tokens the endpoint actually charged for.
+`response["usage"]` may report token counts. Missing, negative, boolean or
+noninteger counts remain unknown; they are not evidence of a free call.
 `client.last_latency_ms` gives the wall time around the request, set by the client around
 the call, not by a formula in this notebook. A refused call is never sent, so
 `client.calls` and `client.last_latency_ms` keep the values of the previous dispatched
@@ -111,9 +109,9 @@ uv run marimo edit sessions/s11-budgets-routing/toy.py
    `projected_usd`. Write the predicate that refuses the call, then flip the reveal switch.
    Edge case that matters: no budget means no limit. The harness does the refusing; your
    predicate only returns a bool.
-3. **One real metered call.** A `draft_reply` routed through `local-large`. The projected
-   cost prints next to the real one; on a short note they are close, on a long one they
-   drift. That gap is why the gate uses an estimate and the ledger uses usage.
+3. **One metered call.** A `draft_reply` uses the configured client and the simulated
+   `local-large` rate card. Compare the projection with the usage-based estimate,
+   and record missing usage explicitly. No route label changes the actual endpoint.
 4. **Predict first: a table that validates.** Fill `attempt_route_table()` so
    `validate_policy` accepts it: `read_note` and `draft_reply` are content phases,
    `till_summary` is metadata, and `local-small`, `local-large`, `cloud-frontier` are the
@@ -122,7 +120,7 @@ uv run marimo edit sessions/s11-budgets-routing/toy.py
 5. **Watch the invariants.** Three notebook cells are protocol invariants: an over-budget
    call is refused and `client.calls` does not move; a content phase on a cloud route
    raises while the metadata phase on the same route is permitted; and every metered token
-   count equals the endpoint's `usage`, with latency read from `client.last_latency_ms`.
+   count matches valid reported usage, or stays unknown. Latency comes from the client.
 
 ---
 
@@ -135,10 +133,10 @@ Two invariants you can now demonstrate on demand:
 - a content phase pointed at a cloud route raises, while the same route on a metadata
   phase is permitted.
 
-And two measured numbers from your own endpoint: **total tokens** and **median latency**
-across the checkpoint calls, plus what they cost at the route's price. On a small local
-model these are small and a little noisy; they are still live measurements. S12's judge
-costs money too, and without these numbers you cannot say whether it is worth running.
+Bank **known tokens**, accounting completeness, **median latency** when available,
+and the cost estimate at the illustrative rate. Stub values are deterministic
+fixtures; only live mode measures your endpoint. Include the actual configured
+client alongside the simulated route. S12 reuses this estimate when comparing rubrics.
 
 ---
 
@@ -166,8 +164,8 @@ costs money too, and without these numbers you cannot say whether it is worth ru
 ## Misconceptions and failure modes
 
 - *"The budget is a report."* A report is written after the money is gone. The gate must read *ahead*: a crossing call refused before dispatch is cheap; one refused after is an FYI.
-- *"The estimate is the cost."* The estimate is a lie you need to make the pre-dispatch decision; the endpoint's `usage` is the truth. Confuse them and your ledger drifts from your invoice.
-- *"Warn and fall back to a safe route."* A silent fallback is the same leak with better logging. The boundary raises, and the misconfiguration becomes un-runnable.
+- *"The estimate is the cost."* Both money figures use an illustrative rate. Usage can be missing, and a completed call can overshoot. Neither figure is an invoice or a hard cap.
+- *"Warn and fall back to a safe route."* The table validator raises. That proves the simulated policy check, not the locality of the configured client.
 - *"Route by which model sounds better."* Route by classification and by a measured number. The vendor's reputation does not entitle a content phase to leave the machine.
 - *"A refused call still costs latency."* It does not: a refused call never reaches `client.chat`, so `client.calls` and `last_latency_ms` do not move. That is how you prove the refusal happened before the wire.
 
@@ -176,13 +174,13 @@ costs money too, and without these numbers you cannot say whether it is worth ru
 ## Self-check
 
 <details><summary>Why does the gate use an estimate before dispatch if the real cost is only known after?</summary>
-Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate refuses the call that would cross, so the cost never lands. The estimate is not the ledger; it only has to be good enough to refuse.</details>
+Because a post-call meter is a soft stop: by the time it sees the crossing, that call was already paid for. A pre-dispatch estimate can refuse a projected overage, but underestimation can still let a crossing call through. Record that overrun and stop subsequent calls; a hard cap needs stronger controls.</details>
 
 <details><summary>A content phase is routed to a route whose location is cloud. What does the harness do?</summary>
-`validate_policy` raises before any model call. It does not warn and does not fall back to a safe route — a silent fallback is the same leak with better logging. The misconfiguration has to be un-runnable.</details>
+`validate_policy` raises before any model call. That checks the simulated table. It does not inspect the actual client location or classify payload contents.</details>
 
 <details><summary>Why is `till_summary` allowed off-local when `read_note` is not?</summary>
-Because classification is a property of the data, not the vendor. `read_note` sees the customer's handwritten card and phone numbers — content. `till_summary` carries metadata only: category totals, no descriptions. The boundary permits the second and refuses the first on the same route.</details>
+The teaching table declares `read_note` content and `till_summary` metadata. It permits the second classification on a simulated cloud route. Actual metadata-only payloads and endpoint locality require separate enforcement; this toy uses synthetic data.</details>
 
 <details><summary>The metadata phase and the content phase use the same cloud route. Does the boundary care about the route or the data?</summary>
 The data. The same route is permitted for metadata and refused for content; `validate_policy` checks each phase's classification against its route's location. Routing decisions are about what the data is, not which model is fashionable.</details>

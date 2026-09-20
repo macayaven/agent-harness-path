@@ -107,6 +107,8 @@ def _slim(response: dict) -> dict:
     }
     if isinstance(response.get("usage"), dict):
         out["usage"] = response["usage"]
+    if isinstance(response.get("model"), str):
+        out["model"] = response["model"]
     return out
 
 

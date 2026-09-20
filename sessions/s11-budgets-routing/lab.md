@@ -7,7 +7,9 @@
 **Read:** [S11-budgets-routing](lesson.html).
 
 There is no LiteLLM vault in this path. Routing is an env var and a code
-check: session-content phases refuse `OPENAI_ROUTE_KIND=cloud`.
+check: session-content phases refuse `OPENAI_ROUTE_KIND=cloud`. This is a declared
+route kind, not proof of endpoint locality. Verify the actual transport before
+sending sensitive input; course fixtures remain synthetic.
 
 ## Build
 

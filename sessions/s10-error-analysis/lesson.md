@@ -223,6 +223,6 @@ Because that is what "isolates the failure" means: the failure is provably prese
 
 You can now say which failures recur and you have a task that proves the fix. What you do
 not yet have is any control over what a check is allowed to cost. **[S11 — Budgets &
-routing](../s11-budgets-routing/lesson.html)** turns your taxonomy into runtime spending limits and a
-route table: a call whose projected cost would cross the budget is refused before it is
-dispatched, and a content phase pointed off-local raises instead of leaking.
+routing](../s11-budgets-routing/lesson.html)** turns your taxonomy into an estimate-based
+budget gate and a routing-policy simulation. It distinguishes the simulated table from
+the actual client, and known usage from incomplete accounting.

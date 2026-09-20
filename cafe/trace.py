@@ -140,7 +140,8 @@ class Tracer:
             extra = ""
             usage = node["attrs"].get("usage")
             if node["kind"] == "generation" and isinstance(usage, dict):
-                extra = f"  ({usage.get('total_tokens')} tok)"
+                count = usage.get("total_tokens")
+                extra = f"  ({count} tok)" if type(count) is int and count >= 0 else "  (usage unknown)"
             lines.append(
                 "  " * depth
                 + f"{node['name']} [{node['kind']}] {node['duration_s']:.1f}s{extra}"
@@ -389,15 +390,20 @@ def cited_turns(run: dict) -> list[dict]:
 
 
 def usage_of(tracer: Any) -> dict:
-    """Tokens and seconds summed over a tracer's generations."""
+    """Known tokens and seconds; never silently turn missing usage into zero."""
     tokens = 0
+    complete = True
     latency = 0.0
     for node in tracer.generations():
         usage = node["attrs"].get("usage")
-        if isinstance(usage, dict):
-            tokens += int(usage.get("total_tokens") or 0)
+        count = usage.get("total_tokens") if isinstance(usage, dict) else None
+        if type(count) is int and count >= 0:
+            tokens += count
+        else:
+            complete = False
         latency += float(node.get("duration_s") or 0.0)
-    return {"total_tokens": tokens, "latency_s": round(latency, 3)}
+    return {"total_tokens": tokens if complete else None, "known_total_tokens": tokens,
+            "usage_complete": complete, "latency_s": round(latency, 3)}
 
 
 def export_fail_soft(tracer: Any) -> str | None:

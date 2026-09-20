@@ -107,9 +107,9 @@
 </head>
 <body>
 <main>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budgets, routes, and the privacy boundary</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budget estimates and routing policy</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
 <h1 id="s12-judge-calibration-a-judge-you-have-not-calibrated-is-an-opinion">S12-judge-calibration — A judge you have not calibrated is an opinion</h1>
-<p><strong>Carried in:</strong> <code>cafe/routing.py</code> — S11's route table, its budget gate, and the token and latency numbers it measured on your endpoint. You now know what a call costs; tonight you find out whether the verdict it returns is worth anything.
+<p><strong>Carried in:</strong> <code>cafe/routing.py</code> — S11's route table, its budget gate, and reported usage, accounting completeness and client latency. You now have an illustrative cost estimate; tonight you find out whether the verdict it returns is worth anything.
 <strong>Today you ship:</strong> <code>cafe/judge.py</code> — the seeded-defect game, the detection and false-positive rates, and the agreement math.
 <strong>What this teaches:</strong> how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus <em>before</em> you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
 <strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
@@ -210,8 +210,8 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
    vectors, every transcript gets exactly one verdict, and the rates and coverage retain their denominators.</li>
 <li><strong>Price the twelve calls.</strong> Calibration cost two rubrics over six transcripts.
-   The cost cell rebuilds each call's messages exactly and projects them on S11's
-   route table — worth-it is a question with two numbers, and now you have both.</li>
+   The cost cell rebuilds each call's messages exactly and estimates them using S11's illustrative
+   rate card, without changing the actual client — worth-it is a question with two numbers, and now you have both.</li>
 </ol>
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
@@ -219,7 +219,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 false positives n/3, valid outputs n/6, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
-Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
+Bank the projected calibration cost next to the κ: twelve calls estimated with S11's illustrative table.
 A verdict is worth what it measures minus what it cost to get.</p>
 <hr />
 <h2 id="state-of-the-art-as-of-august-2026">State of the art (as of August 2026)</h2>
@@ -301,7 +301,7 @@ session</strong>.</p>
 Close every notebook and rebuild the core from memory — no scaffolding, no generated
 answers, nothing filled in for you. Everything you would need is already in what you built;
 the audit only tells you whether it is in <em>you</em>.</p>
-<nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budgets, routes, and the privacy boundary</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
+<nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html#the-theory-in-depth">&larr; Prev: S11-budgets-routing — Budget estimates and routing policy</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html#the-protocol">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
   <code>sessions/sessions/s12-judge-calibration/lesson.md</code> — part of The Agent Harness Path.

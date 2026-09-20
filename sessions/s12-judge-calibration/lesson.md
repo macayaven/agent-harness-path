@@ -1,6 +1,6 @@
 # S12-judge-calibration — A judge you have not calibrated is an opinion
 
-**Carried in:** `cafe/routing.py` — S11's route table, its budget gate, and the token and latency numbers it measured on your endpoint. You now know what a call costs; tonight you find out whether the verdict it returns is worth anything.
+**Carried in:** `cafe/routing.py` — S11's route table, its budget gate, and reported usage, accounting completeness and client latency. You now have an illustrative cost estimate; tonight you find out whether the verdict it returns is worth anything.
 **Today you ship:** `cafe/judge.py` — the seeded-defect game, the detection and false-positive rates, and the agreement math.
 **What this teaches:** how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus *before* you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
 **Time:** 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. **Prerequisites:** S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
@@ -140,8 +140,8 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
    honest answer. The closing cells are protocol invariants: κ is undefined for constant
    vectors, every transcript gets exactly one verdict, and the rates and coverage retain their denominators.
 7. **Price the twelve calls.** Calibration cost two rubrics over six transcripts.
-   The cost cell rebuilds each call's messages exactly and projects them on S11's
-   route table — worth-it is a question with two numbers, and now you have both.
+   The cost cell rebuilds each call's messages exactly and estimates them using S11's illustrative
+   rate card, without changing the actual client — worth-it is a question with two numbers, and now you have both.
 
 ---
 
@@ -151,7 +151,7 @@ Put this in one sentence and defend it: **6 transcripts, 3 seeded defects, detec
 false positives n/3, valid outputs n/6, κ = …** for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
 your instrument's actual precision, and it is worth more than a 9/10 you cannot reproduce.
-Bank the projected calibration cost next to the κ: twelve calls priced on S11's table.
+Bank the projected calibration cost next to the κ: twelve calls estimated with S11's illustrative table.
 A verdict is worth what it measures minus what it cost to get.
 
 ---

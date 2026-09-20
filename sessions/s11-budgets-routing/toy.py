@@ -5,6 +5,7 @@ app = marimo.App(width="medium")
 
 with app.setup:
     import inspect
+    import statistics
     import sys
     from pathlib import Path
 
@@ -32,7 +33,7 @@ def s11_md_hook(mo):
     number S10 banked. Your shift can now name what went wrong; tonight it learns
     what a call is allowed to cost and where it is allowed to run.
 
-    **Today you ship:** `cafe/routing.py` — the budget gate and the route table.
+    **Today you ship:** `cafe/routing.py` — an estimate gate and routing-policy simulation.
 
     ## The hook
 
@@ -49,11 +50,11 @@ def s11_md_hook(mo):
 
     ## The promise
 
-    By the end of this session you will be able to write a route table as data,
-    prove that a call whose *projected* cost would cross the budget is refused
-    **before** it is dispatched, and prove that a content phase pointed at a
-    cloud route raises before a single request leaves the machine. You will also
-    bank real token and latency numbers measured on your own endpoint.
+    By the end of this session you can reject projected overages before dispatch
+    and validate a classification policy. **The route labels are simulated:** all
+    calls use the same configured client. They do not select models or establish
+    locality. Bank reported usage, missing accounting, and latency separately from
+    the illustrative cost estimates. Use synthetic café input only.
     """)
     return
 
@@ -65,8 +66,7 @@ def s11_md_client(mo):
 
     `get_client()` is the only seam between this course and a model. Tonight the
     interesting numbers are the ones the endpoint itself reports: `usage` on the
-    response, and `client.last_latency_ms` measured around the request. No
-    simulated clocks, no made-up tokens.
+    response, and `client.last_latency_ms` measured around the request. Live mode measures the endpoint; stub mode reports deterministic fixture values.
     """)
     return
 
@@ -93,39 +93,35 @@ def s11_md_theory(mo):
     the line is refused. `stop_reason="budget_exceeded"` is a first-class outcome —
     a run that costs more than the task is worth has failed, even mid-progress.
 
-    The estimate is a lie you need: a gate cannot know the usage before the
-    endpoint speaks. The *ledger* is the truth, and it is written from
-    `response["usage"]` after the call. Two numbers, two jobs:
-    **estimate refuses, usage records.**
+    The projection is uncertain. The ledger multiplies reported usage by an
+    illustrative rate card, so both money figures are estimates. Missing or invalid
+    usage stays unknown. With a cap, unknown accounting blocks the next call;
+    a completed overrun stops later phases but cannot undo that call's cost.
+    This is not a hard spending cap.
 
     ### 2. Routing is policy-as-data
 
     A route table is a dict: café phase → route name. Each route carries a
     location, a model label, and a price per 1k tokens. It is diffable, reviewable,
-    and validatable without touching the engine — and your endpoint choice cites a
-    measured number rather than a preference.
+    and validatable without changing the client. None of these labels changes
+    the actual model selected through `get_client()`.
 
-    ![Validated route table projects cost, refuses past budget, ledgers real usage](public/diagrams/s11-budget.svg)
+    ![Simulated policy and illustrative cost estimates gate calls to one configured client](public/diagrams/s11-budget.svg)
     """)
     mo.md(r"""
-    ### 3. The privacy boundary refuses; it does not warn
+    ### 3. Classification policy is separate from transport
 
-    Every phase carries a **classification**; every route carries a **location**.
-    A content phase — the note with the card and phone numbers, the prose about
-    this customer's order — must resolve to a local route. `validate_policy` runs
-    before any model call and **raises**. It does not warn, and it does not fall
-    back to a safe route: a silent fallback is the same leak with better logging.
-
-    A warning is a log line nobody reads during the incident. A refusal makes the
-    misconfiguration un-runnable.
+    `validate_policy` rejects a simulated content-to-cloud mapping. It does not
+    inspect endpoint location or prove that a payload is metadata-only. All allowed
+    routes still call the same client; a real deployment needs actual data and
+    transport boundaries.
 
     ### 4. What "measured" means tonight
 
-    `response["usage"]` gives the tokens the endpoint actually charged for.
-    `client.last_latency_ms` gives the wall time around the request, set by the
-    client itself, not by a formula in this notebook. `till_summary` is
-    metadata-only (category totals, no descriptions), which is why it is the one
-    phase allowed to leave the machine.
+    In live mode, valid `response["usage"]` counts and `client.last_latency_ms`
+    are observations. A configured alias is printed beside the simulated route;
+    optional `reported_model` says what the provider returned. Missing usage is
+    unknown, and every money figure uses illustrative rates rather than billing.
     """)
     return
 
@@ -194,7 +190,9 @@ def s11_demo_budget_gate():
     for _example in _examples:
         _yours = attempt_budget_gate(**_example)
         _reference = solution_budget_gate(**_example)
-        _module = routing.Budget(_example["budget_usd"]).would_exceed(_example["projected_usd"])
+        _example_budget = routing.Budget(_example["budget_usd"])
+        _example_budget.spent_usd = _example["spent_usd"]
+        _module = _example_budget.would_exceed(_example["projected_usd"])
         if _yours is None:
             print(f"{_example} -> Attempt pending: return True or False, not None")
         else:
@@ -210,10 +208,9 @@ def s11_md_meter(mo):
     mo.md(r"""
     ## The metered call, on your endpoint
 
-    One real call on the `draft_reply` phase, routed through `local-large`. The
-    projected cost is printed next to the real one — on a small note the estimate
-    is often nearby, on a long one it drifts. That gap is why the gate uses an
-    estimate and the ledger uses usage.
+    One `draft_reply` call uses your configured client and the simulated
+    `local-large` rate card. Compare the projection with the usage-based estimate,
+    and keep unknown values visible. The route label does not switch endpoints.
     """)
     return
 
@@ -232,12 +229,16 @@ def s11_demo_metered_call(client):
     ]
     _record = routing.metered_call(client, local_table, "draft_reply", _draft)
     _usage = _record["response"].get("usage") or {}
-    print("route            :", _record["route"], "->", _record["model"])
+    print("simulated route  :", _record["route"], "->", _record["route_model"])
+    print("configured client:", _record["client_model"])
+    print("reported model   :", _record.get("reported_model", "not reported"))
     print("dispatched       :", _record["dispatched"])
     print("usage from wire  :", _usage)
     print("tokens recorded  :", _record["tokens"])
-    print("latency measured :", round(_record["latency_ms"], 2), "ms (client.last_latency_ms)")
-    print(f"projected ${_record['projected_usd']:.4f}  ->  charged ${_record['cost_usd']:.4f}")
+    print("client latency ms:", _record["latency_ms"])
+    print("usage known      :", _record["usage_known"])
+    print("cost estimates   :", "projected", _record["projected_usd"],
+          "usage-based", _record["estimated_cost_usd"], "USD at illustrative rates")
     return
 
 
@@ -378,7 +379,8 @@ def test_s11_metered_tokens_match_the_endpoint_usage():
     )
     assert _record["dispatched"] is True
     _usage = _record["response"].get("usage") or {}
-    assert _record["tokens"] == _usage.get("total_tokens", 0)
+    assert _record["tokens"] == routing.usage_tokens(_usage)
+    assert _record["usage_known"] == (_record["tokens"] is not None)
     assert _record["latency_ms"] == _probe.last_latency_ms
     return
 
@@ -392,13 +394,12 @@ def s11_md_checkpoint(mo):
 
     - a call whose projected cost crosses the budget is refused **before**
       dispatch, so `client.calls` does not move and its cost never lands;
-    - a content phase pointed at a cloud route raises, and the same phase on a
-      metadata route is permitted.
+    - a content phase pointed at a simulated cloud route raises, while a metadata
+      phase on that route is permitted by the teaching policy.
 
-    And two measured numbers from your own endpoint: **total tokens** and
-    **median latency** over the calls below, plus what they cost at the route's
-    price. S12's judge costs money too; without these numbers you cannot say
-    whether it is worth running.
+    Bank known token counts, accounting completeness, and median latency when
+    available, beside the illustrative cost estimate. Stub results are fixtures;
+    live results describe your configured client. S12 reuses this estimate.
 
     ## What this unlocks
 
@@ -435,14 +436,18 @@ def s11_demo_checkpoint(client):
         )
     _dispatched = [record for record in _ledger.calls if record["dispatched"]]
     _tokens = [record["tokens"] for record in _dispatched]
-    _latencies = sorted(record["latency_ms"] for record in _dispatched)
-    _median = _latencies[len(_latencies) // 2] if _latencies else 0.0
+    _latencies = sorted(record["latency_ms"] for record in _dispatched
+                        if type(record["latency_ms"]) in (int, float))
+    _median = statistics.median(_latencies) if _latencies else None
     print("calls dispatched :", len(_dispatched), "of", len(_ledger.calls))
-    print("tokens (usage)   :", _tokens, "total", sum(_tokens))
+    print("tokens (usage)   :", _tokens, "known sum", sum(t for t in _tokens if t is not None))
+    print("accounting complete:", _ledger.usage_complete)
     print(f"latency samples  : {[round(value, 1) for value in _latencies]} ms")
-    print(f"median latency   : {round(_median, 1)} ms")
-    print(f"spent at $0.06/1k: ${_ledger.spent_usd:.4f} of ${_ledger.budget_usd:.2f}")
-    _tracer = routing.publish({"stop_reason": "ok", "records": _ledger.calls})
+    print("median latency ms:", _median)
+    print(f"known cost estimate at illustrative $0.06/1k: ${_ledger.spent_usd:.4f} of ${_ledger.budget_usd:.2f}")
+    _stop = next((record["refusal"] for record in _ledger.calls if record["refusal"]), "ok")
+    print("stop reason      :", _stop)
+    _tracer = routing.publish({"stop_reason": _stop, "records": _ledger.calls})
     if _tracer is None:
         print()
         print("cafe.trace not importable: the ledger stays in memory, no span tree.")

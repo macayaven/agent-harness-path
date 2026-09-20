@@ -1,9 +1,10 @@
 flowchart LR
-    P[phase + messages] --> V{route table<br/>valid?}
-    V -- no --> R[RouteRefused<br/>before any call]
-    V -- yes --> E[project cost<br/>estimate]
-    E --> G{spent + projected<br/>&gt; budget?}
-    G -- yes --> X[refused<br/>cost never lands]
-    G -- no --> C[dispatch to the route's model]
-    C --> U[read usage + last_latency_ms]
-    U --> L[ledger: real tokens, real cost]
+    P[synthetic phase + messages] --> V{simulated policy valid?}
+    V -- no --> R[refuse before dispatch]
+    V -- yes --> E[illustrative cost projection]
+    E --> G{known estimates + projected within cap?}
+    G -- no or unknown --> R
+    G -- yes --> C[one configured client]
+    C --> U[reported usage + client latency]
+    U --> L[known estimate or unknown accounting]
+    L --> S[stop later calls on budget overrun]

@@ -30,8 +30,8 @@ def s12_md_hook(mo):
     # S12 — Judge calibration
 
     **Carried in:** `cafe/routing.py` — S11's route table, its budget gate, and
-    the token and latency numbers it measured on your endpoint. You now know what
-    a call costs; tonight you find out whether the verdict it returns is worth
+    reported usage, accounting completeness and client latency. You now have an illustrative
+    cost estimate; tonight you find out whether the verdict it returns is worth
     anything.
 
     **Today you ship:** `cafe/judge.py` — the seeded-defect game and the
@@ -347,9 +347,9 @@ def s12_md_cost(mo):
 
     Calibration is twelve model calls: two rubrics over six transcripts. S11's
     route table prices a call before it is made, so rebuild each call's messages
-    exactly — rubric plus rendered transcript — and project both passes. The
-    reference route is `local-large`, the lesson's own suggested model; your
-    endpoint bills differently, but the shape of the question does not change.
+    exactly — rubric, facts and transcript — and project both passes. The
+    `local-large` rate card is illustrative; all calls used the configured client.
+    This projection is not actual billing or proof of a model switch.
     """)
     return
 
@@ -367,7 +367,7 @@ def s12_demo_cost(transcripts, verdicts_v1, verdicts_v2):
             cost_total += routing.projected_usd(cost_route, cost_messages)
     cost_calls = len(verdicts_v1) + len(verdicts_v2)
     print(f"judge calls priced : {cost_calls} (2 rubrics x {len(transcripts)} transcripts)")
-    print(f"projected cost     : ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
+    print(f"illustrative projection: ${cost_total:.4f} on local-large (${cost_route['usd_per_1k']:.2f}/1k)")
     print("Worth it is a question with two numbers: this cost, and the κ above.")
     return
 

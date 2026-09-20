@@ -4,14 +4,15 @@
 
 Core: `lesson.html`,
 `toy.py`, `cafe/routing.py` (budget gate, route
-table, the boundary that refuses a leak). Optional café-host lab:
+table and explicit policy simulation). Optional café-host lab:
 `sessions/s11-budgets-routing/lab.md`, `run_engine` `max_approx_tokens` / `RouteRefused` in
 `labs/cafe_host/engine.py`, `client.RouteRefused`.
 
 ## The gap
 
-The core toy runs live: a turn cap, a token counter, and a route table that
-refuses a leak. The optional café host:
+The core uses one configured client for all simulated route names. Its illustrative
+cost estimates, reported usage and accounting completeness are separate evidence.
+A route label proves neither locality nor real billing. The optional café host:
 
 - Approximates tokens as `len(json.dumps(messages)) // 4`. Breach →
   `stop_reason=budget_exceeded` (no LiteLLM).
