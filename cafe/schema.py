@@ -19,10 +19,9 @@ from typing import Any
 
 from cafe import domain
 from cafe.evals import checkers
-from cafe.tools import OrderState, dispatch
 
-# The kitchen's contract. `items` enumerates the menu: enums are policy, and
-# S04's third experiment is about what happens when the policy is wrong.
+# The kitchen's contract. `items` enumerates the menu, but availability and
+# prices still need the semantic checker; an enum alone cannot make a ticket correct.
 TICKET_SCHEMA: dict = {
     "type": "object",
     "required": ["table", "items", "total_eur", "allergen_checked"],
@@ -50,17 +49,12 @@ TYPE_CHECKS = {
 }
 
 TICKET_SYSTEM = (
-    domain.PERSONA
-    + "\n\nShift rules:\n"
-    + "\n".join(f"- {rule}" for rule in domain.SHIFT_RULES)
-    + "\n\nReturn ONLY one JSON ticket object, no prose, no code fences."
+    domain.TICKET_INSTRUCTIONS
+    + "\n\nTrusted menu (prices in EUR):\n" + json.dumps(domain.MENU, sort_keys=True)
+    + "\n86'd tonight:\n" + json.dumps(list(domain.EIGHTY_SIXED))
 )
 
-TICKET_PROMPT = (
-    "Read the customer note and reply with ONE JSON object shaped like this: "
-    '{"table": int, "items": [str], "total_eur": number, "allergen_checked": bool, '
-    '"notes": str (optional)}. Prices come from the menu.\n\nCustomer note:\n'
-)
+TICKET_PROMPT = domain.TICKET_PROMPT
 
 
 def validate(instance: Any, schema: dict, path: str = "$") -> list[str]:
@@ -132,32 +126,45 @@ def ask_ticket_run(
         {"role": "system", "content": system},
         {"role": "user", "content": TICKET_PROMPT + brief},
     ]
-    state = OrderState()
     outcomes = []
     for attempt in range(1, max_attempts + 1):
-        body = client.chat(list(messages), tools=domain.TOOL_SCHEMAS, temperature=0.0)
+        body = client.chat(list(messages), temperature=0.0)
         message = body["choices"][0]["message"]
         messages.append(_assistant_message(message))
-        for call in message.get("tool_calls") or []:
-            result = dispatch(state, call)
+        tool_calls = message.get("tool_calls") or []
+        for call in tool_calls:
+            # An unexpected channel must never execute an order. Pair a denial
+            # with each call so the next attempt still has a legal transcript.
             messages.append(
                 {
                     "role": "tool",
                     "tool_call_id": call.get("id"),
-                    "content": json.dumps(result, sort_keys=True, separators=(",", ":"),
-                                          ensure_ascii=False),
+                    "content": json.dumps({"error": "tools_disabled", "executed": False}),
                 }
             )
-        ticket = parse_json(message.get("content"))
+        ticket = None if tool_calls else parse_json(message.get("content"))
         shape_errors = validate(ticket, schema) if ticket is not None else []
         meaning_errors = checkers.ticket_matches_menu(ticket) if ticket is not None and not shape_errors else []
+        if tool_calls:
+            stage, errors = "channel", ["Tool calls are disabled; return the JSON ticket in text. No tool was executed."]
+        elif ticket is None:
+            stage, errors = "parse", ["No JSON ticket could be parsed from the text reply."]
+        elif shape_errors:
+            stage, errors = "shape", shape_errors
+        elif meaning_errors:
+            stage, errors = "meaning", meaning_errors
+        else:
+            stage, errors = "accepted", []
         outcomes.append({
             "attempt": attempt, "parsed": ticket is not None,
             "shape_ok": ticket is not None and not shape_errors,
             "semantic_ok": (not meaning_errors) if ticket is not None and not shape_errors else None,
             "shape_errors": shape_errors, "semantic_errors": meaning_errors,
+            "stage": stage, "errors": errors, "reply": message.get("content"),
         })
-        if ticket is None:
+        if tool_calls:
+            feedback = "CHANNEL ERROR: " + errors[0]
+        elif ticket is None:
             feedback = (
                 "PARSE ERROR: reply with the raw JSON ticket object only - "
                 "no prose, no code fences."

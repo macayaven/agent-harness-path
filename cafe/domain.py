@@ -51,6 +51,50 @@ ALLERGEN_REFUSAL = (
 )
 OFF_MENU_REFUSAL = "That's not on the menu today. Can I offer something similar?"
 
+# --- S04 ticket-only experiment ------------------------------------------
+# No order tools are offered: S04 validates a proposal; S05 teaches consent.
+TICKET_INSTRUCTIONS = (
+    "Draft a ticket for the neighbourhood café using the trusted shift data below. "
+    "Return ONLY one JSON ticket object in your text reply, no prose or code fences. "
+    "Use exact menu names and prices; repeat an item once per serving. "
+    "Keep the requested items: do not silently substitute or omit them. "
+    "An 86'd item is unavailable and cannot pass the ticket checker. "
+    "Set allergen_checked to false: this exercise does not perform an allergy check. "
+    "A ticket is only a proposal; no order is sent or confirmed."
+)
+TICKET_PROMPT = (
+    "Read the customer note and reply with ONE JSON object shaped like this: "
+    '{"table": int, "items": [str], "total_eur": number, "allergen_checked": bool, '
+    '"notes": str (optional)}. Prices come from the trusted menu.\n\nCustomer note:\n'
+)
+TICKET_BRIEFS = (
+    "Table 4: a latte and tomato toast, please.",
+    "Table 2 wants two chocolate croissants and an orange juice.",
+    "Table 7 wants a cheese omelette. No substitutions, please.",
+)
+
+# Authored teaching fixtures, NOT recordings or model-quality evidence.
+# A conversation selects its own attempt; rerunning a cell restarts the case.
+TICKET_STUB_REPLIES = {
+    TICKET_BRIEFS[0]: (
+        "Your ticket is coming right up.",
+        {"table": "four", "items": ["latte", "tomato toast"],
+         "total_eur": 4.0, "allergen_checked": False},
+        {"table": 4, "items": ["latte", "tomato toast"],
+         "total_eur": 4.0, "allergen_checked": False},
+    ),
+    TICKET_BRIEFS[1]: (
+        {"table": 2, "items": ["chocolate croissant", "chocolate croissant", "orange juice"],
+         "total_eur": 4.6, "allergen_checked": False},
+        {"table": 2, "items": ["chocolate croissant", "chocolate croissant", "orange juice"],
+         "total_eur": 6.7, "allergen_checked": False},
+    ),
+    TICKET_BRIEFS[2]: (
+        {"table": 7, "items": ["cheese omelette"],
+         "total_eur": 3.2, "allergen_checked": False},
+    ),
+}
+
 # --- tool schemas (in-domain, fixed by plan 0002 §5.2) --------------------
 TOOL_SCHEMAS: list[dict] = [
     {

@@ -14,6 +14,12 @@ lab: `sessions/s04-structured-generation/lab.md`, `labs/cafe_host/tools.py`
 The core toy validates a ticket and retries through the model seam. Its checkpoint
 compares first-attempt shape and meaning, then final acceptance separately;
 `ask_ticket_run` retains the errors a successful repair would otherwise hide.
+The core requests JSON text with trusted menu facts and offers no tools. Offline
+mode uses authored teaching fixtures, not the lab's live-model cassettes; edited
+briefs require live mode. A passed ticket means shape and menu agreement only,
+not allergy clearance, customer agreement or permission to send an order.
+In the lab, the same validation-and-error-feedback idea applies to **tool
+arguments**, with the host responsible for tool execution and state.
 The café host’s
 `propose_order` already:
 

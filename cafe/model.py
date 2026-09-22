@@ -266,15 +266,18 @@ class LiveClient:
 class StubClient:
     """Deterministic offline stand-in; the default for learners and CI.
 
-    It is intentionally mediocre: it answers, it sometimes skips a tool, and it
-    never invents a price. That is enough to exercise the harness contracts
-    without pretending to be a model.
+    The default dialogue is intentionally mediocre. The optional tickets scenario
+    uses authored failures and repairs to exercise S04's validation gates. Neither
+    behavior is a recording or evidence about a model's quality.
     """
 
     mode = "stub"
 
-    def __init__(self, script: list[dict] | None = None) -> None:
+    def __init__(self, script: list[dict] | None = None, *, scenario: str | None = None) -> None:
+        if scenario not in (None, "tickets"):
+            raise ValueError(f"unknown offline scenario: {scenario!r}")
         self.script = list(script or [])
+        self.scenario = scenario
         self.calls = 0
         self.last_latency_ms = 0.0
 
@@ -289,6 +292,8 @@ class StubClient:
         self.calls += 1
         if self.script:
             return self.script.pop(0)
+        if self.scenario == "tickets":
+            return self._ticket_reply(messages)
         last = messages[-1]
         if last.get("role") == "tool":
             return self._text("Coming right up. Anything else?")
@@ -298,6 +303,18 @@ class StubClient:
                 if item.split()[0] in text:
                     return self._call("price_check", {"item": item})
         return self._text("What can I get you?")
+
+    def _ticket_reply(self, messages: list[dict]) -> dict:
+        request = next((m.get("content") for m in messages if m.get("role") == "user"), None)
+        for brief, replies in domain.TICKET_STUB_REPLIES.items():
+            if request == domain.TICKET_PROMPT + brief:
+                attempt = sum(m.get("role") == "assistant" for m in messages)
+                content = replies[min(attempt, len(replies) - 1)]
+                return self._text(content if isinstance(content, str) else json.dumps(content))
+        raise ModelError(
+            "The offline ticket fixtures cover only the three supplied briefs. "
+            "Use COURSE_MODE=live with your configured endpoint to try a different brief."
+        )
 
     def _text(self, content: str) -> dict:
         return {
@@ -337,8 +354,11 @@ class StubClient:
         }
 
 
-def get_client(**kwargs: Any):
-    """The seam. COURSE_MODE=live reaches your endpoint; unset means the offline stub."""
+def get_client(*, stub_scenario: str | None = None, **kwargs: Any):
+    """One seam: optional authored offline scenario, or the configured live model.
+
+    stub_scenario only selects offline fixtures; it is never sent to a provider.
+    """
     if (os.environ.get("COURSE_MODE") or "stub").strip().lower() == "live":
         return LiveClient(**kwargs)
-    return StubClient()
+    return StubClient(scenario=stub_scenario)
