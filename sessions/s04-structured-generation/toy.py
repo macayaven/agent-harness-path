@@ -271,8 +271,8 @@ def s04_demo_live(client, mo):
                 for _error in _step["errors"]:
                     print("    error:", _error)
         print("\nRead the mode, reply channel and exact errors before changing the "
-              "model or contract. Acceptance here checks shape and menu agreement, "
-              "not allergy safety or permission to send the order.")
+              "model or contract.\nAcceptance here checks shape and menu agreement, "
+              "not allergy safety\nor permission to send the order.")
     mo.plain_text(_output.getvalue())
     return (ticket_runs,)
 
