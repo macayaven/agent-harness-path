@@ -64,8 +64,13 @@ def s04_md_client(mo):
     mo.md(r"""
     ## Your model
 
-    Same seam: `get_client()`. Measure your model's results; the validator and
-    retry log distinguish shape errors, meaning errors and accepted tickets.
+    Same seam: `get_client(stub_scenario="tickets")`. By default, S04 uses
+    **authored offline fixtures** that exercise the validation gates. These are
+    not recorded model responses; the optional lab's cassettes are separate.
+    Rerunning the cell repeats the fixtures, not a new model experiment.
+
+    With `COURSE_MODE=live`, the fixture selection is ignored and your configured
+    endpoint answers the same requests. Only that mode measures your model.
     """)
     return
 
@@ -73,7 +78,7 @@ def s04_md_client(mo):
 @app.cell
 def s04_demo_client(mo):
     with mo.capture_stdout() as _output:
-        client = get_client()
+        client = get_client(stub_scenario="tickets")
         print("mode :", client.mode)
         print("model:", getattr(client, "model", "stub"))
     mo.plain_text(_output.getvalue())
@@ -90,7 +95,7 @@ def s04_md_contract(mo):
     — because the checks *are* the lesson. A library is these same checks with more
     keywords.
 
-    ![Parse, validate, return specific errors for another bounded attempt; exhausted attempts escalate](public/diagrams/S04-structured-generation.svg)
+    ![Request JSON text without tools; check parsing, shape and meaning; retry with specific errors or stop without a ticket](public/diagrams/S04-structured-generation.svg)
 
     Two gates, not one. The first is *shape*: is this the object the contract
     describes? The second is *meaning*: does it agree with tonight's menu and
@@ -203,52 +208,74 @@ def s04_md_loop(mo):
     ## The retry loop, and why it is capped
 
     Errors become **messages**, exactly as in S01: a `PARSE ERROR` or
-    `VALIDATION ERRORS` turn goes back to the model, and the model re-asks. The
+    `VALIDATION ERRORS` or `SEMANTIC ERRORS` turn goes back to the model for another
+    reply. The
     assistant turn is appended verbatim before the feedback, so the protocol stays
     legal across attempts.
 
     The loop is capped at three attempts. An uncapped retry loop is a
     non-terminating agent with your budget in its hand.
 
-    The next cell runs the real thing against your endpoint. With a small model,
-    expect some briefs to fail all three attempts — that is data, not an error.
+    This experiment requests **JSON text only** and supplies trusted menu facts
+    directly. It offers no tools and never sends an order. An unexpected tool call
+    is denied and reported as a channel error, not a JSON parse failure.
+
+    Offline replies are authored to expose the gates and the cap. In live mode,
+    any brief may fail all three attempts; inspect the actual reply and errors.
+    The last brief names an unavailable item and forbids substitutions. This
+    contract has no clarification branch, so it may end without a ticket.
+    The prompt requests `allergen_checked=false`; the schema only checks its type.
+    Acceptance does not certify an allergy check.
     """)
     return
 
 
 @app.cell(hide_code=True)
-def s04_predict_retry(mo):
-    mo.md(r"""
-    **Predict first.** For each brief below, write down: parse error, schema
-    invalid, semantically wrong, or accepted — and on which attempt. Then run.
-    """)
+def s04_predict_retry(client, mo):
+    _parts = [
+        "**Predict first.** Classify each first reply: parse error, schema invalid, "
+        "semantically wrong, or accepted. Predict whether retries can help, then run. "
+        "In offline mode, inspect the supplied first replies below; "
+        "in live mode, predict from the briefs before seeing your model's replies."
+    ]
+    for _index, _brief in enumerate(domain.TICKET_BRIEFS, 1):
+        _parts.append(f"**Brief {_index}:** {_brief}")
+        if client.mode == "stub":
+            _reply = domain.TICKET_STUB_REPLIES[_brief][0]
+            _text = _reply if isinstance(_reply, str) else json.dumps(_reply, indent=2)
+            _parts.append("First offline reply:\n\n```text\n" + _text + "\n```")
+    mo.md("\n\n".join(_parts))
     return
 
 
 @app.cell
 def s04_demo_live(client, mo):
     with mo.capture_stdout() as _output:
-        briefs = (
-            "Table 4: a latte and tomato toast, please.",
-            "Table 2 wants two chocolate croissants and an orange juice.",
-            "I'm Lucia, table 7. I want a cheese omelette, but I'm not sure it'll sit well.",
-        )
-        print(f"{'brief':<6} {'outcome':<12} {'attempts':<9} detail")
+        print("mode:", client.mode,
+              "— authored offline fixtures" if client.mode == "stub" else "— live endpoint")
         ticket_runs = []
-        for _index, _brief in enumerate(briefs):
+        for _index, _brief in enumerate(domain.TICKET_BRIEFS, 1):
             _run = ask_ticket_run(client, _brief)
             ticket_runs.append(_run)
             _ticket, _attempts = _run["ticket"], _run["attempts"]
             if _ticket is None:
-                _outcome, _detail = "no ticket", "loop hit the cap"
+                _outcome, _detail = "no ticket", _run["stop_reason"].replace("_", " ")
             else:
                 _outcome, _detail = "accepted", str(_ticket.get("items"))
-            print(f"{_index:<6} {_outcome:<12} {_attempts:<9} {_detail[:52]}")
+            print(f"\nBrief {_index}: {_brief}")
+            print(f"{_outcome}; {_attempts} attempt(s); {_detail}")
             for _step in _run["outcomes"]:
-                print("  attempt", _step["attempt"], "parsed:", _step["parsed"],
+                print("  attempt", _step["attempt"], "stage:", _step["stage"], "parsed:", _step["parsed"],
                       "shape:", _step["shape_ok"], "meaning:", _step["semantic_ok"])
-        print("\nRead the failures: a repeated identical error is the contract talking, "
-              "\nnot the model.")
+                print("    reply:", _step["reply"])
+                for _error in _step["errors"]:
+                    print("    error:", _error)
+            if _run["stop_reason"] == "transport_error":
+                print("Stopped this batch: check endpoint readiness before sending another request.")
+                break
+        print("\nRead the mode, reply channel and exact errors before changing the "
+              "model or contract.\nAcceptance here checks shape and menu agreement, "
+              "not allergy safety\nor permission to send the order.")
     mo.plain_text(_output.getvalue())
     return (ticket_runs,)
 
@@ -304,14 +331,16 @@ def test_s04_valid_is_not_correct(mo):
 
 
 @app.cell
-def test_s04_retry_loop_stays_protocol_legal(client, mo):
+def test_s04_retry_loop_stays_protocol_legal(mo, ticket_runs):
     with mo.capture_stdout() as _output:
-        _, messages, attempts = ask_ticket(client, "Table 3: an espresso.")
-        check_pairing(messages)
-        assert 1 <= attempts <= 3, attempts
-        assert messages[0]["role"] == "system" and messages[1]["role"] == "user"
-        assert len(messages) >= 3, "the model turn must be recorded even when it fails"
-        print(f"retry loop: {attempts} attempt(s), {len(messages)} messages, pairing legal")
+        for _run in ticket_runs:
+            _messages, _attempts = _run["messages"], _run["attempts"]
+            check_pairing(_messages)
+            assert 1 <= _attempts <= 3, _attempts
+            assert _messages[0]["role"] == "system" and _messages[1]["role"] == "user"
+            _returned = sum(o["stage"] != "transport" for o in _run["outcomes"])
+            assert sum(m["role"] == "assistant" for m in _messages) == _returned
+            print(f"retry loop: {_attempts} attempt(s), {len(_messages)} messages, pairing legal")
     mo.plain_text(_output.getvalue())
     return
 
@@ -325,6 +354,9 @@ def s04_md_checkpoint(mo):
     also matched the menu? Then separately count final accepted tickets after
     retries. A final accepted ticket passed both gates; it cannot show the errors
     that the retry loop repaired. A zero gap is a valid observation too.
+    Record the mode with these numbers: offline results demonstrate the fixture
+    invariant; they are not measurements of a model. Try edited briefs in live
+    mode — the offline fixture set covers only the three supplied briefs.
 
     ## What this unlocks
 
@@ -343,6 +375,8 @@ def s04_demo_checkpoint(mo, ticket_runs):
         print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
               f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
         print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
+        print("endpoint failures:", sum(run["stop_reason"] == "transport_error" for run in ticket_runs),
+              "| unrun briefs:", len(domain.TICKET_BRIEFS) - len(ticket_runs))
     mo.plain_text(_output.getvalue())
     return
 

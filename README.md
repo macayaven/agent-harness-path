@@ -223,10 +223,17 @@ This setup powered live checks of all 12 S01–S12 notebooks and the recording o
 the [hard-path lab cassettes](labs/cassettes/README.md): 19 files containing 43
 model responses for reproducible replay of the recorded lab scenarios.
 
+The [22 September fixture review](docs/cassette-review-2026-09-22.md) refreshed
+all 10 governed lab recordings after clarifying the house rules and retained the
+nine deliberate naïve baselines. The current lab set has 36 responses across
+19 files. Four additional recorded notebook comparisons contain 16 responses
+from the same local model; their provenance and limits are documented in the review.
+
 The course supports offline study in two ways:
 
 - **Notebooks:** a deterministic Python stub provides scripted and rule-based
-  responses by default.
+  responses by default. Optional S04/S05/S07/S09 model recordings can also be
+  checked offline with `uv run python tools/record_fixtures.py` after your attempts.
 - **Hard-path labs:** `--replay` uses the committed request/response recordings
   from the real model.
 

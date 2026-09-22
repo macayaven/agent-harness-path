@@ -17,6 +17,12 @@ messages from `after_user:`, append a short repair user line
 (`Policy {hit}: do not leak… Use tools only.`), run the loop again. Never raise
 approved scope on retry. If still hit: `stop_reason=retries_exhausted`.
 
+The core's authored cap control alternates contract and availability failures;
+it does not claim an unsatisfiable allergy request entered the loop. Its model
+prompt includes the inherited fields and menu facts. The
+[recorded comparison](recordings/model.jsonl) replays the ordinary demonstration
+and three checkpoint orders; it is a selected example, not a quality estimate.
+
 Every run should end with
 `stop_reason ∈ {completed, retries_exhausted, turn_cap, budget_exceeded, rejected, invalid_edit, invalid_decision, policy_refusal}`.
 Print it (the returned dict and `state["stop_reason"]`). No ambiguous exits.
@@ -26,6 +32,8 @@ Print it (the returned dict and `state["stop_reason"]`). No ambiguous exits.
 ```bash
 # core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s07-repair-loop/toy.py
+# after your prediction and attempt: replay the recorded model comparison offline
+uv run python tools/record_fixtures.py --session s07
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s07 --replay
 ```

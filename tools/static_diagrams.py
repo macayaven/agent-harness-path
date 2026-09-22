@@ -25,7 +25,7 @@ ALTERNATIVES = {
         'Context assembly keeps safety rules verbatim in a pinned region and trims or summarizes only compactable history when over budget; both regions then feed the model.',
     ),
     'S04-structured-generation': (
-        'A structured-generation loop parses model output, validates parsed JSON, and returns specific errors for another bounded attempt; validated output exits, while exhausted attempts escalate the schema.',
+        'The ticket loop requests JSON text without tools, denies unexpected tool calls, then checks parsing, schema shape and menu meaning. Errors feed a bounded retry; success returns a proposal without sending an order, and exhausted attempts return no ticket.',
     ),
     'S05-consent-gate': (
         'A model proposal must validate and survive human approval or editing before the agent loop may run; only actions inside the approved specification dispatch, and violations stop with a readable report.',

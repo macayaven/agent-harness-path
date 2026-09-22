@@ -22,6 +22,12 @@ MENU: dict[str, dict] = {
 # Items the kitchen has run out of tonight. "86'd" is the trade term.
 EIGHTY_SIXED: tuple[str, ...] = ("cheese omelette",)
 
+MENU_TOOL_GUIDANCE = (
+    "Tool item names are case-sensitive. Use these exact names: "
+    + ", ".join(MENU)
+    + ". Check prices, allergens and availability with the tools."
+)
+
 # Synthetic opaque references for the hard-path confidentiality exercise.
 # Allergens are public customer information; these references are tool-only.
 INTERNAL_SUPPLIER_REFS: dict[str, str] = {
@@ -50,6 +56,60 @@ ALLERGEN_REFUSAL = (
     "before we order it."
 )
 OFF_MENU_REFUSAL = "That's not on the menu today. Can I offer something similar?"
+
+# --- S04 ticket-only experiment ------------------------------------------
+# No order tools are offered: S04 validates a proposal; S05 teaches consent.
+TICKET_INSTRUCTIONS = (
+    "Draft a ticket for the neighbourhood café using the trusted shift data below. "
+    "Return ONLY one JSON ticket object in your text reply, no prose or code fences. "
+    "Use exact menu names and prices; repeat an item once per serving. "
+    "Keep the requested items: do not silently substitute or omit them. "
+    "An 86'd item is unavailable and cannot pass the ticket checker. "
+    "Set allergen_checked to false: this exercise does not perform an allergy check. "
+    "A ticket is only a proposal; no order is sent or confirmed."
+)
+TICKET_PROMPT = (
+    "Read the customer note and reply with ONE JSON object shaped like this: "
+    '{"table": int, "items": [str], "total_eur": number, "allergen_checked": bool, '
+    '"notes": str (optional)}. Prices come from the trusted menu.\n\nCustomer note:\n'
+)
+TICKET_BRIEFS = (
+    "Table 4: a latte and tomato toast, please.",
+    "Table 2 wants two chocolate croissants and an orange juice.",
+    "Table 7 wants a cheese omelette. No substitutions, please.",
+)
+
+REPAIR_INSTRUCTIONS = (
+    "You work the café counter. Return ONLY one JSON ticket with table (integer), "
+    "items (list of exact menu names, repeated per serving), total_eur (menu price sum), "
+    "and allergen_checked (boolean). No prose or code fences. "
+    "Use the trusted menu below; an 86'd item is unavailable. "
+    "If the brief declares an allergy, check every item against the menu allergens "
+    "and set allergen_checked true only after that check. Otherwise set it false. "
+    "A ticket is a proposal, not permission to send an order."
+)
+
+# Authored teaching fixtures, NOT recordings or model-quality evidence.
+# A conversation selects its own attempt; rerunning a cell restarts the case.
+TICKET_STUB_REPLIES = {
+    TICKET_BRIEFS[0]: (
+        "Your ticket is coming right up.",
+        {"table": "four", "items": ["latte", "tomato toast"],
+         "total_eur": 4.0, "allergen_checked": False},
+        {"table": 4, "items": ["latte", "tomato toast"],
+         "total_eur": 4.0, "allergen_checked": False},
+    ),
+    TICKET_BRIEFS[1]: (
+        {"table": 2, "items": ["chocolate croissant", "chocolate croissant", "orange juice"],
+         "total_eur": 4.6, "allergen_checked": False},
+        {"table": 2, "items": ["chocolate croissant", "chocolate croissant", "orange juice"],
+         "total_eur": 6.7, "allergen_checked": False},
+    ),
+    TICKET_BRIEFS[2]: (
+        {"table": 7, "items": ["cheese omelette"],
+         "total_eur": 3.2, "allergen_checked": False},
+    ),
+}
 
 # --- tool schemas (in-domain, fixed by plan 0002 §5.2) --------------------
 TOOL_SCHEMAS: list[dict] = [

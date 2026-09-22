@@ -6,20 +6,44 @@ import base64
 from importlib.util import module_from_spec, spec_from_file_location
 from inspect import signature
 from io import StringIO
+import os
 from pathlib import Path
 import re
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 import marimo as mo
 
-from cafe import domain, judge
+from cafe import domain, judge, schema
+from cafe.model import get_client
 from notebook_support import notebook_function
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class NotebookRenderingTests(unittest.TestCase):
+    @patch.dict(os.environ, {"COURSE_MODE": "stub"})
+    def test_s04_renders_replies_and_errors_from_the_actual_offline_runs(self):
+        path = ROOT / "sessions/s04-structured-generation/toy.py"
+        display, console = StringIO(), StringIO()
+        view = SimpleNamespace(capture_stdout=mo.capture_stdout, plain_text=display.write)
+        create_client = notebook_function(path, "s04_demo_client", {"get_client": get_client})
+        run_tickets = notebook_function(path, "s04_demo_live", {
+            "domain": domain, "ask_ticket_run": schema.ask_ticket_run})
+        with redirect_stdout(console):
+            (client,) = create_client(view)
+            (runs,) = run_tickets(client, view)
+        self.assertEqual(console.getvalue(), "")
+        self.assertEqual([r["ticket"] is not None for r in runs], [True, True, False])
+        for brief in domain.TICKET_BRIEFS:
+            self.assertIn(brief, display.getvalue())
+        for run in runs:
+            for outcome in run["outcomes"]:
+                self.assertIn(outcome["reply"], display.getvalue())
+                for error in outcome["errors"]:
+                    self.assertIn(error, display.getvalue())
+
     def test_every_notebook_figure_embeds_the_committed_svg_without_a_request(self):
         figures = 0
         for path in sorted((ROOT / "sessions").glob("*/toy.py")):

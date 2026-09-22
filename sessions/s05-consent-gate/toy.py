@@ -363,8 +363,10 @@ def s05_md_checkpoint(mo):
     mo.md(r"""
     ## Checkpoint — the number you bank
 
-    Rejected three times, live: how many runs fired **nothing**? The claim
-    "reject means nothing happens" is only worth what you have tested it against.
+    Across three runs, how many **actually reached a rejection**, and how many of
+    those fired nothing? A run with no proposal leaves this check **unexercised**;
+    an empty fire log alone is not evidence that the reject path worked.
+    Record the mode and the exercised denominator with the result.
 
     ## What this unlocks
 
@@ -381,16 +383,23 @@ def s05_md_checkpoint(mo):
 @app.cell
 def s05_demo_checkpoint(client, mo):
     with mo.capture_stdout() as _output:
-        kept = 0
+        rejection_checkpoint = {"observed_rejections": 0, "zero_fires": 0, "unexercised": 0}
         for _ in range(3):
             run = run_shift(
                 client, ["Get me an espresso."], make_responder([("reject", None)])
             )
-            refused_everything = all(
-                record["action"] == "refused" for record in run["fires"]
-            )
-            kept += int(refused_everything and run["state"].fired == [])
-        print(f"S05 checkpoint: {kept}/3 live runs fired nothing after a rejection")
+            _rejected = any(g["decision"] == "reject" for g in run["gate_log"])
+            if not _rejected:
+                rejection_checkpoint["unexercised"] += 1
+                continue
+            rejection_checkpoint["observed_rejections"] += 1
+            rejection_checkpoint["zero_fires"] += int(run["state"].fired == [])
+        print("mode:", client.mode)
+        print("S05 checkpoint:", rejection_checkpoint["zero_fires"], "/",
+              rejection_checkpoint["observed_rejections"], "observed rejections fired nothing")
+        print("unexercised:", rejection_checkpoint["unexercised"], "of 3 runs")
+        if not rejection_checkpoint["observed_rejections"]:
+            print("No rejection evidence in this batch; use the scripted rejection control above.")
     mo.plain_text(_output.getvalue())
     return
 

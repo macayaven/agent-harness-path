@@ -4,7 +4,7 @@
 ticket before it reaches the pass.
 **Today you ship:** `cafe/repair.py` — bounded regeneration when the model gets the ticket wrong.
 **What this teaches:** why a same-context retry is a resample and not a repair, why the failure view
-is an interface you design, why the cap is what turns a contradiction into an honest stop, and why
+is an interface you design, why the cap turns repeated defects into an honest stop, and why
 every run must end on a named `stop_reason`.
 **Time:** 20–40 min active reading, 30–60 min notebook work, 5–10 min self-check.
 These are planning estimates, not measured learner timings. **Prerequisites:** S01 (the loop),
@@ -25,7 +25,8 @@ keeps retrying a request no draft can ever satisfy — and it looks like work be
 
 By the end of this session your agent re-asks with a **curated view of what failed**, stops at a cap
 you chose, and never ends in a state you cannot name. You will watch a scripted generator burn all
-three attempts on a spec it cannot satisfy, and end honestly with no ticket.
+three attempts alternating between a missing field and an unavailable item, and end
+honestly with no ticket. A known unsafe request instead stops before generation.
 
 ---
 
@@ -123,10 +124,10 @@ request — it would only grow the approved scope to make a check pass.
 Open [`toy.py`](toy.py). Same endpoint
 configuration as S06 (`CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL`, then `cafe.doctor`).
 
-1. **The contradiction, scripted.** The first run uses `make_scripted_generator` — no model — whose
-   three candidates all fail the ticket contract (each is missing `total_eur` and
-   `allergen_checked`). Before running, predict the `stop_reason`, how many attempts appear in the
-   log, and whether a ticket survives.
+1. **Repeated defects, scripted.** The first run uses `make_scripted_generator` — no model.
+   Its candidates alternate a missing `table` with a complete ticket for the 86'd
+   `cheese omelette`. Predict which check catches each candidate, the `stop_reason`,
+   how many attempts appear in the log, and whether a ticket survives.
 2. **Every run ends with a name.** A test cell asserts the reason is in `STOP_REASONS`, that
    `ticket is None` exactly when the reason is not `passed`, and that the attempt count never
    exceeds `CAP_DEFAULT`. Read those three assertions before you read the implementation.
@@ -134,7 +135,9 @@ configuration as S06 (`CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL`, then `cafe.
    specific line per failure. The compare cell checks that every failure is named. The reference is
    behind a reveal switch — flip it *after* you attempt.
 4. **Against your model.** `make_model_generator(client)` turns your endpoint into the generator and
-   `repair_ticket` runs the real loop. Predict whether your model fails the contract on attempt 1 and
+   `repair_ticket` runs the real loop. Its prompt supplies all four inherited ticket
+   fields and the trusted menu; the default stub is still an authored control.
+   Predict whether your model fails the contract on attempt 1 and
    recovers on attempt 2, or exhausts the cap entirely.
 5. **The distribution.** The checkpoint cell runs three specs and bins the results.
 

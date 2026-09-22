@@ -147,14 +147,15 @@ with your endpoint already exported.
 
 ## Checkpoint — the number you bank
 
-Rejected three times, live: **how many runs fired nothing**. The claim "reject means
-nothing happens" is only worth what you have tested it against, and this page will
-not predict your count.
+Try three runs with a rejecting customer. Count **observed rejections that fired
+nothing / observed rejections**, and separately count runs that never reached a
+customer rejection. An empty `gate_log` is unexercised, not a successful rejection;
+0 observed rejections supplies no evidence for this checkpoint.
 
-Bank it as a rate with the model name, then state what it does and does not cover:
-it exercises the reject path on this endpoint, with this script, and it says nothing
-yet about a model that proposes something nobody approved. That is the loop-level
-case the drift assertion covers.
+Bank the counts with the client mode and model name. Use the scripted rejection
+control to inspect the invariant even when the model never proposes. A live run
+only tests the path it actually took; the separate drift assertion covers a model
+asking to fire something nobody approved.
 
 ---
 

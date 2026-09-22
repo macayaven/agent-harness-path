@@ -152,13 +152,16 @@ from S02 is the second gate — it catches an 86'd item by name and a total that
 not match the menu sum. A ticket can clear the first gate and fail the second on
 every field the schema allowed. This is the session's central fact: <strong>the schema
 constrains what you thought to describe; it cannot constrain what you forgot.</strong></p>
-<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S04-structured-generation.svg" alt="A structured-generation loop parses model output, validates parsed JSON, and returns specific errors for another bounded attempt; validated output exits, while exhausted attempts escalate the schema." style="--diagram-width: 1484px" /></div>
-<h3 id="replies-arrive-broken-in-two-ways">Replies arrive broken in two ways</h3>
+<div class="static-diagram-scroll" tabindex="0"><img class="static-diagram" src="public/diagrams/S04-structured-generation.svg" alt="The ticket loop requests JSON text without tools, denies unexpected tool calls, then checks parsing, schema shape and menu meaning. Errors feed a bounded retry; success returns a proposal without sending an order, and exhausted attempts return no ticket." style="--diagram-width: 1192px" /></div>
+<h3 id="read-the-reply-before-choosing-feedback">Read the reply before choosing feedback</h3>
 <p>Before validation there is parsing. <code>parse_json</code> recovers an object from a real
 reply: it strips code fences, tries the whole string, then falls back to the first
-<code>{</code> through the last <code>}</code>. Two distinct failures reach the retry loop, and they need
+<code>{</code> through the last <code>}</code>. Distinct failures reach the retry loop, and they need
 different feedback:</p>
 <ul>
+<li><code>CHANNEL ERROR</code> — a tool call arrived even though none were offered. Deny the
+  call without executing it, then request JSON text. Empty text in a tool-call
+  response is a channel mismatch, not a failed attempt to write JSON.</li>
 <li><code>PARSE ERROR</code> — there was no object to validate. The fix is to ask for the raw
   JSON only, no prose, no fences.</li>
 <li><code>VALIDATION ERRORS</code> — there was an object; the schema rejected it. The fix is the
@@ -171,23 +174,43 @@ on "<code>$.table</code>: expected integer, got <code>\"four\"</code>".</p>
 <h3 id="the-loop-is-capped-and-the-transcript-stays-legal">The loop is capped, and the transcript stays legal</h3>
 <p><code>ask_ticket</code> gives the model at most three attempts. An uncapped retry loop is a
 non-terminating agent holding your budget. Each attempt appends the assistant turn
-<strong>verbatim</strong> before the feedback — the S01 invariant, reused, so a model that
-answered with a tool call still has its message and every result paired. The
+<strong>verbatim</strong> before the feedback — the S01 invariant, reused. This experiment
+supplies trusted menu facts directly and offers <strong>no tools</strong>: ticket generation
+must not send an order. Unexpected tool calls receive paired denial results,
+never execution. The
 returned message list is the receipt: it shows exactly what the model was told
 after each failure. <code>ask_ticket</code> retains its <code>(ticket_or_None, messages, attempts)</code>
 interface. <code>ask_ticket_run</code> also returns every attempt's <code>parsed</code>, <code>shape_ok</code>,
-<code>semantic_ok</code> and error lists. Meaning is not evaluated when shape fails;
+<code>semantic_ok</code>, the reply, the failed stage and error lists. Meaning is not evaluated when shape fails;
 <code>semantic_ok=None</code> records that distinction. Final acceptance never erases an
 earlier error.</p>
+<p><code>stop_reason</code> distinguishes <code>accepted</code>, <code>attempt_cap</code>, <code>transport_error</code> and
+<code>completion_limit</code>. A failed HTTP request keeps earlier validation outcomes and
+stops the batch; it is not another schema failure. A reply marked <code>length</code> is
+withheld even if its visible text happens to parse. A client timeout does not
+prove the server stopped generating: check endpoint readiness before rerunning.
+For a slow local reasoning model, set <code>CAFE_TIMEOUT=180</code> before starting marimo;
+the default remains 120 seconds. A cold model load may need separate warmup.</p>
 <h3 id="escalation-is-a-decision">Escalation is a decision</h3>
-<p>Three failures on the same brief is data, not noise. A repeated identical error is
-the contract talking: either the model cannot produce this shape, or the schema is
-wrong for the task. S04's diagram ends on that fork on purpose — when retries are
-exhausted, the honest next move is to suspect the schema as much as the model.</p>
+<p>Three failures on the same brief do not identify the cause by themselves. Read
+the mode, reply channel and exact errors first. An authored offline reply is not
+evidence about a model. In live mode, missing facts, a channel mismatch, a
+contradictory request, the schema or the model may be responsible. Repeating the
+same request without changing any of those is not a diagnosis.</p>
+<p>The third brief requests an 86'd item and rules out substitutions. The loop may
+end without a ticket: it has no clarification branch. The prompt requests
+<code>allergen_checked=false</code>, but the schema only checks that it is a boolean. Passing
+shape and menu checks does not establish
+allergy safety, agreement with the customer's intent or consent to send an order.</p>
 <hr />
 <h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
-<p>Open <code>toy.py</code>
-with your endpoint already exported.</p>
+<p>Open <code>toy.py</code>. By default, <code>get_client(stub_scenario="tickets")</code> selects
+<strong>authored offline fixtures</strong> for the three supplied briefs. These are separate
+from the optional lab's recorded cassettes. They demonstrate the gates and repeat
+when you rerun the cell; their success rate says nothing about a live model.
+With <code>COURSE_MODE=live</code> and your endpoint configured in the notebook environment,
+the same seam uses your model and ignores the fixture selection. Use live mode
+for edited briefs; the offline fixture set covers only the supplied cases.</p>
 <ol>
 <li><strong>Predict the validator.</strong> Before running: which of a ticket missing <code>total_eur</code>
    with <code>"table": "four"</code>, and a correct two-item ticket, does <code>validate</code> accept —
@@ -196,10 +219,11 @@ with your endpoint already exported.</p>
    many semantic violations it should earn and name them. Then implement
    <code>attempt_semantic</code>, which must check the shift data rather than the schema. The
    reference is <code>checkers.ticket_matches_menu</code> behind a switch.</li>
-<li><strong>Predict the live run.</strong> For each of the three briefs, write down parse error,
-   schema invalid, semantically wrong, or accepted — and on which attempt. Then run
-   <code>ask_ticket_run</code> against your endpoint. Briefs that fail all three attempts
-   are data; your model's results may vary.</li>
+<li><strong>Predict the retry run.</strong> Offline, classify the supplied first replies before
+   running the loop; live, predict from the briefs before seeing the replies.
+   Write down parse error, schema invalid, semantically wrong, or accepted, and
+   whether retries can help. Run <code>ask_ticket_run</code>, then compare the actual reply
+   and error at every attempt. Live results may differ from the offline fixtures.</li>
 <li><strong>Read the assertions.</strong> They do not claim your model produces valid tickets.
    They claim the machinery: the validator accepts a hand-built reference and
    rejects an off-menu item on the enum; a valid-but-wrong ticket passes the schema
@@ -212,7 +236,8 @@ with your endpoint already exported.</p>
 also matched the menu? Separately count final accepted tickets after retries.
 Every accepted ticket already passed both gates; comparing only final tickets
 hides the errors the loop repaired. A zero first-attempt gap is a valid result.</p>
-<p>Bank both numbers with the model name. When you report them, keep the distinction
+<p>Bank both numbers with the mode and, for a live run, the model name. An offline
+result demonstrates a fixture invariant, not model quality. Keep the distinction
 intact: "valid" is a claim about shape, "correct" is a claim about agreement with
 tonight's data.</p>
 <hr />
@@ -273,11 +298,11 @@ tonight's data.</p>
   with tonight's menu, prices and 86 list. Two gates.</li>
 <li><em>"Give the model the errors and it will fix them."</em> Sometimes. That is why the
   loop is capped, the attempt count is returned, and three identical failures are
-  treated as information about the contract.</li>
+  a reason to inspect the receipt, not proof of a particular root cause.</li>
 <li><em>"The schema is model-independent."</em> Any schema that enumerates the menu encodes
   tonight's policy. When the menu changes, the enum changes with it.</li>
-<li><em>"Retries are free."</em> Every attempt is a paid call. A cap is a budget decision
-  (S11), not a politeness.</li>
+<li><em>"Retries are free."</em> Every live attempt spends time and compute, and may cost
+  money. A cap is a budget decision (S11), not a politeness.</li>
 <li><em>"Parse errors mean the model is broken."</em> They mean the reply contained no
   object. Ask for raw JSON and no fences, then look at the receipt before blaming
   the model.</li>
@@ -304,9 +329,10 @@ outcome, which is what makes it reportable.</details>
 
 <details><summary>The model fails all three attempts with the same validation error. What does that tell you?</summary>
 
-That the feedback is not moving the model — either it cannot produce this shape or
-the schema is wrong for the task. Repeating the same request a fourth time is not a
-fix; suspect the contract and read the receipt.</details>
+That the feedback did not produce an accepted ticket within the cap. Check whether
+the run used authored fixtures or a live model, then inspect the reply channel,
+available facts, brief and exact errors. Those failures alone cannot identify which
+part is wrong; a fourth identical attempt is not a fix.</details>
 
 <hr />
 <h2 id="what-this-unlocks">What this unlocks</h2>

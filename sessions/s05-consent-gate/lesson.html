@@ -217,13 +217,14 @@ with your endpoint already exported.</p>
 </ol>
 <hr />
 <h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
-<p>Rejected three times, live: <strong>how many runs fired nothing</strong>. The claim "reject means
-nothing happens" is only worth what you have tested it against, and this page will
-not predict your count.</p>
-<p>Bank it as a rate with the model name, then state what it does and does not cover:
-it exercises the reject path on this endpoint, with this script, and it says nothing
-yet about a model that proposes something nobody approved. That is the loop-level
-case the drift assertion covers.</p>
+<p>Try three runs with a rejecting customer. Count <strong>observed rejections that fired
+nothing / observed rejections</strong>, and separately count runs that never reached a
+customer rejection. An empty <code>gate_log</code> is unexercised, not a successful rejection;
+0 observed rejections supplies no evidence for this checkpoint.</p>
+<p>Bank the counts with the client mode and model name. Use the scripted rejection
+control to inspect the invariant even when the model never proposes. A live run
+only tests the path it actually took; the separate drift assertion covers a model
+asking to fire something nobody approved.</p>
 <hr />
 <h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
 <div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>

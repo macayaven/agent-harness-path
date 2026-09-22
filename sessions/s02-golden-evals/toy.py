@@ -208,7 +208,7 @@ def s02_demo_compare(mo):
         scenario = GOLDEN[2]
         dirty = {
             "messages": [
-                {"role": "user", "content": scenario.turns[-1]},
+                {"role": "user", "content": scenario.turns[1]},
                 {
                     "role": "assistant",
                     "content": None,
