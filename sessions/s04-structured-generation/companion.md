@@ -18,6 +18,11 @@ The core requests JSON text with trusted menu facts and offers no tools. Offline
 mode uses authored teaching fixtures, not the lab's live-model cassettes; edited
 briefs require live mode. A passed ticket means shape and menu agreement only,
 not allergy clearance, customer agreement or permission to send an order.
+Transport failures retain earlier outcomes and stop the remaining brief batch.
+The protocol assertion inspects those saved runs; it does not launch another request.
+An optional [recorded comparison](recordings/model.jsonl) preserves a genuine
+model run separately from the authored controls. See the
+[fixture review](../../docs/cassette-review-2026-09-22.md) for provenance and limits.
 In the lab, the same validation-and-error-feedback idea applies to **tool
 arguments**, with the host responsible for tool execution and state.
 The café host’s
@@ -44,6 +49,8 @@ shipped host, p01 engine already PASSes.
 ```bash
 # core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s04-structured-generation/toy.py
+# after your prediction and attempt: replay the recorded model comparison offline
+uv run python tools/record_fixtures.py --session s04
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s04 --replay   # includes p01
 ```

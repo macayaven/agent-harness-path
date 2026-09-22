@@ -9,6 +9,10 @@ citation validators). Optional café-host lab: `sessions/s09-evidence-reports/la
 
 The core keeps the S05 consent gate while collecting evidence. A scripted
 customer is an explicit fixture; a refused fire is not a served ticket.
+The omission control requires an actual safety event. When the selected run has
+none, it announces a separate authored trace instead of silently passing both
+validators. The [recorded comparison](recordings/model.jsonl) supplies a real-model
+example with a safety event; it does not replace your own shift.
 
 ## The gap
 
@@ -28,6 +32,8 @@ the raw transcript to see if the debrief lied.
 ```bash
 # core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s09-evidence-reports/toy.py
+# after your prediction and attempt: replay the recorded omission comparison
+uv run python tools/record_fixtures.py --session s09
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s09 --replay   # p06
 # real shift: --live with your local/cloud lab credentials (not Cursor's

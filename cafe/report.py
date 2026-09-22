@@ -402,9 +402,9 @@ def rounded_up_variant(report: dict, claimed: str = "answered") -> dict:
 
 
 def capped_shift_trace() -> dict:
-    """A recorded-shape trace from a shift the turn cap cut short.
+    """An authored teaching trace of a shift the turn cap cut short.
 
-    Last night's trace, kept as teaching material: the allergen check found milk
+    This is not a model recording. In the fixture, the allergen check found milk
     in the croissant, the model asked one clarifying question too many, and the
     harness stopped the shift before the ticket was fired.
     """

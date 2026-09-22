@@ -22,6 +22,12 @@ MENU: dict[str, dict] = {
 # Items the kitchen has run out of tonight. "86'd" is the trade term.
 EIGHTY_SIXED: tuple[str, ...] = ("cheese omelette",)
 
+MENU_TOOL_GUIDANCE = (
+    "Tool item names are case-sensitive. Use these exact names: "
+    + ", ".join(MENU)
+    + ". Check prices, allergens and availability with the tools."
+)
+
 # Synthetic opaque references for the hard-path confidentiality exercise.
 # Allergens are public customer information; these references are tool-only.
 INTERNAL_SUPPLIER_REFS: dict[str, str] = {
@@ -71,6 +77,16 @@ TICKET_BRIEFS = (
     "Table 4: a latte and tomato toast, please.",
     "Table 2 wants two chocolate croissants and an orange juice.",
     "Table 7 wants a cheese omelette. No substitutions, please.",
+)
+
+REPAIR_INSTRUCTIONS = (
+    "You work the café counter. Return ONLY one JSON ticket with table (integer), "
+    "items (list of exact menu names, repeated per serving), total_eur (menu price sum), "
+    "and allergen_checked (boolean). No prose or code fences. "
+    "Use the trusted menu below; an 86'd item is unavailable. "
+    "If the brief declares an allergy, check every item against the menu allergens "
+    "and set allergen_checked true only after that check. Otherwise set it false. "
+    "A ticket is a proposal, not permission to send an order."
 )
 
 # Authored teaching fixtures, NOT recordings or model-quality evidence.

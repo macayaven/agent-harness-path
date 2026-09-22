@@ -115,14 +115,17 @@ safety event exists, the rendered report says "none logged".
 Open [`toy.py`](toy.py). Same endpoint
 configuration as S06.
 
-1. **Run a real shift and read its events.** Three scripted customer lines, one live run, then
+1. **Run a shift and read its events.** Three scripted customer lines, the selected client, then
    `log_events(shift_run)` prints what the harness can actually see. Count the safety events before you
    read the report.
 2. **Predict the honest report.** Before running the next cell: will either validator report a
    violation? If the answer is obviously "no", ask what that proves — and what it does not.
 3. **The omission.** `reassuring_variant` drops the safety events and keeps everything else. Watch
    `validate_citations` wave it through — nothing on the page is false — and `validate_coverage`
-   refuse it. That asymmetry is the lesson.
+   refuse it. If the selected run logged no safety event, the cell explicitly uses
+   the separate authored capped trace for this control. Removing nothing cannot
+   demonstrate an omission. The original run and checkpoint remain unchanged.
+   That asymmetry is the lesson.
 4. **Your turn — the thirty-second test.** Write `attempt_thirty_second_test(report)`: return the
    slots that are missing or empty. It is a proxy for the reader, not a judge — and knowing the
    difference is the point. The reference is behind a reveal switch; flip it *after* you attempt.

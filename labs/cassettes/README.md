@@ -10,6 +10,13 @@ Lightning 30B A3B (NVFP4), served locally on the maintainer's NVIDIA DGX Spark:
 Core notebooks use a separate deterministic Python stub by default; these
 cassettes provide offline replay for the hard-path labs.
 
+On 22 September the 10 governed recordings (`s01-round` and `p01`–`p09-engine`)
+were re-recorded after clarifying scope and billing rules. The nine naïve
+recordings remain byte-identical to the original set. The current set contains
+**19 files and 36 responses**. Each governed run completes, including p08's
+legitimate espresso request; an exhausted turn budget no longer passes its
+checker. See the [review and recording provenance](../../docs/cassette-review-2026-09-22.md).
+
 Layout (one file per run — no combined tape, so `--session s02` cannot consume
 S01 entries):
 
@@ -48,3 +55,6 @@ op run --env-file="./.env" -- uv run python labs/run.py --all --record --impl re
 
 No preliminary `git rm` is needed: record mode clears each target before writing.
 After completion, verify all 19 files are nonempty and run `--all --replay --impl reference`.
+Inspect the assistant's explanation and actual tool effects as well as the score:
+the scope checker alone cannot distinguish a truthful refusal from an invented
+capacity limit. Deliberately failing naïve examples should remain failures.

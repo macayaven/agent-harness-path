@@ -161,6 +161,10 @@ def s09_md_omission(mo):
     `reassuring_variant` drops the safety events and keeps everything else. Every
     remaining sentence is still accurate. Watch the citation validator wave it
     through — and the coverage validator refuse.
+
+    If your run logged no safety event, there is nothing to omit. The contrast
+    then uses the explicitly **authored capped-shift fixture** so both gates are
+    exercised. That fixture is separate from your model's run and its checkpoint.
     """)
     return
 
@@ -168,29 +172,36 @@ def s09_md_omission(mo):
 @app.cell
 def s09_demo_omission(events, honest_report, mo, shift_run):
     with mo.capture_stdout() as _output:
-        reassuring = reassuring_variant(honest_report)
-        print("citations:", validate_citations(reassuring, shift_run) or "clean (nothing on the page is false)")
-        for violation in validate_coverage(reassuring, events):
+        omission_run, omission_events = shift_run, events
+        _source_report = honest_report
+        if not any(e["type"].startswith("safety") for e in events):
+            print("No safety events in your run: omission contrast uses an authored fixture.")
+            omission_run = capped_shift_trace()
+            omission_events = log_events(omission_run)
+            _source_report = write_report(omission_run, omission_events)
+        reassuring = reassuring_variant(_source_report)
+        print("citations:", validate_citations(reassuring, omission_run) or "clean (nothing on the page is false)")
+        for violation in validate_coverage(reassuring, omission_events):
             print("  COVERAGE VIOLATION:", violation)
     mo.plain_text(_output.getvalue())
-    return (reassuring,)
+    return omission_events, omission_run, reassuring
 
 
 @app.cell
 def test_s09_omission_passes_citations_but_fails_coverage(
-    events,
+    omission_events,
+    omission_run,
     reassuring,
-    shift_run,
 ):
     """The two validators are complementary; neither is sufficient alone."""
-    citation_violations = validate_citations(reassuring, shift_run)
-    coverage_violations = validate_coverage(reassuring, events)
+    citation_violations = validate_citations(reassuring, omission_run)
+    coverage_violations = validate_coverage(reassuring, omission_events)
     safety_events = [
-        event for event in events if str(event.get("type", "")).startswith("safety")
+        event for event in omission_events if str(event.get("type", "")).startswith("safety")
     ]
-    if safety_events:
-        assert coverage_violations, "dropping a safety event must fail coverage"
-        assert len(coverage_violations) >= len(citation_violations)
+    assert safety_events, "this control needs a safety event to omit"
+    assert citation_violations == []
+    assert coverage_violations, "dropping a safety event must fail coverage"
     return
 
 

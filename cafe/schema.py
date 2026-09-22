@@ -19,6 +19,7 @@ from typing import Any
 
 from cafe import domain
 from cafe.evals import checkers
+from cafe.model import ModelRequestError
 
 # The kitchen's contract. `items` enumerates the menu, but availability and
 # prices still need the semantic checker; an enum alone cannot make a ticket correct.
@@ -128,8 +129,20 @@ def ask_ticket_run(
     ]
     outcomes = []
     for attempt in range(1, max_attempts + 1):
-        body = client.chat(list(messages), temperature=0.0)
-        message = body["choices"][0]["message"]
+        try:
+            body = client.chat(list(messages), temperature=0.0)
+        except ModelRequestError as exc:
+            # A timeout may leave upstream inference running. Retain evidence
+            # and stop; do not turn transport failure into another model retry.
+            outcomes.append({
+                "attempt": attempt, "parsed": False, "shape_ok": False,
+                "semantic_ok": None, "shape_errors": [], "semantic_errors": [],
+                "stage": "transport", "errors": [str(exc)], "reply": None,
+            })
+            return {"ticket": None, "messages": messages, "attempts": attempt,
+                    "outcomes": outcomes, "stop_reason": "transport_error"}
+        choice = body["choices"][0]
+        message = choice["message"]
         messages.append(_assistant_message(message))
         tool_calls = message.get("tool_calls") or []
         for call in tool_calls:
@@ -142,6 +155,15 @@ def ask_ticket_run(
                     "content": json.dumps({"error": "tools_disabled", "executed": False}),
                 }
             )
+        if choice.get("finish_reason") == "length":
+            outcomes.append({
+                "attempt": attempt, "parsed": False, "shape_ok": False,
+                "semantic_ok": None, "shape_errors": [], "semantic_errors": [],
+                "stage": "budget", "errors": ["Completion budget exhausted; no ticket accepted."],
+                "reply": message.get("content"),
+            })
+            return {"ticket": None, "messages": messages, "attempts": attempt,
+                    "outcomes": outcomes, "stop_reason": "completion_limit"}
         ticket = None if tool_calls else parse_json(message.get("content"))
         shape_errors = validate(ticket, schema) if ticket is not None else []
         meaning_errors = checkers.ticket_matches_menu(ticket) if ticket is not None and not shape_errors else []
@@ -171,13 +193,15 @@ def ask_ticket_run(
             )
         else:
             if not shape_errors and not meaning_errors:
-                return {"ticket": ticket, "messages": messages, "attempts": attempt, "outcomes": outcomes}
+                return {"ticket": ticket, "messages": messages, "attempts": attempt,
+                        "outcomes": outcomes, "stop_reason": "accepted"}
             if shape_errors:
                 feedback = "VALIDATION ERRORS:\n" + "\n".join(f"- {e}" for e in shape_errors)
             else:
                 feedback = "SEMANTIC ERRORS:\n" + "\n".join(f"- {e}" for e in meaning_errors)
         messages.append({"role": "user", "content": feedback})
-    return {"ticket": None, "messages": messages, "attempts": len(outcomes), "outcomes": outcomes}
+    return {"ticket": None, "messages": messages, "attempts": len(outcomes),
+            "outcomes": outcomes, "stop_reason": "attempt_cap"}
 
 
 def ask_ticket(

@@ -11,8 +11,14 @@ lab: `sessions/s05-consent-gate/lab.md`, `run_engine` consent block in
 
 ## The gap
 
-The core toy is a live approve/edit/reject gate over `propose_order` before the
-irreversible `fire_ticket`. The optional café host’s
+The core toy is an approve/edit/reject gate over `propose_order` before the
+irreversible `fire_ticket`, offline by default. Its protected shift supplies exact,
+case-sensitive menu names while prices and allergens still come from tools.
+The checkpoint counts only observed rejections; a run with no proposal supplies
+no rejection evidence. The [recorded comparison](recordings/model.jsonl) explicitly
+requests an espresso proposal for table 1, then rejects it. That more specific
+request is a separate control, not a score for the checkpoint's open request.
+The optional café host’s
 `run_engine(..., auto_approve=True)` is what evals use. CLI path
 (`auto_approve=False`) uses `input_fn` or `input`:
 
@@ -33,6 +39,8 @@ is a different (weaker) story — still explain the cell.
 ```bash
 # core path: offline by default; COURSE_MODE=live opts into your configured endpoint
 uv run marimo edit sessions/s05-consent-gate/toy.py
+# after your prediction and attempt: recorded proposal/rejection comparison
+uv run python tools/record_fixtures.py --session s05
 # optional hard path: the separate café-host lab
 uv run python labs/run.py --session s05 --replay
 ```

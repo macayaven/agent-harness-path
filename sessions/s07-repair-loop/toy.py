@@ -56,7 +56,8 @@ def s07_md_hook(mo):
 
     By the end of this session your agent re-asks with a **curated view of what
     failed**, stops at a cap you chose, and never ends in a state you cannot name.
-    You will also watch a contradiction burn all three attempts and stop honestly.
+    You will also watch a scripted generator repeat defects, use all three
+    attempts, and stop honestly.
     """)
     return
 
@@ -85,19 +86,19 @@ def s07_md_theory(mo):
 
     ### What the retry is allowed to see
 
-    Three modes, and the choice matters:
+    Two implemented modes, and the choice matters:
 
     | mode | the retry sees | risk |
     |---|---|---|
     | `naive` | nothing; just ask again | burns attempts on the same mistake |
     | `curated` | only the current failures | the default: focused, cheap |
-    | `full_history` | every prior attempt and error | context grows; old errors distract |
 
-    ### The cap converts a contradiction into an honest stop
+    ### The cap converts repeated failures into an honest stop
 
-    Some specs cannot be satisfied — ask for a dish with no allergens when every
-    variant contains milk. Without a cap the loop spins. With one, the run ends
-    `retries_exhausted` and the attempt log becomes the diagnosis a human reads.
+    A generator can repeat a defect despite specific feedback. The cap ends that
+    run as `retries_exhausted`, with the attempt log kept for diagnosis. A known
+    request-level contradiction — every requested item contains the declared
+    allergen — is different: it stops as `policy_violation` before generation.
 
     Every run ends with a `stop_reason` in `STOP_REASONS`, and a draft exists if
     and only if the reason is `passed`. That biconditional is the contract.
@@ -111,8 +112,9 @@ def s07_md_theory(mo):
 def s07_predict_contradiction(mo):
     mo.md(r"""
     **Predict first.** The next cell uses a *scripted* generator (no model) that
-    keeps alternating between two mistakes: it drops a required item, then adds a
-    banned one, then drops the item again.
+    alternates between two mistakes: a missing table number, then a complete
+    ticket for an 86'd item, then the missing table again. These are authored
+    failures that isolate the contract and availability checks, not model evidence.
 
     Before running: which `stop_reason` comes back, how many attempts appear in
     the log, and is there a draft at the end? Write it down.
@@ -125,14 +127,13 @@ def s07_demo_contradiction(mo):
     with mo.capture_stdout() as _output:
         contradiction_spec = {
             "table": 4,
-            "items": ["latte", "chocolate croissant"],
-            "avoid_allergens": ["milk"],
+            "items": ["latte"],
         }
         ping_pong = make_scripted_generator(
             [
-                {"table": 4, "items": ["latte"]},
-                {"table": 4, "items": ["latte", "chocolate croissant", "iced latte"]},
-                {"table": 4, "items": ["latte"]},
+                {"items": ["latte"], "total_eur": 1.6, "allergen_checked": False},
+                {"table": 4, "items": ["cheese omelette"], "total_eur": 3.2, "allergen_checked": False},
+                {"items": ["latte"], "total_eur": 1.6, "allergen_checked": False},
             ]
         )
         contradiction_run = repair_ticket(contradiction_spec, ping_pong, cap=CAP_DEFAULT)
@@ -164,7 +165,7 @@ def s07_md_attempt(mo):
     given the failures of the last attempt, produce the short text the model sees.
 
     Keep it specific and keep it short. "Invalid ticket" teaches nothing; naming
-    the missing item and the banned allergen teaches everything.
+    the missing table and the unavailable item gives the generator something to fix.
     """)
     return
 
@@ -206,7 +207,7 @@ def s07_reveal_source_failure_view(mo, reveal_failure_view):
 @app.cell
 def s07_demo_compare(mo):
     with mo.capture_stdout() as _output:
-        sample_failures = ["missing required item: chocolate croissant", "contains banned allergen: milk"]
+        sample_failures = ["missing required field: table", "unavailable item: cheese omelette"]
         mine = attempt_failure_view(sample_failures, 2)
         if not mine.strip():
             print("Attempt pending: write the curated view before comparing the reference.")
@@ -222,9 +223,9 @@ def s07_predict_live(mo):
     mo.md(r"""
     ## Against your model
 
-    Now the real thing. The generator below is your endpoint. A small model often
-    fails the contract on attempt 1 and recovers on attempt 2 — which is exactly
-    the behaviour the repair loop exists to exploit.
+    The generator below uses the same client: authored stub by default, your
+    endpoint in live mode. The prompt includes all four S04 fields and trusted
+    menu facts. A live model may recover, pass immediately, or exhaust the cap.
 
     **Predict first:** how many attempts will your model need? Will it ever be
     `retries_exhausted`?
@@ -235,7 +236,7 @@ def s07_predict_live(mo):
 @app.cell
 def s07_demo_live(client, mo):
     with mo.capture_stdout() as _output:
-        live_spec = {"table": 7, "items": ["latte", "tomato toast"], "avoid_allergens": []}
+        live_spec = {"table": 7, "items": ["latte", "tomato toast"]}
         live_run = repair_ticket(live_spec, make_model_generator(client), cap=CAP_DEFAULT)
         print("brief      :", brief_for(live_spec)[:88])
         print("stop_reason:", live_run["stop_reason"])
@@ -285,7 +286,7 @@ def s07_demo_checkpoint(client, mo):
         distribution = {"passed_on_1": 0, "passed_on_2": 0, "passed_on_3": 0, "exhausted": 0}
         for table, items in ((4, ["latte"]), (5, ["croissant"]), (6, ["orange juice"])):
             run = repair_ticket(
-                {"table": table, "items": items, "avoid_allergens": []},
+                {"table": table, "items": items},
                 make_model_generator(client),
                 cap=CAP_DEFAULT,
             )

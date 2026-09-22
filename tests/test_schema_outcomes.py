@@ -6,11 +6,36 @@ import unittest
 from unittest.mock import patch
 
 from cafe import domain, schema
-from cafe.model import ModelError, check_pairing, get_client
+from cafe.model import LiveClient, ModelError, _TransportError, check_pairing, get_client
 from course_test_support import ScriptedClient, call, reply
 
 
 class SchemaOutcomeTests(unittest.TestCase):
+    def test_timeout_retains_previous_validation_outcomes_and_stops_retrying(self):
+        client = LiveClient(base_url="https://model.invalid/v1", api_key="test", model="test", timeout=180)
+        first = reply('{"table": 7, "items": [], "total_eur": 0, "allergen_checked": false}')
+        with patch("cafe.model._post_chat_completions", side_effect=[
+            json.dumps(first).encode(), _TransportError("timeout")
+        ]):
+            run = schema.ask_ticket_run(client, domain.TICKET_BRIEFS[2])
+        self.assertIsNone(run["ticket"])
+        self.assertEqual(run["stop_reason"], "transport_error")
+        self.assertEqual(run["attempts"], 2)
+        self.assertEqual([o["stage"] for o in run["outcomes"]], ["shape", "transport"])
+        self.assertTrue(run["outcomes"][0]["shape_errors"])
+        self.assertIn("180s", run["outcomes"][1]["errors"][0])
+        check_pairing(run["messages"])
+
+    def test_length_limited_json_is_not_an_accepted_ticket(self):
+        good = {"table": 1, "items": ["latte"], "total_eur": 1.60, "allergen_checked": False}
+        truncated = reply(json.dumps(good))
+        truncated["choices"][0]["finish_reason"] = "length"
+        run = schema.ask_ticket_run(ScriptedClient([truncated]), "One latte.")
+        self.assertIsNone(run["ticket"])
+        self.assertEqual(run["stop_reason"], "completion_limit")
+        self.assertEqual(run["attempts"], 1)
+        self.assertEqual(run["outcomes"][0]["stage"], "budget")
+
     def test_ticket_request_supplies_menu_facts_without_offering_tools(self):
         good = {"table": 1, "items": ["latte"], "total_eur": 1.60, "allergen_checked": False}
         client = ScriptedClient([reply(json.dumps(good))])

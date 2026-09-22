@@ -46,8 +46,9 @@ STOP_REASONS = frozenset({"passed", "retries_exhausted", "policy_violation"})
 CAP_DEFAULT = 3
 
 TICKET_SYSTEM = (
-    "You work the counter. Return ONLY a JSON object with the keys "
-    '"items" (list of menu strings) and "table" (integer). No extra text.'
+    domain.REPAIR_INSTRUCTIONS
+    + "\n\nTrusted menu (prices in EUR):\n" + json.dumps(domain.MENU, sort_keys=True)
+    + "\n86'd tonight:\n" + json.dumps(list(domain.EIGHTY_SIXED))
 )
 
 

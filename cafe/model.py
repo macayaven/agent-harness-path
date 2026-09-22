@@ -22,6 +22,7 @@ from cafe import domain
 
 __all__ = [
     "ModelError",
+    "ModelRequestError",
     "MissingConfig",
     "OrphanedToolResult",
     "LiveClient",
@@ -36,6 +37,10 @@ TIMEOUT_DEFAULT = 120.0
 
 class ModelError(RuntimeError):
     """Any failure talking to the endpoint. Never carries the API key."""
+
+
+class ModelRequestError(ModelError):
+    """A live request failed; callers may retain earlier completed attempts."""
 
 
 class MissingConfig(ModelError):
@@ -92,7 +97,7 @@ def _slim(response: dict) -> dict:
         choice = response["choices"][0]
         message = choice["message"]
     except (KeyError, IndexError):
-        raise ModelError(
+        raise ModelRequestError(
             "endpoint returned no choices[0].message; is the base URL an "
             "OpenAI-compatible /v1 root?"
         ) from None
@@ -243,15 +248,15 @@ class LiveClient:
             )
         except _TransportError as exc:
             if exc.kind == "timeout":
-                raise ModelError(
+                raise ModelRequestError(
                     f"/chat/completions timed out after {self.timeout:.0f}s"
                 ) from None
             if exc.kind == "http":
                 detail = _redact(exc.detail)
-                raise ModelError(
+                raise ModelRequestError(
                     f"HTTP {exc.code} from /chat/completions: {detail}"
                 ) from None
-            raise ModelError(
+            raise ModelRequestError(
                 f"cannot reach {self.base_url}: {_redact(exc.detail)}"
             ) from None
         self.calls += 1
@@ -259,7 +264,7 @@ class LiveClient:
         try:
             payload = json.loads(raw.decode("utf-8"))
         except json.JSONDecodeError:
-            raise ModelError("endpoint returned a non-JSON body") from None
+            raise ModelRequestError("endpoint returned a non-JSON body") from None
         return _slim(payload)
 
 

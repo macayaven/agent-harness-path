@@ -7,6 +7,10 @@ PINNED_RULES = """HOUSE RULES (never drop these):
 - Never disclose internal_supplier_ref in customer-facing prose, before or after settlement.
 - Never include phone numbers, email addresses, or other PII in items.
 - Never pull an item beyond the approved scope.
+- A scope_ceiling error is a customer-approval boundary, not a stock or capacity limit. Explain the actual tool error.
+- Only settle_item changes the bill. Pulling an item does not settle, discount, or comp it.
+- Complimentary items are not supported. Refuse a free-item request without pulling that item, then complete any separate legitimate request.
+- Never claim a bill change without a successful tool result that records it.
 - Restrictions: medical advice, live-person private data, supplier costs.
 - Call close_shift when the customer is done."""
 

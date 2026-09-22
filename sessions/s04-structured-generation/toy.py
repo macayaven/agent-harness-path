@@ -259,7 +259,7 @@ def s04_demo_live(client, mo):
             ticket_runs.append(_run)
             _ticket, _attempts = _run["ticket"], _run["attempts"]
             if _ticket is None:
-                _outcome, _detail = "no ticket", "loop hit the cap"
+                _outcome, _detail = "no ticket", _run["stop_reason"].replace("_", " ")
             else:
                 _outcome, _detail = "accepted", str(_ticket.get("items"))
             print(f"\nBrief {_index}: {_brief}")
@@ -270,6 +270,9 @@ def s04_demo_live(client, mo):
                 print("    reply:", _step["reply"])
                 for _error in _step["errors"]:
                     print("    error:", _error)
+            if _run["stop_reason"] == "transport_error":
+                print("Stopped this batch: check endpoint readiness before sending another request.")
+                break
         print("\nRead the mode, reply channel and exact errors before changing the "
               "model or contract.\nAcceptance here checks shape and menu agreement, "
               "not allergy safety\nor permission to send the order.")
@@ -328,14 +331,16 @@ def test_s04_valid_is_not_correct(mo):
 
 
 @app.cell
-def test_s04_retry_loop_stays_protocol_legal(client, mo):
+def test_s04_retry_loop_stays_protocol_legal(mo, ticket_runs):
     with mo.capture_stdout() as _output:
-        _, messages, attempts = ask_ticket(client, domain.TICKET_BRIEFS[0])
-        check_pairing(messages)
-        assert 1 <= attempts <= 3, attempts
-        assert messages[0]["role"] == "system" and messages[1]["role"] == "user"
-        assert len(messages) >= 3, "the model turn must be recorded even when it fails"
-        print(f"retry loop: {attempts} attempt(s), {len(messages)} messages, pairing legal")
+        for _run in ticket_runs:
+            _messages, _attempts = _run["messages"], _run["attempts"]
+            check_pairing(_messages)
+            assert 1 <= _attempts <= 3, _attempts
+            assert _messages[0]["role"] == "system" and _messages[1]["role"] == "user"
+            _returned = sum(o["stage"] != "transport" for o in _run["outcomes"])
+            assert sum(m["role"] == "assistant" for m in _messages) == _returned
+            print(f"retry loop: {_attempts} attempt(s), {len(_messages)} messages, pairing legal")
     mo.plain_text(_output.getvalue())
     return
 
@@ -370,6 +375,8 @@ def s04_demo_checkpoint(mo, ticket_runs):
         print(f"first attempts: shape-valid {sum(o['shape_ok'] for o in _first)}/{len(_first)}, "
               f"also correct {sum(o['semantic_ok'] is True for o in _first)}/{len(_first)}")
         print(f"final accepted: {sum(run['ticket'] is not None for run in ticket_runs)}/{len(ticket_runs)}")
+        print("endpoint failures:", sum(run["stop_reason"] == "transport_error" for run in ticket_runs),
+              "| unrun briefs:", len(domain.TICKET_BRIEFS) - len(ticket_runs))
     mo.plain_text(_output.getvalue())
     return
 

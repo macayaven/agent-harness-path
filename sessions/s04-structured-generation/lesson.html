@@ -184,6 +184,13 @@ interface. <code>ask_ticket_run</code> also returns every attempt's <code>parsed
 <code>semantic_ok</code>, the reply, the failed stage and error lists. Meaning is not evaluated when shape fails;
 <code>semantic_ok=None</code> records that distinction. Final acceptance never erases an
 earlier error.</p>
+<p><code>stop_reason</code> distinguishes <code>accepted</code>, <code>attempt_cap</code>, <code>transport_error</code> and
+<code>completion_limit</code>. A failed HTTP request keeps earlier validation outcomes and
+stops the batch; it is not another schema failure. A reply marked <code>length</code> is
+withheld even if its visible text happens to parse. A client timeout does not
+prove the server stopped generating: check endpoint readiness before rerunning.
+For a slow local reasoning model, set <code>CAFE_TIMEOUT=180</code> before starting marimo;
+the default remains 120 seconds. A cold model load may need separate warmup.</p>
 <h3 id="escalation-is-a-decision">Escalation is a decision</h3>
 <p>Three failures on the same brief do not identify the cause by themselves. Read
 the mode, reply channel and exact errors first. An authored offline reply is not
