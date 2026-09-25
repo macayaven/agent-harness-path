@@ -31,3 +31,6 @@ diagrams = [
 autosave = "after_delay"
 autosave_delay = 1000
 format_on_save = false
+
+[tool.marimo.display]
+custom_css = ["sessions/theme.css"]

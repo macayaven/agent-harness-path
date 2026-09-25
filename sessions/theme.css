@@ -1,0 +1,39 @@
+/* The Agent Harness Path — shared theme for marimo toys and labs/app.py.
+   Same tokens as tools/template.html. Loaded once via marimo's project
+   display config (pyproject.toml), so no toy.py changes.
+   Checked against marimo 0.24.2: markdown renders in
+   span.markdown.prose with display: contents, so it takes inherited type
+   but no box; the measure sits on its text children (paragraphs are
+   span.paragraph). Dark mode is
+   body.dark. Adjust only selectors, never token values, on an upgrade. */
+:root {
+  --ahp-bg: #faf8f4; --ahp-surface: #ffffff; --ahp-surface-2: #f2eee7;
+  --ahp-text: #1f1b16; --ahp-muted: #5f574d; --ahp-line: #e2dcd2;
+  --ahp-accent: #9a4a1c; --ahp-accent-soft: #f6e7dc;
+  --ahp-predict: #1f5f8b; --ahp-predict-soft: #e5eef5;
+  --ahp-plate: #1f2020; --ahp-plate-line: #3a3b3b;
+  --ahp-serif: "Iowan Old Style", Charter, "Bitstream Charter", Georgia, serif;
+  --ahp-sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ahp-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+.dark, [data-theme="dark"] {
+  --ahp-bg: #161411; --ahp-surface: #1f1c18; --ahp-surface-2: #2a2621;
+  --ahp-text: #ece6dc; --ahp-muted: #b0a697; --ahp-line: #3a342d;
+  --ahp-accent: #f0a36b; --ahp-accent-soft: #33251b;
+  --ahp-predict: #8cc4ec; --ahp-predict-soft: #1b2630;
+}
+body { font-family: var(--ahp-sans); }
+.markdown, .prose { font-family: var(--ahp-sans); font-size: 1.0625rem; line-height: 1.65; color: var(--ahp-text); }
+.markdown > :is(p, .paragraph, ul, ol, dl, blockquote, h1, h2, h3, h4), .prose > :is(p, .paragraph, ul, ol, dl, blockquote, h1, h2, h3, h4) { max-width: 44rem; }
+.markdown h1, .prose h1, .markdown h2, .prose h2 { font-family: var(--ahp-serif); letter-spacing: -.01em; }
+.markdown h1, .prose h1 { font-size: 2rem; line-height: 1.15; }
+.markdown h2, .prose h2 { font-size: 1.5rem; line-height: 1.25; }
+.markdown a, .prose a { color: var(--ahp-accent); text-underline-offset: .18em; }
+.markdown code, .prose code { font-family: var(--ahp-mono); font-size: .88em; background: var(--ahp-surface-2); padding: .08em .35em; border-radius: 4px; overflow-wrap: anywhere; }
+.markdown pre code, .prose pre code { background: none; padding: 0; overflow-wrap: normal; }
+.markdown blockquote, .prose blockquote { border: 1px solid var(--ahp-line); border-left-width: 1px; border-radius: 10px; background: var(--ahp-predict-soft); padding: .9rem 1.1rem; font-style: normal; color: var(--ahp-text); }
+.markdown table, .prose table { font-size: .9375rem; }
+.markdown th, .prose th { text-transform: uppercase; letter-spacing: .04em; font-size: .8125rem; color: var(--ahp-muted); background: var(--ahp-surface-2); }
+/* Committed diagrams are dark-theme SVGs: always show them on the dark plate. */
+.markdown img[src^="data:image/svg+xml"], .prose img[src^="data:image/svg+xml"] { background: var(--ahp-plate); border: 1px solid var(--ahp-plate-line); border-radius: 10px; padding: 1rem; }
+:focus-visible { outline: 2px solid var(--ahp-accent); outline-offset: 3px; }
