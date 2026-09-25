@@ -190,7 +190,7 @@
 <div class="page page-lesson">
 <main id="lesson">
 <nav class="lesson-nav"><span class="nav-prev"></span><span class="nav-index"></span><span class="nav-next"><a href="s01-agent-loop/lesson.html">Next: S01-agent-loop — The order-taking loop &rarr;</a></span></nav>
-<h1 id="the-agent-harness-path">The Agent Harness Path</h1><details class="outline-inline"><summary>On this page</summary><ol><li><a href="#core-route-and-post-core-overlay">Core route and post-core overlay</a></li><li><a href="#how-to-work-a-session">How to work a session</a></li><li><a href="#the-sessions">The sessions</a></li><li><a href="#the-pedagogical-commitments">The pedagogical commitments</a></li><li><a href="#license">License</a></li></ol></details>
+<h1 id="the-agent-harness-path">The Agent Harness Path</h1><details class="outline-inline"><summary>On this page</summary><ol><li><a href="#how-to-work-a-session">How to work a session</a></li><li><a href="#run-against-your-own-model">Run against your own model</a></li><li><a href="#the-sessions">The sessions</a></li><li><a href="#core-route-and-post-core-overlay">Core route and post-core overlay</a></li><li><a href="#your-work-and-your-feedback">Your work and your feedback</a></li><li><a href="#the-pedagogical-commitments">The pedagogical commitments</a></li><li><a href="#license">License</a></li></ol></details>
 <p>A self-contained course on building, evaluating, and governing LLM agents — twelve
 notebook sessions plus two optional protocol sessions (S13 rebuild audit, S14 ship
 &amp; pilot). The <strong>default core notebook route</strong> is zero network, zero API keys, zero
@@ -204,48 +204,66 @@ observability → production — then <a href="s01-agent-loop/lesson.html">start
 Notebook overview (formerly NotebookLM; generated 14 Aug 2026) and may lag the
 lesson text; the lesson and notebook are canonical. Google branding in the
 file is Google's. Clone the repo to run the notebooks.</p>
-<p>S01–S12 are the self-contained path. S13 and S14 are optional labs you run against
+<p>This page is the course home: how to work a session, how to run the notebooks
+against your own model, and every session in order. Each lesson links to the one
+before and after it, so from S01 you can follow the chain.</p>
+<p>S01–S12 are the self-contained path, and they accumulate: the capstone is the
+<code>cafe/</code> package you finish with. S13 and S14 are optional protocols you run against
 your core <code>cafe/</code> artifact, your optional <code>labs/cafe_host/</code> artifact, or another
-system you own. Use the chosen artifact's own suite and banked baseline.</p>
-<section class="arc" data-arc="extra" aria-labelledby="core-route-and-post-core-overlay"><h2 id="core-route-and-post-core-overlay">Core route and post-core overlay</h2>
-<ul>
-<li><strong>Core harness route (start here):</strong> work through S01–S12, then optionally use
-  S13/S14 and <code>labs/</code>. If you are new to harnesses, complete S01–S12 before using
-  the overlay.</li>
-<li><strong>Calibrated six-week post-core overlay:</strong> use the
-  <a href="study-plan.html">study-plan overlay</a> to schedule authoritative external work
-  from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional Anthropic
-  API course, with explicit evidence to bank. The overlay is not part of the
-  14-session core and contains no copied external-course materials. It requires
-  either completed core/hard-path work or equivalent harness experience, plus an
-  inspectable agent/eval artifact with a green, banked baseline.</li>
-</ul>
-<p>The model call is the easy part; the harness is the product. The overlay supports
-two complementary learning emphases: harness/evals/inference-systems depth and
-model-layer fundamentals depth.</p>
-</section><section class="arc" data-arc="extra" aria-labelledby="how-to-work-a-session"><h2 id="how-to-work-a-session">How to work a session</h2>
+system you own. Use the chosen artifact's own suite and banked baseline, and never
+mix baselines between them.</p>
+<section class="arc" data-arc="extra" aria-labelledby="how-to-work-a-session"><h2 id="how-to-work-a-session">How to work a session</h2>
 <ol>
 <li><strong>Read the lesson</strong> (20–40 min). The theory-in-depth section is the core; the
    state-of-the-art table tells you what the industry currently does about it.</li>
-<li><strong>Run the notebook</strong> (30–60 min). Every experiment has a <strong>Predict first</strong> prompt —
-   write the prediction down <em>before</em> running the cell. Prediction misses are where
-   the learning is; a prediction you didn't write down is one you'll retroactively fix.</li>
+<li><strong>Run the notebook</strong> (30–60 min): <code>uv run marimo edit sessions/sNN-slug/toy.py</code>.
+   Every experiment has a <strong>Predict first</strong> prompt —
+   write the prediction down <em>before</em> running the cell, then compare what you
+   observed with what you wrote. Prediction misses are where the learning is; a
+   prediction you didn't write down is one you'll retroactively fix.</li>
 <li><strong>Do the exercises.</strong> Attempt cells come before solution cells. The attempt is the
-   rep; the solution is the spotter, not the lift.</li>
-<li><strong>Self-check.</strong> Foldable questions at the end of the lesson. Nobody is grading
-   you.</li>
+   rep; the solution is the spotter, not the lift. Running every cell demonstrates
+   execution; an empty attempt skeleton or a score against reference labels is not
+   your independent work.</li>
+<li><strong>Self-check</strong> (5–10 min). Foldable questions at the end of the lesson. Attempt
+   each one before revealing it, then record the correction in your own words; a
+   correct selection does not certify mastery. Nobody is grading you.</li>
 <li><strong>(Optional) hard path.</strong> After the notebook: <code>labs/README.md</code>.
-   Replay committed cassettes (<code>uv run python labs/run.py --session sNN --replay</code>)
-   or call any OpenAI-compatible endpoint (<code>--live</code>). S13 is an optional
-   closed-book audit of one chosen artifact against its own banked suite.
-   Core <code>cafe/</code>, optional <code>labs/cafe_host/</code> and bring-your-own results stay separate.</li>
+   Before a lab, read the session's <code>companion.md</code>: it maps the notebook's <code>cafe/</code>
+   module to the café host's code, which helps when the toy feels too small and the
+   lab feels too sudden. Replay committed cassettes
+   (<code>uv run python labs/run.py --session sNN --replay</code>) or call any
+   OpenAI-compatible endpoint (<code>--live</code>).</li>
 </ol>
-<p>Setup: <code>uv sync --frozen</code> once, then <code>uv run python -m cafe.doctor</code> checks the
-offline stub without keys. For live work, explicitly set <code>COURSE_MODE=live</code> plus
-<code>CAFE_BASE_URL</code> / <code>CAFE_API_KEY</code> / <code>CAFE_MODEL</code> for your own endpoint and rerun
-doctor. Open a session with
-<code>uv run marimo edit sessions/s01-agent-loop/toy.py</code>. Course logic is Python
-standard library only; <code>marimo</code> is the runtime.</p>
+<p>That is three required activities per session (read, notebook, self-check): 36
+across S01–S12, not twelve automatic completions. The authored hints and
+self-checks live in the lesson and work without any model or tutor. If you study
+with an AI tutor in VS Code or Cursor, set it up with
+<code>docs/COMPANION.md</code>: it explains and reviews, and your
+predictions and attempts stay yours.</p>
+<p>Setup is <code>uv sync --frozen</code> once (the repository README), then
+<code>uv run python -m cafe.doctor</code> checks the offline stub without keys. Course logic
+is Python standard library only; <code>marimo</code> is the runtime.</p>
+</section><section class="arc" data-arc="extra" aria-labelledby="run-against-your-own-model"><h2 id="run-against-your-own-model">Run against your own model</h2>
+<p>Notebooks run on the deterministic offline stub by default: no network, no key, no
+environment file. To run them against your own OpenAI-compatible endpoint, use a
+dedicated shell and set all three course variables explicitly:</p>
+<pre><code class="language-bash">export COURSE_MODE=live
+export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
+export CAFE_API_KEY=ollama                       # any non-empty string for a local server
+export CAFE_MODEL=qwen2.5:14b-instruct
+uv run python -m cafe.doctor                     # one live call; proves your endpoint
+</code></pre>
+<p><code>CAFE_*</code> takes precedence over <code>OPENAI_*</code>, with a fallback for each variable;
+setting all three means a missing course variable cannot select an unrelated
+credential or endpoint. No key is ever committed, printed, or logged. CI sets stub
+mode and blocks sockets. These variables configure only the notebooks: an editor
+tutor's model is set in the editor, and the hard path's <code>--live</code> reads its own
+<code>OPENAI_*</code> variables (<code>labs/README.md</code>).</p>
+<p><strong>Model size matters.</strong> Most sessions are <em>better</em> with a mediocre model: bad
+output is exactly what S02, S07 and S10 measure and repair. S04 (structured
+generation) and S12 (judge calibration) need a mid-size instruct model with real
+tool-calling support.</p>
 </section><section class="arc" data-arc="extra" aria-labelledby="the-sessions"><h2 id="the-sessions">The sessions</h2>
 <div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
@@ -358,12 +376,42 @@ standard library only; <code>marimo</code> is the runtime.</p>
 </tr>
 </tbody>
 </table></div>
-<p>S13 and S14 have no notebook by design. Choose core <code>cafe/</code>, optional
-<code>labs/cafe_host/</code>, or a system you own, and retain that artifact's baseline. Completing S01–S12 does not require them, and does not require <code>labs/</code>.</p>
+<p>S13 and S14 invert the pattern: no notebook by design, and an unaided protocol on
+the artifact you choose. Read each lesson's prerequisites before deciding to
+perform it. Their working cards sit beside the lessons: <code>audit-card.md</code> for S13;
+<code>cold-run-card.md</code>, <code>pilot-page-card.md</code> and <code>pilot-card.md</code> for S14. During
+unaided work, close the assistant chat and return to review only after the sitting
+ends and the evidence is saved. Deferring either protocol does not block S01–S12,
+and completing S01–S12 requires neither them nor <code>labs/</code>. Record planned and
+performed activities separately; no software test manufactures a rebuild, an
+elapsed week, a consenting person, a publication or a learning result.</p>
 <p>Per-session videos were removed in September 2026: they lagged the lessons and
 cost more to re-record than they taught. The learning happens in the notebook
 (S01–S12) or the protocol (S13/S14). The single course overview above stays as
 an optional preview of the arc.</p>
+</section><section class="arc" data-arc="extra" aria-labelledby="core-route-and-post-core-overlay"><h2 id="core-route-and-post-core-overlay">Core route and post-core overlay</h2>
+<ul>
+<li><strong>Core harness route (start here):</strong> work through S01–S12, then optionally use
+  S13/S14 and <code>labs/</code>. If you are new to harnesses, complete S01–S12 before using
+  the overlay.</li>
+<li><strong>Calibrated six-week post-core overlay:</strong> use the
+  <a href="study-plan.html">study-plan overlay</a> to schedule authoritative external work
+  from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional Anthropic
+  API course, with explicit evidence to bank. The overlay is not part of the
+  14-session core and contains no copied external-course materials. It requires
+  either completed core/hard-path work or equivalent harness experience, plus an
+  inspectable agent/eval artifact with a green, banked baseline.</li>
+</ul>
+<p>The model call is the easy part; the harness is the product. The overlay supports
+two complementary learning emphases: harness/evals/inference-systems depth and
+model-layer fundamentals depth.</p>
+</section><section class="arc" data-arc="extra" aria-labelledby="your-work-and-your-feedback"><h2 id="your-work-and-your-feedback">Your work and your feedback</h2>
+<p>Keep your edited notebooks, predictions and notes in a local, nonsynced folder
+outside this checkout: a clean clone, branch switch or version change replaces the
+course files.
+To report friction, <code>study/FEEDBACK.md</code> gives one useful
+question per session and says what to include and what to leave out. The course
+sends no telemetry.</p>
 </section><section class="arc" data-arc="extra" aria-labelledby="the-pedagogical-commitments"><h2 id="the-pedagogical-commitments">The pedagogical commitments</h2>
 <ul>
 <li><strong>One toy domain, never the artifact.</strong> Every notebook grows the same
@@ -388,7 +436,7 @@ in the repository root.</p></section>
   <code>sessions/index.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
-<aside class="outline" aria-label="On this page"><p class="label">On this page</p><ol><li><a href="#core-route-and-post-core-overlay">Core route and post-core overlay</a></li><li><a href="#how-to-work-a-session">How to work a session</a></li><li><a href="#the-sessions">The sessions</a></li><li><a href="#the-pedagogical-commitments">The pedagogical commitments</a></li><li><a href="#license">License</a></li></ol></aside>
+<aside class="outline" aria-label="On this page"><p class="label">On this page</p><ol><li><a href="#how-to-work-a-session">How to work a session</a></li><li><a href="#run-against-your-own-model">Run against your own model</a></li><li><a href="#the-sessions">The sessions</a></li><li><a href="#core-route-and-post-core-overlay">Core route and post-core overlay</a></li><li><a href="#your-work-and-your-feedback">Your work and your feedback</a></li><li><a href="#the-pedagogical-commitments">The pedagogical commitments</a></li><li><a href="#license">License</a></li></ol></aside>
 </div>
 </body>
 </html>

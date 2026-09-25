@@ -1,4 +1,6 @@
-# S05 bridge — consent gate (real host)
+# S05 companion — consent gate (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s05-consent-gate/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

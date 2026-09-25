@@ -136,7 +136,9 @@ flowchart LR
 
 ## The protocol
 
-One sitting, no interruptions, roughly 90 minutes end to end.
+One sitting, no interruptions, roughly 90 minutes end to end. The working card
+for it, `audit-card.md` in this session's folder, lists what to prepare, what to
+record and what to do afterwards. Read it before the sitting, not during it.
 
 **Core path:** you studied `cafe/`. The core is `cafe/loop.py`; the suite is the café golden
 set in `cafe/evals`, scored from [`toy.py`](../s02-golden-evals/toy.py)

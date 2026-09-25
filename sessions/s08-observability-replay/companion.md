@@ -1,4 +1,6 @@
-# S08 bridge — cassettes and traces (real host)
+# S08 companion — cassettes and traces (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s08-observability-replay/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

@@ -144,18 +144,22 @@ first" as terms of art — reuse, never paraphrase. Prefer concrete payoffs
 ## Repository layout
 
 ```
+sessions/index.md         course home (→ index.html): the one learner path
 sessions/sNN-slug/        one session: lesson.md → lesson.html (in place),
-                          toy.py, lab.md, companion.md, public/diagrams/
+                          toy.py, lab.md, companion.md, public/diagrams/;
+                          S13/S14 also hold their working cards (*-card.md)
 tools/build.py            md → html, injects prev/index/next nav
 tools/render_diagrams.py, vendor/mermaid  diagram regeneration (pinned renderer)
 labs/                     hard path: run.py + cassettes + cafe_host/ (protocols live in sessions/)
-bridges/README.md         companion wire table (rungs live in sessions/)
 tests/                    content + build contracts, fixtures
-docs/, study/   docs map, learner records
+docs/                     tutor guide (COMPANION.md), fixture reviews
+study/                    feedback guide, pilot and transfer protocols, overlay progress template
 ```
 
 Role-named files inside one session directory are **different artifacts**,
-not duplicated lesson text.
+not duplicated lesson text. Each documentation topic has one owner file, named
+in the README's *Where things live* table; other files link to the owner
+instead of copying its instructions.
 
 ## Build, test, development commands
 
@@ -213,7 +217,7 @@ vulnerabilities per `SECURITY.md`.
 
 1. State your mode (A or B). Under B, name the session(s) and the experience
    symptom you are fixing.
-2. Read the lesson source, its notebook/app, its bridge, and its lab protocol
+2. Read the lesson source, its notebook/app, its companion, and its lab protocol
    before editing; keep the concept and its evidence contract intact.
 3. Edit sources, never generated HTML; regenerate and re-verify.
 4. Preserve the arc: add the incoming recap and outgoing bridge when you touch a

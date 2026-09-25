@@ -1,6 +1,6 @@
 # S13 — unaided audit card
 
-This optional activity uses the [authored S13 protocol](../sessions/s13-rebuild-from-memory/lesson.html#the-protocol). It has no notebook. Read the protocol before the sitting, then close the browser and assistant. This card is preparation and a place to return afterward, not material to consult while rebuilding.
+This optional activity uses the [authored S13 protocol](lesson.html#the-protocol). It has no notebook. Read the protocol before the sitting, then close the browser and assistant. This card is preparation and a place to return afterward, not material to consult while rebuilding.
 
 You need a non-trivial system you own, a defended eval suite, a banked baseline and a predeclared tolerance. S01–S02 give enough vocabulary to read the protocol; carrying it out needs the S02–S12 instrument on your own project, or the café host you actually built through the optional hard path. A shipped starter or reference implementation is not evidence that you built a system. Deferring is a valid choice and does not block the twelve-session route.
 

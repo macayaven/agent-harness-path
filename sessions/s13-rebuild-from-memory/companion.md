@@ -1,4 +1,6 @@
-# S13 bridge — unaided rebuild audit
+# S13 companion — unaided rebuild audit
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s13-rebuild-from-memory/companion.md`); you do not need to read it to finish the session.
 
 **Not a lab directory session.** Protocol: `lesson.html`.
 

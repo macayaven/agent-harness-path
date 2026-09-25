@@ -1,4 +1,6 @@
-# S04 bridge — structured shift spec (real host)
+# S04 companion — structured shift spec (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s04-structured-generation/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

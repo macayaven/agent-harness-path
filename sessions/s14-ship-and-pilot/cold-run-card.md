@@ -1,6 +1,6 @@
 # S14 — cold acceptance and holdout card
 
-Follow the [authored S14 protocol](../sessions/s14-ship-and-pilot/lesson.html#the-protocol) on a non-trivial system you own, or your completed café host. This session is optional and has no notebook. Its prerequisites remain S01–S13 vocabulary and mechanisms plus the actual system and evidence instruments. Reading the card does not establish those prerequisites.
+Follow the [authored S14 protocol](lesson.html#the-protocol) on a non-trivial system you own, or your completed café host. This session is optional and has no notebook. Its prerequisites remain S01–S13 vocabulary and mechanisms plus the actual system and evidence instruments. Reading the card does not establish those prerequisites.
 
 ## Freeze before running
 

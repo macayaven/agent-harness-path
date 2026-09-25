@@ -142,9 +142,11 @@ alternatives. Generated HTML stays script-free; do not add in-browser Mermaid.
 
 ## Documentation
 
-[docs/README.md](docs/README.md) maps the public documentation and names its
-authoritative sources. Keep setup commands in this file and link to them instead
-of duplicating variants.
+The README's [Where things live](README.md#where-things-live) table names the one
+owner file for each topic: the course home (`sessions/index.md`) owns the learner
+path, `docs/COMPANION.md` the tutor, `labs/README.md` the hard path and
+`study/FEEDBACK.md` feedback. Change the owner and link to it; do not copy its
+instructions into a second file. Contributor setup commands live in this file.
 
 Documentation-only changes still require the unit suite, clean lesson rebuild,
 relative-link check and SOTA source check. Execute notebooks or replay labs when

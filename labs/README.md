@@ -15,6 +15,10 @@ Two signed routes. Completing S01–S12 **never** requires a lab.
 café host against committed traces from a real model. `--live` is how you
 feel stochasticity, latency, and schema miss on *your* endpoint.
 
+Before a lab, read the same session's `companion.md` (it is also your tutor's
+context): it maps the notebook's `cafe/` module to the host's code. Open it when
+the toy feels too small and the lab feels too sudden.
+
 ```bash
 uv sync   # already done for the notebooks
 # no key:
@@ -27,6 +31,13 @@ uv run python labs/run.py --session s02 --live
 ```
 
 Default mode is **replay**. `--live` is never the default and is never used in CI.
+Lab `--live` reads these `OPENAI_*` variables; the notebooks' `CAFE_*` variables
+and an editor tutor's model are configured separately.
+
+Each lab keeps its own scope and prerequisites. S06's hard lab is counter policy
+only; S09's real shift stays private; S12's replay does not perform critic
+calibration. Reference replay and real-provider evidence are different
+categories: keep them apart in your notes.
 
 ## What you are building
 
@@ -50,7 +61,7 @@ keeps the tool names on their own surface.
 
 Two bars, do not conflate:
 
-1. **Your session done-when** (each `sNN_*.md`): bank a number you can explain.
+1. **Your session done-when** (each session's `lab.md`): bank a number you can explain.
    Early sessions may fail later tasks. That is the point of a baseline.
 2. **CI** runs `--impl reference --all --replay` so the course stays green
    without keys. CI never grades your tree.
@@ -97,7 +108,7 @@ Copy `PROGRESS.template.md` to `labs/PROGRESS.md` (gitignored).
 ## Layout
 
 - `sessions/sNN-slug/lab.md` — protocols (Build / Verify / Record / Done-when)
-- `cafe_host/` — complete host (study with bridges; you may still rewrite it)
+- `cafe_host/` — complete host (study it with each session's `companion.md`; you may still rewrite it)
 - `client.py` — stdlib OpenAI-compatible POST + cassettes
 - `run.py` — naïve vs engine, markdown report
 - `app.py` — marimo shell over `run.py` (`uv run marimo edit labs/app.py`)

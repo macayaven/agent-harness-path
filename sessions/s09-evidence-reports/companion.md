@@ -1,4 +1,6 @@
-# S09 bridge — debrief then one real shift (real host)
+# S09 companion — debrief then one real shift (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s09-evidence-reports/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

@@ -1,4 +1,6 @@
-# S06 bridge — layered detection (real host)
+# S06 companion — layered detection (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s06-layered-detection/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

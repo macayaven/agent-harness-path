@@ -1,4 +1,6 @@
-# S14 bridge — unaided ship and pilot
+# S14 companion — unaided ship and pilot
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s14-ship-and-pilot/companion.md`); you do not need to read it to finish the session.
 
 **Not a coding lab.** Protocol: `lesson.html`.
 

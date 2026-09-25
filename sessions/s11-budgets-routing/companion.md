@@ -1,4 +1,6 @@
-# S11 bridge — budgets and route refusal (real host)
+# S11 companion — budgets and route refusal (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s11-budgets-routing/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 
