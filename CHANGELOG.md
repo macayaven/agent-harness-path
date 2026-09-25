@@ -15,6 +15,8 @@ All notable changes to The Agent Harness Path are documented here.
   rail, a "Carried in / Today you ship / Unlocks next" card with the `cafe/`
   module strip, index session cards and an outline for long pages. Lesson
   wording and section order are unchanged, and pages stay script-free.
+- Theme the marimo toys and `labs/app.py` with the same tokens through
+  `sessions/theme.css`, loaded from `pyproject.toml`; no notebook source changes.
 
 ## 0.6.0-rc.1 — 2026-09-20
 
