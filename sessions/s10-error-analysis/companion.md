@@ -1,4 +1,6 @@
-# S10 bridge — error taxonomy and grown suite (real host)
+# S10 companion — error taxonomy and grown suite (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s10-error-analysis/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

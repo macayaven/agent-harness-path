@@ -1,4 +1,6 @@
-# S03 bridge — pinned context (real host)
+# S03 companion — pinned context (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s03-context-engineering/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

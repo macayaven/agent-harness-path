@@ -1,6 +1,6 @@
 # S14 — human pilot card
 
-This optional activity is a **real consenting human** using your system, not a notebook, assistant simulation or product test fixture. Follow the [authored S14 protocol](../sessions/s14-ship-and-pilot/lesson.html#the-protocol) after cold acceptance and your own one-page pilot protocol.
+This optional activity is a **real consenting human** using your system, not a notebook, assistant simulation or product test fixture. Follow the [authored S14 protocol](lesson.html#the-protocol) after cold acceptance and your own one-page pilot protocol.
 
 ## Before the participant starts
 

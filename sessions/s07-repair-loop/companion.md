@@ -1,4 +1,6 @@
-# S07 bridge — bounded repair (real host)
+# S07 companion — bounded repair (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s07-repair-loop/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

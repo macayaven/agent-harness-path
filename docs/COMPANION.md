@@ -10,26 +10,24 @@ read-only tools constrain file operations. Inline completion is a separate featu
 
 ## 1. Open the course
 
-```bash
-GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/macayaven/agent-harness-path.git
-cd agent-harness-path
-uv sync --frozen                # notebooks + lesson build tooling
-```
-
-Open **the repository root** in VS Code or Cursor. The tutor policy lives in
+Install the course as in the [README](../README.md#start), then open **the
+repository root** in VS Code or Cursor. The tutor policy lives in
 [the Cursor rule](../.cursor/rules/ahp-companion.mdc) and its
 [Copilot mirror](../.github/instructions/ahp-companion.instructions.md).
 
-A session:
+Work each session as the course home (`sessions/index.html`) describes. With a
+tutor, add these habits:
 
-1. Open `sessions/sNN-slug/lesson.html` (preview or browser).
-2. Open `sessions/sNN-slug/toy.py` with `uv run marimo edit sessions/sNN-slug/toy.py`
-   and run it. The toy runs on the offline stub unless `COURSE_MODE=live`
-   points it at your own OpenAI-compatible endpoint (see §3).
-3. Predict-first: write your guess **before** asking the assistant to confirm.
-4. Optional hard path: open the same session's `lab.md` and attach its
+1. Predict-first: write your guess **before** asking the assistant to confirm.
+   Predict-first cells stay empty until you write them.
+2. Ground the tutor with the session's `companion.md` plus the lesson you are on,
+   and keep one learner conversation across lesson, notebook and lab. Do not paste
+   a whole notebook.
+3. Optional hard path: open the same session's `lab.md` and attach its
    `companion.md` to chat. For example, [S03 companion](../sessions/s03-context-engineering/companion.md)
    connects the context toy to the lab.
+4. Record assistance and any premature answer exposure honestly
+   ([study/FEEDBACK.md](../study/FEEDBACK.md)).
 
 ## 2. Select and verify the learner role
 
@@ -96,32 +94,15 @@ Do not mix these up.
 | **Notebooks (`cafe/`)** | shell `CAFE_BASE_URL`, `CAFE_API_KEY`, `CAFE_MODEL` | Your own endpoint the café notebooks run against |
 | **Lab `--live`** | shell `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional café-host against a real/local chat API |
 
-The notebooks read `CAFE_*` before `OPENAI_*`. Point them at your endpoint and
-smoke-test the wiring:
-
-```bash
-export COURSE_MODE=live
-export CAFE_BASE_URL=http://127.0.0.1:11434/v1
-export CAFE_API_KEY=ollama          # any non-empty string for a local server
-export CAFE_MODEL=llama3.2
-uv run python -m cafe.doctor
-```
-
 Notebooks are offline by default (deterministic stub; CI additionally sets
-`COURSE_MODE=stub` explicitly and adds the socket guard). Export
-`COURSE_MODE=live` for the live learner path. Lab hard-path default is **`--replay`**
-(no keys); `--live` is never required to finish the S01–S12 core path, and never
-runs in CI.
+`COURSE_MODE=stub` explicitly and adds the socket guard). The commands for the
+live learner path are in the course home's **Run against your own model**
+section; the notebooks read `CAFE_*` before `OPENAI_*`. Lab hard-path default is
+**`--replay`** (no keys); its `--live` commands are in
+[labs/README.md](../labs/README.md). `--live` is never required to finish the
+S01–S12 core path, and never runs in CI.
 
-```bash
-# optional lab live, local model — separate from editor chat
-export OPENAI_BASE_URL=http://127.0.0.1:11434/v1
-export OPENAI_API_KEY=ollama
-export OPENAI_MODEL=llama3.2
-uv run python labs/run.py --session s01 --live
-```
-
-Never put keys in `bridges/`, notebooks, `labs/cafe_host/`, or issues.
+Never put keys in notebooks, `labs/cafe_host/`, `companion.md` files, or issues.
 
 ## 4. What the assistant is allowed to do
 
@@ -129,7 +110,9 @@ The shared policy keeps predictions, attempt functions, lab implementations and
 labels with the learner, in files and in chat. It permits concept explanations,
 small throwaway examples and review of a learner's own work. After an attempt,
 a bounded reference discussion can explain an invariant, never replace a submission.
-S13/S14 remain process-only: no generated audit, ship report or answer scaffold.
+The assistant has no authority to complete activities or to execute commands you
+copy into chat. S13/S14 remain process-only: no generated audit, ship report or
+answer scaffold.
 
 Course maintenance starts in a separate contributor conversation/profile under
 [AGENTS.md](../AGENTS.md). Claiming to be the maintainer inside AHP Tutor does not

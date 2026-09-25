@@ -2,46 +2,78 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/macayaven/agent-harness-path)
 
-A self-contained course on **building, evaluating, and governing LLM agents** —
+A self-contained course on **building, evaluating, and governing LLM agents**:
 twelve build sessions plus two optional apply-to-your-system protocols (S13
 rebuild audit, S14 ship & pilot).
 
-**You grow one café agent, offline first or against your own model.** Across S01–S12 you grow a single
-café-counter agent in `cafe/`: loop → evals → context → schema → consent →
-detection → repair → tracing → reports → taxonomy → routing → judge. Every
-session starts from the artifact and the number the last one produced.
+**You grow one café agent, offline first or against your own model.** Across
+S01–S12 you grow a single café-counter agent in `cafe/`: loop → evals → context →
+schema → consent → detection → repair → tracing → reports → taxonomy → routing →
+judge. Every session starts from the artifact and the number the last one
+produced.
 
-Notebooks run offline on a deterministic stub unless you point them at
-**your** OpenAI-compatible endpoint — a local model costs nothing. Against a
-live model the mocks are gone: a prediction is only worth writing down when
-the thing you are predicting can surprise you.
+Notebooks run offline on a deterministic stub unless you point them at **your**
+OpenAI-compatible endpoint; a local model costs nothing. Against a live model the
+mocks are gone: a prediction is only worth writing down when the thing you are
+predicting can surprise you.
+
+Optional preview: a 9-minute
+[course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
+of the whole arc. It is a Google Gemini Notebook overview and may lag the
+lessons; the lessons and notebooks are canonical.
+
+## Who it's for
+
+Engineers who already call an LLM API and want the discipline around it: eval suites
+that produce defensible numbers, context that survives compaction, consent gates,
+safety layers, traces you can replay, judges you've calibrated, and explicit budget limits and accounting gaps.
+Not an intro to prompting. The model call is the easy part; the harness is the
+product.
+
+## Start
+
+The native route works on macOS or Linux with Git, Python 3.11+ and
+[uv](https://docs.astral.sh/uv/getting-started/installation/). It reads no API
+credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
 
 ```bash
-export COURSE_MODE=live
-export CAFE_BASE_URL=http://127.0.0.1:11434/v1   # Ollama, LM Studio, anything OpenAI-compatible
-export CAFE_API_KEY=ollama                       # any non-empty string for a local server
-export CAFE_MODEL=qwen2.5:14b-instruct
-uv run python -m cafe.doctor                     # one live call; proves your endpoint
+git clone https://github.com/macayaven/agent-harness-path.git
+cd agent-harness-path
+uv sync --frozen              # creates .venv/ (Python 3.11+, pinned by uv.lock)
+uv run python -m cafe.doctor  # offline stub; no endpoint contacted, no key needed
+```
+
+Then open **`sessions/index.html`**, the course home. From here on it is the only
+page you need: how to work a session, how to run the notebooks against your own
+model, and all fourteen sessions in order. Every lesson links to the one before
+and after it. The first notebook is:
+
+```bash
 uv run marimo edit sessions/s01-agent-loop/toy.py
 ```
 
-`CAFE_*` takes precedence over `OPENAI_*`, with a fallback for each variable.
-Use a dedicated shell and set all three explicitly before live work so a missing
-course variable cannot select an unrelated credential or endpoint. No key is ever committed, printed, or logged. Notebooks are
-[marimo](https://marimo.io) files — plain Python, reactive, diffable.
+Notebooks are [marimo](https://marimo.io) files: plain Python, reactive, diffable.
+In VS Code or Cursor (local or Codespaces), Markdown opens as preview and session
+notebooks open as marimo notebooks. `lesson.html` files have no default viewer:
+right-click → Open Preview reads them in the embedded browser, or open them in any
+browser. Diagrams work from `file://`.
 
-**Model size matters.** Most sessions are *better* with a mediocre model: bad
-output is exactly what S02, S07 and S10 measure and repair. S04
-(structured generation) and S12 (judge calibration) need a mid-size instruct
-model with real tool-calling support.
+**Keep your work outside the checkout.** Course source, blank templates and
+generated lessons belong in Git. Your edited notebooks, progress notes,
+observations and experiment output belong in a separate local, nonsynced folder, so they
+survive a clean clone, branch switch or course upgrade. A clean clone is the
+migration boundary; no release script rewrites an old workspace.
 
-**Take it in VS Code/Copilot or Cursor:** open this folder, read [docs/COMPANION.md](docs/COMPANION.md),
-then start `sessions/s01-agent-loop/lesson.html` with
-`@sessions/s01-agent-loop/companion.md` in chat.
+The clone is small: preview mp4s stream from the web when you click ▶, so you do
+not need Git LFS. Course logic is Python standard library only; the venv supplies
+just the tooling (`marimo` to run the notebooks, `markdown` to render the lessons).
 
-**Take it in GitHub Codespaces (no local install):** click the badge above.
-Setup (interpreter, pinned deps, marimo extension) runs itself; when the
-terminal returns, prove it and start:
+## Other ways to take it
+
+### In the browser, no install (GitHub Codespaces)
+
+Click the badge above. Setup (interpreter, pinned deps, marimo extension) runs
+itself; when the terminal returns, prove it and start:
 
 ```bash
 uv run python -m unittest discover -s tests   # green baseline, no keys needed
@@ -53,118 +85,51 @@ not the maintainer — see [about billing for Codespaces](https://docs.github.co
 Included allowances depend on your account and can change; check your account
 billing settings before starting. Stop the machine when you stop (`Ctrl+Shift+P` →
 "Codespaces: Stop Current Codespace") and delete it when done; an idle machine
-burns hours, a kept one burns storage. The default path runs offline on the deterministic
-stub. Codespaces support in this release is the offline path. A live endpoint
-requires a separately verified private route from the Codespace; its loopback
-address is not your laptop. Never expose a local model publicly just to connect it.
+burns hours, a kept one burns storage. Codespaces support in this release is the
+offline path. A live endpoint requires a separately verified private route from
+the Codespace; its loopback address is not your laptop. Never expose a local
+model publicly just to connect it.
 
-Editor defaults (local and Codespaces): Markdown opens as preview, session
-notebooks open as marimo notebooks. For `lesson.html` files there is no
-default to set — right-click → Open Preview reads them in the embedded
-browser.
+### Against your own model
 
-**Start here (HTML):** [`sessions/index.html`](sessions/index.html). A 9-minute
-[course overview](https://storage.googleapis.com/macayaven-agent-harness-path-videos/S00-course-overview.mp4)
-covers the arc first (it may lag the lessons; it is a Google Gemini Notebook
-overview; the lesson + notebook are canonical).
+Set `COURSE_MODE=live` and three `CAFE_*` variables, then prove the endpoint with
+`cafe.doctor`. The course home's **Run against your own model** section has the
+commands and says which sessions need a stronger model.
 
-S01–S12 are the core path and they **do** accumulate: the capstone is the `cafe/`
-package you finish with. S13 and S14 are optional unaided protocols. For the core
-path, audit `cafe/loop.py` against the café golden set. For the optional hard path,
-audit your `labs/cafe_host/` loop against its own banked lab suite. A system you
-already own uses its own component and suite; do not mix their baselines.
+### With an AI tutor in VS Code/Copilot or Cursor
 
-## Core route and post-core overlay
+[docs/COMPANION.md](docs/COMPANION.md) selects and verifies the learner role: a
+tutor that explains and reviews your own work but never completes it. Its model
+is configured in the editor, separately from the course variables.
 
-- **Core harness route (start here):** work through S01–S12, then optionally use
-  S13/S14 and `labs/`. If you are new to harnesses, complete S01–S12 before using
-  the overlay.
-- **Calibrated six-week post-core overlay:** use the
-  [study-plan overlay](sessions/study-plan.html) to schedule authoritative external
-  work from CS336, DeepLearning.AI RLHF, DeepLearning.AI vLLM, and the optional
-  Anthropic API course, with explicit evidence to bank. The overlay is not part of
-  the 14-session core and contains no copied external-course materials.
+### The hard path
 
-## Who it's for
+After a session's notebook, build a separate café host against committed
+recordings of a real model: [labs/README.md](labs/README.md). Replay needs no
+key; `--live` is never the default and never runs in CI. Completing S01–S12 never
+requires a lab.
 
-Engineers who already call an LLM API and want the discipline around it: eval suites
-that produce defensible numbers, context that survives compaction, consent gates,
-safety layers, traces you can replay, judges you've calibrated, and explicit budget limits and accounting gaps.
-Not an intro to prompting. The model call is the easy part; the harness is the
-product.
+### After the core
 
-## What a session looks like
+The [six-week post-core overlay](sessions/study-plan.html) schedules
+authoritative external work (CS336, DeepLearning.AI RLHF and vLLM, optionally the
+Anthropic API course) with explicit evidence to bank. It is not part of the
+fourteen sessions.
 
-1. **Read the lesson** (20–40 min) — theory in depth, a diagram, and a dated
-   state-of-the-art table (what the industry currently does about it, with sources).
-2. **Run the notebook** (30–60 min) — the session's slice of the café-counter
-   agent in `cafe/`, on the stub or your live endpoint, with **predict-first**
-   experiments and attempt-before-solution exercises.
-3. **Self-check** — foldable quiz questions at the end of the lesson.
-4. **(Optional) hard path** — after the notebook, `sessions/sNN-slug/lab.md`
-   against cassettes (`--replay`) or your OpenAI-compatible endpoint (`--live`).
-   `sessions/sNN-slug/companion.md` is what the Cursor companion should read first.
-5. Sessions 13–14 invert the pattern: a closed-book rebuild audit and a
-   ship/pilot protocol. Easy path: a system you own. Hard path:
-   `labs/cafe_host/`. The assistant must not do these for you.
+## Where things live
 
-The curriculum: agent loop → golden sets & baselines → context engineering →
-structured generation → consent gate → layered detection → repair loop →
-observability & replay → evidence reports → error analysis → budgets & routing →
-judge calibration → (optional) rebuild from memory → (optional) ship & pilot.
+Each topic has one owner file. The others link to it instead of repeating it.
 
-## Quickstart
-
-The native route works on macOS or Linux with Git, Python 3.11+ and
-[uv](https://docs.astral.sh/uv/getting-started/installation/). It reads no API
-credentials. Clone onto local storage, outside iCloud Drive and Google Drive:
-
-```bash
-git clone https://github.com/macayaven/agent-harness-path.git
-cd agent-harness-path
-uv sync --frozen   # creates .venv/ (Python 3.11+, pinned by uv.lock)
-# No .env file or key is needed. Select the learner role in docs/COMPANION.md.
-uv run python -m cafe.doctor  # offline stub; no endpoint contacted
-uv run marimo edit sessions/s01-agent-loop/toy.py
-```
-
-Optional hard path (complete host already in `labs/cafe_host/`):
-
-```bash
-uv run python labs/run.py --session s01 --replay
-uv run python labs/run.py --session s02 --replay
-```
-
-Copy edited notebooks, progress notes and experiment output outside the Git
-checkout so they survive a clean clone, branch switch or course upgrade.
-
-`--live` is never the default and never runs in CI. Tutor credentials belong to
-your editor; lab `--live` uses separate shell `OPENAI_*`. See
-[docs/COMPANION.md](docs/COMPANION.md) and `labs/README.md`.
-
-The clone is small: preview mp4s stream from the web when you click ▶, so you do
-not need Git LFS. Course logic is Python standard library only — the venv
-supplies just the tooling (`marimo` to run the notebooks, `markdown` to render
-the lessons). Open `sessions/index.html` locally (diagrams work from `file://`).
-
-## Repository layout
-
-There is **one** lesson book, one directory per session. `sessions/sNN-slug/`
-holds everything that session needs: `lesson.md` (authoring source) builds to
-`lesson.html` (what you read) in place (`uv run python tools/build.py`).
-See [sessions/README.md](sessions/README.md).
-
-| Path | Role |
+| You want to… | Open |
 | --- | --- |
-| `sessions/sNN-slug/` | One session: lesson, toy, lab, companion, figures |
-| `sessions/sNN-slug/lesson.md` → `lesson.html` | Authoring source → learner lesson |
-| `sessions/sNN-slug/toy.py` | Marimo toy driving `cafe/` (S01–S12) |
-| `sessions/sNN-slug/lab.md` | Optional hard-path protocol, not lesson text |
-| `sessions/sNN-slug/companion.md` | Cursor companion rung |
-| `.cursor/rules/ahp-companion.mdc` | Learner tutor rule |
-| `docs/COMPANION.md` | Select and verify the editor tutor; separate model settings |
-| `study/` | Optional study, pilot and transfer protocols |
-| `AGENTS.md` / `CONTRIBUTING.md` | Contributor map |
+| Take the course | `sessions/index.html` (built from [sessions/index.md](sessions/index.md)) |
+| Know what each file in a session folder is for | [sessions/README.md](sessions/README.md) |
+| Study with an AI tutor | [docs/COMPANION.md](docs/COMPANION.md) |
+| Take the optional hard path | [labs/README.md](labs/README.md) |
+| Give feedback, or run the pilot and transfer protocols | [study/FEEDBACK.md](study/FEEDBACK.md) |
+| Contribute | [CONTRIBUTING.md](CONTRIBUTING.md); coding agents follow [AGENTS.md](AGENTS.md) |
+| See what changed | [CHANGELOG.md](CHANGELOG.md) |
+| Report a secret or unsafe committed code | [SECURITY.md](SECURITY.md) |
 
 ## The toy-domain rule
 
@@ -189,10 +154,8 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 1. Use the one-click
    [course feedback form](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
    for setup or study friction. Submission is deliberate; the course sends no
-   telemetry or files to GitHub. Include the public
-   session/activity, what you tried, expected and observed, and any recovery.
-   Remove credentials, raw chats, participant content, private project details,
-   local paths and full notebook/work products.
+   telemetry or files to GitHub. [study/FEEDBACK.md](study/FEEDBACK.md) says what
+   to include and what to leave out.
 2. Read [CONTRIBUTING.md](CONTRIBUTING.md) before a pull request (how to edit
    sources, the verify commands, what maintainers will reject).
 3. By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -202,8 +165,7 @@ evidence over claims, no paste-ready harness, no secrets in the tree.
 Good first contributions are a dead URL, a SOTA row whose Take overstates the
 linked abstract, or a predict-first prompt that leaks the answer.
 
-The [documentation map](docs/README.md) separates learner, contributor, and pilot
-material. Tagged releases remain historical evidence about their named artifacts;
+Tagged releases remain historical evidence about their named artifacts;
 [CHANGELOG.md](CHANGELOG.md) distinguishes released versions from pending changes.
 
 ## How this course was created

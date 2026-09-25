@@ -10,7 +10,8 @@ different artifact.
 uv run python labs/run.py --session s01 --replay   # default --impl student
 ```
 
-Read with `bridges/README.md`. Protocols live in `sessions/sNN-slug/lab.md`.
+Read with each session's `companion.md`, which maps the notebook module to this
+host's code. Protocols live in `sessions/sNN-slug/lab.md`.
 
 `labs/reference/` is the same spine imported as `reference.*` for CI
 `--impl reference`. You do not need both to *take* the course.

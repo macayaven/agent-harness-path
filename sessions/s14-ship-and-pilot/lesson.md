@@ -178,7 +178,9 @@ scripted café shift.
 **Easy path:** run this against your own system, in order.
 
 Each step has an artifact and a "done when" line. Reorder them and the later
-steps inherit the earlier steps' contamination.
+steps inherit the earlier steps' contamination. Three working cards in this
+session's folder follow the same order: `cold-run-card.md` (steps 1–2),
+`pilot-page-card.md` (step 3) and `pilot-card.md` (step 4).
 
 1. **Freeze the fixtures and the criteria.** Choose end-to-end scenarios the
    system has never processed — not golden-set tasks you tuned against: one

@@ -1,4 +1,6 @@
-# S12 bridge — critic calibration (real host)
+# S12 companion — critic calibration (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s12-judge-calibration/companion.md`); you do not need to read it to finish the session.
 
 ## Files
 

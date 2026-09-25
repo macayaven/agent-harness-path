@@ -17,6 +17,14 @@ All notable changes to The Agent Harness Path are documented here.
   wording and section order are unchanged, and pages stay script-free.
 - Theme the marimo toys and `labs/app.py` with the same tokens through
   `sessions/theme.css`, loaded from `pyproject.toml`; no notebook source changes.
+- Give the documentation one front door and one owner per topic. The README
+  leads with the offline start and a *Where things live* map; the course home
+  (`sessions/index.md`) owns the learner path, including running against your own
+  model and the S13/S14 rules. Fold `study/FULL-COURSE.md` into the course home
+  and `study/FEEDBACK.md`; move the S13/S14 working cards beside their lessons;
+  remove the stale `bridges/README.md` and the duplicate `docs/README.md` map.
+  Each `companion.md` is labelled as tutor context, with a "companion" title
+  instead of a second meaning of "bridge". No lesson teaching changes.
 
 ## 0.6.0-rc.1 — 2026-09-20
 

@@ -1,4 +1,6 @@
-# S02 bridge — golden evals (real host)
+# S02 companion — golden evals (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s02-golden-evals/companion.md`); you do not need to read it to finish the session.
 
 Tutor a learner on **S02**. The core path ships `cafe/evals` — a café golden set,
 deterministic checkers, and the naive arm the governed loop has to beat. The

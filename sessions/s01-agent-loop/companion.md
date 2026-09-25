@@ -1,4 +1,6 @@
-# S01 bridge — the agent loop (real host)
+# S01 companion — the agent loop (real host)
+
+> Tutor context for this session. Attach it in editor chat (`@sessions/s01-agent-loop/companion.md`); you do not need to read it to finish the session.
 
 You are tutoring a learner on **S01**. The core path is the HTML lesson plus the
 marimo toy notebook, and it ships `cafe/loop.py` — the café order-taking loop
@@ -29,7 +31,7 @@ to complete the learner's host implementation, even when asked.
 
 Do **not** open `labs/reference/` unless the learner is stuck. In this
 companion cut `cafe_host/` **is the complete host** (same spine). Study
-it via the bridges; S13 is still unaided.
+it with each session's `companion.md`; S13 is still unaided.
 
 ## Global companion constraints (every session)
 
