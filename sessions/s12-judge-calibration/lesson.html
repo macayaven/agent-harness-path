@@ -3,126 +3,202 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
   <title>S12-judge-calibration — A judge you have not calibrated is an opinion</title>
   <style>
+    /* Tokens — light is the default; dark follows the OS (prefers-color-scheme).
+       Contrast (WCAG 2.2): text/bg 16.1 | 14.8, muted/bg 6.7 | 7.7,
+       accent/bg 5.9 | 8.9, line-strong/bg 3.7 | 3.8 (non-text UI). */
     :root {
-      --bg: #0f1419;
-      --surface: #1a222c;
-      --surface-2: #243040;
-      --text: #e7ecf1;
-      --muted: #9aa8b5;
-      --line: #2f3d4c;
-      --ok: #3dba7e;
-      --bad: #e07070;
-      --warn: #d4a017;
-      --accent: #5eb1ff;
-      --mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
-      --sans: "IBM Plex Sans", "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+      --bg: #faf8f4; --surface: #ffffff; --surface-2: #f2eee7;
+      --text: #1f1b16; --muted: #5f574d;
+      --line: #e2dcd2; --line-strong: #8a8073;
+      --accent: #9a4a1c; --accent-soft: #f6e7dc; --on-accent: #ffffff;
+      --predict: #1f5f8b; --predict-soft: #e5eef5;
+      --check: #2d6a3e; --check-soft: #e4efe6;
+      --warn: #7a5a00; --warn-soft: #f5edd6;
+      --plate: #1f2020; --plate-line: #3a3b3b;
+      --serif: "Iowan Old Style", Charter, "Bitstream Charter", Georgia, serif;
+      --sans: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      --fs-label: .75rem; --fs-sm: .9375rem; --fs-base: 1.0625rem;
+      --fs-lead: 1.125rem; --fs-h3: 1.1875rem; --fs-h2: 1.625rem;
+      --fs-h1: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem);
+      --radius-sm: 4px; --radius: 10px;
+      --measure: 44rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161411; --surface: #1f1c18; --surface-2: #2a2621;
+        --text: #ece6dc; --muted: #b0a697;
+        --line: #3a342d; --line-strong: #7a7064;
+        --accent: #f0a36b; --accent-soft: #33251b; --on-accent: #161411;
+        --predict: #8cc4ec; --predict-soft: #1b2630;
+        --check: #8fd19e; --check-soft: #1b2a1f;
+        --warn: #e9c46a; --warn-soft: #2e2715;
+      }
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      line-height: 1.6;
+    html { -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans);
+      font-size: var(--fs-base); line-height: 1.65; }
+    p, li { text-wrap: pretty; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: .18em; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+    .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .skip { position: absolute; left: -9999px; top: .5rem; z-index: 10; background: var(--accent); color: var(--on-accent); padding: .5rem .9rem; border-radius: var(--radius-sm); }
+    .skip:focus { left: .75rem; }
+    .label { margin: 0 0 .35rem; font-size: var(--fs-label); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+    /* Site header + course rail */
+    .site { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+    .site-inner { max-width: 76rem; margin: 0 auto; padding: .7rem 1.25rem; display: flex; align-items: center; gap: .6rem 1.25rem; flex-wrap: wrap; }
+    .brand { font-family: var(--serif); font-weight: 700; color: var(--text); text-decoration: none; white-space: nowrap; }
+    .rail { flex: 1 1 18rem; display: flex; align-items: center; gap: .75rem; min-width: 0; }
+    .rail ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 3px; flex: 1; min-width: 0; }
+    .rail li { flex: 1; min-width: 0; }
+    .rail a { display: block; padding: 6px 0; margin: -6px 0; }
+    .rail a::before { content: ""; display: block; height: 6px; border-radius: 3px; border: 1px solid var(--line-strong); }
+    .rail-done a::before { background: var(--line-strong); }
+    .rail-current a::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--accent); }
+    .rail-optional a::before { border-style: dashed; }
+    .rail-count { font-family: var(--mono); font-size: .8125rem; color: var(--muted); white-space: nowrap; }
+
+    /* Page grid: reading column + outline */
+    .page { max-width: 76rem; margin: 0 auto; padding: 0 1.25rem; display: flex; gap: 3.5rem; align-items: flex-start; }
+    main { flex: 1 1 0; min-width: 0; max-width: var(--measure); padding-bottom: 4rem; }
+    .page-plain main { margin: 0 auto; max-width: 52rem; }
+    .outline { flex: 0 0 14rem; position: sticky; top: 4.5rem; padding-top: 4rem; max-height: calc(100vh - 5rem); overflow-y: auto; }
+    .outline ol, .outline-inline ol { list-style: none; margin: 0; padding: 0; font-size: .875rem; line-height: 1.4; }
+    .outline ol { border-left: 1px solid var(--line); }
+    .outline a { display: block; padding: .35rem .75rem; color: var(--muted); text-decoration: none; margin-left: -1px; border-left: 2px solid transparent; }
+    .outline a:hover { color: var(--text); border-left-color: var(--line-strong); }
+    .outline-inline { display: none; margin: 1.25rem 0 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .outline-inline summary { cursor: pointer; padding: .75rem 1rem; font-weight: 600; min-height: 44px; }
+    .outline-inline ol { padding: 0 1rem 1rem; }
+    .outline-inline a { display: block; padding: .45rem 0; color: var(--text); text-decoration: none; }
+    @media (max-width: 68.75rem) { .outline { display: none; } .outline-inline { display: block; } }
+
+    /* Top/bottom nav (markup pinned by tests: nav.lesson-nav > span.nav-*) */
+    .lesson-nav { display: flex; justify-content: space-between; gap: .5rem 1rem; padding: .9rem 0; font-size: var(--fs-sm); flex-wrap: wrap; }
+    .lesson-nav a { color: var(--muted); text-decoration: none; }
+    .lesson-nav a:hover { color: var(--text); }
+    @media (min-width: 40rem) {
+      main > .lesson-nav:first-of-type { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; }
+      main > .lesson-nav:first-of-type .nav-next { text-align: right; }
     }
-    main {
-      max-width: 52rem;
-      margin: 0 auto;
-      padding: 2.5rem 1.25rem 4rem;
-    }
+    main > .lesson-nav:last-of-type { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .75rem; margin-top: 2.5rem; }
+    main > .lesson-nav:last-of-type a { display: block; min-height: 44px; padding: .85rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); }
+    main > .lesson-nav:last-of-type .nav-next a { border-color: var(--accent); text-align: right; }
+    main > .lesson-nav:last-of-type span:empty { display: none; }
+
+    /* Headings */
+    .kicker { margin: 1.5rem 0 .6rem; font-family: var(--mono); font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
     h1, h2, h3 { line-height: 1.25; }
-    h1 { font-size: 1.7rem; border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
-    h2 { font-size: 1.3rem; margin-top: 2.2rem; color: var(--accent); }
-    h3 { font-size: 1.05rem; margin-top: 1.6rem; }
-    a { color: var(--accent); }
-    code, pre { font-family: var(--mono); font-size: .9em; }
-    code { background: var(--surface-2); padding: .1em .35em; border-radius: 4px; }
-    pre {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: .9rem 1rem;
-      overflow-x: auto;
-    }
-    pre code { background: none; padding: 0; }
-    .table-scroll { max-width: 100%; overflow-x: auto; }
-    .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1rem 0;
-      font-size: .92rem;
-    }
-    th, td {
-      border: 1px solid var(--line);
-      padding: .45rem .6rem;
-      text-align: left;
-      vertical-align: top;
-    }
-    th { background: var(--surface-2); }
-    td { background: var(--surface); }
-    blockquote {
-      margin: 1rem 0;
-      padding: .4rem 1rem;
-      border-left: 3px solid var(--warn);
-      background: var(--surface);
-      color: var(--muted);
-    }
-    details {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: .5rem .9rem;
-      margin: .6rem 0;
-    }
-    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
-    hr { border: none; border-top: 1px solid var(--line); margin: 2rem 0; }
-    .meta { color: var(--muted); font-size: .85rem; }
-    .lesson-nav {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      margin: 1.5rem 0;
-      color: var(--muted);
-      font-size: .9rem;
-    }
-    .lesson-nav a { color: var(--muted); }
-    footer {
-      margin-top: 3rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: .82rem;
-    }
-    .static-diagram-scroll { overflow-x: auto; margin: 1.5rem 0; }
-    .static-diagram {
-      width: max(100%, var(--diagram-width));
-      max-width: none;
-      height: auto;
-      display: block;
-    }
-    .static-diagram-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+    h1 { margin: 0 0 1.75rem; font-family: var(--serif); font-size: var(--fs-h1); line-height: 1.15; letter-spacing: -.01em; text-wrap: balance; }
+    .h1-slug { display: block; font-family: var(--mono); font-size: .95rem; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-bottom: .4rem; }
+    h2 { font-family: var(--serif); font-size: var(--fs-h2); margin: 3rem 0 .75rem; }
+    h3 { font-size: var(--fs-h3); margin: 1.75rem 0 .5rem; }
+    hr { display: none; }
+
+    /* Spine card */
+    .spine { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .spine-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)); }
+    .spine-cell { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); }
+    .spine-cell p { margin: 0; }
+    .spine-code { margin-bottom: .35rem !important; }
+    .spine-text { font-size: var(--fs-sm); line-height: 1.55; color: var(--muted); }
+    .spine-ship { background: var(--accent-soft); }
+    .spine-ship .label { color: var(--accent); }
+    .spine-ship .spine-text { color: var(--text); }
+    .spine-ship code { background: var(--surface); }
+    .spine-next .spine-code a { font-weight: 600; }
+    .strip { padding: .85rem 1.1rem; }
+    .strip .label code { background: none; padding: 0; font-size: 1em; text-transform: none; letter-spacing: 0; }
+    .strip ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; font-family: var(--mono); font-size: .8125rem; }
+    .strip li { padding: .15rem .5rem; border-radius: 999px; }
+    .chip-done { background: var(--surface-2); }
+    .chip-current { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+    .chip-ahead { border: 1px dashed var(--line-strong); color: var(--muted); padding: .1rem .45rem; }
+    .lead { margin: 1.5rem 0 0; font-size: var(--fs-lead); line-height: 1.6; }
+    .meta-grid { margin: 1.25rem 0 0; padding: 1rem 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .75rem 1.5rem; font-size: var(--fs-sm); line-height: 1.5; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .meta-grid dt { font-size: var(--fs-label); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .meta-grid dd { margin: .2rem 0 0; }
+
+    /* Index spine */
+    .index-spine ol { list-style: none; margin: 2rem 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .75rem; }
+    .index-spine a { display: flex; flex-direction: column; gap: .3rem; height: 100%; min-height: 44px; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text); text-decoration: none; }
+    .index-spine a:hover { border-color: var(--line-strong); }
+    .card-optional a { border: 1px dashed var(--line-strong); background: transparent; }
+    .card-n { font-family: var(--mono); font-size: .8125rem; font-weight: 700; color: var(--accent); }
+    .card-optional .card-n, .card-tag { color: var(--muted); }
+    .card-tag { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .card-title { font-weight: 650; line-height: 1.3; }
+    .index-spine code { align-self: flex-start; font-size: .75rem; }
+
+    /* Arc sections (data-arc set by build.py) */
+    .arc[data-arc="promise"], .arc[data-arc="checkpoint"] { margin-top: 2.5rem; padding: 1.25rem 1.35rem; border-radius: var(--radius); border: 1px solid var(--line); }
+    .arc[data-arc="promise"] { background: var(--accent-soft); }
+    .arc[data-arc="promise"] h2, .arc[data-arc="unlocks"] h2 { margin: 0 0 .5rem; font-family: var(--sans); font-size: .8125rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    .arc[data-arc="promise"] p { font-size: var(--fs-lead); }
+    .arc[data-arc="checkpoint"] { background: var(--check-soft); }
+    .arc[data-arc="checkpoint"] h2 { margin-top: 0; font-size: 1.5rem; }
+    .arc[data-arc="checkpoint"] h2::before { content: "Checkpoint"; display: block; margin-bottom: .35rem; font-family: var(--sans); font-size: var(--fs-label); letter-spacing: .08em; text-transform: uppercase; color: var(--check); }
+    .arc[data-arc="promise"] > :last-child, .arc[data-arc="checkpoint"] > :last-child, .arc[data-arc="unlocks"] > :last-child { margin-bottom: 0; }
+    li[data-arc="predict"] { margin: .5rem 0 .75rem; padding: 1rem 1.1rem; border-radius: var(--radius); background: var(--predict-soft); border: 1px solid var(--line); }
+    li[data-arc="predict"]::marker { color: var(--predict); font-weight: 700; }
+    li[data-arc="predict"]::before { content: "Predict first"; display: block; margin-bottom: .35rem; font-size: var(--fs-label); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--predict); }
+    .arc[data-arc="misconceptions"] ul { list-style: none; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    .arc[data-arc="misconceptions"] li { padding: .9rem 1.1rem; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .arc[data-arc="misconceptions"] li:last-child { border-bottom: 0; }
+    .arc[data-arc="misconceptions"] li > em:first-child { display: block; color: var(--warn); font-weight: 600; margin-bottom: .3rem; }
+    .arc[data-arc="unlocks"] { margin-top: 3rem; padding: 1.25rem 1.35rem; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+
+    /* Code, tables, details, figures, quotes */
+    code, pre { font-family: var(--mono); font-size: .88em; }
+    code { background: var(--surface-2); padding: .08em .35em; border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+    pre { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: .9rem 1rem; overflow-x: auto; line-height: 1.5; }
+    pre code { background: none; padding: 0; overflow-wrap: normal; }
+    .table-scroll { max-width: 100%; overflow-x: auto; margin: 1rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    table { border-collapse: collapse; width: 100%; font-size: var(--fs-sm); line-height: 1.5; }
+    .table-scroll table { min-width: 34rem; }
+    th, td { border-bottom: 1px solid var(--line); padding: .6rem .75rem; text-align: left; vertical-align: top; }
+    tbody tr:last-child td { border-bottom: 0; }
+    th { font-size: .8125rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+    td strong { font-weight: 600; }
+    blockquote { margin: 1rem 0; padding: .9rem 1.1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--warn-soft); }
+    details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 1.1rem; margin: .5rem 0; }
+    summary { cursor: pointer; font-weight: 600; padding: .85rem 0; min-height: 44px; line-height: 1.45; }
+    details[open] summary { border-bottom: 1px solid var(--line); margin-bottom: .85rem; }
+    details[open] { padding-bottom: 1rem; }
+    .static-diagram-scroll { overflow-x: auto; margin: 1.75rem 0; background: var(--plate); border: 1px solid var(--plate-line); border-radius: var(--radius); padding: 1rem; }
+    .static-diagram { width: max(100%, var(--diagram-width)); max-width: none; height: auto; display: block; }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8125rem; }
+    @media print { .site, .outline, .outline-inline, .lesson-nav { display: none; } .page { display: block; } }
   </style>
 </head>
 <body>
-<main>
+<a class="skip" href="#lesson">Skip to lesson</a>
+<header class="site">
+  <div class="site-inner">
+    <a class="brand" href="../index.html">The Agent Harness Path</a>
+    <nav class="rail" aria-label="Course progress"><ol><li class="rail-done"><a href="../s01-agent-loop/lesson.html" title="S01-agent-loop — The order-taking loop"><span class="vh">S01-agent-loop — The order-taking loop</span></a></li><li class="rail-done"><a href="../s02-golden-evals/lesson.html" title="S02-golden-evals — A baseline you can defend"><span class="vh">S02-golden-evals — A baseline you can defend</span></a></li><li class="rail-done"><a href="../s03-context-engineering/lesson.html" title="S03-context-engineering — What survives compaction"><span class="vh">S03-context-engineering — What survives compaction</span></a></li><li class="rail-done"><a href="../s04-structured-generation/lesson.html" title="S04-structured-generation — The ticket contract"><span class="vh">S04-structured-generation — The ticket contract</span></a></li><li class="rail-done"><a href="../s05-consent-gate/lesson.html" title="S05-consent-gate — The gate before the irreversible action"><span class="vh">S05-consent-gate — The gate before the irreversible action</span></a></li><li class="rail-done"><a href="../s06-layered-detection/lesson.html" title="S06-layered-detection — Screening the counter"><span class="vh">S06-layered-detection — Screening the counter</span></a></li><li class="rail-done"><a href="../s07-repair-loop/lesson.html" title="S07-repair-loop — A bounded re-ask with real feedback"><span class="vh">S07-repair-loop — A bounded re-ask with real feedback</span></a></li><li class="rail-done"><a href="../s08-observability-replay/lesson.html" title="S08-observability-replay — A shift with a memory"><span class="vh">S08-observability-replay — A shift with a memory</span></a></li><li class="rail-done"><a href="../s09-evidence-reports/lesson.html" title="S09-evidence-reports — The thirty-second debrief"><span class="vh">S09-evidence-reports — The thirty-second debrief</span></a></li><li class="rail-done"><a href="../s10-error-analysis/lesson.html" title="S10-error-analysis — From a pile of failures to a permanent eval task"><span class="vh">S10-error-analysis — From a pile of failures to a permanent eval task</span></a></li><li class="rail-done"><a href="../s11-budgets-routing/lesson.html" title="S11-budgets-routing — Budget estimates and routing policy"><span class="vh">S11-budgets-routing — Budget estimates and routing policy</span></a></li><li class="rail-current"><a href="lesson.html" title="S12-judge-calibration — A judge you have not calibrated is an opinion" aria-current="page"><span class="vh">S12-judge-calibration — A judge you have not calibrated is an opinion</span></a></li><li class="rail-optional"><a href="../s13-rebuild-from-memory/lesson.html" title="S13-rebuild-from-memory — The closed-book audit"><span class="vh">S13-rebuild-from-memory — The closed-book audit</span></a></li><li class="rail-optional"><a href="../s14-ship-and-pilot/lesson.html" title="S14-ship-and-pilot — The cold run, the pilot, and the public artifact"><span class="vh">S14-ship-and-pilot — The cold run, the pilot, and the public artifact</span></a></li></ol><span class="rail-count">S12 / 12 core</span></nav>
+  </div>
+</header>
+<div class="page page-lesson">
+<main id="lesson">
 <nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html">&larr; Prev: S11-budgets-routing — Budget estimates and routing policy</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
-<h1 id="s12-judge-calibration-a-judge-you-have-not-calibrated-is-an-opinion">S12-judge-calibration — A judge you have not calibrated is an opinion</h1>
-<p><strong>Carried in:</strong> <code>cafe/routing.py</code> — S11's route table, its budget gate, and reported usage, accounting completeness and client latency. You now have an illustrative cost estimate; tonight you find out whether the verdict it returns is worth anything.
-<strong>Today you ship:</strong> <code>cafe/judge.py</code> — the seeded-defect game, the detection and false-positive rates, and the agreement math.
-<strong>What this teaches:</strong> how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus <em>before</em> you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).
-<strong>Time:</strong> 20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings. <strong>Prerequisites:</strong> S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).
-<strong>Hands-on:</strong> <code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</p>
+<p class="kicker">Session 12 · core path</p><h1 id="s12-judge-calibration-a-judge-you-have-not-calibrated-is-an-opinion"><span class="h1-slug">S12-judge-calibration —</span> A judge you have not calibrated is an opinion</h1>
+<section class="spine" aria-label="Where this session sits"><div class="spine-cells"><div class="spine-cell spine-in"><p class="label">Carried in</p><p class="spine-code"><code>cafe/routing.py</code></p><p class="spine-text">S11's route table, its budget gate, and reported usage, accounting completeness and client latency. You now have an illustrative cost estimate; tonight you find out whether the verdict it returns is worth anything.</p></div><div class="spine-cell spine-ship"><p class="label">Today you ship</p><p class="spine-code"><code>cafe/judge.py</code></p><p class="spine-text">the seeded-defect game, the detection and false-positive rates, and the agreement math.</p></div><div class="spine-cell spine-next"><p class="label">Unlocks next</p><p class="spine-code"><a href="../s13-rebuild-from-memory/lesson.html">S13 — The closed-book audit</a></p><p class="spine-text"><a href="#what-this-unlocks">What this unlocks</a></p></div></div><div class="strip"><p class="label"><code>cafe/</code></p><ol aria-label="The artifact you are growing"><li class="chip-done">loop</li><li class="chip-done">evals</li><li class="chip-done">context</li><li class="chip-done">schema</li><li class="chip-done">consent</li><li class="chip-done">detect</li><li class="chip-done">repair</li><li class="chip-done">trace</li><li class="chip-done">report</li><li class="chip-done">taxonomy</li><li class="chip-done">routing</li><li class="chip-current" aria-current="step">judge</li></ol></div></section><p class="lead"><strong>What this teaches:</strong> how to turn a model call into an instrument — seed defects you already know the answer to, hand-label the corpus <em>before</em> you see any judge output, report detection rate and false-positive rate as a pair, and compute Cohen's κ (which is undefined, not 1.0, when the vectors are constant).</p><dl class="meta-grid"><div><dt>Time</dt><dd>20–40 min active reading, 45–75 min notebook work, 5–10 min self-check. These are planning estimates, not measured learner timings.</dd></div><div><dt>Prerequisites</dt><dd>S02 (the fixture invariant, and checkers whose failures you trust); S10 (the failure classes this session calibrates against).</dd></div><div><dt>Hands-on</dt><dd><code>toy.py</code> — offline by default; <code>COURSE_MODE=live</code> uses <strong>your</strong> model.</dd></div></dl><details class="outline-inline"><summary>On this page</summary><ol><li><a href="#the-hook">The hook</a></li><li><a href="#the-promise">The promise</a></li><li><a href="#the-theory-in-depth">The theory in depth</a></li><li><a href="#build-in-the-notebook-predict-first">Build (in the notebook, predict first)</a></li><li><a href="#checkpoint-the-number-you-bank">Checkpoint — the number you bank</a></li><li><a href="#state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</a></li><li><a href="#annotated-readings">Annotated readings</a></li><li><a href="#misconceptions-and-failure-modes">Misconceptions and failure modes</a></li><li><a href="#self-check">Self-check</a></li><li><a href="#what-this-unlocks">What this unlocks</a></li></ol></details>
 <hr />
-<h2 id="the-hook">The hook</h2>
+<section class="arc" data-arc="hook" aria-labelledby="the-hook"><h2 id="the-hook">The hook</h2>
 <p>Your judge scored the shift <strong>9/10</strong>, so you let it gate the release. A week later a
 customer found two defects it had waved through — and one clean order it had failed for
 being "too terse". You never measured either number. The 9/10 was never a measurement; it
 was an opinion with a decimal point.</p>
-<h2 id="the-promise">The promise</h2>
+</section><section class="arc" data-arc="promise" aria-labelledby="the-promise"><h2 id="the-promise">The promise</h2>
 <p>By the end of this session you will have seeded known defects into clean café transcripts,
 labeled the corpus yourself <strong>before</strong> any judge output existed on your screen, and
 reported a detection rate, a false-positive rate, and Cohen's κ — with the pair for an
@@ -130,9 +206,9 @@ uncalibrated rubric next to the pair for a calibrated one, so the change is attr
 You will be able to say exactly what that κ licenses and what it does not.</p>
 <p>The six-case corpus is an arithmetic demonstration, not release calibration. Measure
 your model rather than assuming it will be good or bad; a release decision needs a larger,
-independently labeled corpus that you did not use to tune the rubric.</p>
+independently labeled corpus that you did not use to tune the rubric.</p></section>
 <hr />
-<h2 id="the-theory-in-depth">The theory in depth</h2>
+<section class="arc" data-arc="theory" aria-labelledby="the-theory-in-depth"><h2 id="the-theory-in-depth">The theory in depth</h2>
 <h3 id="a-judge-is-an-instrument-an-uncalibrated-instrument-is-an-opinion">A judge is an instrument; an uncalibrated instrument is an opinion</h3>
 <p>A rubric judge is a model call that returns pass/fail. Nothing in that call tells you how
 often it is right, and a verdict is far more persuasive than it deserves to be. Calibration
@@ -178,9 +254,9 @@ and told to distrust short answers — the judge most people ship on the first t
 out S10's failure classes and deletes the style bias, with the same model and the same
 corpus. Compare both rates and coverage on the same corpus. Either rubric can perform worse;
 the direction is an observation, not an assertion. Changing a rubric does not prove
-that its model improved.</p>
+that its model improved.</p></section>
 <hr />
-<h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
+<section class="arc" data-arc="build" aria-labelledby="build-in-the-notebook-predict-first"><h2 id="build-in-the-notebook-predict-first">Build (in the notebook, predict first)</h2>
 <p>Open <code>toy.py</code>.
 Start on the offline stub without configuration. For live measurements:</p>
 <pre><code class="language-bash">export COURSE_MODE=live
@@ -202,7 +278,7 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 <li><strong>Judge v1, then reveal separately.</strong> Once labels are complete, the deliberately
    strict, style-sensitive rubric can run. The seed key, missed-ID lists and
    key-derived comparisons remain hidden until you also turn on the reveal switch.</li>
-<li><strong>Predict the pair.</strong> Before completing the label cell, write down how many defective
+<li data-arc="predict"><strong>Predict the pair.</strong> Before completing the label cell, write down how many defective
    transcripts judge v1 will catch and how many clean ones it will fail. Detection and
    false positives are reported together, because either alone is half a number.</li>
 <li><strong>Read the misses, then judge v2.</strong> The v1 misses are not mysteries; they are classes.
@@ -215,9 +291,9 @@ uv run marimo edit sessions/s12-judge-calibration/toy.py
 <li><strong>Price the twelve calls.</strong> Calibration cost two rubrics over six transcripts.
    The cost cell rebuilds each call's messages exactly and estimates them using S11's illustrative
    rate card, without changing the actual client — worth-it is a question with two numbers, and now you have both.</li>
-</ol>
+</ol></section>
 <hr />
-<h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
+<section class="arc" data-arc="checkpoint" aria-labelledby="checkpoint-the-number-you-bank"><h2 id="checkpoint-the-number-you-bank">Checkpoint — the number you bank</h2>
 <p>Put this in one sentence and defend it: <strong>6 transcripts, 3 seeded defects, detection n/3,
 false positives n/3, valid outputs n/6, κ = …</strong> for the calibrated rubric — with the uncalibrated pair next to
 it so the change is attributable. On a small local model those numbers may be poor. That is
@@ -230,9 +306,9 @@ sample count and environment. Tune on development examples, then freeze the
 rubric before an independently labeled holdout. The six teaching transcripts
 cannot serve both roles. If you generated a wider corpus with simulated users,
 label that provenance: <a href="https://arxiv.org/abs/2601.17087v2">Lost in Simulation</a>
-shows why simulator evidence should not stand in for observations from people.</p>
+shows why simulator evidence should not stand in for observations from people.</p></section>
 <hr />
-<h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
+<section class="arc" data-arc="sota" aria-labelledby="state-of-the-art-source-review-20-september-2026"><h2 id="state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</h2>
 <div class="table-scroll" role="group" aria-label="Scrollable table" tabindex="0"><table>
 <thead>
 <tr>
@@ -273,25 +349,25 @@ shows why simulator evidence should not stand in for observations from people.</
 <td>Judged criteria stay labeled uncalibrated until you have the rates. This session is the calibration that lets a judged tier count.</td>
 </tr>
 </tbody>
-</table></div>
+</table></div></section>
 <hr />
-<h2 id="annotated-readings">Annotated readings</h2>
+<section class="arc" data-arc="readings" aria-labelledby="annotated-readings"><h2 id="annotated-readings">Annotated readings</h2>
 <ul>
 <li><strong>Hamel Husain, <a href="https://hamel.dev/blog/posts/llm-judge/">Creating a LLM-as-a-Judge that drives business results</a>.</strong> Extract the order of operations — hand labels before judge output — and the insistence on reporting agreement as a pair, not a single flattering number.</li>
 <li><strong><a href="https://en.wikipedia.org/wiki/Cohen%27s_kappa">Cohen's κ</a>, overview.</strong> Extract the degenerate case and why chance-correction matters: raw agreement flatters a judge when one class dominates.</li>
 <li><strong>Zheng et al., <a href="https://arxiv.org/abs/2306.05685">Judging LLM-as-a-Judge</a>.</strong> Extract the catalogue of judge biases. It explains why a small local model lands where it lands, and why the rates come before the verdict.</li>
-</ul>
+</ul></section>
 <hr />
-<h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
+<section class="arc" data-arc="misconceptions" aria-labelledby="misconceptions-and-failure-modes"><h2 id="misconceptions-and-failure-modes">Misconceptions and failure modes</h2>
 <ul>
 <li><em>"The judge said fail, so it is a defect."</em> Not until you have measured the judge. An uncalibrated verdict is an opinion with a decimal point; the calibration set is what turns it into an instrument.</li>
 <li><em>"Label after you have seen the verdicts."</em> A seen verdict anchors your label, and the measurement quietly becomes the judge's influence on you. Hands first, always.</li>
 <li><em>"Report detection."</em> Detection without false positives is half a number: a judge that fails everything detects everything. Report the pair.</li>
 <li><em>"κ = 1.0 means a perfect judge."</em> Two constant vectors agree 100% of the time and that agreement carries no information. <code>cohens_kappa</code> returns <code>None</code> there, and that <code>None</code> is the honest answer.</li>
 <li><em>"A bad local judge means the setup is broken."</em> A small local model is often a poor judge — that is the finding. Calibration is what lets you say <em>how</em> poor, and whether it is worth the calls.</li>
-</ul>
+</ul></section>
 <hr />
-<h2 id="self-check">Self-check</h2>
+<section class="arc" data-arc="selfcheck" aria-labelledby="self-check"><h2 id="self-check">Self-check</h2>
 <details><summary>Why must the hand labels come before any judge output?</summary>
 Because a verdict you have already seen anchors your label. Your label then measures the judge's influence on you rather than your independent reading, and the agreement you compute is inflated in a way you cannot detect. Hands first is the protocol, not a warm-up.</details>
 
@@ -299,13 +375,13 @@ Because a verdict you have already seen anchors your label. Your label then meas
 Detection 3/3 and false positives 3/3. It detects everything and flags everything, so it carries no information: a judge that fails every transcript is not strict, it is useless. Reporting only the detection rate would have made it look perfect.</details>
 
 <details><summary>When does <code>cohens_kappa</code> return <code>None</code>, and why not 1.0?</summary>
-When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. `None` means "undefined", and the notebook prints it that way.</details>
+When the chance term is degenerate — both label vectors are constant, or the lists are empty or unequal in length. Two constant vectors agree 100% of the time, and that agreement carries no information, so reporting 1.0 would be a lie. <code>None</code> means "undefined", and the notebook prints it that way.</details>
 
 <details><summary>The calibrated rubric holds the false-positive rate but the detection rate drops. Did calibration fail?</summary>
-It is a tradeoff to inspect, not an automatic success. Compare detection, false positives and valid-output coverage on both rubrics. Either rubric can perform worse; six cases do not establish release quality.</details>
+It is a tradeoff to inspect, not an automatic success. Compare detection, false positives and valid-output coverage on both rubrics. Either rubric can perform worse; six cases do not establish release quality.</details></section>
 
 <hr />
-<h2 id="what-this-unlocks">What this unlocks</h2>
+<section class="arc" data-arc="unlocks" aria-labelledby="what-this-unlocks"><h2 id="what-this-unlocks">What this unlocks</h2>
 <p>That is the core path closed. Twelve sessions produced <strong>one <code>cafe/</code> package</strong> — a loop with
 proven invariants, a golden set, a context budget, a ticket contract, a consent gate,
 layered detection, bounded repair, a replayable trace, an evidence report, a failure
@@ -315,12 +391,14 @@ session</strong>.</p>
 <strong><a href="../s13-rebuild-from-memory/lesson.html">S13 — Rebuild from memory</a></strong> is the closed-book audit.
 Close every notebook and rebuild the core from memory — no scaffolding, no generated
 answers, nothing filled in for you. Everything you would need is already in what you built;
-the audit only tells you whether it is in <em>you</em>.</p>
+the audit only tells you whether it is in <em>you</em>.</p></section>
 <nav class="lesson-nav"><span class="nav-prev"><a href="../s11-budgets-routing/lesson.html">&larr; Prev: S11-budgets-routing — Budget estimates and routing policy</a></span><span class="nav-index"><a href="../index.html">Index</a></span><span class="nav-next"><a href="../s13-rebuild-from-memory/lesson.html">Next: S13-rebuild-from-memory — The closed-book audit &rarr;</a></span></nav>
 <footer>
   Generated by <code>tools/build.py</code> from
   <code>sessions/s12-judge-calibration/lesson.md</code> — part of The Agent Harness Path.
 </footer>
 </main>
+<aside class="outline" aria-label="On this page"><p class="label">On this page</p><ol><li><a href="#the-hook">The hook</a></li><li><a href="#the-promise">The promise</a></li><li><a href="#the-theory-in-depth">The theory in depth</a></li><li><a href="#build-in-the-notebook-predict-first">Build (in the notebook, predict first)</a></li><li><a href="#checkpoint-the-number-you-bank">Checkpoint — the number you bank</a></li><li><a href="#state-of-the-art-source-review-20-september-2026">State of the art (source review: 20 September 2026)</a></li><li><a href="#annotated-readings">Annotated readings</a></li><li><a href="#misconceptions-and-failure-modes">Misconceptions and failure modes</a></li><li><a href="#self-check">Self-check</a></li><li><a href="#what-this-unlocks">What this unlocks</a></li></ol></aside>
+</div>
 </body>
 </html>

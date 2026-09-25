@@ -11,6 +11,10 @@ All notable changes to The Agent Harness Path are documented here.
 - Credit NVIDIA Nemotron 3.5 Lightning 30B A3B (NVFP4) on DGX Spark for the live
   notebook validation and recorded lab fixtures; distinguish deterministic
   notebook stubs from offline lab replay.
+- Give the index, lessons and study plan one light/dark visual system: a course
+  rail, a "Carried in / Today you ship / Unlocks next" card with the `cafe/`
+  module strip, index session cards and an outline for long pages. Lesson
+  wording and section order are unchanged, and pages stay script-free.
 
 ## 0.6.0-rc.1 — 2026-09-20
 
