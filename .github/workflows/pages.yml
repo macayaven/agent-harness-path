@@ -1,0 +1,78 @@
+name: publish reader
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "sessions/**"
+      - "tools/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - "LICENSE"
+      - "LICENSES/**"
+      - "NOTICE"
+      - ".github/workflows/pages.yml"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: false
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install tooling (networked bootstrap)
+        run: uv sync --frozen
+      - name: Verify offline content contracts
+        env:
+          COURSE_MODE: stub
+          PYTHONPATH: ${{ github.workspace }}/tests/no_network_site:${{ github.workspace }}
+        run: uv run python -m unittest discover -s tests
+      - name: Rebuild and check the reader
+        run: |
+          uv run python tools/build.py
+          git diff --exit-code -- sessions
+          uv run python tools/check_links.py
+          uv run python tools/check_sota_urls.py
+      - name: Stage public reader assets
+        run: |
+          mkdir -p _site
+          rsync --archive --prune-empty-dirs \
+            --include='*/' --include='*.html' --include='*.css' \
+            --include='*.svg' --exclude='*' sessions/ _site/
+          cp LICENSE NOTICE _site/
+          cp -R LICENSES _site/LICENSES
+          touch _site/.nojekyll
+          uv run python tools/check_links.py --root _site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy the verified reader
+        id: deployment
+        uses: actions/deploy-pages@v4

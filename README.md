@@ -2,15 +2,20 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/macayaven/agent-harness-path)
 
-A self-contained course on **building, evaluating, and governing LLM agents**:
-twelve build sessions plus two optional apply-to-your-system protocols (S13
-rebuild audit, S14 ship & pilot).
+Build, evaluate and govern one small café agent in **twelve runnable Python
+sessions**, with two optional protocols for a rebuild audit and a ship-and-pilot
+exercise. The default notebooks need no API key or running model.
 
-**You grow one café agent, offline first or against your own model.** Across
-S01–S12 you grow a single café-counter agent in `cafe/`: loop → evals → context →
-schema → consent → detection → repair → tracing → reports → taxonomy → routing →
-judge. Every session starts from the artifact and the number the last one
-produced.
+**[Read the first lesson](https://macayaven.github.io/agent-harness-path/s01-agent-loop/lesson.html)**
+· [Browse the course](https://macayaven.github.io/agent-harness-path/)
+· [Run the first notebook](#start)
+· [Report study friction](https://github.com/macayaven/agent-harness-path/issues/new?template=course-feedback.yml)
+
+![The café agent loop from the first lesson: model replies and tool results carry the conversation forward.](sessions/s01-agent-loop/public/diagrams/S01-agent-loop.svg)
+
+Across S01–S12, one artifact grows through loop → evals → context → schema →
+consent → detection → repair → tracing → reports → taxonomy → routing → judge.
+Every session starts from the artifact and the number the last one produced.
 
 Notebooks run offline on a deterministic stub unless you point them at **your**
 OpenAI-compatible endpoint; a local model costs nothing. Against a live model the
@@ -167,6 +172,9 @@ linked abstract, or a predict-first prompt that leaks the answer.
 
 Tagged releases remain historical evidence about their named artifacts;
 [CHANGELOG.md](CHANGELOG.md) distinguishes released versions from pending changes.
+
+If the path is useful, a GitHub star is appreciated. A specific setup report,
+correction or independently attempted exercise is useful feedback too.
 
 ## How this course was created
 

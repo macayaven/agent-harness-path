@@ -33,8 +33,9 @@ uv sync
 
 1. Edit sources in `sessions/*/lesson.md`, `sessions/*/toy.py`, or `labs/`
    (protocols and Python). Never hand-edit generated `sessions/*/lesson.html`.
-   Learners read the generated HTML from a clone
-   (`sessions/index.html`). GitHub's file view of `sessions/` is not a
+   Learners read the [published course](https://macayaven.github.io/agent-harness-path/)
+   or the generated HTML from a clone (`sessions/index.html`).
+   GitHub's file view of `sessions/` is not a
    supported reader — the overview's relative mp4 path is rewritten to the public
    bucket at build time.
    Edits to `sessions/study-plan.md` must preserve its authoritative external
@@ -153,3 +154,13 @@ relative-link check and SOTA source check. Execute notebooks or replay labs when
 their source or contract changed. Run the HTTP check when lesson/SOTA URLs changed.
 Do not convert a locally observed pilot into a general accessibility, learning,
 provider, teacher-workflow or production-readiness claim.
+
+## Publishing the reader
+
+`.github/workflows/pages.yml` checks the course and packages the existing HTML,
+CSS and SVG reader for GitHub Pages. Pull requests build and check the artifact;
+deployment is limited to `main`. Set Settings → Pages → Source to **GitHub
+Actions** before the first deployment. No model endpoint is involved.
+
+The hosted reader is for reading lessons. Run notebooks locally or in Codespaces
+using the course home's instructions. Keep learner work outside the checkout.
