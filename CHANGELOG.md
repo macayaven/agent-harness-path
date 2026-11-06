@@ -4,6 +4,9 @@ All notable changes to The Agent Harness Path are documented here.
 
 ## Unreleased
 
+- Lead the README with the first lesson, an existing loop diagram and a no-key
+  notebook start. Add source, feedback and license links to the static reader,
+  plus a GitHub Pages workflow that verifies and publishes the existing pages.
 - Acknowledge substantial design, planning, and implementation assistance from
   Codex with multiple GPT-family models, Claude Code, and Muse Code.
 - Clarify retained copyright, commercial reuse, attribution, and contribution
